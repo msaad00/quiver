@@ -25,6 +25,7 @@ import json
 import logging
 import os
 import re
+import sys
 from datetime import datetime, timedelta, timezone
 from typing import Any
 
@@ -211,26 +212,29 @@ def _validate_entry(entry: dict) -> dict:
             entry["iam_username"],
         )
 
-    # Confirm IAM user actually exists in the target account
-    account_id = entry["recipient_account_id"]
-    iam_username = entry["iam_username"]
+    # Confirm IAM user actually exists in the target account.
+    # Skipped on the MCP / CLI plan path — that surface lacks per-account
+    # assumed-role credentials. The deployed runner always runs the check.
+    if os.environ.get("IAM_DEPARTURES_AWS_SKIP_EXISTENCE_CHECK", "").strip() not in {"1", "true", "yes", "on"}:
+        account_id = entry["recipient_account_id"]
+        iam_username = entry["iam_username"]
 
-    try:
-        iam_client = _get_iam_client(account_id)
-        iam_client.get_user(UserName=iam_username)
-    except iam_client.exceptions.NoSuchEntityException:
-        return {
-            "action": "skip",
-            "reason": f"IAM user {iam_username} not found in account {account_id}",
-            "entry": entry,
-        }
-    except Exception as exc:
-        # If we can't verify, don't remediate — fail safe
-        return {
-            "action": "skip",
-            "reason": f"Cannot verify IAM user: {exc}",
-            "entry": entry,
-        }
+        try:
+            iam_client = _get_iam_client(account_id)
+            iam_client.get_user(UserName=iam_username)
+        except iam_client.exceptions.NoSuchEntityException:
+            return {
+                "action": "skip",
+                "reason": f"IAM user {iam_username} not found in account {account_id}",
+                "entry": entry,
+            }
+        except Exception as exc:
+            # If we can't verify, don't remediate — fail safe
+            return {
+                "action": "skip",
+                "reason": f"Cannot verify IAM user: {exc}",
+                "entry": entry,
+            }
 
     # All checks passed — remediate
     entry["validation_timestamp"] = datetime.now(timezone.utc).isoformat()
@@ -272,3 +276,121 @@ def _parse_iso(value: str | None) -> datetime | None:
         return datetime.fromisoformat(value.replace("Z", "+00:00"))
     except (ValueError, AttributeError):
         return None
+
+
+# ── CLI entrypoint ──────────────────────────────────────────────────
+
+
+_SAFE_ENTRY_KEYS = (
+    "email",
+    "recipient_account_id",
+    "iam_username",
+    "terminated_at",
+    "iam_deleted",
+    "remediation_status",
+    "is_rehire",
+    "rehire_date",
+    "iam_last_used_at",
+    "iam_created_at",
+    "validation_timestamp",
+)
+
+
+def _redact_entry(entry: dict) -> dict:
+    return {k: v for k, v in entry.items() if k in _SAFE_ENTRY_KEYS}
+
+
+def main(argv: list[str] | None = None) -> int:
+    """CLI / MCP entrypoint: dry-run the parser against a manifest.
+
+    Mirrors the runner's pure pre-flight checks (required fields, account
+    ID format, grace period, rehire decision tree). The IAM-existence call
+    is bypassed via `IAM_DEPARTURES_AWS_SKIP_EXISTENCE_CHECK` because this
+    surface lacks per-account assumed-role credentials. The Step Function
+    pipeline (deployed under runners/) is the only path that actually
+    deletes IAM users.
+    """
+    import argparse
+
+    parser = argparse.ArgumentParser(
+        description=(
+            "iam-departures-aws parser — dry-run a JSONL manifest of "
+            "departed-employee entries against the runner's pre-flight "
+            "policy checks. Read-only at this layer; --apply has no "
+            "effect because deletion happens only in the deployed runner."
+        )
+    )
+    parser.add_argument(
+        "--manifest",
+        type=str,
+        help="Path to a JSONL manifest. Default: read JSONL entries from stdin.",
+    )
+    parser.add_argument(
+        "--apply",
+        action="store_true",
+        help=(
+            "Refused on this surface — the runner pipeline owns the "
+            "destructive path. Use the deployed Step Function to act."
+        ),
+    )
+    args = parser.parse_args(argv)
+
+    if args.apply:
+        sys.stderr.write(
+            json.dumps(
+                {
+                    "event": "apply_refused",
+                    "reason": (
+                        "iam-departures-aws --apply runs only in the deployed Step Function. "
+                        "The MCP/CLI surface stays plan-only; deploy the runner under "
+                        "runners/aws-s3-sqs-detect/ siblings to act."
+                    ),
+                }
+            )
+            + "\n"
+        )
+        return 2
+
+    os.environ.setdefault("IAM_DEPARTURES_AWS_SKIP_EXISTENCE_CHECK", "1")
+
+    if args.manifest:
+        with open(args.manifest, "r", encoding="utf-8") as fh:
+            entries_iter = list(fh)
+    else:
+        entries_iter = list(sys.stdin)
+
+    actions = 0
+    skips = 0
+    for line in entries_iter:
+        line = line.strip()
+        if not line:
+            continue
+        entry = json.loads(line)
+        result = _validate_entry(entry)
+        out = {
+            "action": result["action"],
+            "reason": result.get("reason", ""),
+            "entry": _redact_entry(result["entry"]),
+        }
+        sys.stdout.write(json.dumps(out, sort_keys=True) + "\n")
+        if result["action"] == "remediate":
+            actions += 1
+        else:
+            skips += 1
+
+    sys.stderr.write(
+        json.dumps(
+            {
+                "event": "plan_summary",
+                "actions": actions,
+                "skips": skips,
+                "dry_run": True,
+            }
+        )
+        + "\n"
+    )
+    return 0
+
+
+if __name__ == "__main__":  # pragma: no cover
+    raise SystemExit(main())

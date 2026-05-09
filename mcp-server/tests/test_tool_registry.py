@@ -50,10 +50,17 @@ class TestDiscovery:
             "discover-cloud-control-evidence",
         }
 
-    def test_marks_remediation_skill_without_cli_entrypoint_as_unsupported(self):
+    def test_iam_departures_aws_resolves_top_level_handler_shim(self):
+        """Lock-in for #411: iam-departures-aws ships a top-level
+        src/handler.py shim that re-exports the parser CLI main(). All
+        76 SKILL.md files now resolve to a callable entrypoint."""
         skills = {skill.name: skill for skill in discover_skills(REPO_ROOT)}
-        assert skills["iam-departures-aws"].supported is False
-        assert skills["iam-departures-aws"].capability == "write-remediation"
+        skill = skills["iam-departures-aws"]
+        assert skill.supported is True
+        assert skill.capability == "write-remediation"
+        assert skill.entrypoint is not None
+        assert skill.entrypoint.name == "handler.py"
+        assert skill.entrypoint.parent.name == "src"
 
     def test_supports_standalone_handler_based_remediation_skill(self):
         skills = {skill.name: skill for skill in discover_skills(REPO_ROOT)}
@@ -83,7 +90,14 @@ class TestDiscovery:
         assert "discover-control-evidence" in tools
         assert "discover-cloud-control-evidence" in tools
         assert "remediate-mcp-tool-quarantine" in tools
-        assert "iam-departures-aws" not in tools
+        # iam-departures-{aws,azure-entra,gcp} are MCP-callable as of #411
+        # via top-level src/handler.py shims that delegate to the parser
+        # CLI main(). --apply remains refused at the parser boundary; the
+        # destructive runner pipeline is the only execution surface that
+        # mutates IAM state.
+        assert "iam-departures-aws" in tools
+        assert "iam-departures-azure-entra" in tools
+        assert "iam-departures-gcp" in tools
 
 
 class TestToolDefinition:

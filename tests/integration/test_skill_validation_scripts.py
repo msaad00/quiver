@@ -662,7 +662,7 @@ class TestAssumeRoleBoundaryGuardrail:
         skills = {skill.name: skill for skill in COMMON.discover_skill_contracts()}
         remediation = skills["iam-departures-aws"]
         assert remediation.approval_model == "human_required"
-        assert remediation.execution_modes == ("jit", "persistent")
+        assert remediation.execution_modes == ("jit", "ci", "mcp", "persistent")
         assert "writes-identity" in remediation.side_effects
         assert remediation.concurrency_safety == "operator_coordinated"
         assert remediation.caller_roles == ("security_engineer", "incident_responder")
