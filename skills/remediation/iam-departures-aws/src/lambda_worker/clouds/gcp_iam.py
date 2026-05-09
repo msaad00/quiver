@@ -202,7 +202,7 @@ def _remove_iam_bindings(principal: str, project_ids: list[str], step: int) -> R
             if modified:
                 from google.cloud import resourcemanager_v3
 
-                request = resourcemanager_v3.SetIamPolicyRequest(  # type: ignore[attr-defined]
+                request = resourcemanager_v3.SetIamPolicyRequest(
                     resource=resource,
                     policy=policy,
                 )
