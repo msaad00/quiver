@@ -48,6 +48,7 @@ jobs:
         with:
           python-version: "3.11"
           packages: >-
+            pyyaml
             boto3 defusedxml httpx
             google-cloud-compute google-cloud-iam google-cloud-resource-manager google-cloud-storage google-api-python-client
             azure-identity azure-mgmt-network azure-mgmt-resource azure-mgmt-storage
@@ -230,7 +231,7 @@ jobs:
       - uses: ./.github/actions/setup-python-deps
         with:
           python-version: "3.11"
-          packages: boto3 moto pytest pytest-cov defusedxml
+          packages: boto3 moto pytest pytest-cov defusedxml pyyaml
       - run: pytest tests/integration/ tests/conformance/ mcp-server/tests/ -v -o "testpaths=tests"
 
   coverage:
@@ -243,7 +244,7 @@ jobs:
           python-version: "3.11"
           packages: >-
             boto3 moto pytest pytest-cov
-            defusedxml
+            defusedxml pyyaml
             google-cloud-compute google-cloud-iam google-cloud-resource-manager google-cloud-storage
             azure-identity azure-mgmt-network azure-mgmt-resource azure-mgmt-storage
             google-api-python-client

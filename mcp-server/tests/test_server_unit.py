@@ -560,6 +560,33 @@ def test_call_tool_rejects_skill_outside_allowlist(monkeypatch):
         raise AssertionError("expected KeyError for allowlist-blocked tool")
 
 
+def test_handle_request_returns_distinct_timeout_error_code(monkeypatch):
+    """Timeouts must use ERROR_TOOL_TIMEOUT (-32001) so clients can distinguish
+    a slow skill from any other server-side error.
+    """
+    monkeypatch.setattr(MODULE, "tool_map", lambda: {"fake-skill": _FakeSkill(read_only=True)})
+    monkeypatch.setattr(MODULE, "build_command", lambda skill, args, output_format=None: ["python", "fake.py"])
+    monkeypatch.setattr(MODULE, "_emit_audit_event", lambda event: None)
+
+    def _raise_timeout(*args, **kwargs):
+        raise MODULE.subprocess.TimeoutExpired(cmd=["python", "fake.py"], timeout=42)
+
+    monkeypatch.setattr(MODULE.subprocess, "run", _raise_timeout)
+
+    response = MODULE._handle_request(
+        {
+            "jsonrpc": "2.0",
+            "id": 7,
+            "method": "tools/call",
+            "params": {"name": "fake-skill", "arguments": {"args": []}},
+        }
+    )
+
+    assert response["error"]["code"] == MODULE.ERROR_TOOL_TIMEOUT
+    assert response["error"]["code"] == -32001
+    assert "timed out" in response["error"]["message"]
+
+
 def test_runtime_telemetry_includes_env_correlation_id(monkeypatch, capsys):
     monkeypatch.setenv("SKILL_LOG_FORMAT", "json")
     monkeypatch.setenv("SKILL_CORRELATION_ID", "corr-123")

@@ -464,6 +464,9 @@ iam-departures = [
     { name = "httpx" },
     { name = "snowflake-connector-python" },
 ]
+mcp = [
+    { name = "pyyaml" },
+]
 
 [package.metadata]
 
@@ -499,6 +502,7 @@ iam-departures = [
     { name = "httpx", specifier = ">=0.27,<1" },
     { name = "snowflake-connector-python", specifier = ">=4.4.0,<5" },
 ]
+mcp = [{ name = "pyyaml", specifier = ">=6,<7" }]
 
 [[package]]
 name = "colorama"

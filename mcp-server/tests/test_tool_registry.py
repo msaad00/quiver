@@ -241,3 +241,68 @@ class TestMcpTimeoutParsing:
                 "make sure its SKILL.md declares the value explicitly and "
                 "that this test is updated to allowlist it"
             )
+
+
+class TestFrontmatterParsing:
+    def test_parses_quoted_value_with_colon(self):
+        frontmatter = (
+            'name: example-skill\n'
+            'description: "Detect: suspicious behavior in foo:bar streams"\n'
+            'license: Apache-2.0\n'
+        )
+        data = MODULE._parse_frontmatter(frontmatter)
+        assert data["description"] == "Detect: suspicious behavior in foo:bar streams"
+        assert data["name"] == "example-skill"
+
+    def test_parses_block_scalar_description(self):
+        frontmatter = (
+            'name: block-scalar-skill\n'
+            'description: >-\n'
+            '  this description spans\n'
+            '  multiple wrapped lines\n'
+            'license: Apache-2.0\n'
+        )
+        data = MODULE._parse_frontmatter(frontmatter)
+        assert "multiple wrapped lines" in data["description"]
+        assert data["name"] == "block-scalar-skill"
+
+    def test_parses_list_value_into_comma_string(self):
+        frontmatter = (
+            'name: list-skill\n'
+            'execution_modes:\n'
+            '  - jit\n'
+            '  - mcp\n'
+            '  - ci\n'
+        )
+        data = MODULE._parse_frontmatter(frontmatter)
+        assert data["execution_modes"] == "jit, mcp, ci"
+
+    def test_rejects_non_mapping_frontmatter(self):
+        try:
+            MODULE._parse_frontmatter("- just\n- a\n- list\n")
+        except ValueError as exc:
+            assert "must parse to a mapping" in str(exc)
+        else:
+            raise AssertionError("expected ValueError")
+
+
+class TestMinApproversParsing:
+    def test_missing_value_returns_none(self):
+        assert MODULE._parse_min_approvers(None, Path("/fake")) is None
+
+    def test_empty_value_returns_none(self):
+        assert MODULE._parse_min_approvers("", Path("/fake")) is None
+        assert MODULE._parse_min_approvers("   ", Path("/fake")) is None
+
+    def test_integer_value_parses(self):
+        assert MODULE._parse_min_approvers("2", Path("/fake")) == 2
+        assert MODULE._parse_min_approvers("0", Path("/fake")) == 0
+
+    def test_non_integer_value_errors_with_skill_path(self):
+        try:
+            MODULE._parse_min_approvers("two", Path("/fake/skill"))
+        except ValueError as exc:
+            assert "min_approvers must be an integer" in str(exc)
+            assert "/fake/skill" in str(exc)
+        else:
+            raise AssertionError("expected ValueError")

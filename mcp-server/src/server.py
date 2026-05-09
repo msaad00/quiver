@@ -29,6 +29,13 @@ PROTOCOL_VERSION = "2025-06-18"
 DEFAULT_TIMEOUT_SECONDS = 60
 ALLOWED_SKILLS_ENV = "CLOUD_SECURITY_MCP_ALLOWED_SKILLS"
 REQUIRE_CALLER_ALLOWED_SKILLS_ENV = "CLOUD_SECURITY_MCP_REQUIRE_CALLER_ALLOWED_SKILLS"
+
+# Server-defined JSON-RPC error codes (reserved range -32000..-32099 per spec).
+# Documented in docs/MCP_AUDIT_CONTRACT.md so clients can distinguish causes.
+ERROR_TOOL_TIMEOUT = -32001
+ERROR_TOOL_NOT_ALLOWED = -32002
+ERROR_APPROVAL_REQUIRED = -32003
+ERROR_TOOL_CRASHED = -32004
 SAFE_CHILD_ENV_VARS = (
     "HOME",
     "LANG",
@@ -485,7 +492,9 @@ def _handle_request(message: dict[str, Any]) -> dict[str, Any] | None:
         except ValueError as exc:
             return _error_response(request_id, -32602, str(exc))
         except subprocess.TimeoutExpired as exc:
-            return _error_response(request_id, -32000, f"tool timed out after {exc.timeout}s")
+            return _error_response(
+                request_id, ERROR_TOOL_TIMEOUT, f"tool timed out after {exc.timeout}s"
+            )
 
     return _error_response(request_id, -32601, f"method not found: {method}")
 

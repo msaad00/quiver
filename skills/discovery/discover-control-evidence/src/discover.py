@@ -11,6 +11,12 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
+REPO_ROOT = Path(__file__).resolve().parents[4]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
+from skills._shared.identity import VENDOR_NAME  # noqa: E402
+
 SKILL_NAME = "discover-control-evidence"
 SUPPORTED_FRAMEWORKS = ("pci", "soc2")
 SUPPORTED_OUTPUT_FORMATS = ("native", "ocsf-live-evidence")
@@ -379,7 +385,7 @@ def to_ocsf_live_evidence(evidence: dict[str, Any]) -> dict[str, Any]:
             "uid": evidence["evidence_id"],
             "product": {
                 "name": "cloud-ai-security-skills",
-                "vendor_name": "msaad00/cloud-ai-security-skills",
+                "vendor_name": VENDOR_NAME,
                 "feature": {"name": SKILL_NAME},
             },
             "profiles": ["cloud", "security_control"],

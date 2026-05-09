@@ -17,7 +17,6 @@ import argparse
 import hashlib
 import ipaddress
 import json
-import os
 import sys
 from bisect import bisect_left
 from datetime import datetime, timezone
@@ -28,12 +27,13 @@ REPO_ROOT = Path(__file__).resolve().parents[4]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
+from skills._shared.env import env_int  # noqa: E402
 from skills._shared.runtime_telemetry import emit_stderr_event  # noqa: E402
 
 SKILL_NAME = "detect-lateral-movement"
 OCSF_VERSION = "1.8.0"
 REPO_NAME = "cloud-ai-security-skills"
-REPO_VENDOR = "msaad00/cloud-ai-security-skills"
+from skills._shared.identity import VENDOR_NAME as REPO_VENDOR  # noqa: E402
 
 # Detection Finding (2004)
 FINDING_CLASS_UID = 2004
@@ -653,13 +653,7 @@ def detect(events: Iterable[dict[str, Any]], output_format: str = "ocsf") -> Ite
 
 
 def _env_int(name: str, default: int) -> int:
-    raw = os.environ.get(name)
-    if raw is None:
-        return default
-    try:
-        value = int(raw)
-    except ValueError:
-        return default
+    value = env_int(name, default, skill_name=SKILL_NAME)
     return value if value > 0 else default
 
 

@@ -20,7 +20,8 @@ SKILL_NAME = "detect-google-workspace-suspicious-login"
 OCSF_VERSION = "1.8.0"
 CANONICAL_VERSION = "2026-04"
 REPO_NAME = "cloud-ai-security-skills"
-REPO_VENDOR = "msaad00/cloud-ai-security-skills"
+from skills._shared.identity import VENDOR_NAME as REPO_VENDOR  # noqa: E402
+
 OUTPUT_FORMATS = ("ocsf", "native")
 
 WORKSPACE_INGEST_SKILL = "ingest-google-workspace-login-ocsf"

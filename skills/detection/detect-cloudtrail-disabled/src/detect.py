@@ -31,7 +31,7 @@ SKILL_NAME = "detect-cloudtrail-disabled"
 CANONICAL_VERSION = "2026-04"
 OCSF_VERSION = "1.8.0"
 REPO_NAME = "cloud-ai-security-skills"
-REPO_VENDOR = "msaad00/cloud-ai-security-skills"
+from skills._shared.identity import VENDOR_NAME as REPO_VENDOR  # noqa: E402
 
 FINDING_CLASS_UID = 2004
 FINDING_CLASS_NAME = "Detection Finding"

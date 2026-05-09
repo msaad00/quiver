@@ -21,6 +21,9 @@ dev = [
   "pytest-cov>=5,<8",
   "ruff>=0.6.9,<1",
 ]
+mcp = [
+  "pyyaml>=6,<7",
+]
 aws = [
   "boto3>=1.35,<2",
 ]

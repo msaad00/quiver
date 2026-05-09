@@ -23,6 +23,7 @@ REPO_ROOT = Path(__file__).resolve().parents[4]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
+from skills._shared.identity import VENDOR_NAME  # noqa: E402
 from skills._shared.runtime_telemetry import emit_stderr_event  # noqa: E402
 
 SKILL_NAME = "detect-container-escape-k8s"
@@ -416,7 +417,7 @@ def _render_ocsf_finding(native_finding: dict[str, Any]) -> dict[str, Any]:
             "uid": native_finding["event_uid"],
             "product": {
                 "name": "cloud-ai-security-skills",
-                "vendor_name": "msaad00/cloud-ai-security-skills",
+                "vendor_name": VENDOR_NAME,
                 "feature": {"name": SKILL_NAME},
             },
             "labels": ["detection-engineering", "kubernetes", "container-escape", native_finding["rule_name"]],

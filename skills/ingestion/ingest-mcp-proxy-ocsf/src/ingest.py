@@ -14,7 +14,14 @@ import hashlib
 import json
 import sys
 from datetime import datetime, timezone
+from pathlib import Path
 from typing import Any, Iterable
+
+REPO_ROOT = Path(__file__).resolve().parents[4]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
+from skills._shared.identity import VENDOR_NAME  # noqa: E402
 
 SKILL_NAME = "ingest-mcp-proxy-ocsf"
 OCSF_VERSION = "1.8.0"
@@ -165,7 +172,7 @@ def _render_ocsf_event(canonical: dict[str, Any]) -> dict[str, Any]:
             "profiles": [MCP_PROFILE],
             "product": {
                 "name": "cloud-ai-security-skills",
-                "vendor_name": "msaad00/cloud-ai-security-skills",
+                "vendor_name": VENDOR_NAME,
                 "feature": {"name": SKILL_NAME},
             },
             "labels": ["detection-engineering", "mcp", "ingest"],

@@ -25,6 +25,12 @@ from pathlib import Path
 from typing import Any
 from uuid import uuid4
 
+REPO_ROOT = Path(__file__).resolve().parents[4]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
+from skills._shared.identity import VENDOR_NAME  # noqa: E402
+
 SUPPORTED_OUTPUT_FORMATS = ("native", "ocsf-cloud-resources-inventory")
 
 # ═══════════════════════════════════════════════════════════════════════════
@@ -828,7 +834,7 @@ def to_ocsf_cloud_resources_inventory(graph: EnvironmentGraph) -> dict[str, Any]
             "uid": _metadata_uid(graph, inventory_nodes),
             "product": {
                 "name": "cloud-ai-security-skills",
-                "vendor_name": "msaad00/cloud-ai-security-skills",
+                "vendor_name": VENDOR_NAME,
                 "feature": {"name": "discover-environment"},
             },
         },

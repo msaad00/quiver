@@ -88,6 +88,12 @@ IAM departures planning and source adapters:
 uv sync --group iam_departures
 ```
 
+MCP stdio wrapper (`mcp-server/src/server.py`):
+
+```bash
+uv sync --group mcp
+```
+
 Development and validation:
 
 ```bash

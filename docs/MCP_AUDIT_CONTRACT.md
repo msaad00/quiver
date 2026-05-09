@@ -198,3 +198,20 @@ The wrapper should preserve this audit contract across supported tool calls:
 
 If the audit shape changes, update this document and the relevant wrapper tests
 in the same change.
+
+## JSON-RPC Error Codes
+
+The wrapper uses the server-defined range (-32000..-32099) so clients can tell
+operational failures apart from each other. Standard JSON-RPC codes (-32600
+parse error, -32601 method/tool not found, -32602 invalid params) keep their
+spec meaning.
+
+| Code | Constant | Cause |
+|------|----------|-------|
+| `-32001` | `ERROR_TOOL_TIMEOUT` | skill subprocess exceeded the resolved timeout |
+| `-32002` | `ERROR_TOOL_NOT_ALLOWED` | reserved for future explicit allowlist denials |
+| `-32003` | `ERROR_APPROVAL_REQUIRED` | reserved for future approval-context errors |
+| `-32004` | `ERROR_TOOL_CRASHED` | reserved for future non-timeout subprocess failures |
+
+Constants live in `mcp-server/src/server.py`. Update this table whenever a new
+code is reserved or a placeholder is wired in.

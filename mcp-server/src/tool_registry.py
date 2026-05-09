@@ -4,6 +4,9 @@ import re
 import sys
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Any
+
+import yaml
 
 FRONTMATTER_RE = re.compile(r"\A---\n(.*?)\n---\n", re.DOTALL)
 
@@ -67,47 +70,38 @@ def _extract_frontmatter(skill_md: Path) -> str:
     return match.group(1)
 
 
+def _flatten_value(value: Any) -> str:
+    """Render a YAML scalar/list/dict back into the string shape the rest of the
+    registry consumes. Lists are joined with commas (matches `_parse_modes`),
+    folded multi-line scalars collapse into a single space-separated string.
+    """
+    if value is None:
+        return ""
+    if isinstance(value, list):
+        return ", ".join(_flatten_value(item) for item in value if item not in (None, ""))
+    if isinstance(value, dict):
+        return ", ".join(f"{k}={_flatten_value(v)}" for k, v in value.items())
+    if isinstance(value, bool):
+        return "true" if value else "false"
+    return " ".join(str(value).split())
+
+
 def _parse_frontmatter(frontmatter: str) -> dict[str, str]:
-    data: dict[str, str] = {}
-    lines = frontmatter.splitlines()
-    idx = 0
+    """Parse SKILL.md frontmatter using PyYAML.
 
-    while idx < len(lines):
-        line = lines[idx]
-        if not line.strip():
-            idx += 1
-            continue
-        if line.startswith(" "):
-            idx += 1
-            continue
-        if ":" not in line:
-            idx += 1
-            continue
-
-        key, raw_value = line.split(":", 1)
-        key = key.strip()
-        value = raw_value.strip()
-
-        if not value or value in {">-", "|", ">"}:
-            idx += 1
-            block: list[str] = []
-            while idx < len(lines):
-                child = lines[idx]
-                if child.startswith("  "):
-                    block.append(child.strip())
-                    idx += 1
-                    continue
-                if not child.strip():
-                    idx += 1
-                    continue
-                break
-            data[key] = " ".join(part for part in block if part)
-            continue
-
-        data[key] = value.strip("\"'")
-        idx += 1
-
-    return data
+    Historically this was a hand-rolled splitter that failed on quoted values
+    containing colons and on standard YAML constructs. `yaml.safe_load` handles
+    the full subset we use; `_flatten_value` collapses scalars/lists into the
+    string shape the rest of the registry already expects.
+    """
+    raw = yaml.safe_load(frontmatter)
+    if raw is None:
+        return {}
+    if not isinstance(raw, dict):
+        raise ValueError(
+            f"SKILL.md frontmatter must parse to a mapping, got {type(raw).__name__}"
+        )
+    return {str(key): _flatten_value(value) for key, value in raw.items()}
 
 
 def _derive_capability(skill_dir: Path, metadata: dict[str, str]) -> str:
@@ -158,11 +152,28 @@ def discover_skills(root: Path | None = None) -> list[SkillSpec]:
                 network_egress=_parse_modes(metadata.get("network_egress")),
                 caller_roles=_parse_modes(metadata.get("caller_roles")),
                 approver_roles=_parse_modes(metadata.get("approver_roles")),
-                min_approvers=int(metadata["min_approvers"]) if metadata.get("min_approvers") else None,
+                min_approvers=_parse_min_approvers(metadata.get("min_approvers"), skill_dir),
                 mcp_timeout_seconds=_parse_mcp_timeout(metadata.get("mcp_timeout_seconds"), skill_dir),
             )
         )
     return specs
+
+
+def _parse_min_approvers(raw: str | None, skill_dir: Path) -> int | None:
+    """Defensive parse for `min_approvers`. Missing / empty -> None.
+
+    Surfaces a clear error if a SKILL.md author writes a non-integer value.
+    Without this, a malformed value crashed `discover_skills` at import time
+    and made the whole MCP server fail to start.
+    """
+    if raw is None or not str(raw).strip():
+        return None
+    try:
+        return int(str(raw).strip())
+    except ValueError as exc:
+        raise ValueError(
+            f"{skill_dir}/SKILL.md: min_approvers must be an integer, got {raw!r}"
+        ) from exc
 
 
 def _parse_mcp_timeout(raw: str | None, skill_dir: Path) -> int | None:
