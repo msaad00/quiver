@@ -57,6 +57,7 @@ jobs:
       - run: python scripts/validate_skill_integrity.py
       - run: python scripts/validate_skill_runtime.py
       - run: python scripts/validate_skill_structure.py
+      - run: python scripts/validate_presets.py
       - run: python scripts/validate_dependency_consistency.py
       - run: python scripts/validate_framework_coverage.py
       - run: python scripts/validate_ocsf_metadata.py

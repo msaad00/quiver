@@ -1,0 +1,12 @@
+{
+  "name": "incident-response",
+  "description": "End-to-end Okta MFA-fatigue response: detect, gather control evidence, kill the session under HITL approval. The session-kill is the only write path; --apply requires _approval_context with approver_email + ticket_id + min_approvers >= 1. See examples/workflows/incident-response-okta-mfa-fatigue.md for the matching workflow doc.",
+  "workflow": "examples/workflows/incident-response-okta-mfa-fatigue.md",
+  "allowed_skills": [
+    "ingest-okta-system-log-ocsf",
+    "detect-okta-mfa-fatigue",
+    "discover-control-evidence",
+    "remediate-okta-session-kill",
+    "convert-ocsf-to-sarif"
+  ]
+}

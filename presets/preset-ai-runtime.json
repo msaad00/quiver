@@ -1,0 +1,15 @@
+{
+  "name": "ai-runtime",
+  "description": "Runtime guardrails for an AI agent platform: ingest MCP-proxy traffic, detect prompt injection / tool drift / system-prompt extraction / tool-output exfiltration / agent credential leak, and quarantine the offending tool under HITL approval. Aligned with MITRE ATLAS and the OWASP LLM / OWASP MCP Top 10. The MCP tool quarantine is the only write path; --apply requires _approval_context with min_approvers >= 2.",
+  "allowed_skills": [
+    "ingest-mcp-proxy-ocsf",
+    "detect-prompt-injection-mcp-proxy",
+    "detect-mcp-tool-drift",
+    "detect-system-prompt-extraction",
+    "detect-tool-output-exfiltration-instructions",
+    "detect-tool-output-policy-bypass",
+    "detect-agent-credential-leak-mcp",
+    "remediate-mcp-tool-quarantine",
+    "convert-ocsf-to-sarif"
+  ]
+}

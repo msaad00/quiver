@@ -113,7 +113,13 @@ Per-client setup docs under [`docs/integrations/`](docs/integrations/). Every cl
 | Zed | [`docs/integrations/zed.md`](docs/integrations/zed.md) |
 | Continue / Cody / generic | [`docs/integrations/ide-agents.md`](docs/integrations/ide-agents.md) |
 
-Least-privilege scoping across every client via the `CLOUD_SECURITY_MCP_ALLOWED_SKILLS` env var (comma-separated skill names — unlisted skills are not registered as tools).
+Least-privilege scoping across every client via the `CLOUD_SECURITY_MCP_ALLOWED_SKILLS` env var (comma-separated skill names — unlisted skills are not registered as tools). Pre-canned allowlists for the four shipped use-cases live under [`presets/`](presets/) (CSPM-readonly · detection-only · incident-response · AI-runtime); load one and the agent's tool surface is scoped to that workflow's atoms only.
+
+### Skill composition · workflows · presets
+
+Atomic skills compose into runnable security operations through documented **workflows** (markdown specs under [`examples/workflows/`](examples/workflows/)) plus matching **presets** (named MCP allowlists under [`presets/`](presets/)). Each workflow declares its trigger, ordered steps, HITL gate, and audit-chain join key — no hidden state inside a "parent" wrapper, every atom remains independently runnable from CLI / CI / MCP / runner.
+
+Read [`docs/SKILL_COMPOSITION.md`](docs/SKILL_COMPOSITION.md) for the model, including why the repo deliberately avoids nested sub-skill directories.
 
 <details>
 <summary><b>Start here</b> — pick the row that matches the job</summary>

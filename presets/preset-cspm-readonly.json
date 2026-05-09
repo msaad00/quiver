@@ -1,0 +1,15 @@
+{
+  "name": "cspm-readonly",
+  "description": "Continuous CSPM scanning and posture review across AWS, GCP, Azure, Kubernetes, container runtime, GPU clusters, and model-serving endpoints. Read-only — no remediation, no writes.",
+  "allowed_skills": [
+    "cspm-aws-cis-benchmark",
+    "cspm-gcp-cis-benchmark",
+    "cspm-azure-cis-benchmark",
+    "k8s-security-benchmark",
+    "container-security",
+    "gpu-cluster-security",
+    "model-serving-security",
+    "convert-ocsf-to-sarif",
+    "convert-ocsf-to-mermaid-attack-flow"
+  ]
+}
