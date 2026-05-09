@@ -16,7 +16,7 @@ description: >-
   the audit table by hand. Do NOT use for access provisioning.
 license: Apache-2.0
 approval_model: human_required
-execution_modes: jit, persistent
+execution_modes: jit, ci, mcp, persistent
 side_effects: writes-identity, writes-storage, writes-database, writes-audit
 input_formats: raw, canonical
 output_formats: native
