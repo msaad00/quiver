@@ -106,16 +106,26 @@ class TestToolDefinition:
         tool = tool_definition(skill)
         assert tool["name"] == "ingest-cloudtrail-ocsf"
         assert "CloudTrail" in tool["description"]
-        assert tool["annotations"]["readOnlyHint"] is True
         assert tool["inputSchema"]["properties"]["args"]["type"] == "array"
         assert tool["inputSchema"]["properties"]["output_format"]["enum"] == ["ocsf", "native"]
-        assert "Approval model: none." in tool["description"]
-        assert "Execution modes: jit, ci, mcp, persistent." in tool["description"]
-        assert "Side effects: none." in tool["description"]
-        assert "Network egress: none." in tool["description"]
-        assert "Caller roles: unspecified." in tool["description"]
-        assert "Approver roles: unspecified." in tool["description"]
-        assert "Min approvers: unspecified." in tool["description"]
+        # Spec-defined hints stay as before for clients that already filter on them.
+        assert tool["annotations"]["readOnlyHint"] is True
+        assert tool["annotations"]["destructiveHint"] is False
+        assert tool["annotations"]["idempotentHint"] is True
+        # Repo-defined structured metadata replaces the legacy description blob.
+        ann = tool["annotations"]
+        assert ann["category"] == "ingestion"
+        assert ann["capability"] == "read-only"
+        assert ann["approvalModel"] == "none"
+        assert ann["executionModes"] == ["jit", "ci", "mcp", "persistent"]
+        assert ann["sideEffects"] == ["none"]
+        assert ann["inputFormats"] == ["raw"]
+        assert ann["outputFormats"] == ["ocsf", "native"]
+        assert ann["networkEgress"] == []
+        assert ann["callerRoles"] == []
+        assert ann["approverRoles"] == []
+        assert ann["minApprovers"] == 0
+        # SkillSpec invariants unchanged.
         assert skill.input_formats == ("raw",)
         assert skill.output_formats == ("ocsf", "native")
         assert skill.approval_model == "none"

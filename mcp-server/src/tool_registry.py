@@ -225,7 +225,11 @@ def tool_input_schema(skill: SkillSpec) -> dict[str, object]:
                     "description": "Optional per-caller skill allowlist; intersects with operator allowlists.",
                 },
             },
-            "additionalProperties": True,
+            # Strict: a typo on `approver_email` -> `approver_emial` lands in
+            # the audit event as an empty approver list and the wrapper still
+            # computes min_approvers against the typo'd field. Reject unknown
+            # keys at the schema boundary instead.
+            "additionalProperties": False,
         },
         "_approval_context": {
             "type": "object",
@@ -242,7 +246,7 @@ def tool_input_schema(skill: SkillSpec) -> dict[str, object]:
                 "approver_ids": {"type": "array", "items": {"type": "string"}},
                 "approver_emails": {"type": "array", "items": {"type": "string"}},
             },
-            "additionalProperties": True,
+            "additionalProperties": False,
         },
     }
     if skill.output_formats:
@@ -259,26 +263,45 @@ def tool_input_schema(skill: SkillSpec) -> dict[str, object]:
 
 
 def tool_definition(skill: SkillSpec) -> dict[str, object]:
-    mode_list = ", ".join(skill.execution_modes) if skill.execution_modes else "unspecified"
-    effect_list = ", ".join(skill.side_effects) if skill.side_effects else "unspecified"
-    egress_list = ", ".join(skill.network_egress) if skill.network_egress else "none"
-    caller_roles = ", ".join(skill.caller_roles) if skill.caller_roles else "unspecified"
-    approver_roles = ", ".join(skill.approver_roles) if skill.approver_roles else "unspecified"
-    min_approvers = skill.min_approvers if skill.min_approvers is not None else "unspecified"
+    """Build a tool definition for `tools/list`.
+
+    The MCP spec lets servers attach arbitrary keys under `annotations`. The
+    SKILL.md frontmatter carries structured fields (approval model, execution
+    modes, side effects, network egress, caller / approver roles, min
+    approvers) that an agent should be able to filter on programmatically
+    rather than parse out of a free-text description. Those fields live in
+    `annotations` from this PR forward; the description stays short. Legacy
+    `readOnlyHint` / `destructiveHint` / `idempotentHint` are kept for
+    spec-compliant clients that already read them.
+    """
+    description = (
+        skill.description.strip()
+        if skill.description
+        else f"Skill `{skill.name}` ({skill.category} layer)."
+    )
     tool: dict[str, object] = {
         "name": skill.name,
-        "description": (
-            f"{skill.description} Approval model: {skill.approval_model or 'unspecified'}. "
-            f"Execution modes: {mode_list}. Side effects: {effect_list}. "
-            f"Network egress: {egress_list}. "
-            f"Caller roles: {caller_roles}. Approver roles: {approver_roles}. "
-            f"Min approvers: {min_approvers}."
-        ),
+        "description": description,
         "inputSchema": tool_input_schema(skill),
         "annotations": {
+            # Spec-defined hints — kept for clients that already filter on them.
             "readOnlyHint": skill.read_only,
             "destructiveHint": not skill.read_only,
             "idempotentHint": skill.read_only,
+            # Repo-defined structured metadata. Documented in
+            # docs/MCP_AUDIT_CONTRACT.md so tool-using clients can filter
+            # without reading prose.
+            "category": skill.category,
+            "capability": skill.capability,
+            "approvalModel": skill.approval_model or "none",
+            "executionModes": list(skill.execution_modes),
+            "sideEffects": list(skill.side_effects),
+            "inputFormats": list(skill.input_formats),
+            "outputFormats": list(skill.output_formats),
+            "networkEgress": list(skill.network_egress),
+            "callerRoles": list(skill.caller_roles),
+            "approverRoles": list(skill.approver_roles),
+            "minApprovers": skill.min_approvers if skill.min_approvers is not None else 0,
         },
     }
     return tool

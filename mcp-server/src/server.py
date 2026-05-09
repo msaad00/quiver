@@ -239,15 +239,53 @@ def _validate_output_format(raw_output_format: Any) -> str | None:
     return raw_output_format
 
 
+_CALLER_CONTEXT_KEYS = frozenset({
+    "user_id",
+    "email",
+    "session_id",
+    "roles",
+    "allowed_skills",
+})
+
+_APPROVAL_CONTEXT_KEYS = frozenset({
+    "approver_id",
+    "approver_email",
+    "ticket_id",
+    "approval_timestamp",
+    "approver_ids",
+    "approver_emails",
+})
+
+_CONTEXT_ALLOWED_KEYS = {
+    "_caller_context": _CALLER_CONTEXT_KEYS,
+    "_approval_context": _APPROVAL_CONTEXT_KEYS,
+}
+
+
 def _validate_context(raw_context: Any, field_name: str) -> dict[str, Any] | None:
+    """Validate `_caller_context` / `_approval_context` against a closed key
+    set.
+
+    The MCP `inputSchema` for these objects is `additionalProperties: false`,
+    but a permissive client may still send the request — the wrapper must be
+    the second gate. A typo like `approver_emial` was previously accepted,
+    landed in the audit record as an empty approver list, and let the
+    `min_approvers` check incorrectly succeed.
+    """
     if raw_context is None:
         return None
     if not isinstance(raw_context, dict):
         raise ValueError(f"`{field_name}` must be an object")
+    allowed = _CONTEXT_ALLOWED_KEYS.get(field_name)
     validated: dict[str, Any] = {}
     for key, value in raw_context.items():
         if not isinstance(key, str):
             raise ValueError(f"`{field_name}` keys must be strings")
+        if allowed is not None and key not in allowed:
+            raise ValueError(
+                f"`{field_name}.{key}` is not a recognised field; "
+                f"allowed keys are {sorted(allowed)}"
+            )
         if isinstance(value, str):
             validated[key] = value
             continue

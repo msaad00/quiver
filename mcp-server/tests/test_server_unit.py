@@ -54,6 +54,7 @@ class _FakeSkill:
         self.min_approvers = min_approvers
         self.mcp_timeout_seconds = mcp_timeout_seconds
         self.entrypoint = None if entrypoint_name is None else Path(entrypoint_name)
+        self.input_formats = ()
         self.output_formats = ()
 
 

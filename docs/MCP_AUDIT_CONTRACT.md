@@ -212,6 +212,32 @@ Operationally, this means:
 - operator-facing diagnostics should stay out of the audit record unless they
   are already safe to publish as metadata
 
+## Tool annotation contract
+
+`tools/list` returns each tool with a short description and a structured
+`annotations` object. Agentic clients should filter on `annotations`
+rather than parse the description.
+
+| Annotation key | Type | Source | Meaning |
+|---|---|---|---|
+| `readOnlyHint` | bool | derived | matches MCP spec — true when the skill never writes |
+| `destructiveHint` | bool | derived | inverse of `readOnlyHint` |
+| `idempotentHint` | bool | derived | matches MCP spec — true when re-running converges |
+| `category` | string | SKILL.md path | one of `ingestion`, `discovery`, `detection`, `evaluation`, `remediation`, `view`, `output` |
+| `capability` | string | frontmatter | `read-only`, `write-remediation`, `write-sink`, `write-runner` |
+| `approvalModel` | string | frontmatter | `none`, `human_required`, etc. |
+| `executionModes` | string[] | frontmatter | `jit`, `ci`, `mcp`, `persistent`, … |
+| `sideEffects` | string[] | frontmatter | `none`, `writes-cloud`, `writes-identity`, `writes-database`, `writes-storage`, `writes-audit` |
+| `inputFormats` / `outputFormats` | string[] | frontmatter | `raw`, `canonical`, `ocsf`, `native`, `bridge` |
+| `networkEgress` | string[] | frontmatter | hostnames or `*.glob.example` patterns the skill is allowed to reach |
+| `callerRoles` / `approverRoles` | string[] | frontmatter | RBAC vocabulary |
+| `minApprovers` | int | frontmatter | 0 when not set; > 0 enforces `_approval_context` |
+
+`additionalProperties: false` on `_caller_context` and `_approval_context`
+in the input schema; the wrapper enforces the same closed key set on
+`tools/call` so a typo on `approver_email` -> `approver_emial` is rejected
+with `-32602` instead of silently dropping into an empty approver list.
+
 ## Reliability Expectations
 
 The wrapper should preserve this audit contract across supported tool calls:
