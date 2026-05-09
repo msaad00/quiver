@@ -1,4 +1,4 @@
-![cloud-ai-security-skills — production-grade security skills for cloud and AI systems. 76 shipped skill bundles. OCSF 1.8 on the wire. 91 CIS and Kubernetes benchmark checks. MITRE ATT&CK tagged detections. MCP audited tool calls. HITL dual-audited remediation. Runs against AWS, GCP, Azure, Kubernetes, Okta, Microsoft Entra, Google Workspace, Snowflake, Databricks, ClickHouse, and MCP proxy. Access surfaces: CLI, CI, MCP, and persistent cloud runners.](docs/images/hero-banner.svg)
+![Agentic security skills for cloud and AI — 76 shipped skill bundles. OCSF 1.8 on the wire. 91 CIS and Kubernetes benchmark checks. Framework coverage across MITRE ATT&CK, MITRE ATLAS, OWASP Top 10, and OWASP LLM Top 10. MCP-audited tool calls. HITL dual-audited remediation. Runs against AWS, GCP, Azure, Kubernetes, Okta, Microsoft Entra, Google Workspace, Snowflake, Databricks, ClickHouse, and MCP proxy. Access surfaces: CLI, CI, MCP, and persistent cloud runners.](docs/images/hero-banner.svg)
 
 <p align="center">
   <a href="https://github.com/msaad00/cloud-ai-security-skills/actions/workflows/ci.yml?query=branch%3Amain"><img alt="CI" src="https://github.com/msaad00/cloud-ai-security-skills/actions/workflows/ci.yml/badge.svg?branch=main"></a>
@@ -16,7 +16,11 @@
 
 ## What this repo gives you
 
-**76 shipped skill bundles** that turn raw cloud, identity, Kubernetes, and MCP signals into stable, standards-aligned findings — plus twelve guarded write paths spanning AWS/GCP/Azure IAM departures, AWS/GCP/Azure network revoke, Okta, Workspace, Entra SP, K8s quarantine, K8s RBAC, and MCP tools. Each skill is a self-contained `SKILL.md + src/ + tests/` bundle that runs unchanged from the CLI, CI, MCP, or a persistent cloud runner.
+**76 production-grade skill bundles** for cloud and AI security. Each one normalizes raw cloud, identity, Kubernetes, or MCP signal into a standards-aligned finding — OCSF 1.8 on the wire where it matters, native JSONL where state and audit matter more.
+
+Twelve of those skills are **guarded write paths**: IAM departures across AWS, GCP, and Azure Entra; network revoke on AWS, GCP, and Azure; Okta and Workspace session kill; Entra service-principal credential revoke; Kubernetes quarantine and RBAC revoke; MCP tool quarantine. Every write is dry-run-first, HITL-gated, and dual-audited.
+
+The skill contract is the same everywhere: one `SKILL.md` + `src/` + `tests/` bundle that runs unchanged from the **CLI**, from **CI**, behind an **MCP** wrapper for any agentic client, or inside a **persistent cloud runner**. No fork in behavior, no parallel codepaths, no per-surface drift.
 
 | Layer | Count | Purpose | Output |
 |---|---:|---|---|
@@ -30,6 +34,30 @@
 | **Sources** | 3 | warehouse query adapters (S3 Select, Snowflake, Databricks) | JSONL pass-through |
 
 **Total: 76 shipped skills.**
+
+## Quickstart
+
+```bash
+# 1 · Clone a tagged release
+git clone --branch v0.8.1 https://github.com/msaad00/cloud-ai-security-skills.git
+cd cloud-ai-security-skills
+
+# 2 · Install only the deps the skills you'll run need
+uv sync --group dev --extra aws --extra k8s        # or `--extra gcp`, `--extra azure`, …
+
+# 3 · Run a detection on a captured fixture (no cloud creds needed)
+python skills/ingestion/ingest-cloudtrail-ocsf/src/ingest.py \
+       skills/detection-engineering/golden/cloudtrail_raw_sample.jsonl \
+  | python skills/detection/detect-aws-access-key-creation/src/detect.py \
+  | python skills/view/convert-ocsf-to-sarif/src/convert.py \
+  > findings.sarif
+
+# 4 · Wire the skills into any agent over MCP
+# (The repo ships .mcp.json — Claude Code picks it up automatically.
+#  For Claude Desktop, Cursor, Windsurf, Codex, Cortex, Zed, see docs/integrations/.)
+```
+
+Each surface (CLI, CI, MCP, runners) is just a transport — the same `SKILL.md + src/ + tests/` bundle runs unchanged behind it.
 
 <details>
 <summary><b>Why different layers use different formats</b> — OCSF where interop matters, native where state, evidence, and audit matter more</summary>
@@ -52,15 +80,13 @@ Full discussion: [docs/ARCHITECTURE.md §3 Layer model + §6 Wire contract](docs
 
 ## Architecture
 
-External signals enter through two intake layers, pass through two analyze layers, and exit through two act layers, persisting through one output layer. The README now splits the picture into two simpler visuals so the layer flow and runtime story stay readable on GitHub.
+Two intake layers (ingest, discover) → two analyze layers (detect, evaluate) → two act layers (remediate, view) → one persist layer (output). MCP, CLI, CI, and cloud runners all invoke the same skill bundle — the surface is transport, not behavior.
 
 ![Clean architecture layers diagram — signals feed intake, analyze, act, and persist stages across the seven shipped skill layers.](docs/images/architecture-layers.svg)
 
 ![Clean runtime surfaces diagram — MCP, CLI, CI, and cloud runners all invoke the same shared skill bundle.](docs/images/runtime-surfaces.svg)
 
-Full contract: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
-
-For UI-only audit evidence and screenshot-backed control capture, see the design note in [docs/COMPLIANCE_EVIDENCE_CAPTURE.md](docs/COMPLIANCE_EVIDENCE_CAPTURE.md). The repo direction there is export-first, screenshot-when-necessary.
+Deeper reads: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) · [docs/SKILL_CONTRACT.md](docs/SKILL_CONTRACT.md) · [docs/COMPLIANCE_EVIDENCE_CAPTURE.md](docs/COMPLIANCE_EVIDENCE_CAPTURE.md).
 
 ## Agent and runtime integrations
 
