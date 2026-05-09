@@ -66,7 +66,12 @@ class TestMcpServer:
             assert "detect-google-workspace-suspicious-login" in names
             assert "model-serving-security" in names
             assert "remediate-mcp-tool-quarantine" in names
-            assert "iam-departures-aws" not in names
+            # iam-departures-{aws,azure-entra,gcp} are exposed via top-level
+            # src/handler.py shims as of #411. --apply still refuses on
+            # this surface; the destructive path is the deployed runner.
+            assert "iam-departures-aws" in names
+            assert "iam-departures-azure-entra" in names
+            assert "iam-departures-gcp" in names
         finally:
             proc.terminate()
             proc.wait(timeout=5)
