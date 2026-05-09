@@ -27,6 +27,10 @@ Read next:
 - [`azure-blob-eventgrid-detect`](azure-blob-eventgrid-detect/): Blob create ->
   Event Grid -> ingest queue -> ingest handler -> detect queue -> detect
   handler -> Table Storage dedupe -> Service Bus topic
+- [`webhook-receiver`](webhook-receiver/): vendor-neutral HTTP receiver →
+  any-source POST → shipped ingest skill → fan-out to S3 / Snowflake /
+  ClickHouse sinks. Default-deny routing, HMAC + bearer auth, single-process
+  FastAPI app deployable on App Runner / Cloud Run / Container Apps / Kubernetes.
 
 This is a reference template, not a multi-tenant managed service. Operators still
 own packaging, deployment, sink wiring, IAM review, and environment-specific
