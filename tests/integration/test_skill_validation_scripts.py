@@ -563,71 +563,78 @@ class TestAssumeRoleBoundaryGuardrail:
         assert OCSF_METADATA.main() == 0
 
     def test_test_coverage_validator_passes(self, tmp_path: Path):
+        # Synthetic report: every layer in LAYER_FLOORS gets a class whose hit
+        # rate sits comfortably above its floor (90% for _shared, 70% for
+        # remediation, 80% for the rest). If a future PR adds a new layer
+        # floor, add a corresponding row here so the test keeps reflecting
+        # what a clean run looks like.
         report = tmp_path / "coverage.xml"
         report.write_text(
-            """<?xml version="1.0" ?>
-<coverage line-rate="0.82">
-  <packages>
-    <package name="skills">
-      <classes>
-        <class filename="skills/detection/example/src/detect.py">
-          <lines>
-            <line number="1" hits="1" />
-            <line number="2" hits="1" />
-            <line number="3" hits="1" />
-            <line number="4" hits="1" />
-            <line number="5" hits="0" />
-          </lines>
-        </class>
-        <class filename="skills/evaluation/example/src/checks.py">
-          <lines>
-            <line number="1" hits="1" />
-            <line number="2" hits="1" />
-            <line number="3" hits="1" />
-            <line number="4" hits="0" />
-            <line number="5" hits="0" />
-          </lines>
-        </class>
-      </classes>
-    </package>
-  </packages>
-</coverage>
-""",
+            self._synthetic_coverage_xml(
+                layers={
+                    "_shared": (95, 100),
+                    "detection": (85, 100),
+                    "discovery": (85, 100),
+                    "evaluation": (85, 100),
+                    "ingestion": (85, 100),
+                    "output": (85, 100),
+                    "remediation": (75, 100),
+                    "view": (85, 100),
+                },
+                overall_line_rate=0.86,
+            ),
             encoding="utf-8",
         )
         assert TEST_COVERAGE.main([str(report)]) == 0
 
+    @staticmethod
+    def _synthetic_coverage_xml(
+        *, layers: dict[str, tuple[int, int]], overall_line_rate: float
+    ) -> str:
+        """Build a minimal coverage.xml the validator can parse, with one
+        class per layer whose hit/total ratio matches the provided tuple."""
+        class_blocks: list[str] = []
+        for layer, (hit, total) in layers.items():
+            lines = "\n            ".join(
+                f'<line number="{i + 1}" hits="{1 if i < hit else 0}" />'
+                for i in range(total)
+            )
+            class_blocks.append(
+                f'        <class filename="skills/{layer}/example/src/example.py">\n'
+                f'          <lines>\n            {lines}\n          </lines>\n'
+                f'        </class>'
+            )
+        joined = "\n".join(class_blocks)
+        return (
+            f'<?xml version="1.0" ?>\n'
+            f'<coverage line-rate="{overall_line_rate}">\n'
+            f'  <packages>\n'
+            f'    <package name="skills">\n'
+            f'      <classes>\n{joined}\n      </classes>\n'
+            f'    </package>\n'
+            f'  </packages>\n'
+            f'</coverage>\n'
+        )
+
     def test_test_coverage_validator_fails_low_detection_floor(self, tmp_path: Path):
+        # Same shape as the passing fixture but `detection` drops to 60% —
+        # below its 80% floor. The other layers still pass so we isolate the
+        # failure mode to the floor we're testing.
         report = tmp_path / "coverage-low.xml"
         report.write_text(
-            """<?xml version="1.0" ?>
-<coverage line-rate="0.82">
-  <packages>
-    <package name="skills">
-      <classes>
-        <class filename="skills/detection/example/src/detect.py">
-          <lines>
-            <line number="1" hits="1" />
-            <line number="2" hits="1" />
-            <line number="3" hits="1" />
-            <line number="4" hits="0" />
-            <line number="5" hits="0" />
-          </lines>
-        </class>
-        <class filename="skills/evaluation/example/src/checks.py">
-          <lines>
-            <line number="1" hits="1" />
-            <line number="2" hits="1" />
-            <line number="3" hits="1" />
-            <line number="4" hits="0" />
-            <line number="5" hits="0" />
-          </lines>
-        </class>
-      </classes>
-    </package>
-  </packages>
-</coverage>
-""",
+            self._synthetic_coverage_xml(
+                layers={
+                    "_shared": (95, 100),
+                    "detection": (60, 100),
+                    "discovery": (85, 100),
+                    "evaluation": (85, 100),
+                    "ingestion": (85, 100),
+                    "output": (85, 100),
+                    "remediation": (75, 100),
+                    "view": (85, 100),
+                },
+                overall_line_rate=0.85,
+            ),
             encoding="utf-8",
         )
         assert TEST_COVERAGE.main([str(report)]) == 1

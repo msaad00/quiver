@@ -47,9 +47,15 @@ jobs:
       - uses: ./.github/actions/setup-python-deps
         with:
           python-version: "3.11"
-          packages: pyyaml
+          packages: >-
+            pyyaml
+            boto3 defusedxml httpx
+            google-cloud-compute google-cloud-iam google-cloud-resource-manager google-cloud-storage google-api-python-client
+            azure-identity azure-mgmt-network azure-mgmt-resource azure-mgmt-storage
+            clickhouse-connect databricks-sql-connector snowflake-connector-python
       - run: python scripts/validate_skill_contract.py
       - run: python scripts/validate_skill_integrity.py
+      - run: python scripts/validate_skill_runtime.py
       - run: python scripts/validate_dependency_consistency.py
       - run: python scripts/validate_framework_coverage.py
       - run: python scripts/validate_ocsf_metadata.py

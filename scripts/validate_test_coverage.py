@@ -16,10 +16,19 @@ except ModuleNotFoundError:  # pragma: no cover - exercised when dev deps not in
 
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_XML = ROOT / "coverage.xml"
-OVERALL_FLOOR = 70.0
+OVERALL_FLOOR = 80.0
+# Per-layer floors set ~5pp below observed coverage on 2026-04-28 so honest
+# refactors have headroom without leaking real regressions. Bump these as
+# coverage climbs; never lower without an issue documenting why.
 LAYER_FLOORS = {
+    "_shared": 90.0,
     "detection": 80.0,
-    "evaluation": 60.0,
+    "discovery": 80.0,
+    "evaluation": 80.0,
+    "ingestion": 80.0,
+    "output": 80.0,
+    "remediation": 70.0,
+    "view": 80.0,
 }
 
 
