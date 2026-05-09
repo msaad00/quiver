@@ -15,6 +15,7 @@ CURRENT_DIR = Path(__file__).resolve().parent
 if str(CURRENT_DIR) not in sys.path:
     sys.path.insert(0, str(CURRENT_DIR))
 
+from audit_sink import AuditSink, sink_from_env  # noqa: E402
 from tool_registry import (  # noqa: E402
     SkillSpec,
     build_command,
@@ -144,9 +145,35 @@ def _stable_hash(payload: Any) -> str:
     return hashlib.sha256(normalized.encode("utf-8")).hexdigest()
 
 
+_AUDIT_SINK: AuditSink | None = None
+
+
+def _audit_sink() -> AuditSink:
+    """Lazy-initialise the process-local audit sink. Reads env vars on first
+    use so tests can override `os.environ` between calls."""
+    global _AUDIT_SINK
+    if _AUDIT_SINK is None:
+        _AUDIT_SINK = sink_from_env()
+    return _AUDIT_SINK
+
+
+def _reset_audit_sink_for_tests() -> None:
+    """Test hook: drop the cached sink so the next call rebuilds it from
+    the current environment."""
+    global _AUDIT_SINK
+    _AUDIT_SINK = None
+
+
 def _emit_audit_event(event: dict[str, Any]) -> None:
-    sys.stderr.write(json.dumps(event, sort_keys=True) + "\n")
+    """Emit one audit record. stderr is always written so existing supervisors
+    keep working; the file sink and chain-hash annotations are additive and
+    opt-in via env (`CLOUD_SECURITY_MCP_AUDIT_LOG`,
+    `CLOUD_SECURITY_AUDIT_HMAC_KEY`)."""
+    sink = _audit_sink()
+    record = sink.annotate(event)
+    sys.stderr.write(json.dumps(record, sort_keys=True) + "\n")
     sys.stderr.flush()
+    sink.write_file(record)
 
 
 def _error_response(request_id: Any, code: int, message: str, data: Any | None = None) -> dict[str, Any]:

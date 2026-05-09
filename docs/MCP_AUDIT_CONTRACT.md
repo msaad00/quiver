@@ -49,7 +49,32 @@ That means the event is emitted for:
 - other exceptions raised while the wrapper is preparing or running the tool
 
 The event is written as a single JSON object to `stderr` and terminated by a
-newline.
+newline. When a durable file sink is configured (see *Durable file sink*
+below), the same event — augmented with chain-hash fields — is also appended
+to the configured JSONL file with a per-event `fsync()`.
+
+## Durable file sink (optional)
+
+`stderr` is the always-on sink, but supervising stdio MCP clients can
+silently swallow it. When operators need a record they can audit
+post-hoc, set:
+
+| Variable | Effect |
+|---|---|
+| `CLOUD_SECURITY_MCP_AUDIT_LOG` | Absolute path to a JSONL file. Each `mcp_tool_call` event is appended with a per-event `fsync()`. The file is created with mode `0600`; parent directories are created if needed. |
+| `CLOUD_SECURITY_AUDIT_HMAC_KEY` | When set, every event carries `prev_hash` and `chain_hash` fields, computed as `HMAC-SHA-256(key, prev_hash \|\| canonical_event_json)`. The chain seeds from `0` * 64 on first start and resumes from the last persisted `chain_hash` across restarts. |
+
+Verify a chain post-hoc:
+
+```bash
+CLOUD_SECURITY_AUDIT_HMAC_KEY=... \
+  python scripts/verify_audit_chain.py /var/log/cloud-security-mcp/audit.jsonl
+```
+
+The verifier exits `0` when every event matches its expected chain hash,
+`1` when any event was edited / dropped / re-keyed, and `2` on
+configuration errors. It prints the offending line numbers to stderr so a
+SIEM can ingest the failure trace directly.
 
 ## Event Shape
 
