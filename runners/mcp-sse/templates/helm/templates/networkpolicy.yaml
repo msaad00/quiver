@@ -1,0 +1,37 @@
+{{- if .Values.networkPolicy.enabled -}}
+{{- $hasNs := and .Values.networkPolicy.allowedNamespaceSelector (hasKey .Values.networkPolicy.allowedNamespaceSelector "matchLabels") -}}
+{{- $hasPod := and .Values.networkPolicy.allowedPodSelector (hasKey .Values.networkPolicy.allowedPodSelector "matchLabels") -}}
+{{- if $hasNs -}}{{- $hasNs = gt (len .Values.networkPolicy.allowedNamespaceSelector.matchLabels) 0 -}}{{- end -}}
+{{- if $hasPod -}}{{- $hasPod = gt (len .Values.networkPolicy.allowedPodSelector.matchLabels) 0 -}}{{- end -}}
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: {{ include "mcp-sse.fullname" . }}
+  labels: {{- include "mcp-sse.labels" . | nindent 4 }}
+spec:
+  podSelector:
+    matchLabels: {{- include "mcp-sse.selectorLabels" . | nindent 6 }}
+  policyTypes:
+    - Ingress
+{{- if or $hasNs $hasPod }}
+  ingress:
+    - from:
+        - {{- if $hasNs }}
+          namespaceSelector:
+            matchLabels:
+{{ toYaml .Values.networkPolicy.allowedNamespaceSelector.matchLabels | indent 14 }}
+          {{- end }}
+          {{- if $hasPod }}
+          podSelector:
+            matchLabels:
+{{ toYaml .Values.networkPolicy.allowedPodSelector.matchLabels | indent 14 }}
+          {{- end }}
+      ports:
+        - protocol: TCP
+          port: {{ .Values.bind.port }}
+{{- end }}
+  # When no allow source is configured the chart writes no `ingress`
+  # block. A NetworkPolicy with `policyTypes: [Ingress]` and no
+  # `ingress` rules is the canonical Kubernetes way to express
+  # default-deny ingress to the selected pods.
+{{- end }}

@@ -1,0 +1,65 @@
+name: Runner templates
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "runners/**"
+      - "mcp-server/src/transports/**"
+      - ".github/workflows/runner-templates.yml"
+  pull_request:
+    paths:
+      - "runners/**"
+      - "mcp-server/src/transports/**"
+      - ".github/workflows/runner-templates.yml"
+
+concurrency:
+  group: runner-templates-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  mcp-sse-runner:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Install Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: v3.16.4
+
+      - name: helm lint — mcp-sse chart
+        run: helm lint runners/mcp-sse/templates/helm/
+
+      - name: helm template — mcp-sse chart (default values)
+        # Templating with the default values must succeed — proves the
+        # chart renders cleanly even with no operator overrides.
+        run: helm template mcp-sse runners/mcp-sse/templates/helm/ > /tmp/mcp-sse.yaml
+
+      - name: helm template — mcp-sse chart (with NetworkPolicy selector)
+        run: |
+          helm template mcp-sse runners/mcp-sse/templates/helm/ \
+            --set 'networkPolicy.allowedNamespaceSelector.matchLabels.kubernetes\.io/metadata\.name=agents' \
+            > /tmp/mcp-sse-with-netpol.yaml
+          grep -q "kind: NetworkPolicy" /tmp/mcp-sse-with-netpol.yaml
+
+      - name: docker build — mcp-sse runner (build-deps smoke)
+        # Stop at the build-deps stage so CI does not pull the full
+        # runtime layer or push an image. The test is "the Dockerfile
+        # parses + the pinned dependency tuple resolves on PyPI".
+        # Build context is the repo root so the runtime stage's COPY
+        # of mcp-server/src + skills resolves; the build-deps target
+        # itself only needs the Dockerfile.
+        run: docker build --target build-deps -t mcp-sse:build-deps -f runners/mcp-sse/Dockerfile .
+
+      - name: dockerfile lint — mcp-sse
+        # Hadolint catches the usual Dockerfile mistakes (no `--no-cache-dir`
+        # on `apt-get`, missing user, etc.). Continue-on-error so the lint
+        # does not block on style nits, but the report is still attached.
+        uses: hadolint/hadolint-action@v3.1.0
+        with:
+          dockerfile: runners/mcp-sse/Dockerfile
+          failure-threshold: error

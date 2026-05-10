@@ -1,0 +1,91 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "mcp-sse.fullname" . }}
+  labels: {{- include "mcp-sse.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels: {{- include "mcp-sse.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels: {{- include "mcp-sse.selectorLabels" . | nindent 8 }}
+      annotations:
+        # Roll the pod when the bearer-keys file (mounted from the
+        # Secret) changes. SIGHUP is the in-place reload path; the
+        # restart on annotation change is the belt-and-braces path
+        # for operators who prefer redeploys.
+        checksum/secret: {{ include (print $.Template.BasePath "/secret.yaml") . | sha256sum }}
+        checksum/configmap: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+    spec:
+      automountServiceAccountToken: false
+      securityContext: {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: mcp-sse
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          securityContext: {{- toYaml .Values.containerSecurityContext | nindent 12 }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.bind.port }}
+              protocol: TCP
+          env:
+            - name: MCP_SSE_BIND
+              value: {{ .Values.bind.address | quote }}
+            - name: MCP_SSE_PORT
+              value: {{ .Values.bind.port | quote }}
+            {{- if .Values.bind.allowPublicBind }}
+            - name: MCP_SSE_ALLOW_PUBLIC_BIND
+              value: "1"
+            {{- end }}
+            {{- range $key, $val := .Values.env }}
+            {{- if $val }}
+            - name: {{ $key }}
+              value: {{ $val | quote }}
+            {{- end }}
+            {{- end }}
+            - name: CLOUD_SECURITY_AUDIT_HMAC_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: {{ include "mcp-sse.secretName" . }}
+                  key: audit-hmac.key
+                  optional: true
+          livenessProbe: {{- toYaml .Values.livenessProbe | nindent 12 }}
+          readinessProbe: {{- toYaml .Values.readinessProbe | nindent 12 }}
+          resources: {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+            {{- if .Values.volumes.tmp.enabled }}
+            - name: tmp
+              mountPath: /tmp
+            {{- end }}
+            {{- if .Values.volumes.audit.enabled }}
+            - name: audit
+              mountPath: {{ .Values.volumes.audit.mountPath }}
+            {{- end }}
+            - name: bearer-keys
+              mountPath: {{ .Values.volumes.bearerKeys.mountPath }}
+              readOnly: true
+      volumes:
+        {{- if .Values.volumes.tmp.enabled }}
+        - name: tmp
+          emptyDir:
+            medium: Memory
+            sizeLimit: {{ .Values.volumes.tmp.size }}
+        {{- end }}
+        {{- if .Values.volumes.audit.enabled }}
+        - name: audit
+          {{- if .Values.volumes.audit.storageClass }}
+          persistentVolumeClaim:
+            claimName: {{ include "mcp-sse.fullname" . }}-audit
+          {{- else }}
+          emptyDir:
+            sizeLimit: {{ .Values.volumes.audit.size }}
+          {{- end }}
+        {{- end }}
+        - name: bearer-keys
+          secret:
+            secretName: {{ include "mcp-sse.secretName" . }}
+            items:
+              - key: sse-bearer-keys.json
+                path: sse-bearer-keys.json
+            defaultMode: 0400

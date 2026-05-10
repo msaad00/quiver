@@ -1,0 +1,117 @@
+## Production-shape defaults for the MCP SSE runner.
+## Every security control here pairs with the Dockerfile's --read-only
+## / --cap-drop=ALL / --security-opt=no-new-privileges runtime flags.
+
+image:
+  repository: ghcr.io/msaad00/cloud-security-mcp-sse
+  tag: ""        # defaults to .Chart.appVersion
+  pullPolicy: IfNotPresent
+
+replicaCount: 2
+
+## Hardened Pod security context.
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 65532
+  runAsGroup: 65532
+  fsGroup: 65532
+  seccompProfile:
+    type: RuntimeDefault
+
+containerSecurityContext:
+  allowPrivilegeEscalation: false
+  readOnlyRootFilesystem: true
+  capabilities:
+    drop: ["ALL"]
+  privileged: false
+
+## Resources — tight by default; loosen for high-throughput tenants.
+resources:
+  requests:
+    cpu: 250m
+    memory: 256Mi
+  limits:
+    cpu: 1000m
+    memory: 512Mi
+
+## Volumes — /tmp is tmpfs (writable), audit log is a PVC mount so it
+## survives pod restarts. Bearer-keys file is mounted from a Secret
+## (read-only).
+volumes:
+  audit:
+    enabled: true
+    size: 1Gi
+    storageClass: ""           # set to a class name to bind to a real PVC
+    mountPath: /var/log/cloud-security
+  tmp:
+    enabled: true
+    size: 100Mi
+  bearerKeys:
+    mountPath: /etc/cloud-security
+
+## Service — ClusterIP only. Exposing publicly is explicit opt-in via
+## ingress.enabled + a separate Ingress resource.
+service:
+  type: ClusterIP
+  port: 8765
+
+## Bind / public-exposure flag. Inside the cluster the listener still
+## binds 0.0.0.0:port — the NetworkPolicy + ClusterIP service are the
+## isolation boundary, not the bind.
+bind:
+  address: 0.0.0.0
+  port: 8765
+  allowPublicBind: true
+
+## Non-secret env. Secrets (bearer keys + audit HMAC key) come through
+## the `secrets` block below.
+env:
+  CLOUD_SECURITY_MCP_AUDIT_LOG: "/var/log/cloud-security/audit.jsonl"
+  MCP_SSE_BEARER_KEYS_FILE: "/etc/cloud-security/sse-bearer-keys.json"
+
+## Secrets — operator either pre-provisions a Secret with the right
+## keys (existingSecret) or the chart can synthesise one from inline
+## values. In production prefer the existingSecret path with a
+## sealed-secrets / external-secrets workflow.
+secrets:
+  ## Name of an existing Secret holding `sse-bearer-keys.json` and
+  ## `audit-hmac.key`. When set, the chart skips creating its own
+  ## Secret resource.
+  existingSecret: ""
+  ## Inline values. Only used when existingSecret is empty. Both
+  ## fields support --set-file so operators can pipe a real keys file
+  ## or an out-of-band-generated HMAC key through helm.
+  bearerKeysJson: ""           # contents of sse-bearer-keys.json
+  auditHmacKey: ""             # raw bytes (base64 or hex are also fine)
+
+## NetworkPolicy — default-deny ingress except from a configurable
+## namespace + pod selector. Egress is unrestricted (the listener does
+## not initiate outbound calls itself; skill subprocesses are the ones
+## that talk to cloud APIs and they are governed by their own pod-level
+## policy when wired).
+networkPolicy:
+  enabled: true
+  allowedNamespaceSelector:
+    matchLabels: {}            # set e.g. kubernetes.io/metadata.name: agents
+  allowedPodSelector:
+    matchLabels: {}            # optional pod-level filter
+
+## Health / readiness — match the Dockerfile HEALTHCHECK.
+livenessProbe:
+  httpGet:
+    path: /healthz
+    port: 8765
+  initialDelaySeconds: 5
+  periodSeconds: 30
+readinessProbe:
+  httpGet:
+    path: /healthz
+    port: 8765
+  initialDelaySeconds: 2
+  periodSeconds: 10
+
+## Ingress — operator-owned. Most production setups put a real WAF /
+## API gateway in front and terminate TLS there; this Service is
+## ClusterIP-only by default.
+ingress:
+  enabled: false

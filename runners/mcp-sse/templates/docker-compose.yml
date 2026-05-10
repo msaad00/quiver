@@ -1,0 +1,60 @@
+# Local end-to-end Compose for the MCP SSE runner.
+#
+# Usage:
+#   # 1. Build the image (or pin a published tag). Build context is
+#   #    the repo root so the runtime stage's COPY resolves.
+#   docker build -t cloud-security-mcp-sse -f runners/mcp-sse/Dockerfile .
+#
+#   # 2. Generate an initial bearer key into the volume the runner
+#   #    will mount read-only.
+#   mkdir -p ./_local/keys ./_local/audit
+#   python scripts/rotate_mcp_sse_bearer_key.py \
+#       --file ./_local/keys/sse-bearer-keys.json \
+#       --kid initial --ttl-days 7 \
+#       > ./_local/keys/.first-secret
+#
+#   # 3. Bring it up.
+#   docker compose -f runners/mcp-sse/templates/docker-compose.yml up
+#
+#   # 4. Hit /healthz from the host.
+#   curl -fsS http://127.0.0.1:8765/healthz
+#
+#   # 5. Authenticate /rpc with the secret captured in step 2.
+#   curl -fsS http://127.0.0.1:8765/rpc \
+#     -H "Authorization: Bearer $(cat ./_local/keys/.first-secret)" \
+#     -H "Content-Type: application/json" \
+#     -d '{"jsonrpc":"2.0","id":1,"method":"ping"}'
+
+services:
+  mcp-sse:
+    image: cloud-security-mcp-sse:latest
+    read_only: true
+    user: "65532:65532"
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    pids_limit: 128
+    mem_limit: 512m
+    cpus: 1.0
+    ports:
+      - "127.0.0.1:8765:8765"
+    environment:
+      MCP_SSE_BIND: "0.0.0.0"
+      MCP_SSE_PORT: "8765"
+      MCP_SSE_ALLOW_PUBLIC_BIND: "1"
+      MCP_SSE_BEARER_KEYS_FILE: "/etc/cloud-security/sse-bearer-keys.json"
+      CLOUD_SECURITY_MCP_AUDIT_LOG: "/var/log/cloud-security/audit.jsonl"
+      # Generate this once and persist it alongside the audit log so
+      # restarts continue the same chain. `openssl rand -hex 32` works.
+      CLOUD_SECURITY_AUDIT_HMAC_KEY: "${CLOUD_SECURITY_AUDIT_HMAC_KEY:-please-set-me}"
+    tmpfs:
+      - /tmp:size=64m
+    volumes:
+      - ./_local/keys:/etc/cloud-security:ro
+      - ./_local/audit:/var/log/cloud-security:rw
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8765/healthz', timeout=2).status == 200 else 1)"]
+      interval: 30s
+      timeout: 3s
+      retries: 3
