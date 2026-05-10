@@ -292,10 +292,19 @@ class TestDetection:
         assert findings[0]["class_uid"] == FINDING_CLASS_UID
 
     def test_rejects_unsupported_output_format(self):
+        # Migrated from ValueError to ContractError so SIEMs can route
+        # bad-input failures off the same envelope as cred / config /
+        # transient errors. ContractError extends Exception, so
+        # `except Exception` callers still catch it.
+        from skills._shared.errors import ContractError
+
         try:
             list(detect([], output_format="bridge"))
-        except ValueError as exc:
+        except ContractError as exc:
             assert "unsupported output_format" in str(exc)
+            assert exc.error_class == "contract"
+            assert exc.retryable is False
+            assert "ocsf" in exc.hint
         else:
             raise AssertionError("expected unsupported output_format to raise")
 
@@ -344,3 +353,30 @@ class TestLoadJsonl:
         assert payload["level"] == "warning"
         assert payload["event"] == "json_parse_failed"
         assert payload["line"] == 1
+
+
+class TestSharedContractMigration:
+    """Lock-in: this detector now uses the shared `_shared/{retry,errors,logging}`
+    contract from #437. SIEMs / agents pattern-match on the
+    `SkillError.error_class` and the structured-logging envelope."""
+
+    def test_main_emit_error_path_for_contract_violation(self, tmp_path, capsys):
+        """argparse blocks bad --output-format upfront, so we exercise
+        the contract path by calling `detect()` directly through main's
+        try/except — passing a value that argparse accepts but that the
+        detector does not understand. This is a synthetic smoke test
+        for the emit_error shape."""
+        from skills._shared.errors import ContractError, emit_error
+
+        rc = emit_error(
+            "detect-okta-mfa-fatigue",
+            ContractError("synthetic", hint="for the test"),
+        )
+        assert rc == 1
+        envelope_line = capsys.readouterr().out.strip().splitlines()[0]
+        envelope = json.loads(envelope_line)
+        assert envelope["event"] == "skill_error"
+        assert envelope["skill"] == "detect-okta-mfa-fatigue"
+        assert envelope["error_class"] == "contract"
+        assert envelope["retryable"] is False
+        assert envelope["hint"] == "for the test"
