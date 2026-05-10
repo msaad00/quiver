@@ -124,7 +124,12 @@ The first slice intentionally supports a narrow, verified event family:
 - `user.account.privilege.grant`
 - `user.account.privilege.revoke`
 
-Unsupported event types are skipped with a warning to `stderr`.
+Unsupported event types are skipped, never silently dropped. Each occurrence emits
+an `unmapped_event_type` warning to `stderr` with the offending `event_type` and
+event uid. At end of run, an `unmapped_event_type_summary` info record reports
+total skipped, distinct event types, and the top 10 unmapped types with counts —
+so blind spots in the classification map surface immediately in CI logs and
+log-search dashboards.
 
 ## Output contract
 

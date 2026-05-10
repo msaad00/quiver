@@ -12,7 +12,7 @@ Canonical skill locations are:
 This folder owns shared cross-skill assets:
 
 - [`OCSF_CONTRACT.md`](./OCSF_CONTRACT.md)
-- [`golden/`](./golden/)
+- [`golden/`](./golden/) — synthetic snapshot fixtures only; see [`golden/README.md`](./golden/README.md) for what they verify and what they do not
 
 It is not a skill layer. New executable skills belong under `ingestion/`,
 `detection/`, or `view/` as appropriate.

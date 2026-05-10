@@ -182,12 +182,11 @@ def _extract_subscription_id(resource_id: str) -> str:
     if not resource_id:
         return ""
     parts = resource_id.upper().split("/")
-    try:
-        idx = parts.index("SUBSCRIPTIONS")
-        if idx + 1 < len(parts):
-            return parts[idx + 1].lower()
-    except ValueError:
-        pass
+    if "SUBSCRIPTIONS" not in parts:
+        return ""
+    idx = parts.index("SUBSCRIPTIONS")
+    if idx + 1 < len(parts):
+        return parts[idx + 1].lower()
     return ""
 
 
