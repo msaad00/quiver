@@ -1,0 +1,84 @@
+name: runner-e2e
+
+# End-to-end exercise for the shipped runner templates.
+#
+# Triggers on every PR that touches:
+#   - runner template sources
+#   - the MCP server they delegate to
+#   - the shared skill helpers under skills/_shared/
+#   - the harness or workflow itself
+# Plus a daily 02:00 UTC schedule so a quiet repo still surfaces drift.
+#
+# The job name `runner-e2e` is the one branch protection can opt in to
+# (kept stable on purpose).
+
+on:
+  pull_request:
+    paths:
+      - "runners/**"
+      - "mcp-server/**"
+      - "skills/_shared/**"
+      - "scripts/runner_e2e.sh"
+      - "scripts/_runner_e2e_harness.py"
+      - "scripts/build_runtime_profiles_doc.py"
+      - "scripts/verify_audit_chain.py"
+      - ".github/workflows/runner-e2e.yml"
+  schedule:
+    - cron: "0 2 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: runner-e2e-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  runner-e2e:
+    name: runner-e2e
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      RUNNER_E2E_SAMPLES: "20"
+      RUNNER_E2E_RESULTS: ${{ github.workspace }}/runtime-profile-results.jsonl
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+
+      - name: Install Python deps
+        run: uv sync --group dev --group webhook --group mcp-sse --group http-runtime
+
+      - name: Run runner end-to-end harness
+        run: bash scripts/runner_e2e.sh
+
+      - name: Regenerate runtime-profile doc and verify it stayed in sync
+        run: |
+          uv run python scripts/build_runtime_profiles_doc.py
+          # The committed doc must equal the doc the harness just produced.
+          # Otherwise either the harness changed shape or someone edited the
+          # auto-generated file by hand.
+          uv run python scripts/build_runtime_profiles_doc.py --check
+
+      - name: Upload runtime-profile-results.jsonl
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: runtime-profile-results
+          path: runtime-profile-results.jsonl
+          if-no-files-found: warn
+          retention-days: 30
+
+      - name: Upload regenerated doc (debug artifact)
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: runtime-profiles-doc
+          path: docs/RUNTIME_PROFILES.md
+          if-no-files-found: warn
+          retention-days: 30

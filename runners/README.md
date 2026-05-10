@@ -50,8 +50,15 @@ What is now committed:
 - exact first-event walkthrough skeletons in each runner README
 - the deploy/apply inputs that need to be bound
 - the evidence operators should capture on the first successful run
+- a CI-driven end-to-end harness ([`scripts/runner_e2e.sh`](../scripts/runner_e2e.sh))
+  that exercises each runner against an ephemeral local backend, asserts
+  audit + sink arrival, and regenerates
+  [`docs/RUNTIME_PROFILES.md`](../docs/RUNTIME_PROFILES.md) on every run
+  ([`.github/workflows/runner-e2e.yml`](../.github/workflows/runner-e2e.yml))
 
 What is still not claimed:
 
 - a checked-in record that those walkthroughs were executed in AWS, GCP, and
-  Azure against real deployed resources
+  Azure against real deployed resources (the GCP and Azure rows in
+  `docs/RUNTIME_PROFILES.md` are still recorded as honest gaps — there is no
+  in-tree local mock for Pub/Sub or Event Grid + Service Bus)
