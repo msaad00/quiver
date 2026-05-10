@@ -1,6 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="1660" viewBox="0 0 1400 1660" role="img" aria-labelledby="cm-title cm-desc">
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="1680" viewBox="0 0 1400 1680" role="img" aria-labelledby="cm-title cm-desc">
   <title id="cm-title">cloud-ai-security-skills — detection and posture coverage matrix</title>
-  <desc id="cm-desc">Coverage matrix visualizing the gap between shipped detection and posture skills and their paired remediation, with ATT&amp;CK or ATLAS technique IDs where the detector emits them and framework notes where it does not. Rows list every shipped detection (33) plus every CSPM benchmark family (4 native CIS scopes). Columns are: skill name, mapping or note, detector or check shipped status, paired remediation status, and the tracking issue or notes. Green cells mean a closed loop is shipped; amber cells mean a remediation skill is on the roadmap; red cells mean no remediation exists or is planned. Thirteen of twenty-nine detection rows are closed loops today; lateral-movement is intentionally detection-only because the response is per-arm fan-out via existing remediation skills, and the access-key, login-profile, GCP service-account-key, GCP service-account-token-minting, discovery-burst, cross-account-copy, logging-impairment, AWS and GCP model-artifact-download, MCP credential-leak, system-prompt-extraction, tool-output-policy-bypass, and tool-output-exfiltration-instructions slices are still detection-first. The matrix is the single source of truth for closed-loop coverage and updates whenever a remediation skill ships.</desc>
+  <desc id="cm-desc">Coverage matrix visualizing the gap between shipped detection and posture skills and their paired remediation, with ATT&amp;CK or ATLAS technique IDs where the detector emits them and framework notes where it does not. Rows list every shipped detection (34) plus every CSPM benchmark family (4 native CIS scopes). Columns are: skill name, mapping or note, detector or check shipped status, paired remediation status, and the tracking issue or notes. Green cells mean a closed loop is shipped; amber cells mean a remediation skill is on the roadmap; red cells mean no remediation exists or is planned. Thirteen of twenty-nine detection rows are closed loops today; lateral-movement is intentionally detection-only because the response is per-arm fan-out via existing remediation skills, and the access-key, login-profile, GCP service-account-key, GCP service-account-token-minting, discovery-burst, cross-account-copy, logging-impairment, AWS and GCP model-artifact-download, MCP credential-leak, system-prompt-extraction, tool-output-policy-bypass, and tool-output-exfiltration-instructions slices are still detection-first. The matrix is the single source of truth for closed-loop coverage and updates whenever a remediation skill ships.</desc>
 
   <defs>
     <linearGradient id="bg2" x1="0" y1="0" x2="1" y2="1">
@@ -51,7 +51,7 @@
   <line x1="48" y1="212" x2="1352" y2="212" stroke="#334155" stroke-width="1.5"/>
 
   <!-- DETECTION SECTION -->
-  <text x="48" y="244" fill="#5eead4" font-family="Inter, system-ui, sans-serif" font-size="15" font-weight="900">DETECTION (33)</text>
+  <text x="48" y="244" fill="#5eead4" font-family="Inter, system-ui, sans-serif" font-size="15" font-weight="900">DETECTION (34)</text>
 
   <!-- Row stride 38 starting at y=276; badge y = row_text_y - 16 (badge height 22) -->
   <g font-family="Inter, system-ui, sans-serif">
@@ -285,42 +285,49 @@
     <rect x="880"  y="1418" width="40" height="22" rx="4" fill="#7f1d1d" stroke="#ef4444"/>
     <text x="1020" y="1434" fill="#fee2e2" font-size="13">detection-only — warehouse principal exfiltration slice (#436)</text>
   </g>
+  <g font-family="Inter, system-ui, sans-serif">
+    <text x="48"   y="1454" fill="#f1f5f9" font-size="14">detect-clickhouse-bulk-export</text>
+    <text x="430"  y="1454" fill="#cbd5e1" font-size="14">T1567 (TA0010) · OWASP A04:2021</text>
+    <rect x="760"  y="1438" width="40" height="22" rx="4" fill="#16a34a" stroke="#22c55e"/>
+    <rect x="880"  y="1438" width="40" height="22" rx="4" fill="#7f1d1d" stroke="#ef4444"/>
+    <text x="1020" y="1454" fill="#fee2e2" font-size="13">detection-only — ClickHouse bulk row export slice (#436)</text>
+  </g>
 
   <!-- EVALUATION SECTION -->
-  <text x="48" y="1468" fill="#5eead4" font-family="Inter, system-ui, sans-serif" font-size="15" font-weight="900">EVALUATION / CSPM (4 platforms · 91 checks)</text>
+  <text x="48" y="1488" fill="#5eead4" font-family="Inter, system-ui, sans-serif" font-size="15" font-weight="900">EVALUATION / CSPM (4 platforms · 91 checks)</text>
 
   <g font-family="Inter, system-ui, sans-serif">
-    <text x="48"   y="1502" fill="#f1f5f9" font-size="15">cspm-aws-cis-benchmark</text>
-    <text x="430"  y="1502" fill="#cbd5e1" font-size="14">CIS AWS Foundations 3.0</text>
-    <rect x="760"  y="1486" width="40" height="22" rx="4" fill="#16a34a" stroke="#22c55e"/>
-    <rect x="880"  y="1486" width="40" height="22" rx="4" fill="#b45309" stroke="#f59e0b"/>
-    <text x="1020" y="1502" fill="#fef3c7" font-size="13">#242 #254 · guarded --auto-remediate shipped</text>
+    <text x="48"   y="1522" fill="#f1f5f9" font-size="15">cspm-aws-cis-benchmark</text>
+    <text x="430"  y="1522" fill="#cbd5e1" font-size="14">CIS AWS Foundations 3.0</text>
+    <rect x="760"  y="1506" width="40" height="22" rx="4" fill="#16a34a" stroke="#22c55e"/>
+    <rect x="880"  y="1506" width="40" height="22" rx="4" fill="#b45309" stroke="#f59e0b"/>
+    <text x="1020" y="1522" fill="#fef3c7" font-size="13">#242 #254 · guarded --auto-remediate shipped</text>
   </g>
   <g font-family="Inter, system-ui, sans-serif">
-    <text x="48"   y="1532" fill="#f1f5f9" font-size="15">cspm-gcp-cis-benchmark</text>
-    <text x="430"  y="1532" fill="#cbd5e1" font-size="14">CIS GCP Foundations 3.0</text>
-    <rect x="760"  y="1516" width="40" height="22" rx="4" fill="#16a34a" stroke="#22c55e"/>
-    <rect x="880"  y="1516" width="40" height="22" rx="4" fill="#b45309" stroke="#f59e0b"/>
-    <text x="1020" y="1532" fill="#fef3c7" font-size="13">#242 #254 · auto-remediate tracked</text>
+    <text x="48"   y="1552" fill="#f1f5f9" font-size="15">cspm-gcp-cis-benchmark</text>
+    <text x="430"  y="1552" fill="#cbd5e1" font-size="14">CIS GCP Foundations 3.0</text>
+    <rect x="760"  y="1536" width="40" height="22" rx="4" fill="#16a34a" stroke="#22c55e"/>
+    <rect x="880"  y="1536" width="40" height="22" rx="4" fill="#b45309" stroke="#f59e0b"/>
+    <text x="1020" y="1552" fill="#fef3c7" font-size="13">#242 #254 · auto-remediate tracked</text>
   </g>
   <g font-family="Inter, system-ui, sans-serif">
-    <text x="48"   y="1562" fill="#f1f5f9" font-size="15">cspm-azure-cis-benchmark</text>
-    <text x="430"  y="1562" fill="#cbd5e1" font-size="14">CIS Azure Foundations 2.1</text>
-    <rect x="760"  y="1546" width="40" height="22" rx="4" fill="#16a34a" stroke="#22c55e"/>
-    <rect x="880"  y="1546" width="40" height="22" rx="4" fill="#b45309" stroke="#f59e0b"/>
-    <text x="1020" y="1562" fill="#fef3c7" font-size="13">#242 #254 · auto-remediate tracked</text>
+    <text x="48"   y="1582" fill="#f1f5f9" font-size="15">cspm-azure-cis-benchmark</text>
+    <text x="430"  y="1582" fill="#cbd5e1" font-size="14">CIS Azure Foundations 2.1</text>
+    <rect x="760"  y="1566" width="40" height="22" rx="4" fill="#16a34a" stroke="#22c55e"/>
+    <rect x="880"  y="1566" width="40" height="22" rx="4" fill="#b45309" stroke="#f59e0b"/>
+    <text x="1020" y="1582" fill="#fef3c7" font-size="13">#242 #254 · auto-remediate tracked</text>
   </g>
   <g font-family="Inter, system-ui, sans-serif">
-    <text x="48"   y="1592" fill="#f1f5f9" font-size="15">k8s + container + model + gpu benchmarks</text>
-    <text x="430"  y="1592" fill="#cbd5e1" font-size="14">CIS K8s · NIST SSDF · OWASP LLM</text>
-    <rect x="760"  y="1576" width="40" height="22" rx="4" fill="#16a34a" stroke="#22c55e"/>
-    <rect x="880"  y="1576" width="40" height="22" rx="4" fill="#1e3a8a" stroke="#3b82f6"/>
-    <text x="1020" y="1592" fill="#dbeafe" font-size="13">posture-only · selective containment exists elsewhere</text>
+    <text x="48"   y="1612" fill="#f1f5f9" font-size="15">k8s + container + model + gpu benchmarks</text>
+    <text x="430"  y="1612" fill="#cbd5e1" font-size="14">CIS K8s · NIST SSDF · OWASP LLM</text>
+    <rect x="760"  y="1596" width="40" height="22" rx="4" fill="#16a34a" stroke="#22c55e"/>
+    <rect x="880"  y="1596" width="40" height="22" rx="4" fill="#1e3a8a" stroke="#3b82f6"/>
+    <text x="1020" y="1612" fill="#dbeafe" font-size="13">posture-only · selective containment exists elsewhere</text>
   </g>
 
   <!-- Footer (two lines to fit canvas) -->
   <g font-family="Inter, system-ui, sans-serif">
-    <text x="48" y="1626" fill="#94a3b8" font-size="13">Closed-loop ratio: <tspan fill="#5eead4" font-weight="900">13 / 33</tspan> · <tspan fill="#f87171" font-weight="900">lateral-movement stays detection-only by design, and the AWS access-key, login-profile, GCP service-account-key/token-minting, discovery, exfiltration, logging, AWS and GCP model-artifact collection, MCP leakage, system-prompt, policy-bypass, response-exfiltration, and Snowflake bulk-egress slices are detection-first today</tspan></text>
-    <text x="48" y="1644" fill="#94a3b8" font-size="13">All writes HITL-gated, dry-run-default, dual-audited (DynamoDB + KMS S3, before + after) · contract enforced by scripts/validate_safe_skill_bar.py · CSPM auto-remediation tracked at #242 #254</text>
+    <text x="48" y="1646" fill="#94a3b8" font-size="13">Closed-loop ratio: <tspan fill="#5eead4" font-weight="900">13 / 34</tspan> · <tspan fill="#f87171" font-weight="900">lateral-movement stays detection-only by design, and the AWS access-key, login-profile, GCP service-account-key/token-minting, discovery, exfiltration, logging, AWS and GCP model-artifact collection, MCP leakage, system-prompt, policy-bypass, response-exfiltration, and Snowflake bulk-egress slices are detection-first today</tspan></text>
+    <text x="48" y="1664" fill="#94a3b8" font-size="13">All writes HITL-gated, dry-run-default, dual-audited (DynamoDB + KMS S3, before + after) · contract enforced by scripts/validate_safe_skill_bar.py · CSPM auto-remediation tracked at #242 #254</text>
   </g>
 </svg>

@@ -1491,6 +1491,31 @@
       ]
     },
     {
+      "path": "skills/detection/detect-clickhouse-bulk-export",
+      "layer": "detection",
+      "providers": [
+        "clickhouse"
+      ],
+      "asset_classes": [
+        "warehouse",
+        "queries",
+        "external-endpoints",
+        "identities"
+      ],
+      "frameworks": [
+        "ocsf-1.8",
+        "mitre-attack-v14",
+        "owasp-top-10"
+      ],
+      "coverage_status": "validated",
+      "execution_modes": [
+        "cli",
+        "ci",
+        "mcp",
+        "persistent"
+      ]
+    },
+    {
       "path": "skills/evaluation/cspm-aws-cis-benchmark",
       "layer": "evaluation",
       "providers": [
