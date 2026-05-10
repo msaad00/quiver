@@ -19,11 +19,10 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import sys
 from collections import defaultdict
 from pathlib import Path
-
-import re
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 COVERAGE_JSON = REPO_ROOT / "docs" / "framework-coverage.json"
