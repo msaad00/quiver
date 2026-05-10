@@ -16,6 +16,8 @@ if str(CURRENT_DIR) not in sys.path:
     sys.path.insert(0, str(CURRENT_DIR))
 
 from audit_sink import AuditSink, sink_from_env  # noqa: E402
+from resource_limits import from_env as _resource_limits_from_env  # noqa: E402
+from resource_limits import make_preexec as _make_preexec  # noqa: E402
 from tool_registry import (  # noqa: E402
     SkillSpec,
     build_command,
@@ -474,6 +476,17 @@ def _call_tool(name: str, arguments: dict[str, Any] | None) -> dict[str, Any]:
                 env["SKILL_APPROVAL_TIMESTAMP"] = approval_context["approval_timestamp"]
         timeout_seconds = _resolve_timeout(skill, env)
         audit_event["timeout_seconds"] = timeout_seconds
+        limits = _resource_limits_from_env(timeout_seconds)
+        audit_event["resource_limits"] = {
+            "max_bytes": limits.max_bytes,
+            "max_file_bytes": limits.max_file_bytes,
+            "max_processes": limits.max_processes,
+            "cpu_seconds": limits.cpu_seconds,
+        }
+        # `preexec_fn` is POSIX-only — Windows `subprocess.run` ignores it
+        # (and `resource_limits.apply_in_child` is a documented no-op
+        # there). On POSIX the closure tightens RLIMIT_AS / FSIZE /
+        # NPROC / CPU before exec().
         completed = subprocess.run(
             build_command(skill, args, output_format=output_format),
             input=stdin_text,
@@ -483,6 +496,7 @@ def _call_tool(name: str, arguments: dict[str, Any] | None) -> dict[str, Any]:
             env=env,
             timeout=timeout_seconds,
             check=False,
+            preexec_fn=_make_preexec(limits) if os.name == "posix" else None,
         )
 
         audit_event["result"] = "error" if completed.returncode != 0 else "success"
