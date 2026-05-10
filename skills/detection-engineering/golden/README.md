@@ -47,18 +47,27 @@ directory.
 
 ## Roadmap toward real fixtures
 
-Planned but not yet shipped:
+The sibling [`../captured/`](../captured/README.md) directory now exists and
+holds the first batch of public, license-clean attack-traffic samples. It
+has the **opposite** provenance contract from this directory:
 
-- A captured-fixture corpus under a sibling directory (`captured/`) with the
-  same `_raw_*` ↔ `_sample.ocsf.jsonl` pairing, sourced from public
-  red-team datasets and consenting design partners. Tracked in
-  [issue #420](https://github.com/msaad00/cloud-ai-security-skills/issues/420).
-- Per-detector precision/recall scoring on that corpus, posted as a PR
-  comment. Tracked in
+- `golden/`   — synthetic, hand-crafted; verifies wire contract + determinism.
+- `captured/` — real public traces under permissive licences; verifies that
+  detectors fire on actual attack-pattern traffic.
+
+Still planned but not yet shipped:
+
+- Filling out `captured/` for the remaining detectors. Tracked in
+  [issue #420](https://github.com/msaad00/cloud-ai-security-skills/issues/420);
+  the directory's `README.md` Roadmap section keeps the live gap list.
+- Per-detector precision/recall scoring on the captured corpus, posted as a
+  PR comment. Tracked in
   [issue #419](https://github.com/msaad00/cloud-ai-security-skills/issues/419).
 
 Until those land, every claim about real-world detector quality should
-explicitly say "synthetic fixtures only" — and so should you.
+explicitly say "synthetic fixtures only" — and so should you. If a claim
+needs to cite captured traffic, point at `captured/` and not this
+directory.
 
 ## Adding a fixture
 
