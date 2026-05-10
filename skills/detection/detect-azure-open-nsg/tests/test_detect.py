@@ -4,16 +4,23 @@ from __future__ import annotations
 
 import os
 import sys
+from pathlib import Path
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
-from detect import (  # type: ignore[import-not-found]
+REPO_ROOT = Path(__file__).resolve().parents[4]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
+from detect import (  # type: ignore[import-not-found]  # noqa: E402
     ACCEPTED_PRODUCERS,
     DEFAULT_RISKY_PORTS,
     NSG_RULE_WRITE_OPERATION,
     PUBLIC_SOURCE_PREFIXES,
     detect,
 )
+
+from skills._shared.errors import ContractError  # noqa: E402
 
 
 def _rule_uid(
@@ -313,8 +320,12 @@ def test_falls_back_to_api_request_data_properties():
 def test_unsupported_output_format_raises():
     import pytest
 
-    with pytest.raises(ValueError, match="unsupported output_format"):
+    with pytest.raises(ContractError, match="unsupported output_format") as excinfo:
         list(detect([_az_event()], output_format="weird"))
+    assert excinfo.value.error_class == "contract"
+    assert excinfo.value.retryable is False
+    assert excinfo.value.hint
+    assert "ocsf" in excinfo.value.hint or "native" in excinfo.value.hint
 
 
 def test_finding_uid_is_deterministic():

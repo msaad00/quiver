@@ -43,6 +43,7 @@ class SkillSpec:
     approver_roles: tuple[str, ...]
     min_approvers: int | None
     mcp_timeout_seconds: int | None
+    worker_mode: bool = False
 
     @property
     def supported(self) -> bool:
@@ -154,9 +155,43 @@ def discover_skills(root: Path | None = None) -> list[SkillSpec]:
                 approver_roles=_parse_modes(metadata.get("approver_roles")),
                 min_approvers=_parse_min_approvers(metadata.get("min_approvers"), skill_dir),
                 mcp_timeout_seconds=_parse_mcp_timeout(metadata.get("mcp_timeout_seconds"), skill_dir),
+                worker_mode=_parse_bool(metadata.get("worker_mode")),
             )
         )
     return specs
+
+
+def _parse_bool(raw: str | None) -> bool:
+    if raw is None:
+        return False
+    return str(raw).strip().lower() in {"1", "true", "yes", "on"}
+
+
+# Hard-coded list of evaluation-layer skills wired to the worker
+# harness today. Kept in sync with `worker_pool.SUPPORTED_SKILL_NAMES`
+# and the `__main__` blocks in each skill's `checks.py`.
+WORKER_MODE_SKILL_NAMES: frozenset[str] = frozenset({
+    "cspm-aws-cis-benchmark",
+    "cspm-gcp-cis-benchmark",
+    "cspm-azure-cis-benchmark",
+    "k8s-security-benchmark",
+    "container-security",
+})
+
+
+def supports_worker_mode(skill: SkillSpec) -> bool:
+    """A skill supports the persistent-worker pool when its frontmatter
+    declares `worker_mode: true` OR its name is on the hard-coded list
+    of evaluation-layer skills wired to `_shared/worker_harness.py`.
+
+    Both are required to land safely — the registry-level flag and the
+    in-tree harness wiring move in lockstep, so a typo in one place
+    can't silently disable warming."""
+    if skill.entrypoint is None:
+        return False
+    if getattr(skill, "worker_mode", False):
+        return True
+    return skill.name in WORKER_MODE_SKILL_NAMES
 
 
 def _parse_min_approvers(raw: str | None, skill_dir: Path) -> int | None:

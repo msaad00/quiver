@@ -395,6 +395,8 @@ def _install_fake_google_modules(monkeypatch):
     networks_mod.NetworksClient = MagicMock()
     subnetworks_mod = types.ModuleType("google.cloud.compute_v1.services.subnetworks")
     subnetworks_mod.SubnetworksClient = MagicMock()
+    instances_mod = types.ModuleType("google.cloud.compute_v1.services.instances")
+    instances_mod.InstancesClient = MagicMock()
 
     monkeypatch.setitem(sys.modules, "google", google)
     monkeypatch.setitem(sys.modules, "google.cloud", cloud)
@@ -408,12 +410,23 @@ def _install_fake_google_modules(monkeypatch):
     monkeypatch.setitem(
         sys.modules, "google.cloud.compute_v1.services.subnetworks", subnetworks_mod
     )
+    monkeypatch.setitem(
+        sys.modules, "google.cloud.compute_v1.services.instances", instances_mod
+    )
 
 
 def test_run_assessment_full_and_section_filter(monkeypatch):
     _install_fake_google_modules(monkeypatch)
     findings = _CHECKS.run_assessment(project_id="p")
-    assert {f.section for f in findings} == {"iam", "storage", "logging", "networking"}
+    assert {f.section for f in findings} >= {
+        "iam",
+        "storage",
+        "logging",
+        "networking",
+        "compute",
+        "cloudsql",
+        "bigquery",
+    }
     # Section filter
     filtered = _CHECKS.run_assessment(project_id="p", section="iam")
     assert {f.section for f in filtered} == {"iam"}

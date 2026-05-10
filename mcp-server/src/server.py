@@ -16,6 +16,7 @@ if str(CURRENT_DIR) not in sys.path:
     sys.path.insert(0, str(CURRENT_DIR))
 
 import sandbox  # noqa: E402
+import worker_pool  # noqa: E402
 from audit_sink import AuditSink, sink_from_env  # noqa: E402
 from resource_limits import from_env as _resource_limits_from_env  # noqa: E402
 from resource_limits import make_preexec as _make_preexec  # noqa: E402
@@ -23,6 +24,7 @@ from tool_registry import (  # noqa: E402
     SkillSpec,
     build_command,
     repo_root,
+    supports_worker_mode,
     tool_definition,
     tool_map,
 )
@@ -495,17 +497,39 @@ def _call_tool(name: str, arguments: dict[str, Any] | None) -> dict[str, Any]:
         audit_event["sandboxed"] = bool(
             sandbox_active and command and command[0] in {"bwrap", "sandbox-exec"}
         )
-        completed = subprocess.run(
-            command,
-            input=stdin_text,
-            text=True,
-            capture_output=True,
-            cwd=repo_root(),
-            env=env,
-            timeout=timeout_seconds,
-            check=False,
-            preexec_fn=_make_preexec(limits) if os.name == "posix" else None,
+        worker_mode_used = (
+            worker_pool.is_enabled() and supports_worker_mode(skill)
         )
+        audit_event["worker_mode_used"] = worker_mode_used
+        completed: Any
+        if worker_mode_used:
+            # Spawn the worker under the same trust envelope as the
+            # one-shot path: same `--worker` entrypoint, same sandbox
+            # wrap, same env scrub. Args go in-band on every call; the
+            # worker harness applies them per `tools/call`.
+            spawn_command = [sys.executable, str(skill.entrypoint), "--worker"]
+            if sandbox_active:
+                spawn_command = sandbox.wrap_command(spawn_command, skill)
+            completed = worker_pool.pool.invoke(
+                skill,
+                args,
+                stdin_text,
+                env,
+                timeout_seconds,
+                spawn_command=spawn_command,
+            )
+        else:
+            completed = subprocess.run(
+                command,
+                input=stdin_text,
+                text=True,
+                capture_output=True,
+                cwd=repo_root(),
+                env=env,
+                timeout=timeout_seconds,
+                check=False,
+                preexec_fn=_make_preexec(limits) if os.name == "posix" else None,
+            )
 
         audit_event["result"] = "error" if completed.returncode != 0 else "success"
         audit_event["exit_code"] = completed.returncode

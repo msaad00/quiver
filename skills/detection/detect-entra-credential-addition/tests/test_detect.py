@@ -9,7 +9,11 @@ from pathlib import Path
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
-from detect import (  # type: ignore[import-not-found]
+REPO_ROOT = Path(__file__).resolve().parents[4]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
+from detect import (  # type: ignore[import-not-found]  # noqa: E402
     CANONICAL_VERSION,
     FINDING_CLASS_UID,
     FINDING_TYPE_UID,
@@ -24,6 +28,8 @@ from detect import (  # type: ignore[import-not-found]
     detect,
     load_jsonl,
 )
+
+from skills._shared.errors import ContractError  # noqa: E402
 
 THIS = Path(__file__).resolve().parent
 GOLDEN = THIS.parents[2] / "detection-engineering" / "golden"
@@ -201,8 +207,12 @@ class TestDetection:
     def test_rejects_unsupported_output_format(self):
         try:
             list(detect([], output_format="bridge"))
-        except ValueError as exc:
+        except ContractError as exc:
             assert "unsupported output_format" in str(exc)
+            assert exc.error_class == "contract"
+            assert exc.retryable is False
+            assert exc.hint
+            assert "ocsf" in exc.hint or "native" in exc.hint
         else:
             raise AssertionError("expected unsupported output_format to raise")
 

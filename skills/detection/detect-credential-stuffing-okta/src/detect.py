@@ -23,6 +23,8 @@ if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
 from skills._shared.env import env_int  # noqa: E402
+from skills._shared.errors import ContractError, SkillError, emit_error  # noqa: E402
+from skills._shared.logging import get_logger  # noqa: E402
 from skills._shared.runtime_telemetry import emit_stderr_event  # noqa: E402
 
 SKILL_NAME = "detect-credential-stuffing-okta"
@@ -30,6 +32,8 @@ OCSF_VERSION = "1.8.0"
 CANONICAL_VERSION = "2026-04"
 REPO_NAME = "cloud-ai-security-skills"
 from skills._shared.identity import VENDOR_NAME as REPO_VENDOR  # noqa: E402
+
+_log = get_logger(__name__, skill=SKILL_NAME, layer="detection")
 
 OUTPUT_FORMATS = ("ocsf", "native")
 
@@ -324,7 +328,10 @@ def coverage_metadata() -> dict[str, Any]:
 
 def detect(events: Iterable[dict[str, Any]], output_format: str = "ocsf") -> Iterable[dict[str, Any]]:
     if output_format not in OUTPUT_FORMATS:
-        raise ValueError(f"unsupported output_format: {output_format}")
+        raise ContractError(
+            f"unsupported output_format: {output_format}",
+            hint=f"choose one of: {', '.join(OUTPUT_FORMATS)}",
+        )
     dedupe: set[str] = set()
 
     relevant: list[dict[str, Any]] = []
@@ -446,10 +453,30 @@ def main(argv: list[str] | None = None) -> int:
     in_stream = sys.stdin if not args.input else open(args.input, "r", encoding="utf-8")
     out_stream = sys.stdout if not args.output else open(args.output, "w", encoding="utf-8")
 
+    findings_emitted = 0
     try:
         events = list(load_jsonl(in_stream))
+        _log.info(
+            f"{SKILL_NAME} starting",
+            extra={"input_event_count": len(events), "output_format": args.output_format},
+        )
         for finding in detect(events, output_format=args.output_format):
             out_stream.write(json.dumps(finding, separators=(",", ":")) + "\n")
+            findings_emitted += 1
+        _log.info(
+            f"{SKILL_NAME} complete",
+            extra={"findings_emitted": findings_emitted},
+        )
+    except SkillError as exc:
+        return emit_error(SKILL_NAME, exc)
+    except (json.JSONDecodeError, UnicodeDecodeError) as exc:
+        return emit_error(
+            SKILL_NAME,
+            ContractError(
+                f"input is not JSONL: {exc}",
+                hint="ensure each input line is a valid JSON object emitted by ingest-okta-system-log-ocsf",
+            ),
+        )
     finally:
         if args.input:
             in_stream.close()

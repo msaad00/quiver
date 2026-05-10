@@ -2203,4 +2203,8 @@ def main():
 
 
 if __name__ == "__main__":
+    if "--worker" in sys.argv:
+        from skills._shared.worker_harness import run_worker
+
+        raise SystemExit(run_worker(main))
     main()
