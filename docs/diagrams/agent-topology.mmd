@@ -1,0 +1,37 @@
+%% Agent topology — every shipped surface that runs the same
+%% SKILL.md + src/ + tests/ bundle. Local clients use stdio; remote
+%% clients use the webhook receiver or library SDK. Both paths
+%% terminate at the same shipped tool registry.
+flowchart TB
+  classDef local fill:#10b981,stroke:#065f46,color:#ffffff
+  classDef remote fill:#0ea5e9,stroke:#0369a1,color:#ffffff
+  classDef wrap fill:#1e3a8a,stroke:#3b82f6,color:#dbeafe
+  classDef registry fill:#312e81,stroke:#a78bfa,color:#ede9fe
+  classDef skills fill:#0f172a,stroke:#475569,color:#f8fafc
+
+  subgraph Local["Local — stdio JSON-RPC"]
+    direction LR
+    cc["Claude Code"]:::local
+    cd["Claude Desktop"]:::local
+    cur["Cursor"]:::local
+    ws["Windsurf"]:::local
+    cdx["Codex"]:::local
+    ctx["Cortex Code CLI"]:::local
+    zed["Zed"]:::local
+    cont["Continue · Cody · generic MCP"]:::local
+  end
+
+  subgraph Remote["Remote — HTTP / library / event-driven"]
+    direction LR
+    web["Webhook receiver<br/>(HMAC + bearer)"]:::remote
+    lib["Library SDK<br/>(Python in-process)"]:::remote
+    runner["Cloud runners<br/>(S3 / GCS / Blob)"]:::remote
+    ci["GitHub Actions / CI"]:::remote
+  end
+
+  Local --> mcp["mcp-server<br/>stdio wrapper"]:::wrap
+  Remote --> mcp
+
+  mcp --> guards{"Guards<br/>allowlist · dry-run · HITL · RLIMIT · audit"}:::wrap
+  guards --> reg["SkillSpec registry<br/>(SKILL.md frontmatter)"]:::registry
+  reg --> skills["76 shipped skill bundles<br/>(skills/&lt;category&gt;/&lt;name&gt;/)"]:::skills

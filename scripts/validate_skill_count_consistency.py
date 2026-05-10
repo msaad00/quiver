@@ -40,7 +40,10 @@ CLAIMS: list[Claim] = [
     (REPO_ROOT / "README.md", r"\| \*\*View\*\* \| (\d+) \|", "view"),
     (REPO_ROOT / "README.md", r"\| \*\*Output\*\* \| (\d+) \|", "output"),
     (REPO_ROOT / "README.md", r"\| \*\*Sources\*\* \| (\d+) \|", "sources"),
-    (REPO_ROOT / "README.md", r"\| \*\*Detect\*\* \| (\d+) detectors", "detection"),
+    # The legacy '| **Detect** | N detectors' row was a second copy of
+    # the layer-table count; dropped during the README polish (PR-A
+    # README polish), so the layer-table claim above is now the single
+    # source of truth in README.
     (REPO_ROOT / "README.md", r"Closed-loop coverage matrix — \d+ of (\d+) shipped detections", "detection"),
     # The L3 Detect mermaid claim was removed when both README mermaids were
     # replaced by docs/images/*.svg in #248 phase 1. Count-bearing SVG text and
