@@ -49,7 +49,7 @@ flowchart TB
     d_iam["iam-departures-reconciler"]:::discover
   end
 
-  subgraph L3["L3 · Detect · 32 skills · OCSF Detection Finding 2004"]
+  subgraph L3["L3 · Detect · 39 skills · OCSF Detection Finding 2004"]
     direction TB
     subgraph L3aws["AWS"]
       direction LR
@@ -104,9 +104,19 @@ flowchart TB
       d_web_inj["web-injection"]:::analyze
       d_web_auth["web-auth-failures"]:::analyze
     end
+    subgraph L3warehouse["Warehouse / Lakehouse"]
+      direction LR
+      d_sf_egress["snowflake-bulk-data-egress"]:::analyze
+      d_sf_share["snowflake-share-creation"]:::analyze
+      d_sf_key["snowflake-account-key-creation"]:::analyze
+      d_sf_resize["snowflake-warehouse-resize-burst"]:::analyze
+      d_sf_grant["snowflake-unauthorized-grant"]:::analyze
+      d_ch_exp["clickhouse-bulk-export"]:::analyze
+      d_db_tok["databricks-token-creation"]:::analyze
+    end
   end
 
-  subgraph L4["L4 · Evaluate · 7 skills · CIS / NIST / SOC 2 posture"]
+  subgraph L4["L4 · Evaluate · 11 skills · CIS / NIST / NIST AI RMF / SOC 2 posture"]
     direction LR
     e_aws["cspm-aws-cis-benchmark<br/>29 / 58 controls"]:::analyze
     e_az["cspm-azure-cis-benchmark<br/>32 / 60 controls"]:::analyze
@@ -115,6 +125,13 @@ flowchart TB
     e_cont["container-security"]:::analyze
     e_gpu["gpu-cluster-security"]:::analyze
     e_mod["model-serving-security"]:::analyze
+    subgraph L4ai["AI Governance · NIST AI RMF 1.0"]
+      direction LR
+      e_ai_gov["evaluate-nist-ai-rmf-govern"]:::analyze
+      e_ai_map["evaluate-nist-ai-rmf-map"]:::analyze
+      e_ai_meas["evaluate-nist-ai-rmf-measure"]:::analyze
+      e_ai_mgmt["evaluate-nist-ai-rmf-manage"]:::analyze
+    end
   end
 
   subgraph L5["L5 · Remediate · 12 guarded write paths · HITL gated"]

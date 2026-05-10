@@ -457,7 +457,7 @@ wheels = [
 
 [[package]]
 name = "cloud-ai-security-skills"
-version = "0.9.0"
+version = "0.10.0"
 source = { virtual = "." }
 
 [package.dev-dependencies]

@@ -1,6 +1,6 @@
 [project]
 name = "cloud-ai-security-skills"
-version = "0.9.0"
+version = "0.10.0"
 description = "Agentic security skills for cloud and AI — OCSF on the wire, MCP-ready, HITL-audited, sandboxed."
 readme = "README.md"
 requires-python = ">=3.11"

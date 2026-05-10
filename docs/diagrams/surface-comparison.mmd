@@ -1,7 +1,7 @@
 %% Surface comparison — six shipped surfaces with the same skill bundle
 %% behind every one. Each surface adds its own transport + auth +
 %% guardrail layer; every column converges at the SkillSpec registry
-%% and the 79 atomic skills below it.
+%% and the 90 atomic skills below it.
 flowchart TD
   classDef surface fill:#0f1d36,stroke:#3b82f6,color:#dbeafe
   classDef control fill:#1f142e,stroke:#a78bfa,color:#ede9fe
@@ -34,7 +34,7 @@ flowchart TD
   subgraph CORE["Same registry behind every surface"]
     direction LR
     registry["SkillSpec registry<br/>SKILL.md frontmatter"]:::registry
-    skills79["79 shipped atomic skills<br/>15 ingest · 5 discover · 32 detect · 7 evaluate · 12 remediate · 2 view · 3 output · 3 sources"]:::skills
+    skills79["90 shipped atomic skills<br/>15 ingest · 5 discover · 39 detect · 11 evaluate · 12 remediate · 2 view · 3 output · 3 sources"]:::skills
   end
 
   cli --> CONTROLS

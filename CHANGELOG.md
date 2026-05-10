@@ -11,74 +11,75 @@ The format is loosely based on Keep a Changelog.
 
 ## [Unreleased]
 
-### Added
+## [0.10.0] — 2026-05-10 — Vendor depth, AI governance, runtime reliability
 
-- **`detect-snowflake-share-creation`** — Snowflake secure data share creation
-  detector for #436. Reads OCSF 1.8 API Activity (class 6003) records
-  normalized from Snowflake `query_history`, fires on `CREATE_SHARE` and
-  `ALTER_SHARE_ADD_ACCOUNTS` events, emits a Detection Finding tagged with
-  MITRE ATT&CK T1537 Transfer Data to Cloud Account. Severity HIGH.
-- **`detect-snowflake-account-key-creation`** — Snowflake RSA public-key
-  auth detector for #436. Fires on `ALTER USER ... SET RSA_PUBLIC_KEY` (slot
-  1 and slot 2), tagged T1098.001 Additional Cloud Credentials. Severity HIGH.
-- **`detect-snowflake-warehouse-resize-burst`** — Snowflake compute-scale
-  anomaly detector for #436. Groups `ALTER_WAREHOUSE` by `warehouse_name`
-  across a sliding window (env `SNOWFLAKE_RESIZE_WINDOW_MIN`, default 60 min),
-  fires when cumulative size-index jump ≥ `SNOWFLAKE_RESIZE_MIN_SIZE_JUMP`
-  (default 3). Tagged T1496 Resource Hijacking. Severity MEDIUM.
-- **`detect-snowflake-unauthorized-grant`** — Snowflake privileged-role
-  escalation detector for #436. Fires on `GRANT_ROLE` where the granted
-  role is in `SNOWFLAKE_PRIVILEGED_ROLES` AND the granter is not on
-  `SNOWFLAKE_AUTHORIZED_GRANTERS` (default empty = fail-open with stderr
-  warning). Tagged T1098.003. Severity HIGH.
-- **`evaluate-nist-ai-rmf-govern` / `-map` / `-measure` / `-manage`** —
-  first NIST AI RMF 1.0 expansion slice for #435. Four evaluation skills,
-  one per NIST AI RMF core function. Each implements a curated subset of 10
-  high-impact subcategories (40 total) as a manifest-completeness + freshness
-  audit, emits OCSF Compliance Finding (class 2003) per subcategory with
-  `compliance.requirement` set to the subcategory ID. Each SKILL.md
-  documents implemented subcategories explicitly and lists deferred ones in
-  Roadmap. Manifest contract is shared (`documented`, `review_cadence_days`,
-  `last_reviewed`, `evidence_uri`, `coverage`), fed via per-function env
-  var. Honesty caveat in every SKILL.md: "manifest-completeness check, not
-  the qualitative org-level assessment NIST AI RMF requires."
-- Detection layer 35 → 39; evaluation layer 7 → 11; repo total 82 → 90.
-  Brings #436 from 3/18 to 7/18 (1 Snowflake, 5 Databricks, 5 ClickHouse
-  remain) and #435 from 4 to 8 of 12+ planned.
-- **`detect-snowflake-bulk-data-egress`** — first warehouse-platform vendor-depth
-  detector for #436. Reads OCSF 1.8 API Activity (class 6003) records from a
-  Snowflake ingest pipeline, groups by `actor.user.uid` across a 60-minute
-  sliding window, and emits an OCSF Detection Finding (class 2004) tagged with
-  MITRE ATT&CK T1567 Exfiltration Over Web Service when cumulative
-  `bytes_scanned`, `rows_unloaded`, and distinct `stage_name` fan-out cross
-  configurable thresholds. Detection layer count moves from 32 → 33; repo
-  total moves from 79 → 80. Lands 1 of 18 detectors planned for #436;
-  remaining 17 (5 Snowflake, 6 Databricks, 6 ClickHouse) stay open.
-- **`detect-clickhouse-bulk-export`** — first ClickHouse detector for #436.
-  Reads OCSF 1.8 API Activity (class 6003) records normalized from
-  ClickHouse `system.query_log`, filters on
-  `metadata.product.vendor_name == "ClickHouse"`, drops failed queries, keeps
-  rows whose SQL text matches one of `INTO OUTFILE`,
-  `INSERT INTO FUNCTION s3(`, or `URL(`, groups by `actor.user.uid` across a
-  60-minute sliding window (env `CLICKHOUSE_EXPORT_WINDOW_MIN`), and emits an
-  OCSF Detection Finding (class 2004) tagged with MITRE ATT&CK T1567
-  Exfiltration Over Web Service when cumulative `read_bytes` crosses the
-  configurable byte threshold (default 10 GiB, env
-  `CLICKHOUSE_EXPORT_BYTE_THRESHOLD`). Detection layer moves 33 → 34; repo
-  total 80 → 81.
-- **`detect-databricks-token-creation`** — first Databricks vendor-depth
-  detector for #436. Reads OCSF 1.8 API Activity (class 6003) records emitted
-  by an upstream Databricks audit-log ingest pipeline, matches successful
-  `tokens/create` operations on the Databricks token-management surface, and
-  emits one OCSF Detection Finding (class 2004) per issuance tagged with MITRE
-  ATT&CK T1098.001 (Additional Cloud Credentials, tactic TA0003 Persistence).
-  Severity HIGH — Databricks PATs never expire by default and grant headless
-  API access at the issuing principal's full scope. Emits
-  `unmapped_event_type` stderr telemetry on Databricks token-management
-  operations not yet in the recognized map so operators can grep the unmapped
-  feed and propose new mappings without losing visibility. Detection layer
-  moves 34 → 35; repo total 81 → 82. Lands 3 of 18 detectors planned for
-  #436; remaining 15 (5 Snowflake, 5 Databricks, 5 ClickHouse) stay open.
+Skills count on `main`: **90** (15 ingest, 5 discover, 39 detect, 11 evaluate,
+12 remediate, 2 view, 3 output, 3 sources). First vendor-depth detection
+slice on Snowflake / ClickHouse / Databricks, four NIST AI RMF 1.0 evaluators,
+runner reliability bundle closes, authenticated MCP SSE / streamable-HTTP
+transport with a rotation contract, and the audit-honesty trio lands.
+
+### Vendor depth — Snowflake / Databricks / ClickHouse (#436 partial)
+
+- **`detect-snowflake-bulk-data-egress`** (#462) — warehouse egress slice.
+  Groups OCSF API Activity by `actor.user.uid` over a 60-min window, fires on
+  combined `bytes_scanned` / `rows_unloaded` / `stage_name` thresholds (T1567).
+- **`detect-snowflake-share-creation` / `-account-key-creation` /
+  `-warehouse-resize-burst` / `-unauthorized-grant`** (#468) — T1537 / T1098.001
+  / T1496 / T1098.003 covering data shares, RSA auth, compute-scale anomaly,
+  and privileged-role grants.
+- **`detect-clickhouse-bulk-export`** (#464) — `system.query_log` filter on
+  `INTO OUTFILE` / `INSERT INTO FUNCTION s3(` / `URL(`, fires on cumulative
+  `read_bytes` crossing the byte threshold (T1567). **`detect-databricks-token-creation`**
+  (#465) — fires on successful `tokens/create` (T1098.001), emits
+  `unmapped_event_type` stderr telemetry for ops not yet in the map.
+- **7 of 18 #436 detectors shipped; 11 remain** (4 Snowflake, 5 Databricks,
+  5 ClickHouse).
+
+### AI governance (#435 partial)
+
+- **`evaluate-nist-ai-rmf-govern` / `-map` / `-measure` / `-manage`** (#469)
+  — one evaluator per NIST AI RMF 1.0 core function, 10 curated subcategories
+  each (**40 total**), emitted as OCSF Compliance Finding 2003 per
+  subcategory. Each SKILL.md carries the caveat that this is a
+  manifest-completeness audit, not the qualitative org-level assessment NIST
+  AI RMF requires. **8 of 12+ #435 evaluators shipped.**
+
+### Runtime reliability (#198, #199 closed)
+
+- **CI-driven runner e2e harness + auto-generated runtime profiles** (#467)
+  exercising the three runner templates; writes the p50/p95 table into
+  `docs/RUNTIME_PROFILES.md` on every scheduled run. First numbers (N=20):
+  `mcp-sse` jsonrpc-ping 23.86/49.16 ms, `webhook-receiver` cloudtrail-ingest
+  75.83/77.58 ms, `cloud-runner-aws-s3-sqs` ingest 32.24/33.96 ms — regression
+  sentinels, not customer-scale throughput.
+
+### MCP transport surface (#415 closed)
+
+- **SSE + streamable-HTTP transport with bearer auth** (#463, slice 1) —
+  authenticated listener alongside the stdio wrapper; preserves existing
+  trust controls and HMAC-chained audit. **Helm/Docker deployment + bearer-key
+  rotation contract** (#466, slice 2).
+
+### Audit honesty (#406, #403, #404 closed)
+
+- **Azure subscription parser refactor, Okta unmapped-event counter,
+  golden-fixture provenance doc** (#458) — closes the ambient-subscription
+  footgun (#406), surfaces Okta event types not in the recognized map (#403),
+  and documents fixture collection + review (#404).
+
+### Quality / infrastructure
+
+- **Per-detector precision/recall scorer** (#460, closes #419) and
+  **captured-fixture corpus with provenance gate** (#459, closes #420) —
+  quantitative detector scoring replaces the "looked good on a fixture" proxy.
+- **CSPM evaluation depth +542 tests** (#461, closes #405), **banner overflow
+  + skill-index doc** (#454), **mypy upper bound bumped to <3** (#457).
+
+### Changed
+
+- Detection 32 → 39; evaluation 7 → 11; total 79 → 90. Benchmark checks
+  91 → 131 (91 CIS + 40 NIST AI RMF subcategories).
 
 ## [0.9.0] — 2026-05-10 — Agentic posture: trust contract, coverage depth, sandboxing
 
