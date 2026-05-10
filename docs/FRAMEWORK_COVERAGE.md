@@ -4,13 +4,13 @@ This file is **generated from [`framework-coverage.json`](framework-coverage.jso
 
 - Registry version: `0.8.1`
 - Registry updated: `2026-04-24`
-- Total shipped skills in registry: **82**
+- Total shipped skills in registry: **86**
 
 ## Roll-up
 
 | Framework | Version | Shipped skills mapped | Coverage target |
 |---|---|---|---|
-| OCSF | 1.8.0 | **61** | — |
+| OCSF | 1.8.0 | **65** | — |
 | MITRE ATT&CK | v14 | **55** | 100% mapped coverage |
 | MITRE ATLAS | current | **13** | 100% mapped coverage |
 | CIS AWS Foundations | v3.0 | **4** | — |
@@ -19,8 +19,8 @@ This file is **generated from [`framework-coverage.json`](framework-coverage.jso
 | CIS Kubernetes Benchmark | current | **2** | — |
 | CIS Docker Benchmark | current | **1** | — |
 | CIS Controls | v8 | **2** | — |
-| NIST CSF | 2.0 | **20** | 100% mapped coverage |
-| NIST AI RMF | current | **4** | — |
+| NIST CSF | 2.0 | **24** | 100% mapped coverage |
+| NIST AI RMF | current | **8** | — |
 | SOC 2 TSC | current | **20** | 100% mapped coverage |
 | PCI DSS | 4.0 | **4** | 100% mapped coverage |
 | ISO 27001 | 2022 | **3** | — |
@@ -37,7 +37,7 @@ Shipped skills mapped counts the number of skills in the registry that declare t
 
 - Registry id: `ocsf-1.8`
 
-Shipped skills mapped: **61**
+Shipped skills mapped: **65**
 
 | Skill | Layer | Providers | Asset classes |
 |---|---|---|---|
@@ -79,6 +79,10 @@ Shipped skills mapped: **61**
 | [`discover-cloud-control-evidence`](../skills/discovery/discover-cloud-control-evidence) | discovery | aws, azure, gcp, multi | evidence, inventory, network-segmentation, logging, encryption, key-management, ai-endpoints |
 | [`discover-control-evidence`](../skills/discovery/discover-control-evidence) | discovery | multi | evidence, inventory, ai-endpoints |
 | [`discover-environment`](../skills/discovery/discover-environment) | discovery | aws, azure, gcp, kubernetes, containers, multi | inventory, compute, storage, network, logging, clusters, ai-endpoints |
+| [`evaluate-nist-ai-rmf-govern`](../skills/evaluation/evaluate-nist-ai-rmf-govern) | evaluation | multi | policies, roles, inventory, training, third_party, communication |
+| [`evaluate-nist-ai-rmf-manage`](../skills/evaluation/evaluate-nist-ai-rmf-manage) | evaluation | multi | prioritization, response, resources, incident, third_party, monitoring, communication |
+| [`evaluate-nist-ai-rmf-map`](../skills/evaluation/evaluate-nist-ai-rmf-map) | evaluation | multi | context, system_card, impact, risk |
+| [`evaluate-nist-ai-rmf-measure`](../skills/evaluation/evaluate-nist-ai-rmf-measure) | evaluation | multi | metrics, approach, safety, security, privacy, monitoring |
 | [`ingest-azure-activity-ocsf`](../skills/ingestion/ingest-azure-activity-ocsf) | ingestion | azure | api, audit-logs |
 | [`ingest-azure-defender-for-cloud-ocsf`](../skills/ingestion/ingest-azure-defender-for-cloud-ocsf) | ingestion | azure | findings, security-posture |
 | [`ingest-cloudtrail-ocsf`](../skills/ingestion/ingest-cloudtrail-ocsf) | ingestion | aws | iam, api, audit-logs |
@@ -276,7 +280,7 @@ Shipped skills mapped: **2**
 - Asset classes in scope: identities, storage, logging, network, clusters, runtime, evidence
 - Coverage target: 100% mapped coverage
 
-Shipped skills mapped: **20**
+Shipped skills mapped: **24**
 
 | Skill | Layer | Providers | Asset classes |
 |---|---|---|---|
@@ -285,6 +289,10 @@ Shipped skills mapped: **20**
 | [`cspm-aws-cis-benchmark`](../skills/evaluation/cspm-aws-cis-benchmark) | evaluation | aws | identities, storage, logging, network |
 | [`cspm-azure-cis-benchmark`](../skills/evaluation/cspm-azure-cis-benchmark) | evaluation | azure | identities, storage, logging, network |
 | [`cspm-gcp-cis-benchmark`](../skills/evaluation/cspm-gcp-cis-benchmark) | evaluation | gcp | identities, storage, logging, network |
+| [`evaluate-nist-ai-rmf-govern`](../skills/evaluation/evaluate-nist-ai-rmf-govern) | evaluation | multi | policies, roles, inventory, training, third_party, communication |
+| [`evaluate-nist-ai-rmf-manage`](../skills/evaluation/evaluate-nist-ai-rmf-manage) | evaluation | multi | prioritization, response, resources, incident, third_party, monitoring, communication |
+| [`evaluate-nist-ai-rmf-map`](../skills/evaluation/evaluate-nist-ai-rmf-map) | evaluation | multi | context, system_card, impact, risk |
+| [`evaluate-nist-ai-rmf-measure`](../skills/evaluation/evaluate-nist-ai-rmf-measure) | evaluation | multi | metrics, approach, safety, security, privacy, monitoring |
 | [`gpu-cluster-security`](../skills/evaluation/gpu-cluster-security) | evaluation | aws, azure, gcp, kubernetes, containers, multi | gpu-fleets, clusters, containers, runtime, tenancy |
 | [`k8s-security-benchmark`](../skills/evaluation/k8s-security-benchmark) | evaluation | kubernetes | clusters, identities, network, logging |
 | [`model-serving-security`](../skills/evaluation/model-serving-security) | evaluation | aws, azure, gcp, multi | ai-endpoints, models, identities, network, logging, guardrails |
@@ -305,12 +313,16 @@ Shipped skills mapped: **20**
 
 - Registry id: `nist-ai-rmf`
 
-Shipped skills mapped: **4**
+Shipped skills mapped: **8**
 
 | Skill | Layer | Providers | Asset classes |
 |---|---|---|---|
 | [`discover-ai-bom`](../skills/discovery/discover-ai-bom) | discovery | aws, azure, gcp, multi | inventory, ai-endpoints, models, datasets, vector-stores, gpu-fleets |
 | [`discover-cloud-control-evidence`](../skills/discovery/discover-cloud-control-evidence) | discovery | aws, azure, gcp, multi | evidence, inventory, network-segmentation, logging, encryption, key-management, ai-endpoints |
+| [`evaluate-nist-ai-rmf-govern`](../skills/evaluation/evaluate-nist-ai-rmf-govern) | evaluation | multi | policies, roles, inventory, training, third_party, communication |
+| [`evaluate-nist-ai-rmf-manage`](../skills/evaluation/evaluate-nist-ai-rmf-manage) | evaluation | multi | prioritization, response, resources, incident, third_party, monitoring, communication |
+| [`evaluate-nist-ai-rmf-map`](../skills/evaluation/evaluate-nist-ai-rmf-map) | evaluation | multi | context, system_card, impact, risk |
+| [`evaluate-nist-ai-rmf-measure`](../skills/evaluation/evaluate-nist-ai-rmf-measure) | evaluation | multi | metrics, approach, safety, security, privacy, monitoring |
 | [`gpu-cluster-security`](../skills/evaluation/gpu-cluster-security) | evaluation | aws, azure, gcp, kubernetes, containers, multi | gpu-fleets, clusters, containers, runtime, tenancy |
 | [`model-serving-security`](../skills/evaluation/model-serving-security) | evaluation | aws, azure, gcp, multi | ai-endpoints, models, identities, network, logging, guardrails |
 

@@ -13,6 +13,23 @@ The format is loosely based on Keep a Changelog.
 
 ### Added
 
+- **`evaluate-nist-ai-rmf-govern` / `-map` / `-measure` / `-manage`** —
+  first NIST AI RMF 1.0 expansion slice for #435. Four evaluation skills,
+  one per NIST AI RMF core function (GOVERN, MAP, MEASURE, MANAGE). Each
+  implements a curated subset of high-impact subcategories (10 per
+  function, 40 total) as a manifest-completeness + freshness audit and
+  emits OCSF Compliance Finding (class 2003) per subcategory with
+  `compliance.requirement` set to the subcategory ID. Each SKILL.md
+  documents the implemented subset honestly and lists the
+  documented-but-not-implemented subcategories as Roadmap. The manifest
+  contract is identical across the four (`documented`,
+  `review_cadence_days`, `last_reviewed`, `evidence_uri`, `coverage`),
+  fed via per-function env var (`NIST_AI_RMF_GOVERN_MANIFEST`,
+  `NIST_AI_RMF_MAP_MANIFEST`, `NIST_AI_RMF_MEASURE_MANIFEST`,
+  `NIST_AI_RMF_MANAGE_MANIFEST`). The evaluation layer grows from 7 to
+  11 skills; repo total goes from 82 to 86. This closes #435 in part
+  (4 of 12+ planned NIST AI RMF skills; brings #435 from 4 to 8 of 12+).
+
 - **`detect-snowflake-bulk-data-egress`** — first warehouse-platform vendor-depth
   detector for #436. Reads OCSF 1.8 API Activity (class 6003) records from a
   Snowflake ingest pipeline, groups by `actor.user.uid` across a 60-minute

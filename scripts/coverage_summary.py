@@ -45,7 +45,7 @@ FRAMEWORK_TOTAL_CONTROLS: dict[str, int] = {
     "owasp-top-10": 10,
     "owasp-llm-top-10": 10,
     "owasp-mcp-top-10": 10,
-    "nist-ai-rmf": 24,          # AI RMF 1.0 categories (the level outcomes roll up to)
+    "nist-ai-rmf": 72,          # AI RMF 1.0 subcategories (the IDs the evaluator emits)
     # mitre-attack-v14, mitre-atlas, ocsf-1.8, nist-csf-2.0, soc2-tsc,
     # iso-27001-2022, pci-dss-4.0, cyclonedx-ml-bom intentionally not
     # enumerated yet — either too coarse-grained or the repo doesn't

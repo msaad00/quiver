@@ -1730,6 +1730,113 @@
       ]
     },
     {
+      "path": "skills/evaluation/evaluate-nist-ai-rmf-govern",
+      "layer": "evaluation",
+      "providers": [
+        "multi"
+      ],
+      "asset_classes": [
+        "policies",
+        "roles",
+        "inventory",
+        "training",
+        "third_party",
+        "communication"
+      ],
+      "frameworks": [
+        "nist-ai-rmf",
+        "ocsf-1.8",
+        "nist-csf-2.0"
+      ],
+      "coverage_status": "validated",
+      "execution_modes": [
+        "cli",
+        "ci",
+        "mcp",
+        "persistent"
+      ]
+    },
+    {
+      "path": "skills/evaluation/evaluate-nist-ai-rmf-map",
+      "layer": "evaluation",
+      "providers": [
+        "multi"
+      ],
+      "asset_classes": [
+        "context",
+        "system_card",
+        "impact",
+        "risk"
+      ],
+      "frameworks": [
+        "nist-ai-rmf",
+        "ocsf-1.8",
+        "nist-csf-2.0"
+      ],
+      "coverage_status": "validated",
+      "execution_modes": [
+        "cli",
+        "ci",
+        "mcp",
+        "persistent"
+      ]
+    },
+    {
+      "path": "skills/evaluation/evaluate-nist-ai-rmf-measure",
+      "layer": "evaluation",
+      "providers": [
+        "multi"
+      ],
+      "asset_classes": [
+        "metrics",
+        "approach",
+        "safety",
+        "security",
+        "privacy",
+        "monitoring"
+      ],
+      "frameworks": [
+        "nist-ai-rmf",
+        "ocsf-1.8",
+        "nist-csf-2.0"
+      ],
+      "coverage_status": "validated",
+      "execution_modes": [
+        "cli",
+        "ci",
+        "mcp",
+        "persistent"
+      ]
+    },
+    {
+      "path": "skills/evaluation/evaluate-nist-ai-rmf-manage",
+      "layer": "evaluation",
+      "providers": [
+        "multi"
+      ],
+      "asset_classes": [
+        "prioritization",
+        "response",
+        "resources",
+        "incident",
+        "third_party",
+        "monitoring",
+        "communication"
+      ],
+      "frameworks": [
+        "nist-ai-rmf",
+        "ocsf-1.8",
+        "nist-csf-2.0"
+      ],
+      "coverage_status": "validated",
+      "execution_modes": [
+        "cli",
+        "ci",
+        "mcp",
+        "persistent"
+      ]
+    },
+    {
       "path": "skills/view/convert-ocsf-to-sarif",
       "layer": "view",
       "providers": [

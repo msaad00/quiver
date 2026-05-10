@@ -93,7 +93,7 @@ not do, and what it talks to.
 | Remediate | [`remediate-okta-session-kill`](../skills/remediation/remediate-okta-session-kill/) | HITL — kill Okta sessions on principal |
 | Remediate | [`remediate-workspace-session-kill`](../skills/remediation/remediate-workspace-session-kill/) | HITL — sign-out Workspace user |
 
-### AI runtime · MCP · model serving — 10 skills
+### AI runtime · MCP · model serving — 14 skills
 
 | Layer | Skill | What it does |
 |---|---|---|
@@ -106,6 +106,10 @@ not do, and what it talks to.
 | Detect | [`detect-tool-output-exfiltration-instructions`](../skills/detection/detect-tool-output-exfiltration-instructions/) | OWASP LLM06 — exfil instructions in tool output |
 | Detect | [`detect-tool-output-policy-bypass`](../skills/detection/detect-tool-output-policy-bypass/) | OWASP LLM02 — agentic policy-bypass payloads |
 | Evaluate | [`model-serving-security`](../skills/evaluation/model-serving-security/) | OWASP LLM Top 10 + ATLAS posture for model APIs |
+| Evaluate | [`evaluate-nist-ai-rmf-govern`](../skills/evaluation/evaluate-nist-ai-rmf-govern/) | NIST AI RMF 1.0 GOVERN — 10 of ~25 subcategories (manifest check) |
+| Evaluate | [`evaluate-nist-ai-rmf-map`](../skills/evaluation/evaluate-nist-ai-rmf-map/) | NIST AI RMF 1.0 MAP — 10 of ~18 subcategories (system / model cards) |
+| Evaluate | [`evaluate-nist-ai-rmf-measure`](../skills/evaluation/evaluate-nist-ai-rmf-measure/) | NIST AI RMF 1.0 MEASURE — 10 of ~21 subcategories (metric runs) |
+| Evaluate | [`evaluate-nist-ai-rmf-manage`](../skills/evaluation/evaluate-nist-ai-rmf-manage/) | NIST AI RMF 1.0 MANAGE — 10 of ~14 subcategories (risk register) |
 | Remediate | [`remediate-mcp-tool-quarantine`](../skills/remediation/remediate-mcp-tool-quarantine/) | HITL — quarantine an MCP tool by fingerprint |
 
 ### Web application (OWASP Top 10) — 3 skills
@@ -149,13 +153,13 @@ not do, and what it talks to.
 | Ingest | 15 | [`skills/ingestion/`](../skills/ingestion/) (excludes the 3 warehouse sources below) |
 | Discover | 5 | [`skills/discovery/`](../skills/discovery/) |
 | Detect | 34 | [`skills/detection/`](../skills/detection/) |
-| Evaluate | 7 | [`skills/evaluation/`](../skills/evaluation/) |
+| Evaluate | 11 | [`skills/evaluation/`](../skills/evaluation/) |
 | Remediate | 12 | [`skills/remediation/`](../skills/remediation/) |
 | View | 2 | [`skills/view/`](../skills/view/) |
 | Output | 3 | [`skills/output/`](../skills/output/) |
 | Source | 3 | warehouse adapters: `source-databricks-query`, `source-s3-select`, `source-snowflake-query` (filed under `skills/ingestion/` on disk) |
 
-Total = 15 + 5 + 34 + 7 + 12 + 2 + 3 + 3 = **81**.
+Total = 15 + 5 + 35 + 11 + 12 + 2 + 3 + 3 = **86**.
 
 ## By framework
 
@@ -176,6 +180,7 @@ Quick orientation:
 | OWASP LLM Top 10 | `detect-prompt-injection-*`, `detect-system-prompt-extraction`, `detect-tool-output-*`, `detect-agent-credential-leak-mcp`, `model-serving-security` |
 | OWASP MCP Top 10 | `detect-mcp-tool-drift`, `detect-agent-credential-leak-mcp`, `detect-prompt-injection-mcp-proxy`, `remediate-mcp-tool-quarantine` |
 | CIS AWS / GCP / Azure / K8s / Containers | `cspm-*`, `container-security`, `k8s-security-benchmark` |
-| NIST CSF 2.0 / AI RMF | `cspm-*` benchmark mappings + AI runtime evaluators |
+| NIST CSF 2.0 | `cspm-*` benchmark mappings + AI runtime evaluators |
+| NIST AI RMF 1.0 | `evaluate-nist-ai-rmf-{govern,map,measure,manage}` (manifest evaluators) + cross-tagged AI runtime skills |
 | SOC 2 / ISO 27001 / PCI / FedRAMP | rolled up via `discover-control-evidence` |
 | CycloneDX ML-BOM | `discover-ai-bom` |
