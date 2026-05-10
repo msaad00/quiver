@@ -1,0 +1,37 @@
+%% MCP wrapper trust boundary — every guard the wrapper enforces between
+%% the calling agent and the skill subprocess. Read this together with
+%% docs/MCP_AUDIT_CONTRACT.md.
+sequenceDiagram
+  autonumber
+  participant Agent as Agent (Claude / Cursor / Codex / …)
+  participant Wrap as mcp-server (stdio)
+  participant Guards as Guards (allowlist · dry-run · HITL · RLIMIT)
+  participant Skill as skills/&lt;cat&gt;/&lt;name&gt;/src/&lt;entry&gt;.py
+  participant Sink as Audit log (JSONL · HMAC chain)
+
+  Agent->>Wrap: tools/call name, args, _caller_context, _approval_context
+  Note over Wrap: validate args / input / output_format<br/>parse JSON-RPC envelope
+  Wrap->>Guards: intersect operator + caller + preset allowlists
+  alt skill not in effective allowlist
+    Guards-->>Wrap: refuse
+    Wrap-->>Agent: -32601 unknown tool
+    Wrap->>Sink: audit_event result=error
+  else write-capable + no --dry-run
+    Guards-->>Wrap: refuse
+    Wrap-->>Agent: -32602 dry-run / apply violation
+    Wrap->>Sink: audit_event result=error
+  else needs approval + missing _approval_context
+    Guards-->>Wrap: refuse
+    Wrap-->>Agent: -32602 approval required
+    Wrap->>Sink: audit_event result=error
+  else min_approvers &gt; approvals supplied
+    Guards-->>Wrap: refuse
+    Wrap-->>Agent: -32602 N approvers required
+    Wrap->>Sink: audit_event result=error
+  else
+    Guards->>Wrap: pass
+    Wrap->>Skill: subprocess.run<br/>scrubbed env (SAFE_CHILD_ENV_VARS + CLOUD_SECURITY_*)<br/>RLIMIT_AS / FSIZE / CPU<br/>SKILL_CORRELATION_ID, SKILL_CALLER_*, SKILL_APPROVER_*
+    Skill-->>Wrap: stdout JSONL, exit code
+    Wrap->>Sink: audit_event result=success<br/>chain_hash = HMAC-SHA-256(key, prev_hash || event_json)
+    Wrap-->>Agent: result + isError + structuredContent
+  end

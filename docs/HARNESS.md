@@ -12,6 +12,8 @@ Read next:
 - [`MCP_AUDIT_CONTRACT.md`](MCP_AUDIT_CONTRACT.md) — audit envelope
 - [`THREAT_MODEL.md`](THREAT_MODEL.md) — adversaries + mitigations
 
+Visuals: [`diagrams/agent-topology.mmd`](diagrams/agent-topology.mmd) renders the full surface set; [`diagrams/mcp-trust-boundary.mmd`](diagrams/mcp-trust-boundary.mmd) traces the wrapper lifecycle; [`diagrams/pipeline-blast-radius.mmd`](diagrams/pipeline-blast-radius.mmd) colour-codes each layer by capability.
+
 ## Five surfaces, one bundle
 
 The same `SKILL.md + src/ + tests/` runs unchanged behind all five
