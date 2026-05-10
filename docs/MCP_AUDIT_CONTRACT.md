@@ -34,7 +34,7 @@ It does not cover:
 
 - unknown tool names rejected before `_call_tool` runs
 - client-side tracing outside this repo
-- any future HTTP or SSE transport
+- HTTP transports other than the SSE / streamable-HTTP listener documented in [MCP_TRANSPORT.md](MCP_TRANSPORT.md)
 
 ## Emission Point
 
@@ -87,6 +87,7 @@ Required top-level fields:
 | `event` | string | fixed value `mcp_tool_call` |
 | `timestamp` | string | UTC ISO-8601 timestamp with millisecond precision |
 | `correlation_id` | string | wrapper-generated stable ID for this tool invocation, also forwarded to the skill runtime |
+| `transport` | string | which surface delivered the request — `stdio` or `sse` (see [MCP_TRANSPORT.md](MCP_TRANSPORT.md)) |
 | `tool` | string | resolved MCP tool name |
 | `category` | string | skill category from the contract metadata |
 | `capability` | string | skill capability from the contract metadata |

@@ -5,6 +5,7 @@ import json
 import os
 import subprocess
 import sys
+import threading
 import time
 from datetime import UTC, datetime
 from pathlib import Path
@@ -42,6 +43,12 @@ ERROR_TOOL_TIMEOUT = -32001
 ERROR_TOOL_NOT_ALLOWED = -32002
 ERROR_APPROVAL_REQUIRED = -32003
 ERROR_TOOL_CRASHED = -32004
+
+# Default transport label on the audit record. SSE / future transports
+# pass their own label so post-hoc auditors can split the chain by
+# surface. See docs/MCP_TRANSPORT.md.
+DEFAULT_TRANSPORT = "stdio"
+
 SAFE_CHILD_ENV_VARS = (
     "HOME",
     "LANG",
@@ -151,6 +158,12 @@ def _stable_hash(payload: Any) -> str:
 
 
 _AUDIT_SINK: AuditSink | None = None
+# Concurrent SSE clients can race the sink: two threads computing
+# `chain_hash` from the same `_prev_hash` would emit two events both
+# claiming the previous link, breaking the chain. The lock serialises
+# `annotate` + `write_file` into one atomic step. stdio is single-
+# threaded so the lock is uncontended on that path.
+_AUDIT_LOCK = threading.Lock()
 
 
 def _audit_sink() -> AuditSink:
@@ -173,12 +186,18 @@ def _emit_audit_event(event: dict[str, Any]) -> None:
     """Emit one audit record. stderr is always written so existing supervisors
     keep working; the file sink and chain-hash annotations are additive and
     opt-in via env (`CLOUD_SECURITY_MCP_AUDIT_LOG`,
-    `CLOUD_SECURITY_AUDIT_HMAC_KEY`)."""
+    `CLOUD_SECURITY_AUDIT_HMAC_KEY`).
+
+    The annotate+write pair is held under a single process-wide lock so
+    the HMAC chain stays contiguous when the SSE transport is serving
+    multiple clients concurrently. The lock is uncontended on the stdio
+    path."""
     sink = _audit_sink()
-    record = sink.annotate(event)
-    sys.stderr.write(json.dumps(record, sort_keys=True) + "\n")
-    sys.stderr.flush()
-    sink.write_file(record)
+    with _AUDIT_LOCK:
+        record = sink.annotate(event)
+        sys.stderr.write(json.dumps(record, sort_keys=True) + "\n")
+        sys.stderr.flush()
+        sink.write_file(record)
 
 
 def _error_response(request_id: Any, code: int, message: str, data: Any | None = None) -> dict[str, Any]:
@@ -396,7 +415,18 @@ def _requires_approval_context(skill: SkillSpec, args: list[str]) -> bool:
     return True
 
 
-def _call_tool(name: str, arguments: dict[str, Any] | None) -> dict[str, Any]:
+def _call_tool(
+    name: str,
+    arguments: dict[str, Any] | None,
+    *,
+    transport: str = DEFAULT_TRANSPORT,
+) -> dict[str, Any]:
+    """Validate, gate, run one tool call and emit the audit event.
+
+    `transport` is recorded on the audit event so post-hoc auditors can
+    tell stdio calls apart from SSE calls without breaking the chain.
+    All other behaviour is identical across transports.
+    """
     request_args = arguments or {}
     caller_context = _validate_context(request_args.get("_caller_context"), "_caller_context")
     tools = tool_map()
@@ -414,6 +444,7 @@ def _call_tool(name: str, arguments: dict[str, Any] | None) -> dict[str, Any]:
         "event": "mcp_tool_call",
         "timestamp": _now_iso(),
         "correlation_id": correlation_id,
+        "transport": transport,
         "tool": name,
         "category": skill.category,
         "capability": skill.capability,
@@ -560,7 +591,14 @@ def _call_tool(name: str, arguments: dict[str, Any] | None) -> dict[str, Any]:
         _emit_audit_event(audit_event)
 
 
-def _handle_request(message: dict[str, Any]) -> dict[str, Any] | None:
+def _handle_request(
+    message: dict[str, Any],
+    *,
+    transport: str = DEFAULT_TRANSPORT,
+) -> dict[str, Any] | None:
+    """Dispatch one JSON-RPC message. Returns the response dict, or None
+    for notifications. Identical contract on stdio and SSE — only the
+    `transport` audit field changes."""
     method = message.get("method")
     request_id = message.get("id")
 
@@ -597,7 +635,10 @@ def _handle_request(message: dict[str, Any]) -> dict[str, Any] | None:
         if not isinstance(name, str):
             return _error_response(request_id, -32602, "`tools/call` requires a string `name`")
         try:
-            return _result_response(request_id, _call_tool(name, params.get("arguments")))
+            return _result_response(
+                request_id,
+                _call_tool(name, params.get("arguments"), transport=transport),
+            )
         except KeyError as exc:
             return _error_response(request_id, -32601, str(exc))
         except ValueError as exc:
