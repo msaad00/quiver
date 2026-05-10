@@ -3,9 +3,16 @@
 from __future__ import annotations
 
 import importlib.util
+import sys
 from pathlib import Path
 
 import pytest
+
+REPO_ROOT = Path(__file__).resolve().parents[4]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
+from skills._shared.errors import ContractError  # noqa: E402
 
 THIS = Path(__file__).resolve().parent
 SRC = THIS.parent / "src" / "detect.py"
@@ -127,8 +134,12 @@ def test_accepts_raw_service_account_resource_name_without_prefix():
 
 
 def test_rejects_unknown_output_format():
-    with pytest.raises(ValueError, match="unsupported output_format"):
+    with pytest.raises(ContractError, match="unsupported output_format") as excinfo:
         list(detect([_event()], output_format="weird"))
+    assert excinfo.value.error_class == "contract"
+    assert excinfo.value.retryable is False
+    assert excinfo.value.hint
+    assert "ocsf" in excinfo.value.hint or "native" in excinfo.value.hint
 
 
 def test_finding_uid_is_deterministic():
