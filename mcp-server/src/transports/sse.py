@@ -33,7 +33,6 @@ this guard addresses.
 from __future__ import annotations
 
 import asyncio
-import hmac
 import json
 import os
 import secrets
@@ -45,8 +44,16 @@ CURRENT_DIR = Path(__file__).resolve().parent
 PARENT_DIR = CURRENT_DIR.parent
 if str(PARENT_DIR) not in sys.path:
     sys.path.insert(0, str(PARENT_DIR))
+if str(CURRENT_DIR) not in sys.path:
+    sys.path.insert(0, str(CURRENT_DIR))
 
 import dispatch  # noqa: E402
+from key_rotation import (  # noqa: E402
+    KEYS_ENV_FALLBACK,
+    KEYS_FILE_ENV,
+    EmptyKeyStoreError,
+    KeyStore,
+)
 
 try:  # pragma: no cover - exercised only when the extra is missing
     from sse_starlette.sse import EventSourceResponse
@@ -64,7 +71,7 @@ except ModuleNotFoundError as exc:  # pragma: no cover
 SSE_TRANSPORT_LABEL = "sse"
 BIND_ENV = "MCP_SSE_BIND"
 PORT_ENV = "MCP_SSE_PORT"
-KEYS_ENV = "MCP_SSE_BEARER_KEYS"
+KEYS_ENV = KEYS_ENV_FALLBACK
 ALLOW_PUBLIC_BIND_ENV = "MCP_SSE_ALLOW_PUBLIC_BIND"
 
 DEFAULT_BIND = "127.0.0.1"
@@ -93,7 +100,7 @@ def _truthy_env(name: str, env: dict[str, str] | None = None) -> bool:
     return (src.get(name) or "").strip().lower() in {"1", "true", "yes", "on"}
 
 
-def _check_bind_safety(bind: str, keys: set[str], env: dict[str, str] | None = None) -> None:
+def _check_bind_safety(bind: str, has_keys: bool, env: dict[str, str] | None = None) -> None:
     """Raise SystemExit when the requested bind is unsafe.
 
     The two cases that fail:
@@ -111,24 +118,26 @@ def _check_bind_safety(bind: str, keys: set[str], env: dict[str, str] | None = N
         sys.stderr.write(
             f"[mcp-sse] refusing to bind on public address {bind!r}: set "
             f"{ALLOW_PUBLIC_BIND_ENV}=1 to acknowledge the exposure and "
-            f"configure {KEYS_ENV} with at least one bearer key.\n"
+            f"configure {KEYS_ENV} or {KEYS_FILE_ENV} with at least one "
+            f"bearer key.\n"
         )
         sys.stderr.flush()
         raise SystemExit(2)
-    if not keys:
+    if not has_keys:
         sys.stderr.write(
             f"[mcp-sse] refusing to bind on public address {bind!r} without "
-            f"bearer keys configured: set {KEYS_ENV}=key1[,key2,...] before "
-            f"enabling {ALLOW_PUBLIC_BIND_ENV}.\n"
+            f"bearer keys configured: set {KEYS_ENV}=key1[,key2,...] or "
+            f"{KEYS_FILE_ENV}=/path/to/keys.json before enabling "
+            f"{ALLOW_PUBLIC_BIND_ENV}.\n"
         )
         sys.stderr.flush()
         raise SystemExit(2)
 
 
-def _verify_bearer(request: Request, keys: set[str]) -> bool:
-    """Constant-time bearer-token check against the configured key set.
+def _verify_bearer(request: Request, key_store: KeyStore) -> bool:
+    """Constant-time bearer-token check against the live key store.
 
-    Empty `keys` => unauthenticated mode is forbidden: this function
+    Empty store => unauthenticated mode is forbidden: this function
     always returns False. The `_check_bind_safety` guard already keeps
     public binds from reaching here without keys; this is the second
     gate so a localhost-bound deploy still requires a key.
@@ -137,13 +146,11 @@ def _verify_bearer(request: Request, keys: set[str]) -> bool:
     if not raw.lower().startswith("bearer "):
         return False
     presented = raw.split(" ", 1)[1].strip()
-    if not presented or not keys:
+    if not presented:
         return False
-    presented_b = presented.encode("utf-8")
-    for key in keys:
-        if hmac.compare_digest(presented_b, key.encode("utf-8")):
-            return True
-    return False
+    return bool(key_store.verify_token(presented))
+
+
 
 
 class _Session:
@@ -189,13 +196,35 @@ class _SessionRegistry:
             await session.queue.put(None)
 
 
-def create_app(*, bind: str | None = None, env: dict[str, str] | None = None) -> Starlette:
+def create_app(
+    *,
+    bind: str | None = None,
+    env: dict[str, str] | None = None,
+    install_sighup: bool = False,
+) -> Starlette:
     """Build the Starlette app. Performs the bind-safety check up-front
-    so a misconfigured operator never gets a half-bound listener."""
+    so a misconfigured operator never gets a half-bound listener.
+
+    When `install_sighup=True` (set by `serve()`), the resulting key
+    store wires `SIGHUP` to a synchronous reload so operators can
+    rotate bearer keys without bouncing the listener. Tests leave the
+    flag off so signal handlers do not leak across the suite.
+    """
     src = os.environ if env is None else env
     effective_bind = bind if bind is not None else (src.get(BIND_ENV) or DEFAULT_BIND).strip() or DEFAULT_BIND
-    keys = _bearer_keys(env)
-    _check_bind_safety(effective_bind, keys, env)
+    try:
+        key_store = KeyStore(env=src, emit_audit=dispatch.emit_audit_event)
+    except EmptyKeyStoreError as exc:
+        sys.stderr.write(f"[mcp-sse] {exc}\n")
+        sys.stderr.flush()
+        raise SystemExit(2) from exc
+    except ValueError as exc:
+        sys.stderr.write(f"[mcp-sse] keys file is malformed: {exc}\n")
+        sys.stderr.flush()
+        raise SystemExit(2) from exc
+    if install_sighup:
+        key_store.install_sighup_handler()
+    _check_bind_safety(effective_bind, key_store.has_keys(), env)
 
     registry = _SessionRegistry()
 
@@ -203,7 +232,7 @@ def create_app(*, bind: str | None = None, env: dict[str, str] | None = None) ->
         return JSONResponse({"status": "ok", "service": "mcp-sse"})
 
     async def sse(request: Request) -> Response:
-        if not _verify_bearer(request, keys):
+        if not _verify_bearer(request, key_store):
             return JSONResponse({"error": "unauthorized"}, status_code=401)
         token, session = await registry.open()
 
@@ -228,7 +257,7 @@ def create_app(*, bind: str | None = None, env: dict[str, str] | None = None) ->
         return EventSourceResponse(event_stream())
 
     async def messages(request: Request) -> Response:
-        if not _verify_bearer(request, keys):
+        if not _verify_bearer(request, key_store):
             return JSONResponse({"error": "unauthorized"}, status_code=401)
         token = request.query_params.get("session", "")
         if not token:
@@ -262,7 +291,7 @@ def create_app(*, bind: str | None = None, env: dict[str, str] | None = None) ->
         identical (`transport="sse"`) so this stays one auditable
         surface, not two.
         """
-        if not _verify_bearer(request, keys):
+        if not _verify_bearer(request, key_store):
             return JSONResponse({"error": "unauthorized"}, status_code=401)
         try:
             payload = await request.json()
@@ -300,7 +329,7 @@ def serve() -> int:
     bind = (os.environ.get(BIND_ENV) or DEFAULT_BIND).strip() or DEFAULT_BIND
     port_raw = (os.environ.get(PORT_ENV) or "").strip()
     port = int(port_raw) if port_raw else DEFAULT_PORT
-    app = create_app(bind=bind)
+    app = create_app(bind=bind, install_sighup=True)
     uvicorn.run(app, host=bind, port=port, log_level="info", access_log=False)
     return 0
 

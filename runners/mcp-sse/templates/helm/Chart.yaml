@@ -1,0 +1,24 @@
+apiVersion: v2
+name: cloud-security-mcp-sse
+description: |
+  Hardened MCP SSE / streamable-HTTP runner for cloud-ai-security-skills.
+  Exposes the JSON-RPC dispatch contract over the canonical SSE +
+  /messages endpoint pair, with bearer auth (file-driven, SIGHUP-
+  reloadable), tamper-evident audit chain, default-deny NetworkPolicy,
+  non-root + read-only rootfs + cap-drop in the container.
+type: application
+version: 0.1.0
+appVersion: "0.9.0"
+home: https://github.com/msaad00/cloud-ai-security-skills
+sources:
+  - https://github.com/msaad00/cloud-ai-security-skills/tree/main/runners/mcp-sse
+maintainers:
+  - name: msaad00
+    url: https://github.com/msaad00
+keywords:
+  - security
+  - mcp
+  - sse
+  - streamable-http
+  - cloud
+  - ai

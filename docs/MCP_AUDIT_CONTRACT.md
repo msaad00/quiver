@@ -36,6 +36,12 @@ It does not cover:
 - client-side tracing outside this repo
 - HTTP transports other than the SSE / streamable-HTTP listener documented in [MCP_TRANSPORT.md](MCP_TRANSPORT.md)
 
+The SSE transport also emits a separate `bearer_key_rotated` record on
+every successful key-store reload (boot, SIGHUP, or manual). That
+record shares this audit chain — see the "Bearer-key rotation contract"
+section in [MCP_TRANSPORT.md](MCP_TRANSPORT.md) for the field shape and
+privacy guarantees.
+
 ## Emission Point
 
 `mcp-server/src/server.py` emits one audit event per tool invocation from the

@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "mcp-sse.fullname" . }}-config
+  labels: {{- include "mcp-sse.labels" . | nindent 4 }}
+data:
+  # Non-secret runtime knobs. The Deployment surfaces these as env vars
+  # alongside the bind / port / public-bind flag. Secrets live in the
+  # companion Secret resource — never here.
+  bearer-keys-file: {{ printf "%s/sse-bearer-keys.json" .Values.volumes.bearerKeys.mountPath | quote }}
+  audit-log-path: {{ index .Values.env "CLOUD_SECURITY_MCP_AUDIT_LOG" | default "/var/log/cloud-security/audit.jsonl" | quote }}
+  bind-address: {{ .Values.bind.address | quote }}
+  bind-port: {{ .Values.bind.port | quote }}
