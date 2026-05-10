@@ -100,9 +100,13 @@ def _bwrap_command(cmd: list[str], skill: SkillSpec, repo: Path) -> list[str]:
     for ro in ("/usr", "/etc", "/lib", "/lib64"):
         if Path(ro).exists():
             args += ["--ro-bind", ro, ro]
+    # `/tmp`, `/proc`, `/dev` here are bwrap mount-target paths inside
+    # the sandboxed namespace, NOT a Python tempfile path. Bandit's
+    # B108 hardcoded-tmp-directory check is a false positive on this
+    # well-known bwrap argument shape.
     args += [
         "--bind", repo_str, repo_str,
-        "--tmpfs", "/tmp",
+        "--tmpfs", "/tmp",  # nosec B108
         "--proc", "/proc",
         "--dev", "/dev",
         "--unshare-all",
