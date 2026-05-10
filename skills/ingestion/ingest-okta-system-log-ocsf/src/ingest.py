@@ -742,21 +742,38 @@ def iter_raw_events(stream: Iterable[str]) -> Iterable[dict[str, Any]]:
             )
 
 
-def ingest(stream: Iterable[str], output_format: str = "ocsf") -> Iterable[dict[str, Any]]:
+def ingest(
+    stream: Iterable[str],
+    output_format: str = "ocsf",
+    unmapped_counts: dict[str, int] | None = None,
+) -> Iterable[dict[str, Any]]:
     if output_format not in OUTPUT_FORMATS:
         raise ValueError(f"unsupported output_format `{output_format}`")
     for raw in iter_raw_events(stream):
         ok, reason = validate_event(raw)
         if not ok:
-            emit_stderr_event(
-                SKILL_NAME,
-                level="warning",
-                event="invalid_event",
-                message=f"skipping event: {reason}",
-                reason=reason,
-                event_type=str(raw.get("eventType") or ""),
-                event_uid=str(raw.get("uuid") or ""),
-            )
+            event_type = str(raw.get("eventType") or "")
+            if reason.startswith("unsupported eventType"):
+                if unmapped_counts is not None:
+                    unmapped_counts[event_type] = unmapped_counts.get(event_type, 0) + 1
+                emit_stderr_event(
+                    SKILL_NAME,
+                    level="warning",
+                    event="unmapped_event_type",
+                    message=f"skipping event: eventType not in classification map: {event_type}",
+                    event_type=event_type,
+                    event_uid=str(raw.get("uuid") or ""),
+                )
+            else:
+                emit_stderr_event(
+                    SKILL_NAME,
+                    level="warning",
+                    event="invalid_event",
+                    message=f"skipping event: {reason}",
+                    reason=reason,
+                    event_type=event_type,
+                    event_uid=str(raw.get("uuid") or ""),
+                )
             continue
         try:
             yield convert_event(raw, output_format=output_format)
@@ -788,14 +805,34 @@ def main(argv: list[str] | None = None) -> int:
     in_stream = sys.stdin if not args.input else open(args.input, "r", encoding="utf-8")
     out_stream = sys.stdout if not args.output else open(args.output, "w", encoding="utf-8")
 
+    unmapped_counts: dict[str, int] = {}
     try:
-        for event in ingest(in_stream, output_format=args.output_format):
+        for event in ingest(
+            in_stream,
+            output_format=args.output_format,
+            unmapped_counts=unmapped_counts,
+        ):
             out_stream.write(json.dumps(event, separators=(",", ":")) + "\n")
     finally:
         if args.input:
             in_stream.close()
         if args.output:
             out_stream.close()
+
+    if unmapped_counts:
+        top = sorted(unmapped_counts.items(), key=lambda kv: kv[1], reverse=True)[:10]
+        emit_stderr_event(
+            SKILL_NAME,
+            level="info",
+            event="unmapped_event_type_summary",
+            message=(
+                f"{sum(unmapped_counts.values())} events skipped across "
+                f"{len(unmapped_counts)} unmapped Okta eventType(s)"
+            ),
+            distinct_event_types=len(unmapped_counts),
+            total_skipped=sum(unmapped_counts.values()),
+            top_unmapped=[{"event_type": et, "count": n} for et, n in top],
+        )
 
     return 0
 

@@ -569,3 +569,44 @@ class TestGoldenFixture:
         assert produced[0]["schema_mode"] == "native"
         assert produced[0]["event_uid"] == expected[0]["metadata"]["uid"]
         assert "class_uid" not in produced[0]
+
+
+class TestUnmappedEventCounter:
+    """Audit honesty: every unmapped Okta eventType is counted, not silently dropped."""
+
+    def _wrap(self, eventType: str) -> str:
+        return json.dumps(
+            {
+                "uuid": f"uuid-{eventType}",
+                "published": "2024-05-01T12:00:00.000Z",
+                "eventType": eventType,
+                "displayMessage": "x",
+            }
+        )
+
+    def test_unmapped_counts_populated_with_repeats(self):
+        unmapped: dict[str, int] = {}
+        events = [
+            self._wrap("totally.fake.event.one"),
+            self._wrap("totally.fake.event.one"),
+            self._wrap("totally.fake.event.two"),
+        ]
+        produced = list(ingest(events, unmapped_counts=unmapped))
+        assert produced == []
+        assert unmapped == {
+            "totally.fake.event.one": 2,
+            "totally.fake.event.two": 1,
+        }
+
+    def test_unmapped_counts_unaffected_by_invalid_payloads(self):
+        unmapped: dict[str, int] = {}
+        events = [
+            json.dumps({"uuid": "u1", "eventType": "user.session.start"}),  # missing published
+            self._wrap("totally.fake.event"),
+        ]
+        list(ingest(events, unmapped_counts=unmapped))
+        assert unmapped == {"totally.fake.event": 1}
+
+    def test_unmapped_counts_optional(self):
+        # No regression: omitting the kwarg still works (per-event stderr only).
+        list(ingest([self._wrap("totally.fake.event")]))
