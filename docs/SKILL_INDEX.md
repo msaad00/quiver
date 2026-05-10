@@ -116,12 +116,13 @@ not do, and what it talks to.
 | Detect | [`detect-web-broken-access-control`](../skills/detection/detect-web-broken-access-control/) | OWASP A01 — IDOR / forced-browsing |
 | Detect | [`detect-web-injection`](../skills/detection/detect-web-injection/) | OWASP A03 — SQLi / shell / NoSQL / template injection |
 
-### Warehouse (Snowflake · Databricks · ClickHouse) — 2 skills
+### Warehouse (Snowflake · Databricks · ClickHouse) — 3 skills
 
 | Layer | Skill | What it does |
 |---|---|---|
 | Detect | [`detect-snowflake-bulk-data-egress`](../skills/detection/detect-snowflake-bulk-data-egress/) | T1567 — bulk data egress across multiple Snowflake stages |
 | Detect | [`detect-clickhouse-bulk-export`](../skills/detection/detect-clickhouse-bulk-export/) | T1567 — bulk row export via INTO OUTFILE / s3() / URL() |
+| Detect | [`detect-databricks-token-creation`](../skills/detection/detect-databricks-token-creation/) | T1098.001 — Databricks personal access token issuance |
 
 ### Cross-environment plumbing — 13 skills
 

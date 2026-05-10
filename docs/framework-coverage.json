@@ -114,6 +114,30 @@
   ],
   "skills": [
     {
+      "path": "skills/detection/detect-databricks-token-creation",
+      "layer": "detection",
+      "providers": [
+        "databricks"
+      ],
+      "asset_classes": [
+        "identities",
+        "tokens",
+        "workspaces"
+      ],
+      "frameworks": [
+        "ocsf-1.8",
+        "mitre-attack-v14",
+        "owasp-llm-top-10"
+      ],
+      "coverage_status": "validated",
+      "execution_modes": [
+        "cli",
+        "ci",
+        "mcp",
+        "persistent"
+      ]
+    },
+    {
       "path": "skills/ingestion/source-snowflake-query",
       "layer": "ingestion",
       "providers": [

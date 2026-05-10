@@ -32,9 +32,21 @@ The format is loosely based on Keep a Changelog.
   OCSF Detection Finding (class 2004) tagged with MITRE ATT&CK T1567
   Exfiltration Over Web Service when cumulative `read_bytes` crosses the
   configurable byte threshold (default 10 GiB, env
-  `CLICKHOUSE_EXPORT_BYTE_THRESHOLD`). Detection layer count moves from
-  33 → 34; repo total moves from 80 → 81. Closes #436 in part — first
-  ClickHouse detector; five more ClickHouse detectors stay open.
+  `CLICKHOUSE_EXPORT_BYTE_THRESHOLD`). Detection layer moves 33 → 34; repo
+  total 80 → 81.
+- **`detect-databricks-token-creation`** — first Databricks vendor-depth
+  detector for #436. Reads OCSF 1.8 API Activity (class 6003) records emitted
+  by an upstream Databricks audit-log ingest pipeline, matches successful
+  `tokens/create` operations on the Databricks token-management surface, and
+  emits one OCSF Detection Finding (class 2004) per issuance tagged with MITRE
+  ATT&CK T1098.001 (Additional Cloud Credentials, tactic TA0003 Persistence).
+  Severity HIGH — Databricks PATs never expire by default and grant headless
+  API access at the issuing principal's full scope. Emits
+  `unmapped_event_type` stderr telemetry on Databricks token-management
+  operations not yet in the recognized map so operators can grep the unmapped
+  feed and propose new mappings without losing visibility. Detection layer
+  moves 34 → 35; repo total 81 → 82. Lands 3 of 18 detectors planned for
+  #436; remaining 15 (5 Snowflake, 5 Databricks, 5 ClickHouse) stay open.
 
 ## [0.9.0] — 2026-05-10 — Agentic posture: trust contract, coverage depth, sandboxing
 
