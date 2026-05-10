@@ -26,6 +26,7 @@ import json
 import logging
 import os
 import sys
+from collections.abc import MutableMapping
 from datetime import UTC, datetime
 from typing import Any
 
@@ -87,7 +88,9 @@ class _JsonFormatter(logging.Formatter):
 class _ContextAdapter(logging.LoggerAdapter):
     """Stamp every log line with the skill / layer / correlation_id."""
 
-    def process(self, msg: Any, kwargs: dict[str, Any]) -> tuple[Any, dict[str, Any]]:
+    def process(
+        self, msg: Any, kwargs: MutableMapping[str, Any]
+    ) -> tuple[Any, MutableMapping[str, Any]]:
         existing_extra = kwargs.get("extra", {}) or {}
         merged = {**self.extra, **existing_extra} if self.extra else dict(existing_extra)
         kwargs["extra"] = merged

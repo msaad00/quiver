@@ -4,15 +4,22 @@ from __future__ import annotations
 
 import os
 import sys
+from pathlib import Path
+
+REPO_ROOT = Path(__file__).resolve().parents[4]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
-from detect import (  # type: ignore[import-not-found]
+from detect import (  # type: ignore[import-not-found]  # noqa: E402
     ACCEPTED_PRODUCERS,
     DEFAULT_RISKY_PORTS,
     PUBLIC_CIDRS,
     detect,
 )
+
+from skills._shared.errors import ContractError  # noqa: E402
 
 
 def _ct_event(
@@ -219,8 +226,12 @@ def test_mixed_world_and_corp_cidrs_only_emits_for_world():
 
 def test_unsupported_output_format_raises():
     import pytest
-    with pytest.raises(ValueError, match="unsupported output_format"):
+    with pytest.raises(ContractError, match="unsupported output_format") as excinfo:
         list(detect([_ct_event(cidrs_v4=["0.0.0.0/0"])], output_format="weird"))
+    assert excinfo.value.error_class == "contract"
+    assert excinfo.value.retryable is False
+    assert excinfo.value.hint
+    assert "ocsf" in excinfo.value.hint or "native" in excinfo.value.hint
 
 
 def test_finding_uid_is_deterministic():

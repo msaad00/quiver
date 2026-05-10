@@ -24,7 +24,11 @@ if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
 from skills._shared.env import env_int  # noqa: E402
+from skills._shared.errors import ContractError, SkillError, emit_error  # noqa: E402
+from skills._shared.logging import get_logger  # noqa: E402
 from skills._shared.runtime_telemetry import emit_stderr_event  # noqa: E402
+
+_log = get_logger(__name__, skill="detect-okta-mfa-fatigue", layer="detection")
 
 SKILL_NAME = "detect-okta-mfa-fatigue"
 OCSF_VERSION = "1.8.0"
@@ -332,7 +336,10 @@ def coverage_metadata() -> dict[str, Any]:
 
 def detect(events: Iterable[dict[str, Any]], output_format: str = "ocsf") -> Iterable[dict[str, Any]]:
     if output_format not in OUTPUT_FORMATS:
-        raise ValueError(f"unsupported output_format: {output_format}")
+        raise ContractError(
+            f"unsupported output_format: {output_format}",
+            hint=f"choose one of: {', '.join(OUTPUT_FORMATS)}",
+        )
     dedupe: set[str] = set()
     states: dict[str, list[dict[str, Any]]] = {}
     active_bursts: set[str] = set()
@@ -451,10 +458,34 @@ def main(argv: list[str] | None = None) -> int:
     in_stream = sys.stdin if not args.input else open(args.input, "r", encoding="utf-8")
     out_stream = sys.stdout if not args.output else open(args.output, "w", encoding="utf-8")
 
+    findings_emitted = 0
     try:
         events = list(load_jsonl(in_stream))
+        _log.info(
+            "detect-okta-mfa-fatigue starting",
+            extra={"input_event_count": len(events), "output_format": args.output_format},
+        )
         for finding in detect(events, output_format=args.output_format):
             out_stream.write(json.dumps(finding, separators=(",", ":")) + "\n")
+            findings_emitted += 1
+        _log.info(
+            "detect-okta-mfa-fatigue complete",
+            extra={"findings_emitted": findings_emitted},
+        )
+    except SkillError as exc:
+        # Structured error envelope — agents pattern-match on
+        # error_class to surface auth/config/contract problems back to
+        # the user. ContractError on bad output_format already lands
+        # here with retryable=False.
+        return emit_error("detect-okta-mfa-fatigue", exc)
+    except (json.JSONDecodeError, UnicodeDecodeError) as exc:
+        return emit_error(
+            "detect-okta-mfa-fatigue",
+            ContractError(
+                f"input is not JSONL: {exc}",
+                hint="ensure each input line is a valid JSON object emitted by ingest-okta-system-log-ocsf",
+            ),
+        )
     finally:
         if args.input:
             in_stream.close()

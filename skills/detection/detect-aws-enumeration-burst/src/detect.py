@@ -21,6 +21,8 @@ REPO_ROOT = Path(__file__).resolve().parents[4]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
+from skills._shared.errors import ContractError, SkillError, emit_error  # noqa: E402
+from skills._shared.logging import get_logger  # noqa: E402
 from skills._shared.runtime_telemetry import emit_stderr_event  # noqa: E402
 
 SKILL_NAME = "detect-aws-enumeration-burst"
@@ -28,6 +30,8 @@ CANONICAL_VERSION = "2026-04"
 OCSF_VERSION = "1.8.0"
 REPO_NAME = "cloud-ai-security-skills"
 from skills._shared.identity import VENDOR_NAME as REPO_VENDOR  # noqa: E402
+
+_log = get_logger(__name__, skill=SKILL_NAME, layer="detection")
 
 FINDING_CLASS_UID = 2004
 FINDING_CLASS_NAME = "Detection Finding"
@@ -286,7 +290,10 @@ def detect(
     output_format: str = "ocsf",
 ) -> Iterator[dict[str, Any]]:
     if output_format not in OUTPUT_FORMATS:
-        raise ValueError(f"unsupported output_format `{output_format}`")
+        raise ContractError(
+            f"unsupported output_format `{output_format}`",
+            hint=f"choose one of: {', '.join(sorted(OUTPUT_FORMATS))}",
+        )
 
     grouped: dict[tuple[str, str, str], list[dict[str, Any]]] = defaultdict(list)
 
@@ -407,9 +414,31 @@ def _parse_args(argv: list[str]) -> argparse.Namespace:
 
 def main(argv: list[str] | None = None) -> int:
     args = _parse_args(argv or sys.argv[1:])
-    for finding in detect(_iter_jsonl(args.path), output_format=args.output_format):
-        json.dump(finding, sys.stdout, separators=(",", ":"))
-        sys.stdout.write("\n")
+    findings_emitted = 0
+    try:
+        events = list(_iter_jsonl(args.path))
+        _log.info(
+            f"{SKILL_NAME} starting",
+            extra={"input_event_count": len(events), "output_format": args.output_format},
+        )
+        for finding in detect(events, output_format=args.output_format):
+            json.dump(finding, sys.stdout, separators=(",", ":"))
+            sys.stdout.write("\n")
+            findings_emitted += 1
+        _log.info(
+            f"{SKILL_NAME} complete",
+            extra={"findings_emitted": findings_emitted},
+        )
+    except SkillError as exc:
+        return emit_error(SKILL_NAME, exc)
+    except (json.JSONDecodeError, UnicodeDecodeError) as exc:
+        return emit_error(
+            SKILL_NAME,
+            ContractError(
+                f"input is not JSONL: {exc}",
+                hint="ensure each input line is a valid JSON object emitted by ingest-cloudtrail-ocsf",
+            ),
+        )
     return 0
 
 
