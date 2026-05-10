@@ -15,6 +15,7 @@ CURRENT_DIR = Path(__file__).resolve().parent
 if str(CURRENT_DIR) not in sys.path:
     sys.path.insert(0, str(CURRENT_DIR))
 
+import sandbox  # noqa: E402
 from audit_sink import AuditSink, sink_from_env  # noqa: E402
 from resource_limits import from_env as _resource_limits_from_env  # noqa: E402
 from resource_limits import make_preexec as _make_preexec  # noqa: E402
@@ -487,8 +488,15 @@ def _call_tool(name: str, arguments: dict[str, Any] | None) -> dict[str, Any]:
         # (and `resource_limits.apply_in_child` is a documented no-op
         # there). On POSIX the closure tightens RLIMIT_AS / FSIZE /
         # NPROC / CPU before exec().
+        command = build_command(skill, args, output_format=output_format)
+        sandbox_active = sandbox.is_enabled()
+        if sandbox_active:
+            command = sandbox.wrap_command(command, skill)
+        audit_event["sandboxed"] = bool(
+            sandbox_active and command and command[0] in {"bwrap", "sandbox-exec"}
+        )
         completed = subprocess.run(
-            build_command(skill, args, output_format=output_format),
+            command,
             input=stdin_text,
             text=True,
             capture_output=True,

@@ -52,6 +52,7 @@ _MCP_SRC = REPO_ROOT / "mcp-server" / "src"
 if str(_MCP_SRC) not in sys.path:
     sys.path.insert(0, str(_MCP_SRC))
 
+import sandbox as _sandbox  # noqa: E402
 from resource_limits import from_env as _resource_limits_from_env  # noqa: E402
 from resource_limits import make_preexec as _make_preexec  # noqa: E402
 from tool_registry import (  # noqa: E402
@@ -182,10 +183,17 @@ class SkillsClient:
             stdin_bytes = stdin
 
         limits = _resource_limits_from_env(self.timeout_seconds)
+        command = build_command(skill, args)
+        sandbox_active = _sandbox.is_enabled()
+        if sandbox_active:
+            command = _sandbox.wrap_command(command, skill)
+        sandboxed = bool(
+            sandbox_active and command and command[0] in {"bwrap", "sandbox-exec"}
+        )
         started = time.monotonic()
         try:
             completed = subprocess.run(
-                build_command(skill, args),
+                command,
                 input=stdin_bytes,
                 capture_output=True,
                 cwd=repo_root(),
@@ -205,7 +213,7 @@ class SkillsClient:
             stderr=completed.stderr,
             duration_ms=duration_ms,
         )
-        self._emit_audit(skill, result)
+        self._emit_audit(skill, result, sandboxed=sandboxed)
         return result
 
     # ── internals ───────────────────────────────────────────────────
@@ -256,7 +264,7 @@ class SkillsClient:
                     env[dst_key] = v
         return env
 
-    def _emit_audit(self, skill: SkillSpec, result: SkillResult) -> None:
+    def _emit_audit(self, skill: SkillSpec, result: SkillResult, *, sandboxed: bool = False) -> None:
         record = {
             "event": "skills_library_call",
             "timestamp": datetime.now(UTC)
@@ -271,6 +279,7 @@ class SkillsClient:
             "stdout_length": len(result.stdout),
             "stderr_length": len(result.stderr),
             "result": "success" if result.ok else "error",
+            "sandboxed": sandboxed,
         }
         if self.audit_writer is not None:
             try:

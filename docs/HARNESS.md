@@ -44,6 +44,7 @@ CLOUD_SECURITY_*  env  >  caller_context  >  preset.json  >  SKILL.md frontmatte
 | Audit destination | `CLOUD_SECURITY_MCP_AUDIT_LOG` + `CLOUD_SECURITY_AUDIT_HMAC_KEY` | durable JSONL + HMAC chain |
 | Per-call timeout | `mcp_timeout_seconds` in SKILL.md, or `CLOUD_SECURITY_MCP_TIMEOUT_SECONDS` env | wall-clock cap |
 | Resource caps | `CLOUD_SECURITY_SKILL_MAX_BYTES` / `MAX_FILE_BYTES` / `MAX_PROCESSES` | RLIMIT enforcement |
+| OS sandbox (opt-in) | `CLOUD_SECURITY_MCP_SANDBOX=on` | wrap each skill subprocess under `bwrap` (Linux) / `sandbox-exec` (macOS); fs/pid/ipc isolation; network dropped only when `network_egress: []` declared; no-op fallback if wrapper binary absent |
 | Retry policy | `CLOUD_SECURITY_RETRY_MAX_ATTEMPTS` / `BASE_SECONDS` / `CAP_SECONDS` / `TOTAL_BUDGET_SECONDS` | bounded by construction |
 | Webhook auth | `WEBHOOK_HMAC_SECRETS` / `WEBHOOK_HMAC_HEADER` / `WEBHOOK_BEARER_TOKEN` | per-skill HMAC + bearer |
 | Webhook routing | `WEBHOOK_ALLOWED_SKILLS` / `WEBHOOK_SINK_TARGETS` | default-deny |

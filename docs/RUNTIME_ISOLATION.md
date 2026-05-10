@@ -35,6 +35,59 @@ Persistent mode should be read as:
 - a separate runner or serverless wrapper owns checkpoints, retries, queue offsets, and sink writes
 - operators still need to provide the surrounding runtime unless the skill explicitly ships one
 
+## Sandboxing layers
+
+The MCP wrapper and the Python SDK shim spawn every skill in a child
+subprocess. Three layers of isolation can stack on that boundary; the
+operator opts in to as many as their host supports.
+
+### Layer 1 — container hardening (default in shipped image)
+
+The shipped image runs as non-root, with a read-only root filesystem,
+`no-new-privileges`, dropped Linux capabilities, and a writable
+`/tmp` tmpfs. Operators who run the wrapper outside the image are
+responsible for re-creating equivalent controls.
+
+### Layer 2 — opt-in OS sandbox (this layer)
+
+Operators set `CLOUD_SECURITY_MCP_SANDBOX=on` to wrap each skill
+subprocess under the platform's namespace / sandbox tooling:
+
+- **Linux (`bwrap`)** — read-only binds for `/usr`, `/etc`, `/lib`,
+  `/lib64`; the repo bound at its real path so the cwd keeps working;
+  `--tmpfs /tmp`; `--proc /proc`; `--dev /dev`; `--unshare-all` to
+  drop pid / ipc / mount / uts / cgroup namespaces; `--die-with-parent`
+  so the child exits when the wrapper does. Network stays on by
+  default (cloud SDKs need it) — only skills whose `SKILL.md`
+  declares `network_egress: []` get `--unshare-net`.
+- **macOS (`sandbox-exec`)** — the wrapper writes a per-call deny-by-
+  default `.sb` profile to `/tmp/`, allowing `file-read*`,
+  `file-write*` under `/tmp/` and the repo root, `process*`, and
+  `network*` (toggled to `(deny network*)` when `network_egress: []`).
+- **Other platforms** — no-op fallback. The wrapper logs a one-shot
+  stderr warning and proceeds unwrapped.
+
+Off by default; off behaviour is byte-identical to pre-layer-2. When
+the env var is on but the wrapper binary (`bwrap` / `sandbox-exec`)
+isn't installed, the wrapper falls back to the unsandboxed command
+and emits an `mcp_sandbox_fallback` event on stderr so the operator
+notices their opt-in didn't take. The audit envelope carries a new
+`sandboxed: bool` field on every call, so SOC tooling can prove
+which calls actually ran wrapped.
+
+Network policy is binary, not per-host, in this layer. The repo's
+`network_egress` field is advisory and may list hostnames; layer 2
+only enforces "all or nothing" — per-host iptables / pf rules are
+out of scope until a future PR.
+
+### Layer 3 — `RLIMIT_*` enforcement (always on, POSIX)
+
+`mcp-server/src/resource_limits.py` clamps `RLIMIT_AS`, `RLIMIT_FSIZE`,
+optionally `RLIMIT_NPROC`, and `RLIMIT_CPU` in a `preexec_fn` before
+`exec()`. Tunable via `CLOUD_SECURITY_SKILL_MAX_BYTES` /
+`MAX_FILE_BYTES` / `MAX_PROCESSES`. Windows has no `resource` module;
+this layer is a documented no-op there.
+
 ## Read-only skills
 
 These layers should stay read-only unless the skill contract says otherwise:
