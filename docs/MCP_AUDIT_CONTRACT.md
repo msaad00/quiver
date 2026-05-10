@@ -10,6 +10,8 @@ The goal is to make the wrapper's runtime behavior explicit:
 - failures are still audited
 - secrets and raw stdin are not echoed into the audit trail
 
+Trust boundary at a glance: [`diagrams/mcp-trust-boundary.mmd`](diagrams/mcp-trust-boundary.mmd) — the same lifecycle this doc describes, rendered as a sequence diagram (every guard, every short-circuit, the audit emission point).
+
 Read next:
 
 - [RUNTIME_ISOLATION.md](RUNTIME_ISOLATION.md)

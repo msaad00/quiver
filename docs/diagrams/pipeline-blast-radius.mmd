@@ -1,0 +1,54 @@
+%% Pipeline blast radius — every layer colour-coded by capability so
+%% the trust boundary is visible at a glance. Read-only paths are
+%% blue; the HITL gate is orange; the only write paths are red
+%% (remediate) or amber (sink, write-only-storage). Read this with
+%% docs/ARCHITECTURE.md §3 + the SECURITY_BAR.md per-skill matrix.
+flowchart LR
+  classDef raw fill:#0f172a,stroke:#475569,color:#f8fafc
+  classDef readonly fill:#0f1d36,stroke:#3b82f6,color:#dbeafe
+  classDef analyze fill:#0f2a28,stroke:#2dd4bf,color:#d1fae5
+  classDef hitl fill:#2a1708,stroke:#f59e0b,color:#fef3c7
+  classDef write fill:#2a0b1e,stroke:#ef4444,color:#fca5a5
+  classDef sink fill:#1f142e,stroke:#a78bfa,color:#ede9fe
+  classDef view fill:#11202c,stroke:#0ea5e9,color:#bae6fd
+
+  subgraph L0["Source"]
+    raw["raw vendor logs<br/>(CloudTrail · K8s audit · Okta · MCP proxy)"]:::raw
+  end
+  subgraph L1["Ingest · read-only"]
+    ingest["ingest-* / source-*"]:::readonly
+  end
+  subgraph L2["Discover · read-only"]
+    discover["discover-* (inventory · AI BOM · evidence)"]:::readonly
+  end
+  subgraph L3["Detect · read-only"]
+    detect["detect-* (deterministic rules · MITRE ATT&amp;CK / ATLAS / OWASP)"]:::analyze
+  end
+  subgraph L4["Evaluate · read-only"]
+    eval["cspm-*-cis-benchmark · k8s · container · GPU · model-serving"]:::analyze
+  end
+  subgraph L5["Remediate · HITL gated · audit-first"]
+    hitl{"HITL gate<br/>min_approvers + ticket"}:::hitl
+    remediate["remediate-* / iam-departures-*"]:::write
+  end
+  subgraph L6["View · read-only"]
+    view["convert-ocsf-to-sarif · convert-ocsf-to-mermaid"]:::view
+  end
+  subgraph L7["Output · append-only"]
+    sink["sink-s3-jsonl · sink-snowflake-jsonl · sink-clickhouse-jsonl"]:::sink
+  end
+
+  raw --> ingest
+  ingest --> detect
+  ingest --> eval
+  ingest --> sink
+  discover --> eval
+  discover --> hitl
+  detect --> view
+  detect --> sink
+  detect --> hitl
+  eval --> view
+  eval --> sink
+  eval --> hitl
+  hitl --> remediate
+  remediate --> sink
