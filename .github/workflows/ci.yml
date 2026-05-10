@@ -41,7 +41,7 @@ jobs:
 
   skill-contract:
     runs-on: ubuntu-latest
-    needs: lint
+    needs: lockfile          # parallelised with `lint` and `type-check`; tier-3 jobs still gate on all three
     steps:
       - uses: actions/checkout@v6
       - uses: ./.github/actions/setup-python-deps
@@ -63,13 +63,25 @@ jobs:
       - run: python scripts/validate_ocsf_metadata.py
       - run: python scripts/validate_skill_count_consistency.py
       - run: python scripts/validate_deny_list_parity.py
-      - run: python scripts/generate_framework_coverage_doc.py --check
-      - run: python scripts/generate_security_bar_matrix.py --check
-      - run: python scripts/coverage_summary.py --check
+      - name: Auto-generated docs in sync (run all generators in --check)
+        run: |
+          set +e
+          python scripts/generate_framework_coverage_doc.py --check; rc1=$?
+          python scripts/generate_security_bar_matrix.py --check;     rc2=$?
+          python scripts/coverage_summary.py --check;                  rc3=$?
+          if [ $rc1 -ne 0 ] || [ $rc2 -ne 0 ] || [ $rc3 -ne 0 ]; then
+            echo ""
+            echo "::error::auto-generated docs are stale. Regenerate locally:"
+            echo "::error::  python scripts/generate_framework_coverage_doc.py"
+            echo "::error::  python scripts/generate_security_bar_matrix.py"
+            echo "::error::  python scripts/coverage_summary.py --write"
+            echo "::error::then \`git add docs/FRAMEWORK_COVERAGE.md SECURITY_BAR.md docs/COVERAGE_SNAPSHOT.md\` and commit."
+            exit 1
+          fi
 
   type-check:
     runs-on: ubuntu-latest
-    needs: [lint, skill-contract]
+    needs: lockfile          # parallelised with `lint` and `skill-contract`
     steps:
       - uses: actions/checkout@v6
       - uses: ./.github/actions/setup-python-deps
