@@ -13,6 +13,35 @@ The format is loosely based on Keep a Changelog.
 
 ### Added
 
+- **`detect-snowflake-share-creation`** — Snowflake secure data share creation
+  detector for #436. Reads OCSF 1.8 API Activity (class 6003) records
+  normalized from Snowflake `query_history` carrying `actor.user.uid`,
+  `api.operation`, and `unmapped.snowflake.{share_name,target_accounts,
+  operation_kind}`, fires on `CREATE_SHARE` and `ALTER_SHARE_ADD_ACCOUNTS`
+  events, and emits an OCSF Detection Finding (class 2004) tagged with MITRE
+  ATT&CK T1537 Transfer Data to Cloud Account. Severity HIGH.
+- **`detect-snowflake-account-key-creation`** — Snowflake RSA / public-key
+  auth detector for #436. Fires on `ALTER USER ... SET RSA_PUBLIC_KEY`
+  events (slot 1 and slot 2 supported), emits an OCSF Detection Finding
+  tagged with MITRE ATT&CK T1098.001 Additional Cloud Credentials. Severity
+  HIGH.
+- **`detect-snowflake-warehouse-resize-burst`** — Snowflake compute scale
+  anomaly detector for #436. Reads OCSF 1.8 API Activity 6003 records,
+  groups `ALTER_WAREHOUSE` events by `warehouse_name` across a configurable
+  sliding window (default 60 min, env `SNOWFLAKE_RESIZE_WINDOW_MIN`), and
+  emits an OCSF Detection Finding tagged with MITRE ATT&CK T1496 Resource
+  Hijacking when the cumulative size-index jump crosses the threshold
+  (default 3 sizes, env `SNOWFLAKE_RESIZE_MIN_SIZE_JUMP`). Severity MEDIUM.
+- **`detect-snowflake-unauthorized-grant`** — Snowflake privileged-role
+  escalation detector for #436. Fires on successful `GRANT_ROLE` events
+  where the granted role is in `SNOWFLAKE_PRIVILEGED_ROLES` (default
+  `ACCOUNTADMIN,SECURITYADMIN,ORGADMIN`) AND the granter is not on
+  `SNOWFLAKE_AUTHORIZED_GRANTERS` (default empty = fail-open with stderr
+  warning). Emits an OCSF Detection Finding tagged with MITRE ATT&CK
+  T1098.003. Severity HIGH.
+- Detection layer count moves 35 → 39; repo total 82 → 86. Brings #436
+  from 3/18 to 7/18; remaining 11 detectors (1 Snowflake, 5 Databricks,
+  5 ClickHouse) stay open.
 - **`detect-snowflake-bulk-data-egress`** — first warehouse-platform vendor-depth
   detector for #436. Reads OCSF 1.8 API Activity (class 6003) records from a
   Snowflake ingest pipeline, groups by `actor.user.uid` across a 60-minute

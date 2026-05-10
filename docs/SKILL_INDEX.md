@@ -1,6 +1,6 @@
 # Skill index — find a skill fast
 
-The same 81 skill bundles, pivoted three ways:
+The same 86 skill bundles, pivoted three ways:
 
 1. **[By environment](#by-environment)** — pick a cloud or platform, see every skill that touches it.
 2. **[By purpose](#by-purpose)** — pick a layer (ingest / discover / detect / evaluate / remediate / view / output / source).
@@ -116,11 +116,15 @@ not do, and what it talks to.
 | Detect | [`detect-web-broken-access-control`](../skills/detection/detect-web-broken-access-control/) | OWASP A01 — IDOR / forced-browsing |
 | Detect | [`detect-web-injection`](../skills/detection/detect-web-injection/) | OWASP A03 — SQLi / shell / NoSQL / template injection |
 
-### Warehouse (Snowflake · Databricks · ClickHouse) — 3 skills
+### Warehouse (Snowflake · Databricks · ClickHouse) — 7 skills
 
 | Layer | Skill | What it does |
 |---|---|---|
 | Detect | [`detect-snowflake-bulk-data-egress`](../skills/detection/detect-snowflake-bulk-data-egress/) | T1567 — bulk data egress across multiple Snowflake stages |
+| Detect | [`detect-snowflake-share-creation`](../skills/detection/detect-snowflake-share-creation/) | T1537 — Snowflake secure data share creation / external account add |
+| Detect | [`detect-snowflake-account-key-creation`](../skills/detection/detect-snowflake-account-key-creation/) | T1098.001 — Snowflake RSA public-key auth bound to a user |
+| Detect | [`detect-snowflake-warehouse-resize-burst`](../skills/detection/detect-snowflake-warehouse-resize-burst/) | T1496 — Snowflake warehouse compute scale-up burst |
+| Detect | [`detect-snowflake-unauthorized-grant`](../skills/detection/detect-snowflake-unauthorized-grant/) | T1098.003 — Snowflake privileged-role grant by unauthorized identity |
 | Detect | [`detect-clickhouse-bulk-export`](../skills/detection/detect-clickhouse-bulk-export/) | T1567 — bulk row export via INTO OUTFILE / s3() / URL() |
 | Detect | [`detect-databricks-token-creation`](../skills/detection/detect-databricks-token-creation/) | T1098.001 — Databricks personal access token issuance |
 
@@ -148,14 +152,14 @@ not do, and what it talks to.
 |---|---:|---|
 | Ingest | 15 | [`skills/ingestion/`](../skills/ingestion/) (excludes the 3 warehouse sources below) |
 | Discover | 5 | [`skills/discovery/`](../skills/discovery/) |
-| Detect | 34 | [`skills/detection/`](../skills/detection/) |
+| Detect | 39 | [`skills/detection/`](../skills/detection/) |
 | Evaluate | 7 | [`skills/evaluation/`](../skills/evaluation/) |
 | Remediate | 12 | [`skills/remediation/`](../skills/remediation/) |
 | View | 2 | [`skills/view/`](../skills/view/) |
 | Output | 3 | [`skills/output/`](../skills/output/) |
 | Source | 3 | warehouse adapters: `source-databricks-query`, `source-s3-select`, `source-snowflake-query` (filed under `skills/ingestion/` on disk) |
 
-Total = 15 + 5 + 34 + 7 + 12 + 2 + 3 + 3 = **81**.
+Total = 15 + 5 + 39 + 7 + 12 + 2 + 3 + 3 = **86**.
 
 ## By framework
 
