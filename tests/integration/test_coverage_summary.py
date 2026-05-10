@@ -90,6 +90,54 @@ def test_write_mode_creates_snapshot(tmp_path, monkeypatch):
     assert COV.main(["--check"]) == 0
 
 
+def test_per_control_coverage_extracts_real_cspm_ids():
+    """The CSPM benchmark skills ship a checks.py with explicit
+    `control_id` literals. The coverage-summary parser should pull
+    them out and bucket them by framework. Lower bounds — counts may
+    grow but should never shrink without a deliberate change."""
+    aws_controls = COV._controls_in_skill("skills/evaluation/cspm-aws-cis-benchmark")
+    gcp_controls = COV._controls_in_skill("skills/evaluation/cspm-gcp-cis-benchmark")
+    azure_controls = COV._controls_in_skill("skills/evaluation/cspm-azure-cis-benchmark")
+    assert len(aws_controls) >= 15
+    assert len(gcp_controls) >= 5
+    assert len(azure_controls) >= 5
+
+
+def test_per_control_coverage_table_appears_for_real_repo():
+    skills = COV._load()
+    rendered = COV.render(skills)
+    assert "## Per-framework control coverage" in rendered
+    aws = COV._controls_in_skill("skills/evaluation/cspm-aws-cis-benchmark")
+    assert f"| CIS AWS v3 | {len(aws)} | 58 |" in rendered
+
+
+def test_per_control_coverage_omits_frameworks_not_in_input(tmp_path, monkeypatch):
+    """Only render rows for frameworks the input actually claims via
+    `frameworks` or via discovered control IDs — synthetic / smaller
+    deployments do not see a wall of '0/N' rows for frameworks they
+    don't touch."""
+    synthetic = tmp_path / "framework-coverage.json"
+    synthetic.write_text(
+        json.dumps(
+            {
+                "skills": [
+                    {
+                        "path": "skills/evaluation/cspm-aws-cis-benchmark",
+                        "layer": "evaluation",
+                        "providers": ["aws"],
+                        "frameworks": ["cis-aws-v3"],
+                    }
+                ]
+            }
+        ),
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(COV, "COVERAGE_JSON", synthetic)
+    rendered = COV.render(COV._load())
+    assert "CIS AWS v3" in rendered
+    assert "CIS Kubernetes" not in rendered
+
+
 def test_synthetic_skills_render_known_buckets(tmp_path, monkeypatch):
     """Feed a hand-built `framework-coverage.json` so the test does not
     depend on the live repo state. Confirms the bucketing logic."""
