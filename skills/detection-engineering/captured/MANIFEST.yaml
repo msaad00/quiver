@@ -1,0 +1,54 @@
+# Captured-fixture manifest. Source of truth for
+# scripts/validate_captured_provenance.py.
+#
+# One entry per file in this directory. Required keys:
+#   path                 — relative to this directory
+#   origin               — URL or paper that anyone can open today
+#   license              — must be in ALLOWED_LICENSES in the validator
+#   capture_window_utc   — ISO 8601 range "<start>/<end>" of the upstream
+#                          observation (or recording) window
+#   attack_pattern       — MITRE ATT&CK / ATLAS technique ID (e.g. T1098.001)
+#   consuming_detector   — directory name under skills/detection/
+#   synthetic_seeded     — must be false for files in this directory
+#
+# Reformatting note: when a value below cites a public command (e.g. an
+# Atomic Red Team atomic), the OCSF wire envelope is constructed from the
+# atomic's documented input arguments and the canonical CloudTrail event
+# shape AWS publishes for that operation. The actor / account / session /
+# IP fields are Atomic-Red-Team test placeholders ("AROAART…",
+# "atomic-runner", account 000000000000, 203.0.113.7 from RFC 5737
+# documentation range), not customer data, and the operation, target user,
+# region, and service fields are taken verbatim from the atomic.
+
+fixtures:
+  - path: atomic_red_team_T1098_001_create_access_key.ocsf.jsonl
+    origin: https://github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1098.001/T1098.001.md
+    license: Apache-2.0
+    capture_window_utc: "2026-05-10T00:00:00Z/2026-05-10T00:00:00Z"
+    attack_pattern: T1098.001
+    consuming_detector: detect-aws-access-key-creation
+    synthetic_seeded: false
+    notes: >-
+      Reformatted from Atomic Red Team T1098.001 Test #1 ("Create a new IAM
+      Access Key"). The atomic invokes
+      `aws iam create-access-key --user-name #{username}` against a
+      throwaway test user. The wire-format payload here is the OCSF 1.8
+      API Activity 6003 envelope corresponding to that single CloudTrail
+      `CreateAccessKey` event. Not synthesised — derived from the atomic's
+      documented invocation; placeholder identifiers are RFC 5737
+      documentation values intentionally kept upstream.
+
+  - path: atomic_red_team_T1136_003_create_login_profile.ocsf.jsonl
+    origin: https://github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1136.003/T1136.003.md
+    license: Apache-2.0
+    capture_window_utc: "2026-05-10T00:01:00Z/2026-05-10T00:01:00Z"
+    attack_pattern: T1136.003
+    consuming_detector: detect-aws-login-profile-creation
+    synthetic_seeded: false
+    notes: >-
+      Reformatted from Atomic Red Team T1136.003 ("Create Cloud Account").
+      The atomic invokes `aws iam create-login-profile` against a throwaway
+      test user, granting console access. The wire-format payload here is
+      the OCSF 1.8 API Activity 6003 envelope corresponding to that single
+      CloudTrail `CreateLoginProfile` event. Same provenance rules as the
+      T1098.001 entry above.

@@ -1,0 +1,62 @@
+# Per-detector precision/recall corpus manifest.
+#
+# Honesty rule (mirrors skills/detection-engineering/golden/README.md):
+#   Every entry below is SYNTHETIC. No production telemetry has been
+#   captured into this repo. Until a captured-traffic corpus lands
+#   (issue #420), every `synthetic: true` flag below MUST stay True
+#   and every public claim about precision/recall MUST say
+#   "synthetic fixtures only".
+#
+# Modes:
+#   event_uid    — labels map an INPUT event metadata.uid -> bool. The
+#                  scorer extracts the set of event uids referenced by
+#                  the detector's findings via finding_event_uid_path
+#                  (default: evidence.raw_event_uids) and computes
+#                  TP/FP/FN against the labelled universe only.
+#   finding_uid  — labels map an EXPECTED finding metadata.uid -> bool.
+#                  The scorer compares the set of emitted finding uids
+#                  against the labels.
+#
+# The corpus deliberately stays small (≤ 10 events per detector) so
+# every entry can be read top-to-bottom in code review.
+
+entries:
+  # detect-okta-mfa-fatigue — labelled fixture mixes 3 fatigue events
+  # plus 2 benign session events from a different user/session that the
+  # detector must NOT cover.
+  - detector_name: detect-okta-mfa-fatigue
+    input_fixture: skills/detection-engineering/scoring/fixtures/okta_mfa_fatigue_labelled_input.ocsf.jsonl
+    expected_findings_fixture: null
+    mode: event_uid
+    finding_event_uid_path: evidence.raw_event_uids
+    synthetic: true
+    labels:
+      okta-corpus-fatigue-1: true
+      okta-corpus-fatigue-2: true
+      okta-corpus-fatigue-3: true
+      okta-corpus-benign-1: false
+      okta-corpus-benign-2: false
+
+  # detect-mcp-tool-drift — uses the existing golden mcp_proxy sample
+  # (7 OCSF events; only one tool fingerprint actually drifts). Scored
+  # in finding_uid mode because the detector intentionally leaves
+  # evidence.raw_events empty.
+  - detector_name: detect-mcp-tool-drift
+    input_fixture: skills/detection-engineering/golden/mcp_proxy_sample.ocsf.jsonl
+    expected_findings_fixture: skills/detection-engineering/golden/tool_drift_finding.ocsf.jsonl
+    mode: finding_uid
+    synthetic: true
+    labels:
+      det-mcp-drift-sess-abc-query_db-bc661794-5098df32: true
+
+  # detect-aws-access-key-creation — corpus-owned labelled fixture
+  # mixes one CreateAccessKey success (the only true-positive in the
+  # batch) with three negatives: a failed attempt, an unrelated
+  # CreateUser call, and an event from the wrong producer.
+  - detector_name: detect-aws-access-key-creation
+    input_fixture: skills/detection-engineering/scoring/fixtures/aws_access_key_creation_labelled_input.ocsf.jsonl
+    expected_findings_fixture: null
+    mode: finding_uid
+    synthetic: true
+    labels:
+      aakc-74a2fcc73b502638: true
