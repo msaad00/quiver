@@ -1,0 +1,105 @@
+name: detector-scoring
+
+on:
+  pull_request:
+    paths:
+      - "skills/detection/**"
+      - "skills/detection-engineering/scoring/**"
+      - ".github/workflows/detector-scoring.yml"
+      - "scripts/score_pr_detectors.sh"
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: detector-scoring-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  detector-scoring:
+    name: detector-scoring
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          # Need the merge-base with origin/main so --changed-only can
+          # diff the PR head against the base branch.
+          fetch-depth: 0
+
+      - uses: ./.github/actions/setup-python-deps
+        with:
+          python-version: "3.11"
+          packages: pyyaml
+
+      - name: Ensure base ref is fetched
+        run: |
+          set -euo pipefail
+          base_branch="${{ github.event.pull_request.base.ref || 'main' }}"
+          git fetch --no-tags origin "$base_branch" || true
+          echo "BASE_REF=origin/$base_branch" >> "$GITHUB_ENV"
+
+      - name: Score changed detectors
+        id: score
+        run: |
+          set -o pipefail
+          # Don't fail the workflow on individual detector errors here;
+          # we still want to upload the artifact and post the comment.
+          # The "Fail if any detector errored" step below enforces.
+          set +e
+          bash scripts/score_pr_detectors.sh > pr-comment.md
+          echo "exit_code=$?" >> "$GITHUB_OUTPUT"
+          set -e
+          cat pr-comment.md
+
+      - name: Upload scoring-results.json
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: scoring-results
+          path: scoring-results.json
+          if-no-files-found: ignore
+
+      - name: Post / update PR comment
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        env:
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        with:
+          script: |
+            const fs = require('fs');
+            const body = fs.readFileSync('pr-comment.md', 'utf8');
+            const marker = '<!-- detector-scoring-bot -->';
+            const prNumber = Number(process.env.PR_NUMBER);
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+
+            const comments = await github.paginate(
+              github.rest.issues.listComments,
+              { owner, repo, issue_number: prNumber, per_page: 100 }
+            );
+            const existing = comments.find(
+              (c) => typeof c.body === 'string' && c.body.includes(marker)
+            );
+            const composedBody = `${marker}\n${body}`;
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner,
+                repo,
+                comment_id: existing.id,
+                body: composedBody,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner,
+                repo,
+                issue_number: prNumber,
+                body: composedBody,
+              });
+            }
+
+      - name: Fail if any detector errored
+        if: steps.score.outputs.exit_code != '0'
+        run: |
+          echo "::error::detector-scoring detected at least one detector error or corpus failure (exit code ${{ steps.score.outputs.exit_code }})."
+          exit 1
