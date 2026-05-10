@@ -11,7 +11,7 @@ flowchart TD
 
   subgraph SURFACES["Six surfaces · same SKILL.md + src/ + tests/"]
     direction LR
-    cli["CLI / pipes<br/>python skills/&lt;x&gt;/&lt;y&gt;/src/&lt;entry&gt;.py<br/>local user trust"]:::surface
+    cli["CLI / pipes<br/>python skills/[x]/[y]/src/[entry].py<br/>local user trust"]:::surface
     ci["CI<br/>.github/workflows/ci.yml<br/>repo-trusted runner"]:::surface
     mcp["MCP wrapper (stdio)<br/>JSON-RPC 2.0<br/>Claude Code · Desktop · Cursor · Codex · Cortex · Windsurf · Zed"]:::surface
     web["Webhook receiver<br/>FastAPI + HMAC + bearer<br/>S3 EventBridge · vendor callback · API gateway"]:::surface
