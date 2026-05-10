@@ -50,6 +50,16 @@ TEST_ROOTS = (
     ROOT / "mcp-server" / "tests",
 )
 
+# Files inside RUNTIME_ROOTS that are test harnesses, not skill runtime
+# code. Their imports are matched against the test group, not the
+# runtime groups. Listed explicitly so a new genuine `scripts/`
+# entrypoint can't silently inherit dev-only deps.
+TEST_HARNESS_FILES_INSIDE_RUNTIME_ROOTS = frozenset(
+    {
+        ROOT / "scripts" / "_runner_e2e_harness.py",
+    }
+)
+
 
 def _canonical_package(spec: str) -> str:
     package = spec.split("[", 1)[0]
@@ -102,14 +112,17 @@ def _load_raw_groups() -> dict[str, list]:
     return {str(name): list(specs) for name, specs in raw.items()}
 
 
-def _iter_python_files(*roots: Path) -> list[Path]:
+def _iter_python_files(*roots: Path, exclude: frozenset[Path] = frozenset()) -> list[Path]:
     paths: list[Path] = []
     for root in roots:
         if root.is_file():
-            paths.append(root)
+            if root not in exclude:
+                paths.append(root)
             continue
         if root.exists():
-            paths.extend(sorted(root.rglob("*.py")))
+            paths.extend(
+                p for p in sorted(root.rglob("*.py")) if p not in exclude
+            )
     return paths
 
 
@@ -161,7 +174,11 @@ def main() -> int:
 
     raw_groups = _load_raw_groups()
 
-    runtime_required = _required_packages(_iter_python_files(*RUNTIME_ROOTS))
+    runtime_required = _required_packages(
+        _iter_python_files(
+            *RUNTIME_ROOTS, exclude=TEST_HARNESS_FILES_INSIDE_RUNTIME_ROOTS
+        )
+    )
     runtime_declared = set().union(
         _resolve_group("aws", raw_groups),
         _resolve_group("gcp", raw_groups),
@@ -175,7 +192,12 @@ def main() -> int:
     for package in sorted(runtime_required - runtime_declared):
         errors.append(f"pyproject.toml: runtime import requires undeclared package `{package}`")
 
-    test_roots = [*TEST_ROOTS, *(ROOT / "skills").glob("*/*/tests")]
+    test_roots = [
+        *TEST_ROOTS,
+        *(ROOT / "skills").glob("*/*/tests"),
+        # Carved-out runtime-rooted test harnesses (see definition above).
+        *TEST_HARNESS_FILES_INSIDE_RUNTIME_ROOTS,
+    ]
     test_required = _required_packages(_iter_python_files(*test_roots))
     dev_declared = _resolve_group("dev", raw_groups)
     for package in sorted(test_required & {"pytest", "moto"}):

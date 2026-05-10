@@ -74,7 +74,8 @@ Read next:
 
 - [DATA_FLOW.md](DATA_FLOW.md)
 - [RUNTIME_ISOLATION.md](RUNTIME_ISOLATION.md)
-- [RUNTIME_PROFILES.md](RUNTIME_PROFILES.md)
+- [RUNTIME_PROFILES.md](RUNTIME_PROFILES.md) (runner templates, regenerated on every CI run)
+- [RUNTIME_PROFILES_SKILLS.md](RUNTIME_PROFILES_SKILLS.md) (skill-family sizing guidance)
 - [NATIVE_VS_OCSF.md](NATIVE_VS_OCSF.md)
 
 ## The Main Scenarios
