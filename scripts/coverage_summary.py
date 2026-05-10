@@ -19,6 +19,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import sys
 from collections import defaultdict
 from pathlib import Path
@@ -26,6 +27,68 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parent.parent
 COVERAGE_JSON = REPO_ROOT / "docs" / "framework-coverage.json"
 SNAPSHOT_MD = REPO_ROOT / "docs" / "COVERAGE_SNAPSHOT.md"
+
+# Total control count per published framework — the denominator for the
+# 'X of Y controls covered' computation. Numbers come from each
+# framework's official enumeration as of the version we tag.
+#
+# When a framework grows or its version bumps, update this table and
+# regenerate. Frameworks not in this map fall back to skill-tag count
+# (the looser proxy).
+FRAMEWORK_TOTAL_CONTROLS: dict[str, int] = {
+    "cis-aws-v3": 58,           # CIS AWS Foundations v3 — numbered controls
+    "cis-gcp-v3": 60,
+    "cis-azure-v2.1": 60,
+    "cis-k8s": 30,              # CIS K8s Benchmark v1.8 — agent-bom-relevant slice
+    "cis-docker": 17,           # CIS Docker Benchmark v1.7 — runtime-relevant slice
+    "cis-controls-v8": 18,      # 18 controls in CIS Controls v8
+    "owasp-top-10": 10,
+    "owasp-llm-top-10": 10,
+    "owasp-mcp-top-10": 10,
+    "nist-ai-rmf": 24,          # AI RMF 1.0 categories (the level outcomes roll up to)
+    # mitre-attack-v14, mitre-atlas, ocsf-1.8, nist-csf-2.0, soc2-tsc,
+    # iso-27001-2022, pci-dss-4.0, cyclonedx-ml-bom intentionally not
+    # enumerated yet — either too coarse-grained or the repo doesn't
+    # claim per-control mapping. Skill-tag count is the proxy.
+}
+
+# Control-ID extractor for evaluation skills that ship a `checks.py`
+# carrying `control_id="x.y"` literals. Returns deduplicated control
+# IDs grouped by framework, derived from the skill's framework tags.
+_CONTROL_ID_PATTERN = re.compile(r'control_id\s*=\s*"([^"]+)"')
+
+
+def _controls_in_skill(skill_path: str) -> set[str]:
+    """Parse `control_id="..."` literals from a skill's `src/checks.py`."""
+    checks = REPO_ROOT / skill_path / "src" / "checks.py"
+    if not checks.is_file():
+        return set()
+    try:
+        text = checks.read_text(encoding="utf-8")
+    except OSError:
+        return set()
+    return set(_CONTROL_ID_PATTERN.findall(text))
+
+
+def _bucket_controls_by_framework(
+    skills: list[dict],
+) -> dict[str, set[str]]:
+    """For each framework that has a known total, bucket the controls
+    each shipped skill claims to cover. The control IDs themselves come
+    from the skill's checks.py (CSPM-shape skills); the framework
+    binding comes from the skill's `frameworks` tag list.
+
+    Same control ID covered by two skills counts once (the metric is
+    'is the control covered', not 'how many skills cover it')."""
+    by_fw: dict[str, set[str]] = defaultdict(set)
+    for skill in skills:
+        controls = _controls_in_skill(skill["path"])
+        if not controls:
+            continue
+        for fw in skill.get("frameworks", []):
+            if fw in FRAMEWORK_TOTAL_CONTROLS:
+                by_fw[fw].update(controls)
+    return dict(by_fw)
 
 
 def _label_path(path: Path) -> str:
@@ -174,19 +237,53 @@ def render(skills: list[dict]) -> str:
     for key in sorted(layers, key=lambda k: -len(layers[k])):
         lines.append(_row(key, len(layers[key]), total))
     lines.append("")
+    lines.append("## Per-framework control coverage")
+    lines.append("")
+    lines.append(
+        "**Depth, not breadth.** When a skill ships a `checks.py` with "
+        "explicit `control_id` literals (the CSPM benchmarks today), this "
+        "table counts the unique controls covered against the framework's "
+        "published total. Same control covered by two skills counts once."
+    )
+    lines.append("")
+    controls_by_fw = _bucket_controls_by_framework(skills)
+    # Only render frameworks the input is actually claiming — either via
+    # a skill tag or via a discovered control. Synthetic inputs (and
+    # smaller deployments) shouldn't see a wall of '0 / N' rows for
+    # frameworks they don't touch.
+    relevant = {k for k in FRAMEWORK_TOTAL_CONTROLS if k in frameworks or controls_by_fw.get(k)}
+    if relevant:
+        lines.append("| Framework | Controls covered | Total | Coverage % |")
+        lines.append("|---|---:|---:|---:|")
+        for fw_key in sorted(relevant, key=lambda k: (-len(controls_by_fw.get(k, set())), k)):
+            covered = len(controls_by_fw.get(fw_key, set()))
+            fw_total = FRAMEWORK_TOTAL_CONTROLS[fw_key]
+            pct = 100 * covered / fw_total if fw_total else 0
+            lines.append(
+                f"| {_label(fw_key, FRAMEWORK_LABEL)} | {covered} | {fw_total} | {pct:.0f}% |"
+            )
+    else:
+        lines.append("_No frameworks in this input have per-control totals defined._")
+    lines.append("")
     lines.append("## Roadmap progress")
     lines.append("")
     lines.append(
-        "Per-track breadth toward the published target. Numbers are "
-        "**rough** — the framework tag count is a proxy for breadth, not "
-        "depth. Each track lives under a roadmap issue."
+        "Per-track breadth toward the published target. The 'Today' column "
+        "uses **per-control coverage** when the framework has known totals "
+        "(see table above), else falls back to skill-tag breadth."
     )
     lines.append("")
     lines.append("| Track | Tag | Issue | Target | Today |")
     lines.append("|---|---|---|---:|---:|")
     for label, issue, key, target in ROADMAP_TARGETS:
-        skill_count = len(frameworks.get(key, set()))
-        pct_today = 100 * skill_count / total if total else 0
+        # Prefer control-coverage % when known; fall back to skill-tag % otherwise.
+        if key in FRAMEWORK_TOTAL_CONTROLS:
+            covered = len(controls_by_fw.get(key, set()))
+            fw_total = FRAMEWORK_TOTAL_CONTROLS[key]
+            pct_today = 100 * covered / fw_total if fw_total else 0
+        else:
+            skill_count = len(frameworks.get(key, set()))
+            pct_today = 100 * skill_count / total if total else 0
         lines.append(
             f"| {label} | `{key}` | {issue} | {target}% | {pct_today:.0f}% |"
         )

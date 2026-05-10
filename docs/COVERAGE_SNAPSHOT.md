@@ -66,18 +66,34 @@ Skills can carry multiple framework tags (e.g. a CIS check tagged with NIST CSF 
 | output | 3 | 3.9% |
 | view | 2 | 2.6% |
 
+## Per-framework control coverage
+
+**Depth, not breadth.** When a skill ships a `checks.py` with explicit `control_id` literals (the CSPM benchmarks today), this table counts the unique controls covered against the framework's published total. Same control covered by two skills counts once.
+
+| Framework | Controls covered | Total | Coverage % |
+|---|---:|---:|---:|
+| CIS AWS v3 | 20 | 58 | 34% |
+| CIS GCP v3 | 10 | 60 | 17% |
+| CIS Azure v2.1 | 6 | 60 | 10% |
+| CIS Controls v8 | 0 | 18 | 0% |
+| CIS Docker | 0 | 17 | 0% |
+| CIS Kubernetes | 0 | 30 | 0% |
+| NIST AI RMF | 0 | 24 | 0% |
+| OWASP LLM Top 10 | 0 | 10 | 0% |
+| OWASP MCP Top 10 | 0 | 10 | 0% |
+
 ## Roadmap progress
 
-Per-track breadth toward the published target. Numbers are **rough** — the framework tag count is a proxy for breadth, not depth. Each track lives under a roadmap issue.
+Per-track breadth toward the published target. The 'Today' column uses **per-control coverage** when the framework has known totals (see table above), else falls back to skill-tag breadth.
 
 | Track | Tag | Issue | Target | Today |
 |---|---|---|---:|---:|
 | MITRE ATT&CK breadth | `mitre-attack-v14` | #253 | 50% | 64% |
 | MITRE ATLAS | `mitre-atlas` | #255 | 40% | 17% |
-| OWASP LLM Top 10 | `owasp-llm-top-10` | #255 | 40% | 11% |
-| OWASP MCP Top 10 | `owasp-mcp-top-10` | #255 | 50% | 9% |
+| OWASP LLM Top 10 | `owasp-llm-top-10` | #255 | 40% | 0% |
+| OWASP MCP Top 10 | `owasp-mcp-top-10` | #255 | 50% | 0% |
 | OWASP Top 10 (web) | `owasp-top-10` | TBD | 30% | 0% |
-| NIST AI RMF | `nist-ai-rmf` | TBD | 30% | 5% |
+| NIST AI RMF | `nist-ai-rmf` | TBD | 30% | 0% |
 
 ## Where the gaps are
 
