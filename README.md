@@ -56,13 +56,15 @@ Five surfaces, one bundle: **CLI · CI · MCP · webhook receiver · persistent 
 
 **Total: 79 shipped skills.**  Live counts and per-framework coverage in [`docs/COVERAGE_SNAPSHOT.md`](docs/COVERAGE_SNAPSHOT.md) (auto-generated, CI-gated).
 
+**Find a skill:** [`docs/SKILL_INDEX.md`](docs/SKILL_INDEX.md) groups every shipped skill by **environment** (AWS · GCP · Azure/Entra · K8s · Identity · AI/MCP · Web · Cross-env) and by **purpose** (ingest / discover / detect / evaluate / remediate / view / output / source), and points at the framework-mapping docs for control-catalog pivots.
+
 ## Architecture
 
 External signals enter through two intake layers, pass through two analyze layers, exit through two act layers, and persist through one output layer. MCP, CLI, CI, webhook, and runners all invoke the same skill bundle — the surface is transport, not behavior.
 
 ![Clean architecture layers diagram — signals feed intake, analyze, act, and persist stages across the seven shipped skill layers.](docs/images/architecture-layers.svg)
 
-![Clean runtime surfaces diagram — MCP, CLI, CI, and cloud runners all invoke the same shared skill bundle.](docs/images/runtime-surfaces.svg)
+The runtime surfaces — CLI, CI, MCP, webhook, library, runners — are documented in the [`Agent integrations`](#agent-integrations) table below; they all import the same skill bundle, so there is no second contract to draw.
 
 More visuals (Mermaid sources under [`docs/diagrams/`](docs/diagrams/), GitHub renders inline):
 

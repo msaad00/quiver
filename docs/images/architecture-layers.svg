@@ -87,7 +87,7 @@
     <g filter="url(#shadow)">
       <rect x="642" y="228" width="260" height="180" rx="28" fill="#0a3b35" stroke="#34d399" stroke-width="1.6"/>
       <text x="674" y="270" font-size="18" font-weight="800" fill="#d1fae5">L3 Detect</text>
-      <text x="674" y="332" font-size="56" font-weight="900" fill="#ffffff">29</text>
+      <text x="674" y="332" font-size="56" font-weight="900" fill="#ffffff">32</text>
       <text x="674" y="364" font-size="15" fill="#a7f3d0">deterministic MITRE-tagged</text>
       <text x="674" y="386" font-size="15" fill="#a7f3d0">OCSF Detection Finding 2004</text>
 
