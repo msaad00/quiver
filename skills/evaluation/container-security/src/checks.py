@@ -21,6 +21,7 @@ if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
 from skills._shared.evaluation_ocsf import findings_to_native, findings_to_ocsf  # noqa: E402
+from skills._shared.runtime_telemetry import emit_stderr_event  # noqa: E402
 
 SKILL_NAME = "container-security"
 BENCHMARK_NAME = "Container Security Benchmark"
@@ -42,6 +43,69 @@ class Finding:
     resources: list[str] = field(default_factory=list)
 
 
+# ---------------------------------------------------------------------------
+# Resilience helpers — survive None / wrong-type fields without raising.
+# ---------------------------------------------------------------------------
+
+
+def _safe_iter_images(config: object, *, check_id: str, prefer: str = "images") -> list[dict]:
+    """Return image/container dicts, skipping malformed entries.
+
+    Emits a stderr telemetry record (per docs/STDERR_TELEMETRY_CONTRACT.md)
+    whenever the payload shape forces us to skip data so unmapped inputs are
+    visible to operators rather than silently dropped.
+    """
+    if not isinstance(config, dict):
+        emit_stderr_event(
+            SKILL_NAME,
+            level="warning",
+            event="check_skipped",
+            message=f"{check_id}: config is not a dict (got {type(config).__name__})",
+            check_id=check_id,
+        )
+        return []
+    primary, secondary = ("images", "containers") if prefer == "images" else ("containers", "images")
+    raw = config.get(primary)
+    if raw is None:
+        raw = config.get(secondary)
+    if raw is None:
+        return []
+    if not isinstance(raw, list):
+        emit_stderr_event(
+            SKILL_NAME,
+            level="warning",
+            event="check_skipped",
+            message=f"{check_id}: '{primary}/{secondary}' field is not a list",
+            check_id=check_id,
+        )
+        return []
+    cleaned: list[dict] = []
+    for item in raw:
+        if isinstance(item, dict):
+            cleaned.append(item)
+        else:
+            emit_stderr_event(
+                SKILL_NAME,
+                level="warning",
+                event="item_skipped",
+                message=f"{check_id}: skipping non-dict image entry ({type(item).__name__})",
+                check_id=check_id,
+            )
+    return cleaned
+
+
+def _safe_str(value: object) -> str:
+    if value is None:
+        return ""
+    if isinstance(value, str):
+        return value
+    return str(value)
+
+
+def _safe_dict(value: object) -> dict:
+    return value if isinstance(value, dict) else {}
+
+
 # ═══════════════════════════════════════════════════════════════════════════
 # Section 1 — Dockerfile Best Practices
 # ═══════════════════════════════════════════════════════════════════════════
@@ -49,12 +113,12 @@ class Finding:
 
 def check_1_1_no_root_user(config: dict) -> Finding:
     """CTR-1.1 — Container does not run as root."""
-    images = config.get("images", config.get("containers", []))
+    images = _safe_iter_images(config, check_id="CTR-1.1")
     root_images = []
     for img in images:
-        user = img.get("user", img.get("User", ""))
+        user = _safe_str(img.get("user") if img.get("user") is not None else img.get("User"))
         if not user or user == "root" or user == "0":
-            root_images.append(img.get("name", img.get("image", "unknown")))
+            root_images.append(_safe_str(img.get("name") or img.get("image") or "unknown"))
     return Finding(
         check_id="CTR-1.1",
         title="No root user",
@@ -71,12 +135,12 @@ def check_1_1_no_root_user(config: dict) -> Finding:
 
 def check_1_2_no_latest_base(config: dict) -> Finding:
     """CTR-1.2 — Base image uses specific tag, not :latest."""
-    images = config.get("images", config.get("containers", []))
+    images = _safe_iter_images(config, check_id="CTR-1.2")
     latest = []
     for img in images:
-        base = img.get("base_image", img.get("from", ""))
+        base = _safe_str(img.get("base_image") or img.get("from"))
         if base and (base.endswith(":latest") or ":" not in base):
-            latest.append(f"{img.get('name', 'unknown')}: FROM {base}")
+            latest.append(f"{_safe_str(img.get('name') or 'unknown')}: FROM {base}")
     return Finding(
         check_id="CTR-1.2",
         title="No :latest base images",
@@ -93,12 +157,12 @@ def check_1_2_no_latest_base(config: dict) -> Finding:
 
 def check_1_3_healthcheck_defined(config: dict) -> Finding:
     """CTR-1.3 — HEALTHCHECK instruction defined."""
-    images = config.get("images", config.get("containers", []))
+    images = _safe_iter_images(config, check_id="CTR-1.3")
     no_health = []
     for img in images:
-        healthcheck = img.get("healthcheck", img.get("Healthcheck"))
+        healthcheck = img.get("healthcheck") or img.get("Healthcheck")
         if not healthcheck:
-            no_health.append(img.get("name", "unknown"))
+            no_health.append(_safe_str(img.get("name") or "unknown"))
     return Finding(
         check_id="CTR-1.3",
         title="HEALTHCHECK defined",
@@ -121,13 +185,21 @@ def check_1_3_healthcheck_defined(config: dict) -> Finding:
 def check_2_1_no_secrets_in_env(config: dict) -> Finding:
     """CTR-2.1 — No secrets in environment variables."""
     secret_patterns = re.compile(r"(?i)(password|secret|token|api_key|private_key|credentials)")
-    images = config.get("images", config.get("containers", []))
+    images = _safe_iter_images(config, check_id="CTR-2.1")
     exposed = []
     for img in images:
-        for env in img.get("env", img.get("Env", [])):
-            key = env.split("=")[0] if isinstance(env, str) else env.get("name", "")
-            if secret_patterns.search(key):
-                exposed.append(f"{img.get('name', 'unknown')}: {key}")
+        env_items = img.get("env") if img.get("env") is not None else img.get("Env")
+        if not isinstance(env_items, list):
+            continue
+        for env in env_items:
+            if isinstance(env, str):
+                key = env.split("=", 1)[0]
+            elif isinstance(env, dict):
+                key = _safe_str(env.get("name"))
+            else:
+                continue
+            if key and secret_patterns.search(key):
+                exposed.append(f"{_safe_str(img.get('name') or 'unknown')}: {key}")
     return Finding(
         check_id="CTR-2.1",
         title="No secrets in env vars",
@@ -144,13 +216,13 @@ def check_2_1_no_secrets_in_env(config: dict) -> Finding:
 
 def check_2_2_minimal_packages(config: dict) -> Finding:
     """CTR-2.2 — Image uses minimal base (alpine, slim, distroless)."""
-    images = config.get("images", config.get("containers", []))
+    images = _safe_iter_images(config, check_id="CTR-2.2")
     bloated = []
     minimal_indicators = ("alpine", "slim", "distroless", "scratch", "busybox", "ubi-minimal")
     for img in images:
-        base = img.get("base_image", img.get("from", "")).lower()
+        base = _safe_str(img.get("base_image") or img.get("from")).lower()
         if base and not any(m in base for m in minimal_indicators):
-            bloated.append(f"{img.get('name', 'unknown')}: {base}")
+            bloated.append(f"{_safe_str(img.get('name') or 'unknown')}: {base}")
     return Finding(
         check_id="CTR-2.2",
         title="Minimal base image",
@@ -167,14 +239,22 @@ def check_2_2_minimal_packages(config: dict) -> Finding:
 
 def check_2_3_no_add_instruction(config: dict) -> Finding:
     """CTR-2.3 — COPY used instead of ADD."""
-    images = config.get("images", config.get("containers", []))
+    images = _safe_iter_images(config, check_id="CTR-2.3")
     uses_add = []
     for img in images:
-        instructions = img.get("instructions", img.get("history", []))
+        instructions = img.get("instructions") if img.get("instructions") is not None else img.get("history")
+        if not isinstance(instructions, list):
+            continue
         for inst in instructions:
-            cmd = inst if isinstance(inst, str) else inst.get("created_by", "")
-            if cmd.strip().upper().startswith("ADD ") and not cmd.strip().upper().startswith("ADD --CHOWN"):
-                uses_add.append(img.get("name", "unknown"))
+            if isinstance(inst, str):
+                cmd = inst
+            elif isinstance(inst, dict):
+                cmd = _safe_str(inst.get("created_by"))
+            else:
+                continue
+            stripped = cmd.strip().upper()
+            if stripped.startswith("ADD ") and not stripped.startswith("ADD --CHOWN"):
+                uses_add.append(_safe_str(img.get("name") or "unknown"))
                 break
     return Finding(
         check_id="CTR-2.3",
@@ -197,12 +277,15 @@ def check_2_3_no_add_instruction(config: dict) -> Finding:
 
 def check_3_1_read_only_rootfs(config: dict) -> Finding:
     """CTR-3.1 — Read-only root filesystem."""
-    containers = config.get("containers", config.get("images", []))
+    containers = _safe_iter_images(config, check_id="CTR-3.1", prefer="containers")
     writable = []
     for c in containers:
-        sec = c.get("security_context", c.get("securityContext", {}))
-        if not sec.get("readOnlyRootFilesystem", sec.get("read_only_rootfs", False)):
-            writable.append(c.get("name", "unknown"))
+        sec = _safe_dict(c.get("security_context") or c.get("securityContext"))
+        ro = sec.get("readOnlyRootFilesystem")
+        if ro is None:
+            ro = sec.get("read_only_rootfs", False)
+        if not ro:
+            writable.append(_safe_str(c.get("name") or "unknown"))
     return Finding(
         check_id="CTR-3.1",
         title="Read-only root filesystem",
@@ -219,13 +302,13 @@ def check_3_1_read_only_rootfs(config: dict) -> Finding:
 
 def check_3_2_resource_limits(config: dict) -> Finding:
     """CTR-3.2 — CPU and memory limits set."""
-    containers = config.get("containers", config.get("images", []))
+    containers = _safe_iter_images(config, check_id="CTR-3.2", prefer="containers")
     no_limits = []
     for c in containers:
-        res = c.get("resources", {})
-        limits = res.get("limits", {})
+        res = _safe_dict(c.get("resources"))
+        limits = _safe_dict(res.get("limits"))
         if not limits.get("cpu") and not limits.get("memory"):
-            no_limits.append(c.get("name", "unknown"))
+            no_limits.append(_safe_str(c.get("name") or "unknown"))
     return Finding(
         check_id="CTR-3.2",
         title="Resource limits set",
