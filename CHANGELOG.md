@@ -11,6 +11,18 @@ The format is loosely based on Keep a Changelog.
 
 ## [Unreleased]
 
+### Added
+
+- **`detect-snowflake-bulk-data-egress`** — first warehouse-platform vendor-depth
+  detector for #436. Reads OCSF 1.8 API Activity (class 6003) records from a
+  Snowflake ingest pipeline, groups by `actor.user.uid` across a 60-minute
+  sliding window, and emits an OCSF Detection Finding (class 2004) tagged with
+  MITRE ATT&CK T1567 Exfiltration Over Web Service when cumulative
+  `bytes_scanned`, `rows_unloaded`, and distinct `stage_name` fan-out cross
+  configurable thresholds. Detection layer count moves from 32 → 33; repo
+  total moves from 79 → 80. Lands 1 of 18 detectors planned for #436;
+  remaining 17 (5 Snowflake, 6 Databricks, 6 ClickHouse) stay open.
+
 ## [0.9.0] — 2026-05-10 — Agentic posture: trust contract, coverage depth, sandboxing
 
 Skills count on `main`: **79** (15 ingest, 5 discover, 32 detect, 7 evaluate,

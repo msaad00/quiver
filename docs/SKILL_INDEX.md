@@ -116,6 +116,12 @@ not do, and what it talks to.
 | Detect | [`detect-web-broken-access-control`](../skills/detection/detect-web-broken-access-control/) | OWASP A01 — IDOR / forced-browsing |
 | Detect | [`detect-web-injection`](../skills/detection/detect-web-injection/) | OWASP A03 — SQLi / shell / NoSQL / template injection |
 
+### Warehouse (Snowflake · Databricks · ClickHouse) — 1 skill
+
+| Layer | Skill | What it does |
+|---|---|---|
+| Detect | [`detect-snowflake-bulk-data-egress`](../skills/detection/detect-snowflake-bulk-data-egress/) | T1567 — bulk data egress across multiple Snowflake stages |
+
 ### Cross-environment plumbing — 13 skills
 
 | Layer | Skill | What it does |
@@ -140,14 +146,14 @@ not do, and what it talks to.
 |---|---:|---|
 | Ingest | 15 | [`skills/ingestion/`](../skills/ingestion/) (excludes the 3 warehouse sources below) |
 | Discover | 5 | [`skills/discovery/`](../skills/discovery/) |
-| Detect | 32 | [`skills/detection/`](../skills/detection/) |
+| Detect | 33 | [`skills/detection/`](../skills/detection/) |
 | Evaluate | 7 | [`skills/evaluation/`](../skills/evaluation/) |
 | Remediate | 12 | [`skills/remediation/`](../skills/remediation/) |
 | View | 2 | [`skills/view/`](../skills/view/) |
 | Output | 3 | [`skills/output/`](../skills/output/) |
 | Source | 3 | warehouse adapters: `source-databricks-query`, `source-s3-select`, `source-snowflake-query` (filed under `skills/ingestion/` on disk) |
 
-Total = 15 + 5 + 32 + 7 + 12 + 2 + 3 + 3 = **79**.
+Total = 15 + 5 + 33 + 7 + 12 + 2 + 3 + 3 = **80**.
 
 ## By framework
 

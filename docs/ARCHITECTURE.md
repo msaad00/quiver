@@ -192,7 +192,7 @@ For the detailed contract, see:
 | L0 external sources | external | cloud APIs, raw logs, SaaS identity feeds, lakehouse tables |
 | L1 ingest | shipping | 15 source-specific ingesters plus 3 read-only source adapters; ingest and detect are fully dual-mode where OCSF-native parity makes sense |
 | L2 discover | shipping | environment graph, AI BOM, cloud control evidence, control evidence |
-| L3 detect | shipping | 32 shipped detectors across cloud, identity, Kubernetes, and MCP / agent signals |
+| L3 detect | shipping | 33 shipped detectors across cloud, identity, Kubernetes, MCP / agent, and warehouse signals |
 | L4 evaluate | shipping | 7 benchmark and posture skills across AWS, GCP, Azure, Kubernetes, containers, GPU, and model-serving paths with native and opt-in OCSF 2003 output |
 | L5 remediate | shipping | IAM departures is the flagship write path; Okta session kill ships as the containment remediator |
 | L6 view | shipping | SARIF and Mermaid attack-flow exports |
