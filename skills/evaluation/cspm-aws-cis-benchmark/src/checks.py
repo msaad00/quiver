@@ -436,14 +436,26 @@ def check_1_5_password_policy(iam) -> Finding:
             nist_csf="PR.AC-1",
             iso_27001="A.5.17",
         )
-    except iam.exceptions.NoSuchEntityException:
+    except ClientError as e:
+        code = str(e.response.get("Error", {}).get("Code") or "")
+        if code == "NoSuchEntity":
+            return Finding(
+                control_id="1.5",
+                title="Password policy strength",
+                section="iam",
+                severity="MEDIUM",
+                status="FAIL",
+                detail="No password policy configured",
+                nist_csf="PR.AC-1",
+                iso_27001="A.5.17",
+            )
         return Finding(
             control_id="1.5",
             title="Password policy strength",
             section="iam",
             severity="MEDIUM",
-            status="FAIL",
-            detail="No password policy configured",
+            status="ERROR",
+            detail=str(e),
             nist_csf="PR.AC-1",
             iso_27001="A.5.17",
         )

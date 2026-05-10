@@ -20,6 +20,7 @@ if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
 from skills._shared.evaluation_ocsf import findings_to_native, findings_to_ocsf  # noqa: E402
+from skills._shared.runtime_telemetry import emit_stderr_event  # noqa: E402
 
 SKILL_NAME = "k8s-security-benchmark"
 BENCHMARK_NAME = "Kubernetes Security Benchmark"
@@ -41,6 +42,69 @@ class Finding:
     resources: list[str] = field(default_factory=list)
 
 
+# ---------------------------------------------------------------------------
+# Resilience helpers — survive None / wrong-type fields without raising.
+# ---------------------------------------------------------------------------
+
+
+def _safe_dict(value: object) -> dict:
+    """Coerce a value to a dict; treat None/wrong-type as empty."""
+    return value if isinstance(value, dict) else {}
+
+
+def _safe_list(value: object) -> list:
+    """Coerce a value to a list; treat None/wrong-type as empty."""
+    return value if isinstance(value, list) else []
+
+
+def _safe_pods(config: object, *, check_id: str) -> list[dict]:
+    """Return the pod list, surviving non-dict configs and non-list pods fields.
+
+    Emits a stderr telemetry record when the input shape forces a skip.
+    """
+    if not isinstance(config, dict):
+        emit_stderr_event(
+            SKILL_NAME,
+            level="warning",
+            event="check_skipped",
+            message=f"{check_id}: config is not a dict (got {type(config).__name__})",
+            check_id=check_id,
+        )
+        return []
+    pods = config.get("pods")
+    if pods is None:
+        return []
+    if not isinstance(pods, list):
+        emit_stderr_event(
+            SKILL_NAME,
+            level="warning",
+            event="check_skipped",
+            message=f"{check_id}: 'pods' is not a list",
+            check_id=check_id,
+        )
+        return []
+    return [p for p in pods if isinstance(p, dict)]
+
+
+def _pod_containers(pod: dict) -> list[dict]:
+    """Return container dicts from either flat 'containers' or 'spec.containers'."""
+    containers = pod.get("containers")
+    if containers is None:
+        spec = _safe_dict(pod.get("spec"))
+        containers = spec.get("containers")
+    if not isinstance(containers, list):
+        return []
+    return [c for c in containers if isinstance(c, dict)]
+
+
+def _pod_field(pod: dict, key: str, default=False):
+    """Read a top-level pod field falling back to spec.{key}."""
+    if key in pod:
+        return pod.get(key, default)
+    spec = _safe_dict(pod.get("spec"))
+    return spec.get(key, default)
+
+
 # ═══════════════════════════════════════════════════════════════════════════
 # Section 1 — Pod Security
 # ═══════════════════════════════════════════════════════════════════════════
@@ -48,12 +112,11 @@ class Finding:
 
 def check_1_1_no_privileged_pods(config: dict) -> Finding:
     """K8S-1.1 — No pods running in privileged mode."""
-    pods = config.get("pods", [])
+    pods = _safe_pods(config, check_id="K8S-1.1")
     privileged = []
     for pod in pods:
-        containers = pod.get("containers", pod.get("spec", {}).get("containers", []))
-        for c in containers:
-            sec = c.get("securityContext", c.get("security_context", {}))
+        for c in _pod_containers(pod):
+            sec = _safe_dict(c.get("securityContext") or c.get("security_context"))
             if sec.get("privileged", False):
                 privileged.append(f"{pod.get('name', 'unknown')}:{c.get('name', 'unknown')}")
     return Finding(
@@ -72,8 +135,8 @@ def check_1_1_no_privileged_pods(config: dict) -> Finding:
 
 def check_1_2_no_host_pid(config: dict) -> Finding:
     """K8S-1.2 — No pods sharing host PID namespace."""
-    pods = config.get("pods", [])
-    host_pid = [p.get("name", "unknown") for p in pods if p.get("spec", p).get("hostPID", False)]
+    pods = _safe_pods(config, check_id="K8S-1.2")
+    host_pid = [p.get("name", "unknown") for p in pods if _pod_field(p, "hostPID", False)]
     return Finding(
         check_id="K8S-1.2",
         title="No host PID namespace",
@@ -90,8 +153,8 @@ def check_1_2_no_host_pid(config: dict) -> Finding:
 
 def check_1_3_no_host_network(config: dict) -> Finding:
     """K8S-1.3 — No pods using host network."""
-    pods = config.get("pods", [])
-    host_net = [p.get("name", "unknown") for p in pods if p.get("spec", p).get("hostNetwork", False)]
+    pods = _safe_pods(config, check_id="K8S-1.3")
+    host_net = [p.get("name", "unknown") for p in pods if _pod_field(p, "hostNetwork", False)]
     return Finding(
         check_id="K8S-1.3",
         title="No host network",
@@ -108,15 +171,16 @@ def check_1_3_no_host_network(config: dict) -> Finding:
 
 def check_1_4_drop_all_capabilities(config: dict) -> Finding:
     """K8S-1.4 — Containers drop ALL capabilities."""
-    pods = config.get("pods", [])
+    pods = _safe_pods(config, check_id="K8S-1.4")
     no_drop = []
     for pod in pods:
-        containers = pod.get("containers", pod.get("spec", {}).get("containers", []))
-        for c in containers:
-            sec = c.get("securityContext", c.get("security_context", {}))
-            caps = sec.get("capabilities", {})
-            drop = caps.get("drop", [])
-            if "ALL" not in [d.upper() for d in drop]:
+        for c in _pod_containers(pod):
+            sec = _safe_dict(c.get("securityContext") or c.get("security_context"))
+            caps = _safe_dict(sec.get("capabilities"))
+            drop = caps.get("drop")
+            drop_list = drop if isinstance(drop, list) else []
+            normalized = [d.upper() for d in drop_list if isinstance(d, str)]
+            if "ALL" not in normalized:
                 no_drop.append(f"{pod.get('name', 'unknown')}:{c.get('name', 'unknown')}")
     return Finding(
         check_id="K8S-1.4",
@@ -139,12 +203,16 @@ def check_1_4_drop_all_capabilities(config: dict) -> Finding:
 
 def check_2_1_no_cluster_admin_default(config: dict) -> Finding:
     """K8S-2.1 — No ClusterRoleBinding to cluster-admin for default SA."""
-    bindings = config.get("cluster_role_bindings", [])
+    bindings = _safe_list(config.get("cluster_role_bindings")) if isinstance(config, dict) else []
     dangerous = []
     for b in bindings:
-        role_ref = b.get("roleRef", {})
+        if not isinstance(b, dict):
+            continue
+        role_ref = _safe_dict(b.get("roleRef"))
         if role_ref.get("name") == "cluster-admin":
-            for subj in b.get("subjects", []):
+            for subj in _safe_list(b.get("subjects")):
+                if not isinstance(subj, dict):
+                    continue
                 if subj.get("name") == "default" or subj.get("namespace") == "kube-system":
                     dangerous.append(b.get("name", "unknown"))
     return Finding(
@@ -163,12 +231,19 @@ def check_2_1_no_cluster_admin_default(config: dict) -> Finding:
 
 def check_2_2_no_wildcard_permissions(config: dict) -> Finding:
     """K8S-2.2 — No roles with wildcard (*) permissions."""
-    roles = config.get("roles", []) + config.get("cluster_roles", [])
+    if not isinstance(config, dict):
+        roles: list = []
+    else:
+        roles = _safe_list(config.get("roles")) + _safe_list(config.get("cluster_roles"))
     wildcard = []
     for role in roles:
-        for rule in role.get("rules", []):
-            verbs = rule.get("verbs", [])
-            resources = rule.get("resources", [])
+        if not isinstance(role, dict):
+            continue
+        for rule in _safe_list(role.get("rules")):
+            if not isinstance(rule, dict):
+                continue
+            verbs = _safe_list(rule.get("verbs"))
+            resources = _safe_list(rule.get("resources"))
             if "*" in verbs or "*" in resources:
                 wildcard.append(role.get("name", "unknown"))
     return Finding(
@@ -192,11 +267,16 @@ def check_2_2_no_wildcard_permissions(config: dict) -> Finding:
 
 def check_3_1_default_deny(config: dict) -> Finding:
     """K8S-3.1 — Default deny NetworkPolicy per namespace."""
-    namespaces = config.get("namespaces", [])
+    namespaces = _safe_list(config.get("namespaces")) if isinstance(config, dict) else []
     no_deny = []
     for ns in namespaces:
-        policies = ns.get("network_policies", [])
-        has_deny = any("deny" in p.get("name", "").lower() for p in policies)
+        if not isinstance(ns, dict):
+            continue
+        policies = _safe_list(ns.get("network_policies"))
+        has_deny = any(
+            isinstance(p, dict) and "deny" in str(p.get("name", "")).lower()
+            for p in policies
+        )
         if not has_deny and not policies:
             no_deny.append(ns.get("name", "unknown"))
     return Finding(
@@ -220,14 +300,18 @@ def check_3_1_default_deny(config: dict) -> Finding:
 
 def check_4_1_no_env_secrets(config: dict) -> Finding:
     """K8S-4.1 — Secrets not passed via environment variables."""
-    pods = config.get("pods", [])
+    pods = _safe_pods(config, check_id="K8S-4.1")
     env_secrets = []
     for pod in pods:
-        containers = pod.get("containers", pod.get("spec", {}).get("containers", []))
-        for c in containers:
-            for env in c.get("env", []):
-                if env.get("valueFrom", {}).get("secretKeyRef"):
-                    env_secrets.append(f"{pod.get('name', 'unknown')}:{env.get('name', 'unknown')}")
+        for c in _pod_containers(pod):
+            for env in _safe_list(c.get("env")):
+                if not isinstance(env, dict):
+                    continue
+                value_from = _safe_dict(env.get("valueFrom"))
+                if value_from.get("secretKeyRef"):
+                    env_secrets.append(
+                        f"{pod.get('name', 'unknown')}:{env.get('name', 'unknown')}"
+                    )
     return Finding(
         check_id="K8S-4.1",
         title="Secrets not via env vars",
@@ -244,8 +328,8 @@ def check_4_1_no_env_secrets(config: dict) -> Finding:
 
 def check_4_2_secrets_encrypted_etcd(config: dict) -> Finding:
     """K8S-4.2 — Secrets encryption at rest configured."""
-    api_server = config.get("api_server", {})
-    encryption = api_server.get("encryption_config", api_server.get("encryption-provider-config", ""))
+    api_server = _safe_dict(config.get("api_server")) if isinstance(config, dict) else {}
+    encryption = api_server.get("encryption_config") or api_server.get("encryption-provider-config", "")
     return Finding(
         check_id="K8S-4.2",
         title="Secrets encrypted at rest (etcd)",
@@ -266,12 +350,14 @@ def check_4_2_secrets_encrypted_etcd(config: dict) -> Finding:
 
 def check_5_1_no_latest_tag(config: dict) -> Finding:
     """K8S-5.1 — No containers using :latest image tag."""
-    pods = config.get("pods", [])
+    pods = _safe_pods(config, check_id="K8S-5.1")
     latest = []
     for pod in pods:
-        containers = pod.get("containers", pod.get("spec", {}).get("containers", []))
-        for c in containers:
-            image = c.get("image", "")
+        for c in _pod_containers(pod):
+            image = c.get("image")
+            if not isinstance(image, str) or not image:
+                latest.append(f"{pod.get('name', 'unknown')}:<missing>")
+                continue
             if image.endswith(":latest") or ":" not in image:
                 latest.append(f"{pod.get('name', 'unknown')}:{image}")
     return Finding(
