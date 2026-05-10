@@ -97,8 +97,9 @@ def _resolve_group(name: str, raw_groups: dict, seen: set[str] | None = None) ->
     return out
 
 
-def _load_raw_groups() -> dict:
-    return tomllib.loads(PYPROJECT.read_text()).get("dependency-groups", {})
+def _load_raw_groups() -> dict[str, list]:
+    raw = tomllib.loads(PYPROJECT.read_text()).get("dependency-groups", {})
+    return {str(name): list(specs) for name, specs in raw.items()}
 
 
 def _iter_python_files(*roots: Path) -> list[Path]:
