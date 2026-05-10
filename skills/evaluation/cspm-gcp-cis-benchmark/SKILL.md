@@ -45,7 +45,7 @@ findings on real GCP projects. Each check is mapped to NIST CSF 2.0.
 > by CIS but not yet automated here. Contributions welcome — one check per function,
 > one finding row per control.
 
-## When to Use
+## Use when
 
 - GCP project security posture assessment
 - Pre-audit for SOC 2, ISO 27001, FedRAMP
