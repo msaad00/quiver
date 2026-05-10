@@ -575,8 +575,23 @@ def _stub_clients() -> dict:
     sh.describe_hub.return_value = {"HubArn": "arn:aws:securityhub:us-east-1:123456789012:hub/default"}
     sts = MagicMock()
     sts.get_caller_identity.return_value = {"Account": "123456789012"}
+    aa = MagicMock()
+    aa.list_analyzers.return_value = {"analyzers": []}
 
-    return {"iam": iam, "s3": s3, "ct": ct, "cw": cw, "ec2": ec2, "gd": gd, "sh": sh, "sts": sts}
+    # ec2 helpers used by added v3 checks (2.2.1, 5.4)
+    ec2.get_ebs_encryption_by_default.return_value = {"EbsEncryptionByDefault": True}
+
+    return {
+        "iam": iam,
+        "s3": s3,
+        "ct": ct,
+        "cw": cw,
+        "ec2": ec2,
+        "gd": gd,
+        "sh": sh,
+        "sts": sts,
+        "aa": aa,
+    }
 
 
 def test_run_assessment_runs_all_sections_with_stubbed_clients(monkeypatch):
@@ -596,7 +611,7 @@ def test_run_assessment_section_filter(monkeypatch):
 def test_get_clients_builds_boto3_session():
     with patch.object(_CHECKS.boto3, "Session") as session:
         clients = _CHECKS._get_clients("us-west-2")
-    assert set(clients.keys()) == {"iam", "s3", "ct", "cw", "ec2", "gd", "sh", "sts"}
+    assert set(clients.keys()) == {"iam", "s3", "ct", "cw", "ec2", "gd", "sh", "sts", "aa"}
     session.assert_called_once_with(region_name="us-west-2")
 
 

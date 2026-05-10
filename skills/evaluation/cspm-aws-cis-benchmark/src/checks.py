@@ -1,7 +1,7 @@
 """
 CIS AWS Foundations Benchmark v3.0 — Automated Assessment
 
-22 checks across IAM, Storage, Logging, Networking, and Security Services.
+31 checks across IAM, Storage, Logging, Networking, and Security Services.
 Read-only: requires SecurityAudit managed policy.
 
 Frameworks:
@@ -515,6 +515,222 @@ def check_1_7_no_inline_policies(iam) -> Finding:
         )
 
 
+def check_1_9_password_reuse(iam) -> Finding:
+    """CIS 1.9 — Password policy prevents reuse (last 24)."""
+    try:
+        policy = iam.get_account_password_policy()["PasswordPolicy"]
+        reuse = int(policy.get("PasswordReusePrevention", 0) or 0)
+        ok = reuse >= 24
+        return Finding(
+            control_id="1.9",
+            title="Password reuse prevention >= 24",
+            section="iam",
+            severity="MEDIUM",
+            status="PASS" if ok else "FAIL",
+            detail=f"PasswordReusePrevention={reuse} (need >=24)"
+            if not ok
+            else "Password reuse policy meets CIS",
+            nist_csf="PR.AC-1",
+            iso_27001="A.5.17",
+        )
+    except iam.exceptions.NoSuchEntityException:
+        return Finding(
+            control_id="1.9",
+            title="Password reuse prevention >= 24",
+            section="iam",
+            severity="MEDIUM",
+            status="FAIL",
+            detail="No password policy configured",
+            nist_csf="PR.AC-1",
+            iso_27001="A.5.17",
+        )
+    except ClientError as e:
+        return Finding(
+            control_id="1.9",
+            title="Password reuse prevention >= 24",
+            section="iam",
+            severity="MEDIUM",
+            status="ERROR",
+            detail=str(e),
+            nist_csf="PR.AC-1",
+            iso_27001="A.5.17",
+        )
+
+
+def check_1_13_one_active_key(iam) -> Finding:
+    """CIS 1.13 — Only one active access key per IAM user."""
+    try:
+        offenders: list[str] = []
+        for user in _paginate(iam, "list_users", "Users"):
+            keys = _paginate(
+                iam,
+                "list_access_keys",
+                "AccessKeyMetadata",
+                UserName=user["UserName"],
+            )
+            active = [k for k in keys if k.get("Status") == "Active"]
+            if len(active) > 1:
+                offenders.append(f"{user['UserName']} ({len(active)} active keys)")
+        return Finding(
+            control_id="1.13",
+            title="One active access key per user",
+            section="iam",
+            severity="MEDIUM",
+            status="FAIL" if offenders else "PASS",
+            detail=f"{len(offenders)} users with >1 active key"
+            if offenders
+            else "All users have at most one active key",
+            nist_csf="PR.AC-1",
+            iso_27001="A.5.17",
+            resources=offenders,
+        )
+    except ClientError as e:
+        return Finding(
+            control_id="1.13",
+            title="One active access key per user",
+            section="iam",
+            severity="MEDIUM",
+            status="ERROR",
+            detail=str(e),
+            nist_csf="PR.AC-1",
+            iso_27001="A.5.17",
+        )
+
+
+def check_1_14_hardware_mfa_root(iam) -> Finding:
+    """CIS 1.14 — Hardware MFA on root account."""
+    try:
+        summary = iam.get_account_summary()["SummaryMap"]
+        if summary.get("AccountMFAEnabled", 0) != 1:
+            return Finding(
+                control_id="1.14",
+                title="Hardware MFA on root account",
+                section="iam",
+                severity="CRITICAL",
+                status="FAIL",
+                detail="Root has no MFA at all",
+                nist_csf="PR.AC-1",
+                iso_27001="A.8.5",
+            )
+        try:
+            devices = iam.list_virtual_mfa_devices(AssignmentStatus="Assigned").get(
+                "VirtualMFADevices", []
+            )
+        except ClientError:
+            devices = []
+        root_virtual = [
+            d
+            for d in devices
+            if str(d.get("SerialNumber", "")).endswith(":mfa/root-account-mfa-device")
+        ]
+        if root_virtual:
+            return Finding(
+                control_id="1.14",
+                title="Hardware MFA on root account",
+                section="iam",
+                severity="CRITICAL",
+                status="FAIL",
+                detail="Root uses virtual MFA, not hardware MFA",
+                nist_csf="PR.AC-1",
+                iso_27001="A.8.5",
+            )
+        return Finding(
+            control_id="1.14",
+            title="Hardware MFA on root account",
+            section="iam",
+            severity="CRITICAL",
+            status="PASS",
+            detail="Root MFA is hardware-backed",
+            nist_csf="PR.AC-1",
+            iso_27001="A.8.5",
+        )
+    except ClientError as e:
+        return Finding(
+            control_id="1.14",
+            title="Hardware MFA on root account",
+            section="iam",
+            severity="CRITICAL",
+            status="ERROR",
+            detail=str(e),
+            nist_csf="PR.AC-1",
+            iso_27001="A.8.5",
+        )
+
+
+def check_1_16_no_user_attached_policies(iam) -> Finding:
+    """CIS 1.16 — IAM users receive permissions only via groups."""
+    try:
+        offenders: list[str] = []
+        for user in _paginate(iam, "list_users", "Users"):
+            attached = _paginate(
+                iam,
+                "list_attached_user_policies",
+                "AttachedPolicies",
+                UserName=user["UserName"],
+            )
+            if attached:
+                offenders.append(user["UserName"])
+        return Finding(
+            control_id="1.16",
+            title="No user-attached managed policies",
+            section="iam",
+            severity="LOW",
+            status="FAIL" if offenders else "PASS",
+            detail=f"{len(offenders)} users have managed policies attached directly"
+            if offenders
+            else "All user permissions flow through groups",
+            nist_csf="PR.AC-4",
+            iso_27001="A.5.15",
+            resources=offenders,
+        )
+    except ClientError as e:
+        return Finding(
+            control_id="1.16",
+            title="No user-attached managed policies",
+            section="iam",
+            severity="LOW",
+            status="ERROR",
+            detail=str(e),
+            nist_csf="PR.AC-4",
+            iso_27001="A.5.15",
+        )
+
+
+def check_1_20_access_analyzer(aa) -> Finding:
+    """CIS 1.20 — IAM Access Analyzer enabled."""
+    try:
+        analyzers = aa.list_analyzers().get("analyzers", [])
+        active = [
+            str(a.get("arn") or a.get("name") or "")
+            for a in analyzers
+            if str(a.get("status", "")).upper() == "ACTIVE"
+        ]
+        return Finding(
+            control_id="1.20",
+            title="IAM Access Analyzer enabled",
+            section="iam",
+            severity="MEDIUM",
+            status="PASS" if active else "FAIL",
+            detail=f"{len(active)} active analyzer(s)"
+            if active
+            else "No active IAM Access Analyzer",
+            nist_csf="DE.CM-1",
+            iso_27001="A.8.16",
+            resources=active,
+        )
+    except ClientError as e:
+        return Finding(
+            control_id="1.20",
+            title="IAM Access Analyzer enabled",
+            section="iam",
+            severity="MEDIUM",
+            status="ERROR",
+            detail=str(e),
+            nist_csf="DE.CM-1",
+            iso_27001="A.8.16",
+        )
+
+
 # ---------------------------------------------------------------------------
 # Section 2 — Storage
 # ---------------------------------------------------------------------------
@@ -671,6 +887,108 @@ def check_2_4_s3_versioning(s3) -> Finding:
             detail=str(e),
             nist_csf="PR.DS-1",
             iso_27001="A.8.13",
+        )
+
+
+def _bucket_policy_requires_ssl(policy_doc: dict[str, Any]) -> bool:
+    """True if the policy explicitly denies non-SSL (aws:SecureTransport=false) requests."""
+    statements = policy_doc.get("Statement", [])
+    if isinstance(statements, dict):
+        statements = [statements]
+    for stmt in statements:
+        if str(stmt.get("Effect", "")).lower() != "deny":
+            continue
+        condition = stmt.get("Condition", {}) or {}
+        bool_block = condition.get("Bool", {}) or {}
+        secure = bool_block.get("aws:SecureTransport")
+        if secure is None:
+            continue
+        if isinstance(secure, list):
+            values = [str(v).lower() for v in secure]
+        else:
+            values = [str(secure).lower()]
+        if "false" in values:
+            return True
+    return False
+
+
+def check_2_1_4_s3_ssl_required(s3) -> Finding:
+    """CIS 2.1.4 — S3 bucket policies require encryption-in-transit (SSL)."""
+    try:
+        buckets = s3.list_buckets()["Buckets"]
+        non_ssl: list[str] = []
+        for bucket in buckets:
+            name = bucket["Name"]
+            try:
+                policy_text = s3.get_bucket_policy(Bucket=name).get("Policy")
+            except ClientError as e:
+                if e.response["Error"]["Code"] in {"NoSuchBucketPolicy", "NoSuchBucket"}:
+                    non_ssl.append(name)
+                    continue
+                raise
+            if not policy_text:
+                non_ssl.append(name)
+                continue
+            try:
+                policy_doc = json.loads(policy_text)
+            except (TypeError, ValueError):
+                non_ssl.append(name)
+                continue
+            if not _bucket_policy_requires_ssl(policy_doc):
+                non_ssl.append(name)
+        return Finding(
+            control_id="2.1.4",
+            title="S3 bucket policies require SSL",
+            section="storage",
+            severity="HIGH",
+            status="FAIL" if non_ssl else "PASS",
+            detail=f"{len(non_ssl)} buckets do not require encryption-in-transit"
+            if non_ssl
+            else "All buckets enforce SSL",
+            nist_csf="PR.DS-2",
+            iso_27001="A.8.24",
+            resources=non_ssl,
+        )
+    except ClientError as e:
+        return Finding(
+            control_id="2.1.4",
+            title="S3 bucket policies require SSL",
+            section="storage",
+            severity="HIGH",
+            status="ERROR",
+            detail=str(e),
+            nist_csf="PR.DS-2",
+            iso_27001="A.8.24",
+        )
+
+
+def check_2_2_1_ebs_encryption_default(ec2) -> Finding:
+    """CIS 2.2.1 — EBS volume encryption enabled by default."""
+    try:
+        result = ec2.get_ebs_encryption_by_default()
+        enabled = bool(result.get("EbsEncryptionByDefault"))
+        return Finding(
+            control_id="2.2.1",
+            title="EBS encryption-by-default enabled",
+            section="storage",
+            severity="HIGH",
+            status="PASS" if enabled else "FAIL",
+            detail="EBS encryption-by-default is enabled in this region"
+            if enabled
+            else "EBS encryption-by-default is OFF in this region",
+            nist_csf="PR.DS-1",
+            iso_27001="A.8.24",
+        )
+    except ClientError as e:
+        return Finding(
+            control_id="2.2.1",
+            title="EBS encryption-by-default enabled",
+            section="storage",
+            severity="HIGH",
+            status="ERROR",
+            detail=str(e),
+            nist_csf="PR.DS-1",
+            iso_27001="A.8.24",
         )
 
 
@@ -927,6 +1245,61 @@ def check_3_6_cloudtrail_data_events(ct) -> Finding:
         )
 
 
+def check_3_7_cloudtrail_cloudwatch_integration(ct) -> Finding:
+    """CIS 3.7 — CloudTrail trails integrated with CloudWatch Logs."""
+    try:
+        trails = ct.describe_trails()["trailList"]
+        if not trails:
+            return Finding(
+                control_id="3.7",
+                title="CloudTrail integrated with CloudWatch Logs",
+                section="logging",
+                severity="MEDIUM",
+                status="FAIL",
+                detail="No CloudTrail trails found",
+                nist_csf="DE.AE-3",
+                iso_27001="A.8.15",
+            )
+        not_integrated: list[str] = []
+        for trail in trails:
+            log_group = trail.get("CloudWatchLogsLogGroupArn")
+            if not log_group:
+                not_integrated.append(str(trail.get("Name") or ""))
+                continue
+            try:
+                status = ct.get_trail_status(Name=trail["Name"])
+            except ClientError:
+                not_integrated.append(str(trail.get("Name") or ""))
+                continue
+            latest = status.get("LatestCloudWatchLogsDeliveryTime")
+            if not latest:
+                not_integrated.append(str(trail.get("Name") or ""))
+        return Finding(
+            control_id="3.7",
+            title="CloudTrail integrated with CloudWatch Logs",
+            section="logging",
+            severity="MEDIUM",
+            status="FAIL" if not_integrated else "PASS",
+            detail=f"{len(not_integrated)} trails missing CloudWatch Logs integration"
+            if not_integrated
+            else "All trails ship to CloudWatch Logs",
+            nist_csf="DE.AE-3",
+            iso_27001="A.8.15",
+            resources=not_integrated,
+        )
+    except ClientError as e:
+        return Finding(
+            control_id="3.7",
+            title="CloudTrail integrated with CloudWatch Logs",
+            section="logging",
+            severity="MEDIUM",
+            status="ERROR",
+            detail=str(e),
+            nist_csf="DE.AE-3",
+            iso_27001="A.8.15",
+        )
+
+
 # ---------------------------------------------------------------------------
 # Section 4 — Networking
 # ---------------------------------------------------------------------------
@@ -1014,6 +1387,44 @@ def check_4_3_vpc_flow_logs(ec2) -> Finding:
             detail=str(e),
             nist_csf="DE.CM-1",
             iso_27001="A.8.16",
+        )
+
+
+def check_5_4_default_sg_restricts_traffic(ec2) -> Finding:
+    """CIS 5.4 — Default VPC security group restricts all traffic."""
+    try:
+        sgs = ec2.describe_security_groups(
+            Filters=[{"Name": "group-name", "Values": ["default"]}]
+        )["SecurityGroups"]
+        offenders: list[str] = []
+        for sg in sgs:
+            if sg.get("IpPermissions") or sg.get("IpPermissionsEgress"):
+                offenders.append(
+                    f"{sg.get('GroupId', '')} (vpc {sg.get('VpcId', '')})"
+                )
+        return Finding(
+            control_id="5.4",
+            title="Default VPC SG restricts all traffic",
+            section="networking",
+            severity="HIGH",
+            status="FAIL" if offenders else "PASS",
+            detail=f"{len(offenders)} default security group(s) carry rules"
+            if offenders
+            else "All default security groups are empty",
+            nist_csf="PR.AC-5",
+            iso_27001="A.8.20",
+            resources=offenders,
+        )
+    except ClientError as e:
+        return Finding(
+            control_id="5.4",
+            title="Default VPC SG restricts all traffic",
+            section="networking",
+            severity="HIGH",
+            status="ERROR",
+            detail=str(e),
+            nist_csf="PR.AC-5",
+            iso_27001="A.8.20",
         )
 
 
@@ -1564,10 +1975,17 @@ SECTIONS: dict[str, list] = {
         check_1_5_password_policy,
         check_1_6_no_root_keys,
         check_1_7_no_inline_policies,
+        check_1_9_password_reuse,
+        check_1_13_one_active_key,
+        check_1_14_hardware_mfa_root,
+        check_1_16_no_user_attached_policies,
+        check_1_20_access_analyzer,
     ],
     "storage": [
         check_2_1_s3_encryption,
+        check_2_1_4_s3_ssl_required,
         check_2_2_s3_logging,
+        check_2_2_1_ebs_encryption_default,
         check_2_3_s3_public_access,
         check_2_4_s3_versioning,
     ],
@@ -1578,11 +1996,13 @@ SECTIONS: dict[str, list] = {
         check_3_4_cloudwatch_alarms,
         check_3_5_cloudtrail_kms_encryption,
         check_3_6_cloudtrail_data_events,
+        check_3_7_cloudtrail_cloudwatch_integration,
     ],
     "networking": [
         check_4_1_no_unrestricted_ssh,
         check_4_2_no_unrestricted_rdp,
         check_4_3_vpc_flow_logs,
+        check_5_4_default_sg_restricts_traffic,
     ],
     "security-services": [
         check_6_1_guardduty_enabled,
@@ -1602,12 +2022,24 @@ def _get_clients(region: str) -> dict[str, Any]:
         "gd": session.client("guardduty"),
         "sh": session.client("securityhub"),
         "sts": session.client("sts"),
+        "aa": session.client("accessanalyzer"),
     }
+
+
+# Function-name → client-key overrides for checks whose default
+# section-prefix routing would land on the wrong client.
+_CLIENT_OVERRIDES: dict[str, str] = {
+    "check_1_20_access_analyzer": "aa",
+    "check_2_2_1_ebs_encryption_default": "ec2",
+    "check_5_4_default_sg_restricts_traffic": "ec2",
+}
 
 
 def _run_check(fn, clients: dict) -> Finding:
     """Route check function to the right client(s)."""
     name = fn.__name__
+    if name in _CLIENT_OVERRIDES:
+        return fn(clients[_CLIENT_OVERRIDES[name]])
     if "cloudtrail_s3" in name:
         return fn(clients["ct"], clients["s3"])
     if name.startswith("check_1"):
@@ -1616,7 +2048,7 @@ def _run_check(fn, clients: dict) -> Finding:
         return fn(clients["s3"])
     if name.startswith("check_3") or "cloudtrail" in name or "cloudwatch" in name:
         return fn(clients["ct"] if "cloudtrail" in name else clients["cw"])
-    if name.startswith("check_4"):
+    if name.startswith("check_4") or name.startswith("check_5"):
         return fn(clients["ec2"])
     if "guardduty" in name:
         return fn(clients["gd"])

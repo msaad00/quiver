@@ -72,7 +72,7 @@ Skills can carry multiple framework tags (e.g. a CIS check tagged with NIST CSF 
 
 | Framework | Controls covered | Total | Coverage % |
 |---|---:|---:|---:|
-| CIS AWS v3 | 20 | 58 | 34% |
+| CIS AWS v3 | 29 | 58 | 50% |
 | CIS GCP v3 | 10 | 60 | 17% |
 | CIS Azure v2.1 | 6 | 60 | 10% |
 | CIS Controls v8 | 0 | 18 | 0% |
