@@ -22,6 +22,19 @@ The format is loosely based on Keep a Changelog.
   configurable thresholds. Detection layer count moves from 32 → 33; repo
   total moves from 79 → 80. Lands 1 of 18 detectors planned for #436;
   remaining 17 (5 Snowflake, 6 Databricks, 6 ClickHouse) stay open.
+- **`detect-clickhouse-bulk-export`** — first ClickHouse detector for #436.
+  Reads OCSF 1.8 API Activity (class 6003) records normalized from
+  ClickHouse `system.query_log`, filters on
+  `metadata.product.vendor_name == "ClickHouse"`, drops failed queries, keeps
+  rows whose SQL text matches one of `INTO OUTFILE`,
+  `INSERT INTO FUNCTION s3(`, or `URL(`, groups by `actor.user.uid` across a
+  60-minute sliding window (env `CLICKHOUSE_EXPORT_WINDOW_MIN`), and emits an
+  OCSF Detection Finding (class 2004) tagged with MITRE ATT&CK T1567
+  Exfiltration Over Web Service when cumulative `read_bytes` crosses the
+  configurable byte threshold (default 10 GiB, env
+  `CLICKHOUSE_EXPORT_BYTE_THRESHOLD`). Detection layer count moves from
+  33 → 34; repo total moves from 80 → 81. Closes #436 in part — first
+  ClickHouse detector; five more ClickHouse detectors stay open.
 
 ## [0.9.0] — 2026-05-10 — Agentic posture: trust contract, coverage depth, sandboxing
 
