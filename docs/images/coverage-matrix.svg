@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1400" height="1600" viewBox="0 0 1400 1600" role="img" aria-labelledby="cm-title cm-desc">
   <title id="cm-title">cloud-ai-security-skills — detection and posture coverage matrix</title>
-  <desc id="cm-desc">Coverage matrix visualizing the gap between shipped detection and posture skills and their paired remediation, with ATT&amp;CK or ATLAS technique IDs where the detector emits them and framework notes where it does not. Rows list every shipped detection (29) plus every CSPM benchmark family (4 native CIS scopes). Columns are: skill name, mapping or note, detector or check shipped status, paired remediation status, and the tracking issue or notes. Green cells mean a closed loop is shipped; amber cells mean a remediation skill is on the roadmap; red cells mean no remediation exists or is planned. Thirteen of twenty-nine detection rows are closed loops today; lateral-movement is intentionally detection-only because the response is per-arm fan-out via existing remediation skills, and the access-key, login-profile, GCP service-account-key, GCP service-account-token-minting, discovery-burst, cross-account-copy, logging-impairment, AWS and GCP model-artifact-download, MCP credential-leak, system-prompt-extraction, tool-output-policy-bypass, and tool-output-exfiltration-instructions slices are still detection-first. The matrix is the single source of truth for closed-loop coverage and updates whenever a remediation skill ships.</desc>
+  <desc id="cm-desc">Coverage matrix visualizing the gap between shipped detection and posture skills and their paired remediation, with ATT&amp;CK or ATLAS technique IDs where the detector emits them and framework notes where it does not. Rows list every shipped detection (32) plus every CSPM benchmark family (4 native CIS scopes). Columns are: skill name, mapping or note, detector or check shipped status, paired remediation status, and the tracking issue or notes. Green cells mean a closed loop is shipped; amber cells mean a remediation skill is on the roadmap; red cells mean no remediation exists or is planned. Thirteen of twenty-nine detection rows are closed loops today; lateral-movement is intentionally detection-only because the response is per-arm fan-out via existing remediation skills, and the access-key, login-profile, GCP service-account-key, GCP service-account-token-minting, discovery-burst, cross-account-copy, logging-impairment, AWS and GCP model-artifact-download, MCP credential-leak, system-prompt-extraction, tool-output-policy-bypass, and tool-output-exfiltration-instructions slices are still detection-first. The matrix is the single source of truth for closed-loop coverage and updates whenever a remediation skill ships.</desc>
 
   <defs>
     <linearGradient id="bg2" x1="0" y1="0" x2="1" y2="1">
@@ -51,7 +51,7 @@
   <line x1="48" y1="212" x2="1352" y2="212" stroke="#334155" stroke-width="1.5"/>
 
   <!-- DETECTION SECTION -->
-  <text x="48" y="244" fill="#5eead4" font-family="Inter, system-ui, sans-serif" font-size="15" font-weight="900">DETECTION (29)</text>
+  <text x="48" y="244" fill="#5eead4" font-family="Inter, system-ui, sans-serif" font-size="15" font-weight="900">DETECTION (32)</text>
 
   <!-- Row stride 38 starting at y=276; badge y = row_text_y - 16 (badge height 22) -->
   <g font-family="Inter, system-ui, sans-serif">
@@ -257,6 +257,27 @@
     <rect x="880"  y="1338" width="40" height="22" rx="4" fill="#7f1d1d" stroke="#ef4444"/>
     <text x="1020" y="1354" fill="#fee2e2" font-size="13">detection-first GCP AI model-artifact collection slice</text>
   </g>
+  <g font-family="Inter, system-ui, sans-serif">
+    <text x="48"   y="1374" fill="#f1f5f9" font-size="14">detect-web-broken-access-control</text>
+    <text x="430"  y="1374" fill="#cbd5e1" font-size="14">T1212 (TA0006) · OWASP A01:2021</text>
+    <rect x="760"  y="1358" width="40" height="22" rx="4" fill="#16a34a" stroke="#22c55e"/>
+    <rect x="880"  y="1358" width="40" height="22" rx="4" fill="#7f1d1d" stroke="#ef4444"/>
+    <text x="1020" y="1374" fill="#fee2e2" font-size="13">detection-only IDOR / auth-swap-flip slice (#431)</text>
+  </g>
+  <g font-family="Inter, system-ui, sans-serif">
+    <text x="48"   y="1394" fill="#f1f5f9" font-size="14">detect-web-injection</text>
+    <text x="430"  y="1394" fill="#cbd5e1" font-size="14">T1190 (TA0001) · OWASP A03:2021</text>
+    <rect x="760"  y="1378" width="40" height="22" rx="4" fill="#16a34a" stroke="#22c55e"/>
+    <rect x="880"  y="1378" width="40" height="22" rx="4" fill="#7f1d1d" stroke="#ef4444"/>
+    <text x="1020" y="1394" fill="#fee2e2" font-size="13">detection-only sql/cmd/ldap/nosql/xpath/template slice (#431)</text>
+  </g>
+  <g font-family="Inter, system-ui, sans-serif">
+    <text x="48"   y="1414" fill="#f1f5f9" font-size="14">detect-web-auth-failures</text>
+    <text x="430"  y="1414" fill="#cbd5e1" font-size="14">T1110 · T1078 (TA0006) · OWASP A07:2021</text>
+    <rect x="760"  y="1398" width="40" height="22" rx="4" fill="#16a34a" stroke="#22c55e"/>
+    <rect x="880"  y="1398" width="40" height="22" rx="4" fill="#7f1d1d" stroke="#ef4444"/>
+    <text x="1020" y="1414" fill="#fee2e2" font-size="13">detection-only brute-force / stuffing-flip / weak-login slice (#431)</text>
+  </g>
 
   <!-- EVALUATION SECTION -->
   <text x="48" y="1408" fill="#5eead4" font-family="Inter, system-ui, sans-serif" font-size="15" font-weight="900">EVALUATION / CSPM (4 platforms · 91 checks)</text>
@@ -292,7 +313,7 @@
 
   <!-- Footer (two lines to fit 1200px canvas) -->
   <g font-family="Inter, system-ui, sans-serif">
-    <text x="48" y="1566" fill="#94a3b8" font-size="13">Closed-loop ratio: <tspan fill="#5eead4" font-weight="900">13 / 29</tspan> · <tspan fill="#f87171" font-weight="900">lateral-movement stays detection-only by design, and the AWS access-key, login-profile, GCP service-account-key/token-minting, discovery, exfiltration, logging, AWS and GCP model-artifact collection, MCP leakage, system-prompt, policy-bypass, and response-exfiltration slices are detection-first today</tspan></text>
+    <text x="48" y="1566" fill="#94a3b8" font-size="13">Closed-loop ratio: <tspan fill="#5eead4" font-weight="900">13 / 32</tspan> · <tspan fill="#f87171" font-weight="900">lateral-movement stays detection-only by design, and the AWS access-key, login-profile, GCP service-account-key/token-minting, discovery, exfiltration, logging, AWS and GCP model-artifact collection, MCP leakage, system-prompt, policy-bypass, and response-exfiltration slices are detection-first today</tspan></text>
     <text x="48" y="1584" fill="#94a3b8" font-size="13">All writes HITL-gated, dry-run-default, dual-audited (DynamoDB + KMS S3, before + after) · contract enforced by scripts/validate_safe_skill_bar.py · CSPM auto-remediation tracked at #242 #254</text>
   </g>
 </svg>

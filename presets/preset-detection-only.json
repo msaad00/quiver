@@ -46,6 +46,9 @@
     "detect-system-prompt-extraction",
     "detect-tool-output-exfiltration-instructions",
     "detect-tool-output-policy-bypass",
+    "detect-web-auth-failures",
+    "detect-web-broken-access-control",
+    "detect-web-injection",
     "convert-ocsf-to-sarif",
     "convert-ocsf-to-mermaid-attack-flow"
   ]

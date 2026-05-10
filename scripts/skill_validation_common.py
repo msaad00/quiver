@@ -82,6 +82,10 @@ OFFICIAL_REFERENCE_HOSTS = {
     "docs.oasis-open.org",
     "docs.snowflake.com",
     "genai.owasp.org",
+    "owasp.org",
+    "cheatsheetseries.owasp.org",
+    "cwe.mitre.org",
+    "capec.mitre.org",
     "grpc.github.io",
     "kubernetes.io",
     "learn.microsoft.com",
@@ -105,6 +109,9 @@ ALLOWED_GITHUB_PREFIXES = (
     "falcosecurity/rules",
     "msaad00/agent-bom",
     "opencontainers/image-spec",
+    "OWASP/ASVS",
+    "OWASP/CheatSheetSeries",
+    "OWASP/Top10",
 )
 
 

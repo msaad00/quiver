@@ -81,6 +81,9 @@ is the row you can take to your auditor.
 | `detect-system-prompt-extraction` | detection | ✅ | ✅ | ✅ | ✅ golden fixture | ✅ 1.8 | ✅ |
 | `detect-tool-output-exfiltration-instructions` | detection | ✅ | ✅ | ✅ | ✅ golden fixture | ✅ 1.8 | ✅ |
 | `detect-tool-output-policy-bypass` | detection | ✅ | ✅ | ✅ | ✅ golden fixture | ✅ 1.8 | ✅ |
+| `detect-web-auth-failures` | detection | ✅ | ✅ | ✅ | ✅ golden fixture | ✅ 1.8 | ✅ |
+| `detect-web-broken-access-control` | detection | ✅ | ✅ | ✅ | ✅ golden fixture | ✅ 1.8 | ✅ |
+| `detect-web-injection` | detection | ✅ | ✅ | ✅ | ✅ golden fixture | ✅ 1.8 | ✅ |
 | `container-security` | evaluation | ✅ | ✅ | ✅ | ✅ deterministic | ✅ 1.8 opt-in | ✅ |
 | `cspm-aws-cis-benchmark` | evaluation | ⚠️ write-capable | ✅ | ✅ | ✅ deterministic | ✅ 1.8 opt-in | ✅ |
 | `cspm-azure-cis-benchmark` | evaluation | ✅ | ✅ | ✅ | ✅ deterministic | ✅ 1.8 opt-in | ✅ |
@@ -106,7 +109,7 @@ is the row you can take to your auditor.
 | `sink-s3-jsonl` | output | ⚠️ append-only sink | ✅ | ✅ | ✅ audit + re-verify | n/a | ✅ |
 | `sink-snowflake-jsonl` | output | ⚠️ append-only sink | ✅ | ✅ | ✅ audit + re-verify | n/a | ✅ |
 
-_76 skills · generated from SKILL.md frontmatter + layer conventions. Run `python scripts/generate_security_bar_matrix.py` to refresh after adding a skill; CI enforces parity via `--check`._
+_79 skills · generated from SKILL.md frontmatter + layer conventions. Run `python scripts/generate_security_bar_matrix.py` to refresh after adding a skill; CI enforces parity via `--check`._
 <!-- AUTO-GENERATED MATRIX END -->
 
 ## How to add a skill that satisfies the bar

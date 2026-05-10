@@ -88,6 +88,12 @@
       "scope": "control-framework"
     },
     {
+      "id": "owasp-top-10",
+      "name": "OWASP Top 10",
+      "version": "2021",
+      "scope": "web-app-control-framework"
+    },
+    {
       "id": "owasp-llm-top-10",
       "name": "OWASP LLM Top 10",
       "version": "current",
@@ -1375,6 +1381,81 @@
       "frameworks": [
         "ocsf-1.8",
         "mitre-attack-v14"
+      ],
+      "coverage_status": "validated",
+      "execution_modes": [
+        "cli",
+        "ci",
+        "mcp",
+        "persistent"
+      ]
+    },
+    {
+      "path": "skills/detection/detect-web-broken-access-control",
+      "layer": "detection",
+      "providers": [
+        "multi"
+      ],
+      "asset_classes": [
+        "http-access-logs",
+        "api-gateway",
+        "web-apps",
+        "identities"
+      ],
+      "frameworks": [
+        "ocsf-1.8",
+        "mitre-attack-v14",
+        "owasp-top-10"
+      ],
+      "coverage_status": "validated",
+      "execution_modes": [
+        "cli",
+        "ci",
+        "mcp",
+        "persistent"
+      ]
+    },
+    {
+      "path": "skills/detection/detect-web-injection",
+      "layer": "detection",
+      "providers": [
+        "multi"
+      ],
+      "asset_classes": [
+        "http-access-logs",
+        "api-gateway",
+        "web-apps",
+        "request-payloads"
+      ],
+      "frameworks": [
+        "ocsf-1.8",
+        "mitre-attack-v14",
+        "owasp-top-10"
+      ],
+      "coverage_status": "validated",
+      "execution_modes": [
+        "cli",
+        "ci",
+        "mcp",
+        "persistent"
+      ]
+    },
+    {
+      "path": "skills/detection/detect-web-auth-failures",
+      "layer": "detection",
+      "providers": [
+        "multi"
+      ],
+      "asset_classes": [
+        "http-access-logs",
+        "authentication",
+        "sessions",
+        "mfa"
+      ],
+      "frameworks": [
+        "ocsf-1.8",
+        "mitre-attack-v14",
+        "owasp-top-10"
       ],
       "coverage_status": "validated",
       "execution_modes": [
