@@ -149,7 +149,8 @@ def _normalize_event(event: dict[str, Any]) -> dict[str, Any] | None:
         return None
     if str(event.get("direction") or "") != "response":
         return None
-    tool = event.get("tool") if isinstance(event.get("tool"), dict) else {}
+    raw_tool = event.get("tool")
+    tool: dict[str, Any] = raw_tool if isinstance(raw_tool, dict) else {}
     tool_name = str(tool.get("name") or event.get("tool_name") or "")
     if not tool_name:
         return None
