@@ -64,4 +64,9 @@ visible in proxy logs without inspecting tool semantics.
 
 - `OCSF_CONTRACT.md` (sibling) — wire format
 - `ingest-mcp-proxy-ocsf` (sibling) — upstream producer
+- `detect-mcp-shadow-tool-injection` — sibling detector that fires against
+  an out-of-band server-registered baseline rather than the first sighting
+  in a session. Use shadow-tool-injection when the operator has registered
+  baseline hashes at startup; use tool-drift when only in-session events
+  are available.
 - `OWASP MCP Top 10` — https://genai.owasp.org/

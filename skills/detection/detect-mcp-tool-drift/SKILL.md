@@ -13,8 +13,10 @@ description: >-
   compromise of an MCP server. Do NOT use on raw MCP proxy logs — feed them
   through ingest-mcp-proxy-ocsf first. Do NOT use for cross-session drift (same
   tool, different sessions) — that is a legitimate MCP server update, not an
-  attack; a separate detector will cover it. Do NOT use as a compliance check;
-  this is an active detection skill.
+  attack; a separate detector will cover it. Do NOT use for divergence against
+  an out-of-band server-registered baseline — that is
+  detect-mcp-shadow-tool-injection. Do NOT use as a compliance check; this is
+  an active detection skill.
 purpose: Detect MCP tool schema drift mid-session — the MCP tool-poisoning / rug-pull attack pattern.
 capability: detect
 persistence: none
