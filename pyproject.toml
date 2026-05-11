@@ -1,6 +1,6 @@
 [project]
 name = "cloud-ai-security-skills"
-version = "0.10.0"
+version = "0.11.0"
 description = "Agentic security skills for cloud and AI — OCSF on the wire, MCP-ready, HITL-audited, sandboxed."
 readme = "README.md"
 requires-python = ">=3.11"
@@ -16,6 +16,7 @@ package = false
 # stays honest.
 http-client = [
   "httpx>=0.27,<1",
+  "urllib3>=2.7.0,<3",  # CVE-2026-44431, CVE-2026-44432 — fix in 2.7.0
 ]
 dev = [
   "bandit[toml]>=1.9.4,<2",

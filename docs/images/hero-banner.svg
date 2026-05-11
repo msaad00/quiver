@@ -66,7 +66,7 @@
     <g transform="translate(80,272)">
       <g>
         <rect x="0" y="0" width="170" height="36" rx="12" fill="#0f1d36" stroke="#3b82f6"/>
-        <text x="16" y="23" fill="#93c5fd" font-size="16" font-weight="900">98</text>
+        <text x="16" y="23" fill="#93c5fd" font-size="16" font-weight="900">112</text>
         <text x="48" y="23" fill="#dbe4f0" font-size="13" font-weight="700">shipped skills</text>
       </g>
       <g transform="translate(182,0)">
@@ -135,7 +135,7 @@
       <g>
         <rect x="0" y="0" width="210" height="36" rx="12" fill="#0f1d36" stroke="#3b82f6"/>
         <text x="14" y="23" fill="#dbeafe" font-size="13" font-weight="800">L1 Ingest</text>
-        <text x="194" y="23" text-anchor="end" fill="#93c5fd" font-size="13" font-weight="900">16</text>
+        <text x="194" y="23" text-anchor="end" fill="#93c5fd" font-size="13" font-weight="900">17</text>
       </g>
       <g transform="translate(222,0)">
         <rect x="0" y="0" width="210" height="36" rx="12" fill="#0f1d36" stroke="#3b82f6"/>
@@ -145,7 +145,7 @@
       <g transform="translate(0,48)">
         <rect x="0" y="0" width="210" height="36" rx="12" fill="#0f2a28" stroke="#2dd4bf"/>
         <text x="14" y="23" fill="#d1fae5" font-size="13" font-weight="800">L3 Detect</text>
-        <text x="194" y="23" text-anchor="end" fill="#5eead4" font-size="13" font-weight="900">46</text>
+        <text x="194" y="23" text-anchor="end" fill="#5eead4" font-size="13" font-weight="900">59</text>
       </g>
       <g transform="translate(222,48)">
         <rect x="0" y="0" width="210" height="36" rx="12" fill="#0f2a28" stroke="#2dd4bf"/>
