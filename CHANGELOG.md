@@ -11,52 +11,36 @@ The format is loosely based on Keep a Changelog.
 
 ## [Unreleased]
 
-### AI-native detection — MITRE ATLAS + OWASP LLM/MCP Top 10 to 40% (closes #255)
+### Cloud exfiltration + defense-evasion column closed (closes #253)
 
-Final slice of the MITRE ATLAS + OWASP LLM Top 10 + OWASP MCP Top 10 push;
-the first 3 AI-native detectors landed in #480, this slice ships the
-remaining 3 and closes #255.
+Final 2 of 4 planned ATT&CK detectors land, closing #253. PR #479
+shipped the first pair (`detect-aws-s3-cross-region-replication` —
+T1537/T1567 — and `detect-gcp-outbound-peering-anomaly` — T1071.001/
+T1041). This PR ships the remaining pair.
 
-- **`detect-mcp-unbounded-tool-output`** (OWASP LLM10). MEDIUM. Tracks
-  per-(session, tool) breaches against `MCP_TOOL_OUTPUT_BYTES_THRESHOLD`
-  (default 10 MiB) and `MCP_TOOL_OUTPUT_LINES_THRESHOLD` (default 50000);
-  fires once when `MCP_TOOL_OUTPUT_REPEATED_BREACH_THRESHOLD` (default 5)
-  cumulative breaches accumulate in the same session. Maps the
-  cumulative pattern that wrapper per-call RLIMITs can't catch. Tagged
-  ATLAS `AML.T0034` Cost Harvesting on the OCSF Detection Finding.
-- **`detect-mcp-adversarial-input-corpus`** (MITRE ATLAS `AML.T0043`
-  Craft Adversarial Data). Severity is the max across matched
-  fingerprints. Ships a curated 33-entry catalog at
-  `src/fingerprints.json`, each entry citing its public-research source
-  (OWASP LLM Top 10 example bank, NIST AI 600-1, public jailbreak corpora,
-  ChatML/HTML-comment smuggle catalogs). Detector loads the catalog at
-  import time, validates structure per entry, fails open with stderr
-  warning if the file is missing or malformed. Scans both
-  `unmapped.mcp.prompt` and `unmapped.mcp.request.params.messages[].content`.
-- **`detect-mcp-shadow-tool-injection`** (OWASP MCP Top 10 Tool Poisoning,
-  MITRE `T1195.001`). HIGH. Compares each `tools/list` response tool's
-  description+inputSchema sha256 against an out-of-band baseline file at
-  `MCP_TOOL_BASELINE_PATH` written by the MCP server at startup. Fires
-  when either hash diverges. Documented as the **out-of-band-baseline**
-  twin to `detect-mcp-tool-drift` (which fires on first-sight-in-session
-  drift without a baseline); `detect-mcp-tool-drift/SKILL.md` and
-  `REFERENCES.md` updated to point at this new detector for the baseline
-  case.
+- **`detect-azure-private-endpoint-to-external-sub`** — T1071.001 /
+  T1567 HIGH. Fires when an Azure `Microsoft.Network/privateEndpoints/
+  write` event carries a `privateLinkServiceConnections[]` entry whose
+  `privateLinkServiceId` first `/subscriptions/<guid>/` segment names
+  a subscription **outside** `AZURE_PRIVATE_ENDPOINT_AUTHORIZED_SUBS`.
+  Walks every connection (a private endpoint can pin multiple link
+  services) and emits one finding per (resource_uid,
+  target_subscription) tuple. Fail-open with stderr warning when the
+  allow-list is empty, mirroring `detect-snowflake-unauthorized-grant`.
+- **`detect-aws-cloudtrail-event-selector-tampering`** — T1562.001
+  HIGH. Fires on `PutEventSelectors` or `UpdateTrail` events that
+  structurally narrow the trail's audit scope: `IncludeManagementEvents`
+  flipped to false, `ReadWriteType` set to `None`, an empty
+  `EventSelectors[]` array, or `IsMultiRegionTrail` collapsed from true
+  to false. Documents the honest boundary: per-event-selector
+  data-resource subtraction requires upstream diff context (a single
+  audit event does not carry a before-snapshot), and the detector
+  consumes `unmapped.cloudtrail.event_selector_change.removed_data_resources`
+  under signal `data_resources_removed` when upstream surfaces the
+  diff.
 
-#### Repo-level
-
-- Detection count: 54 → **57**; repo total: 107 → **110**. README,
-  ARCHITECTURE, SKILL_INDEX, all 4 SVGs (hero-banner, runtime-surfaces,
-  architecture-layers, coverage-matrix) updated. Coverage-matrix grew
-  3 new detection rows.
-- `docs/framework-coverage.json` carries 3 new entries
-  (`providers: ["mcp"]`, frameworks tagged with `mitre-atlas`,
-  `owasp-llm-top-10`, `owasp-mcp-top-10`, `mitre-attack-v14` as
-  appropriate). Regenerated `docs/COVERAGE_SNAPSHOT.md`,
-  `docs/FRAMEWORK_COVERAGE.md`, and `SECURITY_BAR.md`.
-- #255 framework coverage advance: OWASP LLM Top 10 mapped from 4 → **10
-  skills**, OWASP MCP Top 10 from 4 → **8 skills**, MITRE ATLAS from 2 →
-  **4 skills**.
+**Counts bumped: detection 54 → 56, repo total 107 → 109. ATT&CK
+coverage on #253 closed at 4/4 detectors.**
 
 ### Vendor depth — SaaS column kickoff (closes #31, closes #33)
 

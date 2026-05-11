@@ -15,6 +15,7 @@ from detect import (  # type: ignore[import-not-found]
     SEVERITY_HIGH,
     SKILL_NAME,
     _walk_schema_for_urls,
+    allowed_hosts,
     detect,
     load_jsonl,
 )
@@ -148,7 +149,6 @@ class TestDetect:
 class TestEnvAllowlist:
     def test_env_var_is_parsed(self, monkeypatch):
         monkeypatch.setenv("MCP_PLUGIN_ALLOWED_HOSTS", "a.example.com, b.example.com")
-        from detect import allowed_hosts  # type: ignore[import-not-found]
         assert allowed_hosts() == frozenset({"a.example.com", "b.example.com"})
 
 

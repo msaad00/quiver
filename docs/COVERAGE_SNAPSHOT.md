@@ -6,7 +6,7 @@ Auto-generated from [`framework-coverage.json`](framework-coverage.json) by [`sc
 python scripts/coverage_summary.py --write
 ```
 
-**Total shipped skills:** 110
+**Total shipped skills:** 112
 
 ## By cloud / vendor
 
@@ -14,13 +14,13 @@ Skills overlap when a skill targets multiple providers (the `multi` row), so the
 
 | Cloud / vendor | Skills | % of repo |
 |---|---:|---:|
-| AWS | 23 | 20.9% |
-| Multi-cloud (vendor-neutral) | 21 | 19.1% |
-| Azure | 18 | 16.4% |
-| GCP | 18 | 16.4% |
-| MCP / AI runtime | 14 | 12.7% |
-| Snowflake | 13 | 11.8% |
-| Kubernetes | 9 | 8.2% |
+| AWS | 24 | 21.4% |
+| Multi-cloud (vendor-neutral) | 21 | 18.8% |
+| Azure | 19 | 17.0% |
+| GCP | 18 | 16.1% |
+| MCP / AI runtime | 14 | 12.5% |
+| Snowflake | 13 | 11.6% |
+| Kubernetes | 9 | 8.0% |
 | ClickHouse | 4 | 3.6% |
 | Okta | 4 | 3.6% |
 | Databricks | 4 | 3.6% |
@@ -38,16 +38,16 @@ Skills can carry multiple framework tags (e.g. a CIS check tagged with NIST CSF 
 
 | Framework | Skills | % of repo |
 |---|---:|---:|
-| OCSF 1.8 | 89 | 80.9% |
-| MITRE ATT&CK v14 | 72 | 65.5% |
-| SOC 2 TSC | 20 | 18.2% |
-| NIST CSF 2.0 | 20 | 18.2% |
-| OWASP LLM Top 10 | 18 | 16.4% |
-| MITRE ATLAS | 16 | 14.5% |
-| OWASP Top 10 | 16 | 14.5% |
-| OWASP MCP Top 10 | 11 | 10.0% |
-| NIST AI RMF | 8 | 7.3% |
-| CIS Azure v2.1 | 6 | 5.5% |
+| OCSF 1.8 | 91 | 81.2% |
+| MITRE ATT&CK v14 | 74 | 66.1% |
+| SOC 2 TSC | 20 | 17.9% |
+| NIST CSF 2.0 | 20 | 17.9% |
+| OWASP LLM Top 10 | 18 | 16.1% |
+| MITRE ATLAS | 16 | 14.3% |
+| OWASP Top 10 | 16 | 14.3% |
+| OWASP MCP Top 10 | 11 | 9.8% |
+| NIST AI RMF | 8 | 7.1% |
+| CIS Azure v2.1 | 6 | 5.4% |
 | CIS GCP v3 | 5 | 4.5% |
 | CIS AWS v3 | 4 | 3.6% |
 | PCI DSS 4.0 | 4 | 3.6% |
@@ -61,10 +61,10 @@ Skills can carry multiple framework tags (e.g. a CIS check tagged with NIST CSF 
 
 | Layer | Skills | % of repo |
 |---|---:|---:|
-| detection | 57 | 51.8% |
-| ingestion | 20 | 18.2% |
-| remediation | 12 | 10.9% |
-| evaluation | 11 | 10.0% |
+| detection | 59 | 52.7% |
+| ingestion | 20 | 17.9% |
+| remediation | 12 | 10.7% |
+| evaluation | 11 | 9.8% |
 | discovery | 5 | 4.5% |
 | output | 3 | 2.7% |
 | view | 2 | 1.8% |
@@ -92,8 +92,8 @@ Per-track breadth toward the published target. The 'Today' column uses **per-con
 
 | Track | Tag | Issue | Target | Today |
 |---|---|---|---:|---:|
-| MITRE ATT&CK breadth | `mitre-attack-v14` | #253 | 50% | 65% |
-| MITRE ATLAS | `mitre-atlas` | #255 | 40% | 15% |
+| MITRE ATT&CK breadth | `mitre-attack-v14` | #253 | 50% | 66% |
+| MITRE ATLAS | `mitre-atlas` | #255 | 40% | 14% |
 | OWASP LLM Top 10 | `owasp-llm-top-10` | #255 | 40% | 0% |
 | OWASP MCP Top 10 | `owasp-mcp-top-10` | #255 | 50% | 0% |
 | OWASP Top 10 (web) | `owasp-top-10` | TBD | 30% | 0% |
