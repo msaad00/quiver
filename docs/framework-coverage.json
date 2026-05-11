@@ -162,6 +162,29 @@
       ]
     },
     {
+      "path": "skills/detection/detect-aws-cloudtrail-event-selector-tampering",
+      "layer": "detection",
+      "providers": [
+        "aws"
+      ],
+      "asset_classes": [
+        "cloudtrail",
+        "audit-log",
+        "trails"
+      ],
+      "frameworks": [
+        "ocsf-1.8",
+        "mitre-attack-v14"
+      ],
+      "coverage_status": "validated",
+      "execution_modes": [
+        "cli",
+        "ci",
+        "mcp",
+        "persistent"
+      ]
+    },
+    {
       "path": "skills/detection/detect-aws-enumeration-burst",
       "layer": "detection",
       "providers": [
@@ -322,6 +345,29 @@
         "mitre-attack-v14",
         "ocsf-1.8",
         "cis-azure-v2.1"
+      ],
+      "coverage_status": "validated",
+      "execution_modes": [
+        "cli",
+        "ci",
+        "mcp",
+        "persistent"
+      ]
+    },
+    {
+      "path": "skills/detection/detect-azure-private-endpoint-to-external-sub",
+      "layer": "detection",
+      "providers": [
+        "azure"
+      ],
+      "asset_classes": [
+        "private-link",
+        "network",
+        "subscriptions"
+      ],
+      "frameworks": [
+        "ocsf-1.8",
+        "mitre-attack-v14"
       ],
       "coverage_status": "validated",
       "execution_modes": [

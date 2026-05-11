@@ -4,14 +4,14 @@ This file is **generated from [`framework-coverage.json`](framework-coverage.jso
 
 - Registry version: `0.8.1`
 - Registry updated: `2026-04-24`
-- Total shipped skills in registry: **107**
+- Total shipped skills in registry: **109**
 
 ## Roll-up
 
 | Framework | Version | Shipped skills mapped | Coverage target |
 |---|---|---|---|
-| OCSF | 1.8.0 | **86** | — |
-| MITRE ATT&CK | v14 | **71** | 100% mapped coverage |
+| OCSF | 1.8.0 | **88** | — |
+| MITRE ATT&CK | v14 | **73** | 100% mapped coverage |
 | MITRE ATLAS | current | **14** | 100% mapped coverage |
 | CIS AWS Foundations | v3.0 | **4** | — |
 | CIS GCP Foundations | v3.0 | **5** | — |
@@ -37,12 +37,13 @@ Shipped skills mapped counts the number of skills in the registry that declare t
 
 - Registry id: `ocsf-1.8`
 
-Shipped skills mapped: **86**
+Shipped skills mapped: **88**
 
 | Skill | Layer | Providers | Asset classes |
 |---|---|---|---|
 | [`detect-agent-credential-leak-mcp`](../skills/detection/detect-agent-credential-leak-mcp) | detection | mcp, multi | agent-tools, tool-results, credentials |
 | [`detect-aws-access-key-creation`](../skills/detection/detect-aws-access-key-creation) | detection | aws | iam-users, access-keys, credentials, cloudtrail |
+| [`detect-aws-cloudtrail-event-selector-tampering`](../skills/detection/detect-aws-cloudtrail-event-selector-tampering) | detection | aws | cloudtrail, audit-log, trails |
 | [`detect-aws-enumeration-burst`](../skills/detection/detect-aws-enumeration-burst) | detection | aws | identities, compute, storage, network, organizations, cloudtrail |
 | [`detect-aws-login-profile-creation`](../skills/detection/detect-aws-login-profile-creation) | detection | aws | iam-users, login-profiles, credentials, cloudtrail |
 | [`detect-aws-model-artifact-download`](../skills/detection/detect-aws-model-artifact-download) | detection | aws | object-storage, objects, model-artifacts, audit-logs |
@@ -50,6 +51,7 @@ Shipped skills mapped: **86**
 | [`detect-aws-s3-cross-region-replication`](../skills/detection/detect-aws-s3-cross-region-replication) | detection | aws | object-storage, replication |
 | [`detect-azure-activity-logs-disabled`](../skills/detection/detect-azure-activity-logs-disabled) | detection | azure | activity-logs, diagnostic-settings, logging |
 | [`detect-azure-open-nsg`](../skills/detection/detect-azure-open-nsg) | detection | azure | network-security-groups, ingress-rules, azure-activity |
+| [`detect-azure-private-endpoint-to-external-sub`](../skills/detection/detect-azure-private-endpoint-to-external-sub) | detection | azure | private-link, network, subscriptions |
 | [`detect-clickhouse-bulk-export`](../skills/detection/detect-clickhouse-bulk-export) | detection | clickhouse | warehouse, queries, external-endpoints, identities |
 | [`detect-cloudtrail-disabled`](../skills/detection/detect-cloudtrail-disabled) | detection | aws | cloudtrail, audit-trails, logging |
 | [`detect-container-escape-k8s`](../skills/detection/detect-container-escape-k8s) | detection | kubernetes | clusters, containers, runtime |
@@ -135,11 +137,12 @@ Shipped skills mapped: **86**
 - Asset classes in scope: identities, api, network, clusters, containers, findings
 - Coverage target: 100% mapped coverage
 
-Shipped skills mapped: **71**
+Shipped skills mapped: **73**
 
 | Skill | Layer | Providers | Asset classes |
 |---|---|---|---|
 | [`detect-aws-access-key-creation`](../skills/detection/detect-aws-access-key-creation) | detection | aws | iam-users, access-keys, credentials, cloudtrail |
+| [`detect-aws-cloudtrail-event-selector-tampering`](../skills/detection/detect-aws-cloudtrail-event-selector-tampering) | detection | aws | cloudtrail, audit-log, trails |
 | [`detect-aws-enumeration-burst`](../skills/detection/detect-aws-enumeration-burst) | detection | aws | identities, compute, storage, network, organizations, cloudtrail |
 | [`detect-aws-login-profile-creation`](../skills/detection/detect-aws-login-profile-creation) | detection | aws | iam-users, login-profiles, credentials, cloudtrail |
 | [`detect-aws-model-artifact-download`](../skills/detection/detect-aws-model-artifact-download) | detection | aws | object-storage, objects, model-artifacts, audit-logs |
@@ -147,6 +150,7 @@ Shipped skills mapped: **71**
 | [`detect-aws-s3-cross-region-replication`](../skills/detection/detect-aws-s3-cross-region-replication) | detection | aws | object-storage, replication |
 | [`detect-azure-activity-logs-disabled`](../skills/detection/detect-azure-activity-logs-disabled) | detection | azure | activity-logs, diagnostic-settings, logging |
 | [`detect-azure-open-nsg`](../skills/detection/detect-azure-open-nsg) | detection | azure | network-security-groups, ingress-rules, azure-activity |
+| [`detect-azure-private-endpoint-to-external-sub`](../skills/detection/detect-azure-private-endpoint-to-external-sub) | detection | azure | private-link, network, subscriptions |
 | [`detect-clickhouse-bulk-export`](../skills/detection/detect-clickhouse-bulk-export) | detection | clickhouse | warehouse, queries, external-endpoints, identities |
 | [`detect-cloudtrail-disabled`](../skills/detection/detect-cloudtrail-disabled) | detection | aws | cloudtrail, audit-trails, logging |
 | [`detect-container-escape-k8s`](../skills/detection/detect-container-escape-k8s) | detection | kubernetes | clusters, containers, runtime |

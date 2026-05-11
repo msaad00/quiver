@@ -11,6 +11,37 @@ The format is loosely based on Keep a Changelog.
 
 ## [Unreleased]
 
+### Cloud exfiltration + defense-evasion column closed (closes #253)
+
+Final 2 of 4 planned ATT&CK detectors land, closing #253. PR #479
+shipped the first pair (`detect-aws-s3-cross-region-replication` —
+T1537/T1567 — and `detect-gcp-outbound-peering-anomaly` — T1071.001/
+T1041). This PR ships the remaining pair.
+
+- **`detect-azure-private-endpoint-to-external-sub`** — T1071.001 /
+  T1567 HIGH. Fires when an Azure `Microsoft.Network/privateEndpoints/
+  write` event carries a `privateLinkServiceConnections[]` entry whose
+  `privateLinkServiceId` first `/subscriptions/<guid>/` segment names
+  a subscription **outside** `AZURE_PRIVATE_ENDPOINT_AUTHORIZED_SUBS`.
+  Walks every connection (a private endpoint can pin multiple link
+  services) and emits one finding per (resource_uid,
+  target_subscription) tuple. Fail-open with stderr warning when the
+  allow-list is empty, mirroring `detect-snowflake-unauthorized-grant`.
+- **`detect-aws-cloudtrail-event-selector-tampering`** — T1562.001
+  HIGH. Fires on `PutEventSelectors` or `UpdateTrail` events that
+  structurally narrow the trail's audit scope: `IncludeManagementEvents`
+  flipped to false, `ReadWriteType` set to `None`, an empty
+  `EventSelectors[]` array, or `IsMultiRegionTrail` collapsed from true
+  to false. Documents the honest boundary: per-event-selector
+  data-resource subtraction requires upstream diff context (a single
+  audit event does not carry a before-snapshot), and the detector
+  consumes `unmapped.cloudtrail.event_selector_change.removed_data_resources`
+  under signal `data_resources_removed` when upstream surfaces the
+  diff.
+
+**Counts bumped: detection 54 → 56, repo total 107 → 109. ATT&CK
+coverage on #253 closed at 4/4 detectors.**
+
 ### Vendor depth — SaaS column kickoff (closes #31, closes #33)
 
 The first two SaaS vendor stories land together: GitHub (#31) and Slack
