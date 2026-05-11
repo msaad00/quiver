@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="540" viewBox="0 0 1400 540" role="img" aria-labelledby="title desc">
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="540" viewBox="0 0 1280 540" role="img" aria-labelledby="title desc">
   <title id="title">agentic security skills for cloud and AI — production-grade security skills for cloud and AI systems</title>
   <desc id="desc">Hero banner for the agentic security skills for cloud and AI repository (cloud-ai-security-skills). Left panel shows the wordmark, tagline, and capability pills for 117 shipped skill bundles, OCSF 1.8, 131 CIS + NIST AI RMF benchmark checks, MITRE ATT&amp;CK, MITRE ATLAS, OWASP Top 10, OWASP LLM Top 10 framework coverage, MCP-audited tool calls, and HITL dual-audited remediation. Right panel shows the current shipped layer counts: 17 ingest, 5 discover, 64 detect, 11 evaluate, 12 remediate, 2 view, 3 output, and 3 source adapters. A footer strip shows vendor coverage across AWS, GCP, Azure, Kubernetes, Okta, Entra, Google Workspace, Slack, Snowflake, Databricks, ClickHouse, and MCP plus access surfaces for CLI, CI, MCP, and runners.</desc>
 
@@ -32,9 +32,9 @@
     <symbol id="clickhouse" viewBox="0 0 24 24"><path fill="#fbbf24" d="M21.333 10H24v4h-2.667ZM16 1.335h2.667v21.33H16Zm-5.333 0h2.666v21.33h-2.666ZM0 22.665V1.335h2.667v21.33zm5.333-21.33H8v21.33H5.333Z"/></symbol>
   </defs>
 
-  <rect width="1400" height="540" fill="url(#bg)"/>
-  <rect width="1400" height="540" fill="url(#grid)"/>
-  <rect width="1400" height="540" fill="url(#glow)"/>
+  <rect width="1280" height="540" fill="url(#bg)"/>
+  <rect width="1280" height="540" fill="url(#grid)"/>
+  <rect width="1280" height="540" fill="url(#glow)"/>
 
   <g font-family="Inter, Segoe UI, ui-sans-serif, Arial, sans-serif">
     <!-- Eyebrow pill -->
@@ -46,7 +46,7 @@
 
     <!-- Main panels -->
     <rect x="56" y="84" width="772" height="380" rx="22" fill="#0b1628" stroke="#22314d"/>
-    <rect x="856" y="84" width="488" height="380" rx="22" fill="#0b1628" stroke="#22314d"/>
+    <rect x="736" y="84" width="488" height="380" rx="22" fill="#0b1628" stroke="#22314d"/>
 
     <!-- Wordmark container — sized so the text stays comfortably inside the 724px panel width -->
     <g transform="translate(80,108)">
@@ -120,18 +120,18 @@
 
     <!-- Right panel: shipped layer map -->
     <!-- Header pill -->
-    <g transform="translate(880,108)">
+    <g transform="translate(760,108)">
       <rect x="0" y="0" width="240" height="28" rx="14" fill="#0a1326" stroke="#1e293b"/>
       <text x="14" y="19" fill="#93c5fd" font-size="11" font-weight="800" letter-spacing="1.6">CURRENT SHIPPED SURFACE</text>
     </g>
     <!-- Subtitle pill -->
-    <g transform="translate(880,144)">
+    <g transform="translate(760,144)">
       <rect x="0" y="0" width="440" height="44" rx="12" fill="#0a1326" stroke="#1e293b"/>
       <text x="16" y="22" fill="#f8fafc" font-size="20" font-weight="900">Seven core layers plus edges</text>
       <text x="16" y="38" fill="#94a3b8" font-size="11">Counts match the current repo and README routing surface.</text>
     </g>
 
-    <g transform="translate(880,200)">
+    <g transform="translate(760,200)">
       <g>
         <rect x="0" y="0" width="210" height="36" rx="12" fill="#0f1d36" stroke="#3b82f6"/>
         <text x="14" y="23" fill="#dbeafe" font-size="13" font-weight="800">L1 Ingest</text>
@@ -175,7 +175,7 @@
     </g>
 
     <!-- Footer divider -->
-    <line x1="56" y1="488" x2="1344" y2="488" stroke="#1e293b" stroke-width="1"/>
+    <line x1="56" y1="488" x2="1224" y2="488" stroke="#1e293b" stroke-width="1"/>
 
     <!-- Vendor strip — label inside its own pill -->
     <g transform="translate(72,500)">
@@ -200,11 +200,11 @@
     </g>
 
     <!-- Access surfaces — label inside its own pill -->
-    <g transform="translate(872,500)">
+    <g transform="translate(752,500)">
       <rect x="0" y="0" width="148" height="28" rx="14" fill="#0a1326" stroke="#1e293b"/>
       <text x="14" y="19" fill="#64748b" font-size="10" font-weight="800" letter-spacing="1.6">ACCESS SURFACES</text>
     </g>
-    <g transform="translate(1032,500)">
+    <g transform="translate(912,500)">
       <rect x="0" y="0" width="68" height="28" rx="9" fill="#0b1628" stroke="#334155"/>
       <text x="34" y="19" text-anchor="middle" fill="#cbd5e1" font-size="12" font-weight="700">CLI</text>
       <rect x="76" y="0" width="68" height="28" rx="9" fill="#0b1628" stroke="#334155"/>
