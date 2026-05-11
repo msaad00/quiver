@@ -64,6 +64,7 @@ jobs:
       - run: python scripts/validate_skill_count_consistency.py
       - run: python scripts/validate_deny_list_parity.py
       - run: python scripts/validate_captured_provenance.py
+      - run: python scripts/add_skill_trust_frontmatter.py --check
       - name: Auto-generated docs in sync (run all generators in --check)
         run: |
           set +e

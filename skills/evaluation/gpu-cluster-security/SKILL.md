@@ -12,6 +12,11 @@ description: >-
   driver upgrades — this skill is assessment-only, no network calls. Do NOT use
   for general K8s posture (use k8s-security-benchmark) or model serving endpoint
   hardening (use model-serving-security).
+purpose: Audit the security posture of GPU compute clusters.
+capability: evaluate
+persistence: none
+telemetry: stderr_jsonl
+privilege_escalation: read
 license: Apache-2.0
 approval_model: none
 execution_modes: jit, ci, mcp, persistent

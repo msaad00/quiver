@@ -12,6 +12,11 @@ description: >-
   network-activity JSONL emitted from the same canonical internal model.
   Do NOT use on firewall rule logs, packet mirroring, or raw pcap. Do NOT
   use when the source is AWS or Azure network telemetry.
+purpose: Convert raw GCP VPC Flow Logs records into OCSF 1.8 Network Activity (class 4001). Accepts Cloud Logging LogEntry envelopes or bare jsonPayload-shaped records, maps connection metadata, byte counters, VPC and instance...
+capability: ingest
+persistence: none
+telemetry: stderr_jsonl
+privilege_escalation: none
 license: Apache-2.0
 approval_model: none
 execution_modes: jit, ci, mcp, persistent

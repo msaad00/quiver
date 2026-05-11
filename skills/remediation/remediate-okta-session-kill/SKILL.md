@@ -16,8 +16,12 @@ description: >-
   NOT bypass the deny-list, run with --apply without an explicit
   human-approved incident window, explicit Okta org allow-list, or edit
   the audit trail by hand.
-license: Apache-2.0
+purpose: Contain an Okta account takeover by revoking all active sessions and OAuth refresh tokens for the affected user.
 capability: write-identity
+persistence: cloud_state
+telemetry: stderr_jsonl
+privilege_escalation: read_write
+license: Apache-2.0
 approval_model: human_required
 execution_modes: jit, persistent
 side_effects: writes-identity, writes-storage, writes-audit

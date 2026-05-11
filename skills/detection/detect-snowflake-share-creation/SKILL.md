@@ -14,6 +14,11 @@ description: >-
   before OCSF normalization, as a generic data-loss detector for
   Databricks / ClickHouse, or as a remediation skill — share revocation lives
   in the remediation layer.
+purpose: Detect creation of a new Snowflake secure data share or addition of an external account to an existing share.
+capability: detect
+persistence: none
+telemetry: stderr_jsonl
+privilege_escalation: none
 license: Apache-2.0
 approval_model: none
 execution_modes: jit, ci, mcp, persistent

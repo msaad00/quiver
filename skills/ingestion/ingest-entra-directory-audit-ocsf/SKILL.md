@@ -11,6 +11,11 @@ description: >-
   identity telemetry into an OCSF pipeline. Do NOT use for Okta System Log,
   Azure Activity Logs, or as a detector or policy engine — this skill only
   normalizes verified Microsoft Graph directoryAudit payloads.
+purpose: Convert verified Microsoft Entra directoryAudit events into OCSF 1.8 API Activity (6003). The first slice maps Microsoft Graph directory audit events for service-principal credential changes, app-role grants, and fede...
+capability: ingest
+persistence: none
+telemetry: stderr_jsonl
+privilege_escalation: none
 license: Apache-2.0
 approval_model: none
 execution_modes: jit, ci, mcp, persistent

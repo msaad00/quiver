@@ -11,6 +11,11 @@ description: >-
   key-management coverage across cloud environments. Do NOT use as a benchmark
   evaluator, compliance certification tool, or remediation planner. Do NOT use
   on raw logs or OCSF findings.
+purpose: Generate deterministic technical-control evidence from raw cross-cloud inventory snapshots.
+capability: discover
+persistence: none
+telemetry: stderr_jsonl
+privilege_escalation: read
 license: Apache-2.0
 approval_model: none
 execution_modes: jit, ci, mcp, persistent

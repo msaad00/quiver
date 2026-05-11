@@ -27,8 +27,12 @@ description: >-
   rules), for AWS Security Groups (separate skill remediate-aws-sg-revoke),
   for GCP firewall (separate skill remediate-gcp-firewall-revoke), for
   Outbound NSG rules, or to bypass the deny-list.
-license: Apache-2.0
+purpose: Use when the user mentions "revoke open Azure NSG rule," "close Azure NSG public exposure," "respond to detect-azure-open-nsg," or "re-verify Azure NSG revoke." Surgical revoke of an Azure Network Security Group inbou...
 capability: write-cloud
+persistence: cloud_state
+telemetry: stderr_jsonl
+privilege_escalation: read_write
+license: Apache-2.0
 approval_model: human_required
 execution_modes: jit, ci, mcp, persistent
 side_effects: writes-cloud, writes-storage, writes-audit

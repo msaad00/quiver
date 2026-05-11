@@ -9,6 +9,11 @@ description: >-
   enrichment, or rendering. Do NOT use on raw audit logs or posture
   benchmark output. Do NOT use as a detector; SCC already produced the
   finding and this skill only validates and normalizes it.
+purpose: Convert GCP Security Command Center findings into OCSF 1.8 Detection Finding (class 2004). Validates the minimal finding contract, preserves SCC metadata such as category, severity, state, and resource name, and emits...
+capability: ingest
+persistence: none
+telemetry: stderr_jsonl
+privilege_escalation: none
 license: Apache-2.0
 approval_model: none
 execution_modes: jit, ci, mcp, persistent

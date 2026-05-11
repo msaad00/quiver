@@ -14,6 +14,11 @@ description: >-
   Kubernetes audit logs (use ingest-k8s-audit-ocsf). Do NOT use for Azure
   diagnostic / metric logs — those are different pipelines. Do NOT use as a
   detection skill — this only normalises events.
+purpose: Convert raw Azure Activity Logs (Administrative, Service Health, Resource Health, Alert, Autoscale, Recommendation, Security, Policy) into OCSF 1.8 API Activity events (class 6003). Reads the JSON shape Azure Monitor...
+capability: ingest
+persistence: none
+telemetry: stderr_jsonl
+privilege_escalation: none
 license: Apache-2.0
 approval_model: none
 execution_modes: jit, ci, mcp, persistent

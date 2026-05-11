@@ -10,6 +10,11 @@ description: >-
   normalization, or unifying upstream AWS findings into OCSF. Do NOT use for
   GuardDuty native findings, CloudTrail audit logs, or VPC Flow Logs. Do NOT
   use as a detection skill; this is a passthrough normalizer and validator.
+purpose: Convert AWS Security Hub ASFF findings into OCSF 1.8 Detection Finding events. Validates the required ASFF fields, maps ASFF severity into OCSF, preserves aggregated resource and compliance context, and extracts MITRE...
+capability: ingest
+persistence: none
+telemetry: stderr_jsonl
+privilege_escalation: none
 license: Apache-2.0
 approval_model: none
 execution_modes: jit, ci, mcp, persistent

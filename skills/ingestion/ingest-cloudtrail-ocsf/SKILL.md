@@ -13,6 +13,11 @@ description: >-
   ingest-azure-activity-ocsf), or Kubernetes audit logs (use
   ingest-k8s-audit-ocsf). Do NOT use as a detection skill — this skill only
   normalises events, it does not flag anything.
+purpose: Convert raw AWS CloudTrail events (JSON or NDJSON, single events or CloudTrail digest files) into OCSF 1.8 API Activity events (class 6003). Maps userIdentity to OCSF actor, sourceIPAddress to src_endpoint, eventName...
+capability: ingest
+persistence: none
+telemetry: stderr_jsonl
+privilege_escalation: none
 license: Apache-2.0
 approval_model: none
 execution_modes: jit, ci, mcp, persistent

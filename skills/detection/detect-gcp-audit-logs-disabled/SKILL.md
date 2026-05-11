@@ -10,6 +10,11 @@ description: >-
   Do NOT use as a posture-at-rest check, to infer IAM auditConfig changes, or
   to claim every possible GCP logging impairment path. This first slice only
   covers successful `DeleteSink` and `DeleteLog` events.
+purpose: Detect successful GCP Cloud Logging `DeleteSink` and `DeleteLog` API calls from OCSF 1.8 API Activity records emitted by ingest-gcp-audit-ocsf. Emits an OCSF 1.8 Detection Finding (class 2004) tagged with MITRE ATT&CK...
+capability: detect
+persistence: none
+telemetry: stderr_jsonl
+privilege_escalation: none
 license: Apache-2.0
 approval_model: none
 execution_modes: jit, ci, mcp, persistent

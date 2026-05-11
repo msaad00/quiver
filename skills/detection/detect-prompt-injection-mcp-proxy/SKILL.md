@@ -15,6 +15,11 @@ description: >-
   first. Do NOT use as a general content-moderation classifier or on tool-call
   results; this slice only covers suspicious tool declarations in `tools/list`
   responses.
+purpose: Detect suspicious prompt-injection and instruction-smuggling language in MCP tool descriptions from ingest-mcp-proxy-ocsf.
+capability: detect
+persistence: none
+telemetry: stderr_jsonl
+privilege_escalation: none
 license: Apache-2.0
 approval_model: none
 execution_modes: jit, ci, mcp, persistent

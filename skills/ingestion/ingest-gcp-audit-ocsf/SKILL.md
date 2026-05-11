@@ -14,6 +14,11 @@ description: >-
   ingest-azure-activity-ocsf), or Kubernetes audit logs (use
   ingest-k8s-audit-ocsf). Do NOT use as a detection skill — this only
   normalises events.
+purpose: Convert raw GCP Cloud Audit Logs (Admin Activity, Data Access, System Event, or Policy Denied) into OCSF 1.8 API Activity events (class 6003). Reads the protoPayload format that GCP exports to Cloud Logging, BigQuery,...
+capability: ingest
+persistence: none
+telemetry: stderr_jsonl
+privilege_escalation: none
 license: Apache-2.0
 approval_model: none
 execution_modes: jit, ci, mcp, persistent

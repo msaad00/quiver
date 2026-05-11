@@ -11,6 +11,11 @@ description: >-
   every logging impairment path, or for metric/resource-log pipelines outside
   the Azure Activity Log surface. This first slice only covers successful
   diagnostic-settings delete events.
+purpose: Detect successful Azure `Microsoft.Insights/diagnosticSettings/delete` operations from OCSF 1.8 API Activity records emitted by ingest-azure-activity-ocsf. Emits an OCSF 1.8 Detection Finding (class 2004) tagged with...
+capability: detect
+persistence: none
+telemetry: stderr_jsonl
+privilege_escalation: none
 license: Apache-2.0
 approval_model: none
 execution_modes: jit, ci, mcp, persistent

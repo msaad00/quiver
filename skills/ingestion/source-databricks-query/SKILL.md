@@ -11,6 +11,11 @@ description: >-
   lake rows into existing skills without exporting files first. Do NOT use
   for writes, DDL, or admin changes. Do NOT use as a detector or normalizer
   by itself.
+purpose: Run a read-only Databricks SQL query and emit the result set as raw JSONL rows for downstream ingestion, detection, or view skills.
+capability: ingest
+persistence: none
+telemetry: stderr_jsonl
+privilege_escalation: none
 license: Apache-2.0
 approval_model: none
 execution_modes: jit, ci, mcp, persistent

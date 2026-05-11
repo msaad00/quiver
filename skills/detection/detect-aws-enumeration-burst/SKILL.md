@@ -10,6 +10,11 @@ description: >-
   enumeration spree", "rapid Describe/List calls", or "T1526 via CloudTrail".
   Do NOT use as a generic anomaly detector for every read API, to claim all AWS
   discovery paths, or to infer exfiltration from read-only control-plane calls.
+purpose: Detect short-window bursts of high-signal AWS discovery APIs from OCSF 1.8 API Activity records emitted by ingest-cloudtrail-ocsf. Emits an OCSF 1.8 Detection Finding (class 2004) tagged with MITRE ATT&CK T1526 (Cloud...
+capability: detect
+persistence: none
+telemetry: stderr_jsonl
+privilege_escalation: none
 license: Apache-2.0
 approval_model: none
 execution_modes: jit, ci, mcp, persistent

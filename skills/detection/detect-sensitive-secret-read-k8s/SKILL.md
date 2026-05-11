@@ -10,6 +10,11 @@ description: >-
   audit logs — pipe them through ingest-k8s-audit-ocsf first. Do NOT use for
   list-then-get enumeration patterns; that belongs to
   detect-privilege-escalation-k8s. Do NOT use for cross-namespace analysis.
+purpose: Detect targeted reads of Kubernetes Secrets whose names match sensitive patterns from normalized K8s audit events in native or OCSF mode.
+capability: detect
+persistence: none
+telemetry: stderr_jsonl
+privilege_escalation: none
 license: Apache-2.0
 approval_model: none
 execution_modes: jit, ci, mcp, persistent

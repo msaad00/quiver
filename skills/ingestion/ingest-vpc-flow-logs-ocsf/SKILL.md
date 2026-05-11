@@ -15,6 +15,11 @@ description: >-
   Azure NSG Flow Logs (use ingest-nsg-flow-logs-azure-ocsf), or CloudTrail
   (use ingest-cloudtrail-ocsf). Do NOT use as a
   detection skill — this only normalises network flows.
+purpose: Convert raw AWS VPC Flow Logs (v5 format, space-delimited) into OCSF 1.8 Network Activity events (class 4001). Handles both the canonical v5 field order and custom field orders via a header-driven parser. Maps source...
+capability: ingest
+persistence: none
+telemetry: stderr_jsonl
+privilege_escalation: none
 license: Apache-2.0
 approval_model: none
 execution_modes: jit, ci, mcp, persistent

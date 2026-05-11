@@ -24,8 +24,12 @@ description: >-
   for Azure Network Security Groups (separate skill planned), to bypass
   the deny-list, or to operate on rules outside the project the caller
   has authenticated to.
-license: Apache-2.0
+purpose: "Use when a GCP VPC firewall rule has been flagged as opening 0.0.0.0/0 or ::/0 to risky admin / DB / cache ports and you need to contain it. Consumes an OCSF 1.8 Detection Finding (class 2004) emitted by detect-gcp-op..."
 capability: write-cloud
+persistence: cloud_state
+telemetry: stderr_jsonl
+privilege_escalation: read_write
+license: Apache-2.0
 approval_model: human_required
 execution_modes: jit, ci, mcp, persistent
 side_effects: writes-cloud, writes-storage, writes-audit

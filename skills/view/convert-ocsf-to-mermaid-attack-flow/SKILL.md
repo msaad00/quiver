@@ -14,6 +14,11 @@ description: >-
   GitHub code scanning UI). Do NOT use for non-finding OCSF events
   (class_uid != 2004) — those don't have the MITRE / actor / target
   structure this skill expects.
+purpose: Convert OCSF 1.8 Detection Findings (class 2004) into Mermaid flowchart syntax suitable for inline rendering in PR comments, README files, and Markdown wikis. Produces a left-to-right attack flow showing each finding...
+capability: view
+persistence: none
+telemetry: stderr_jsonl
+privilege_escalation: none
 license: Apache-2.0
 approval_model: none
 execution_modes: jit, ci, mcp, persistent

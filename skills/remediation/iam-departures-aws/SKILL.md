@@ -14,6 +14,11 @@ description: >-
   those are separate skills (see #238, #239). Do NOT bypass the grace
   period, call the Step Function directly, disable deny policies, or edit
   the audit table by hand. Do NOT use for access provisioning.
+purpose: Auto-remediate AWS IAM users belonging to departed employees.
+capability: remediate
+persistence: cloud_state
+telemetry: stderr_jsonl
+privilege_escalation: read_write
 license: Apache-2.0
 approval_model: human_required
 execution_modes: jit, ci, mcp, persistent

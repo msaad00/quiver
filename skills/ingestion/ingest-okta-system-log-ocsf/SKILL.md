@@ -13,6 +13,11 @@ description: >-
   Okta identity events into an OCSF pipeline or native canonical-first flow. Do NOT use for raw Azure Entra,
   Google Workspace, or AWS IAM logs. Do NOT use as a detector or policy engine
   — this skill only normalizes verified Okta event payloads into OCSF or native output.
+purpose: Convert verified Okta System Log events into OCSF 1.8 or native Identity & Access Management records. The first slice maps session and SSO events to Authentication (3002), user lifecycle and account-control changes to...
+capability: ingest
+persistence: none
+telemetry: stderr_jsonl
+privilege_escalation: none
 license: Apache-2.0
 approval_model: none
 execution_modes: jit, ci, mcp, persistent

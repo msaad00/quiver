@@ -10,6 +10,11 @@ description: >-
   resources after initial access. Do NOT use on raw logs — pipe audit and
   network telemetry through their respective ingestion skills first. Do NOT
   use for pre-compromise detection. Do NOT use as an exfiltration detector.
+purpose: Detect cloud lateral movement by joining normalized audit and flow telemetry in native or OCSF mode.
+capability: detect
+persistence: none
+telemetry: stderr_jsonl
+privilege_escalation: none
 license: Apache-2.0
 approval_model: none
 execution_modes: jit, ci, mcp, persistent

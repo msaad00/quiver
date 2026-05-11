@@ -10,6 +10,11 @@ description: >-
   use for container runtime logs, kubelet logs, or CloudTrail / GCP audit /
   Azure Activity. Do NOT use as a detection skill; this only normalizes
   events.
+purpose: Convert raw Kubernetes audit logs (`audit.k8s.io/v1`) into normalized API activity records, with OCSF as the default wire format and native output as an option. Maps user, source IP, verb, objectRef, and response stat...
+capability: ingest
+persistence: none
+telemetry: stderr_jsonl
+privilege_escalation: none
 license: Apache-2.0
 approval_model: none
 execution_modes: jit, ci, mcp, persistent

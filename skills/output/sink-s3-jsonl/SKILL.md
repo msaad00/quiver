@@ -8,8 +8,12 @@ description: >-
   S3 without changing the producing skill. Do NOT use for bucket creation,
   object deletion, overwrite flows, or arbitrary AWS mutations. Do NOT use as
   an ingest, detect, or evaluation skill.
-license: Apache-2.0
+purpose: Persist JSONL records from stdin into a new immutable object under a pre-provisioned Amazon S3 bucket and prefix.
 capability: write-sink
+persistence: audit_log
+telemetry: stderr_jsonl
+privilege_escalation: none
+license: Apache-2.0
 approval_model: human_required
 execution_modes: jit, mcp, persistent
 side_effects: writes-storage

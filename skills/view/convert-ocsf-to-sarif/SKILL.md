@@ -14,6 +14,11 @@ description: >-
   and Inventory Info (5001) need different mappings; a future
   convert-ocsf-compliance-to-sarif will cover those. Do NOT use as a
   detection skill — this only converts.
+purpose: Convert OCSF 1.8 Detection Findings (class 2004) into SARIF 2.1.0 results for upload to GitHub code scanning. Maps each finding's MITRE ATT&CK technique to a SARIF rule (ruleId = technique.uid), maps severity_id to SA...
+capability: view
+persistence: none
+telemetry: stderr_jsonl
+privilege_escalation: none
 license: Apache-2.0
 approval_model: none
 execution_modes: jit, ci, mcp, persistent

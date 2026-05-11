@@ -105,9 +105,20 @@ def _parse_frontmatter(frontmatter: str) -> dict[str, str]:
     return {str(key): _flatten_value(value) for key, value in raw.items()}
 
 
+# Agent-bom trust-axis "capability" values are layer verbs (ingest,
+# detect, ...). They are unrelated to the read/write axis the MCP tool
+# registry historically used, so when the SKILL.md value is a verb we
+# fall back to the path-derived heuristic instead of treating it as a
+# write hint.
+_TRUST_CAPABILITY_VERBS = frozenset(
+    {"ingest", "detect", "discover", "evaluate", "view", "output", "remediate", "source"}
+)
+
+
 def _derive_capability(skill_dir: Path, metadata: dict[str, str]) -> str:
-    if "capability" in metadata and metadata["capability"]:
-        return metadata["capability"]
+    declared = metadata.get("capability") or ""
+    if declared and declared not in _TRUST_CAPABILITY_VERBS:
+        return declared
     category = skill_dir.parent.name
     if category == "remediation" or skill_dir.name.startswith("remediate-"):
         return "write-remediation"

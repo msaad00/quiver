@@ -14,6 +14,11 @@ description: >-
   the model — this skill only reads YAML/JSON. Do NOT use for runtime detection
   of prompt injection inside live traffic (a future detect-prompt-injection skill
   will cover that). Do NOT use for GPU cluster posture (use gpu-cluster-security).
+purpose: Audit the security posture of AI model serving infrastructure.
+capability: evaluate
+persistence: none
+telemetry: stderr_jsonl
+privilege_escalation: read
 license: Apache-2.0
 approval_model: none
 execution_modes: jit, ci, mcp, persistent

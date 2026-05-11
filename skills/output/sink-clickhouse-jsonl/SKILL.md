@@ -8,8 +8,12 @@ description: >-
   ClickHouse without changing the producing skill. Do NOT use for DDL, schema
   creation, table mutation, or arbitrary SQL execution. Do NOT use as an
   ingest, detect, or evaluation skill.
-license: Apache-2.0
+purpose: Append JSONL records from stdin into a pre-provisioned ClickHouse table using the official ClickHouse client insert API only.
 capability: write-sink
+persistence: audit_log
+telemetry: stderr_jsonl
+privilege_escalation: none
+license: Apache-2.0
 approval_model: human_required
 execution_modes: jit, mcp, persistent
 side_effects: writes-database

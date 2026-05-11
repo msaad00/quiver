@@ -14,6 +14,11 @@ description: >-
   logs (use ingest-cloudtrail-ocsf), or VPC Flow Logs (use
   ingest-vpc-flow-logs-ocsf). Do NOT use as a detection skill — GuardDuty IS
   the detector; this skill is a passthrough normaliser.
+purpose: Convert raw AWS GuardDuty findings (native JSON finding format from the GuardDuty API, EventBridge, or S3 export) into OCSF 1.8 Detection Finding events (class 2004). Extracts MITRE ATT&CK technique and tactic from th...
+capability: ingest
+persistence: none
+telemetry: stderr_jsonl
+privilege_escalation: none
 license: Apache-2.0
 approval_model: none
 execution_modes: jit, ci, mcp, persistent

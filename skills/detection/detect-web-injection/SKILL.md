@@ -16,6 +16,11 @@ description: >-
   blocked them), as a substitute for parameterised queries / proper
   input validation in the application, or for large-scale ML-based
   payload classification.
+purpose: "Detect OWASP Top 10 A03:2021 (Injection) signals in HTTP access logs."
+capability: detect
+persistence: none
+telemetry: stderr_jsonl
+privilege_escalation: none
 license: Apache-2.0
 approval_model: none
 execution_modes: jit, ci, mcp, persistent

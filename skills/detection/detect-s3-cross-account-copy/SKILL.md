@@ -10,6 +10,11 @@ description: >-
   another cloud account", or "T1537 via CloudTrail". Do NOT use as a generic
   S3 object-write detector, to infer every exfiltration path, or to claim all
   cross-account storage movement is covered.
+purpose: Detect successful AWS S3 cross-account object copies from OCSF 1.8 API Activity records emitted by ingest-cloudtrail-ocsf. Emits an OCSF 1.8 Detection Finding (class 2004) tagged with MITRE ATT&CK T1537 (Transfer Data...
+capability: detect
+persistence: none
+telemetry: stderr_jsonl
+privilege_escalation: none
 license: Apache-2.0
 approval_model: none
 execution_modes: jit, ci, mcp, persistent

@@ -15,6 +15,11 @@ description: >-
   detectors (`detect-okta-mfa-fatigue`, `detect-credential-stuffing-okta`,
   `detect-google-workspace-suspicious-login`), as a SSO posture check,
   or as a replacement for IdP-level rate limiting.
+purpose: "Detect OWASP Top 10 A07:2021 (Identification and Authentication Failures) signals in HTTP access logs."
+capability: detect
+persistence: none
+telemetry: stderr_jsonl
+privilege_escalation: none
 license: Apache-2.0
 approval_model: none
 execution_modes: jit, ci, mcp, persistent

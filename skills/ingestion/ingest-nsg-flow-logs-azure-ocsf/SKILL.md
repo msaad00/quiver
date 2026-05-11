@@ -11,6 +11,11 @@ description: >-
   for the repo's native network-activity JSONL emitted from the same
   canonical internal model. Do NOT use on Azure Activity Logs or Defender
   alerts. Do NOT use on AWS or GCP flow-log formats.
+purpose: Convert Azure NSG Flow Logs tuples into OCSF 1.8 Network Activity (class 4001). Parses the nested Azure Network Watcher flow-log export structure, supports tuple versions 1 and 2, normalizes allow or deny decisions, a...
+capability: ingest
+persistence: none
+telemetry: stderr_jsonl
+privilege_escalation: none
 license: Apache-2.0
 approval_model: none
 execution_modes: jit, ci, mcp, persistent

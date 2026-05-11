@@ -13,6 +13,11 @@ description: >-
   Do NOT use on raw Snowflake QUERY_HISTORY JSON before OCSF normalization,
   as a posture-at-rest key inventory check, or as a generic
   credential-issuance detector for non-Snowflake platforms.
+purpose: Detect addition of an RSA / public-key credential to a Snowflake user.
+capability: detect
+persistence: none
+telemetry: stderr_jsonl
+privilege_escalation: none
 license: Apache-2.0
 approval_model: none
 execution_modes: jit, ci, mcp, persistent

@@ -10,6 +10,11 @@ description: >-
   GenerateIdToken, or short-lived service-account impersonation tokens. Do NOT
   use for service-account key creation, workload-identity federation
   configuration, or generic IAM policy changes.
+purpose: Detect successful GCP IAM Credentials API token minting for service accounts from OCSF 1.8 API Activity records emitted by ingest-gcp-audit-ocsf. Emits an OCSF 1.8 Detection Finding (class 2004) tagged with MITRE ATT&...
+capability: detect
+persistence: none
+telemetry: stderr_jsonl
+privilege_escalation: none
 license: Apache-2.0
 approval_model: none
 execution_modes: jit, ci, mcp, persistent

@@ -11,6 +11,11 @@ description: >-
   gpu-cluster-security), or to mutate cluster state (this skill is assessment-only
   and never calls write APIs). Do NOT use against a cluster you do not own or
   have explicit authorisation to scan.
+purpose: Audit Kubernetes cluster and workload security against the CIS Kubernetes Benchmark.
+capability: evaluate
+persistence: none
+telemetry: stderr_jsonl
+privilege_escalation: read
 license: Apache-2.0
 approval_model: none
 execution_modes: jit, ci, mcp, persistent

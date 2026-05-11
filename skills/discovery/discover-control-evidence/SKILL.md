@@ -12,6 +12,11 @@ description: >-
   relationships are documented. Do NOT use as a compliance certification tool,
   benchmark evaluator, or remediation planner. Do NOT use on raw logs or
   findings — this skill expects inventory artifacts, not events.
+purpose: Generate deterministic technical-control evidence from discovery-layer inventory artifacts.
+capability: discover
+persistence: none
+telemetry: stderr_jsonl
+privilege_escalation: read
 license: Apache-2.0
 approval_model: none
 execution_modes: jit, ci, mcp, persistent

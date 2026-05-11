@@ -10,6 +10,11 @@ description: >-
   normalized findings. Do NOT use on Azure Activity Logs, NSG Flow Logs,
   or custom detections. Do NOT use as a detector; Defender already
   produced the alert and this skill only validates and normalizes it.
+purpose: Convert Azure Defender for Cloud alerts into OCSF 1.8 Detection Finding (class 2004). Validates the alert envelope, normalizes severity and resource context, and emits deterministic passthrough findings suitable for d...
+capability: ingest
+persistence: none
+telemetry: stderr_jsonl
+privilege_escalation: none
 license: Apache-2.0
 approval_model: none
 execution_modes: jit, ci, mcp, persistent

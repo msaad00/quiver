@@ -14,6 +14,11 @@ description: >-
   Databricks". Do NOT use on raw Databricks audit-log JSON before OCSF
   normalization, as a posture-at-rest token inventory or age check, or as a
   generic credential-issuance detector for non-Databricks platforms.
+purpose: Detect creation of Databricks personal access tokens (PATs) on a workspace.
+capability: detect
+persistence: none
+telemetry: stderr_jsonl
+privilege_escalation: none
 license: Apache-2.0
 approval_model: none
 execution_modes: jit, ci, mcp, persistent

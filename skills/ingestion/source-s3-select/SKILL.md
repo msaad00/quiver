@@ -10,6 +10,11 @@ description: >-
   without downloading full objects first. Do NOT use for writes, object
   mutation, or broad bucket inventory. Do NOT use as a detector or normalizer
   by itself.
+purpose: Run a read-only Amazon S3 Select query against an existing object and emit the result set as raw JSONL rows for downstream ingestion, detection, or view skills.
+capability: ingest
+persistence: none
+telemetry: stderr_jsonl
+privilege_escalation: none
 license: Apache-2.0
 approval_model: none
 execution_modes: jit, ci, mcp, persistent

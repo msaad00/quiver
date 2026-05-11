@@ -11,6 +11,11 @@ description: >-
   posture-at-rest key inventory, workload-identity federation coverage, or
   generic IAM policy changes. This first slice only covers successful
   `CreateServiceAccountKey` operations.
+purpose: Detect successful GCP IAM `CreateServiceAccountKey` API calls against service accounts from OCSF 1.8 API Activity records emitted by ingest-gcp-audit-ocsf. Emits an OCSF 1.8 Detection Finding (class 2004) tagged with...
+capability: detect
+persistence: none
+telemetry: stderr_jsonl
+privilege_escalation: none
 license: Apache-2.0
 approval_model: none
 execution_modes: jit, ci, mcp, persistent

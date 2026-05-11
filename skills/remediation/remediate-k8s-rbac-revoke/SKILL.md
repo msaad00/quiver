@@ -20,8 +20,12 @@ description: >-
   binding (rules r1, r2, r4 of detect-privilege-escalation-k8s, and every
   finding from detect-sensitive-secret-read-k8s); those findings emit a
   skipped_no_binding_pointer record telling the operator to triage manually.
-license: Apache-2.0
+purpose: Revoke a Kubernetes RoleBinding or ClusterRoleBinding flagged by an RBAC self-grant finding.
 capability: write-cloud
+persistence: cloud_state
+telemetry: stderr_jsonl
+privilege_escalation: read_write
+license: Apache-2.0
 approval_model: human_required
 execution_modes: jit, ci, mcp, persistent
 side_effects: writes-cloud, writes-storage, writes-audit

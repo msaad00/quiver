@@ -27,8 +27,12 @@ description: >-
   bypass the grace period, set it to zero "to test", call the Cloud Workflow
   directly, edit the audit Firestore by hand, or extend the protected-principal
   deny list at runtime.
-license: Apache-2.0
+purpose: Use when GCP/Workspace user departure manifest needs surgical IAM teardown across Cloud Identity / Workspace, project-level IAM bindings, folder and organisation IAM bindings, BigQuery dataset-level IAM, Cloud Storage...
 capability: write-cloud
+persistence: cloud_state
+telemetry: stderr_jsonl
+privilege_escalation: read_write
+license: Apache-2.0
 approval_model: human_required
 execution_modes: jit, ci, mcp, persistent
 side_effects: writes-identity, writes-cloud, writes-storage, writes-database, writes-audit

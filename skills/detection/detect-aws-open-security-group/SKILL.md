@@ -18,6 +18,11 @@ description: >-
   VPC Network ACLs (different API surface), and intentionally-open
   exposures (operators tag those via SG tag `intentionally-open` and the
   paired remediator's deny-list refuses to revoke them).
+purpose: "Detect AWS Security Group ingress rules opened to the internet (0.0.0.0/0 or ::/0) on risky admin / database / cache / search ports. Reads OCSF 1.8 API Activity (class 6003) records emitted by ingest-cloudtrail-ocsf,..."
+capability: detect
+persistence: none
+telemetry: stderr_jsonl
+privilege_escalation: none
 license: Apache-2.0
 approval_model: none
 execution_modes: jit, ci, mcp, persistent

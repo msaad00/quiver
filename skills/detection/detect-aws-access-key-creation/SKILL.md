@@ -11,6 +11,11 @@ description: >-
   infer console-password or login-profile creation, or to claim every AWS
   identity-pivot path. This first slice only covers successful
   `CreateAccessKey` operations.
+purpose: Detect successful AWS IAM `CreateAccessKey` API calls against IAM users from OCSF 1.8 API Activity records emitted by ingest-cloudtrail-ocsf. Emits an OCSF 1.8 Detection Finding (class 2004) tagged with MITRE ATT&CK T...
+capability: detect
+persistence: none
+telemetry: stderr_jsonl
+privilege_escalation: none
 license: Apache-2.0
 approval_model: none
 execution_modes: jit, ci, mcp, persistent

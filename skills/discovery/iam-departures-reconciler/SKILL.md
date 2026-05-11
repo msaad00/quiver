@@ -11,8 +11,12 @@ description: >-
   users, revoke credentials, or execute cloud remediation — use the
   cloud-specific `iam-departures-*` skills for write actions. Do NOT use it as
   an HR system of record or a generic provisioning workflow.
-license: Apache-2.0
+purpose: Build a deterministic IAM departures manifest from HR termination sources before any cloud-specific remediation runs.
 capability: read-only
+persistence: none
+telemetry: stderr_jsonl
+privilege_escalation: read
+license: Apache-2.0
 approval_model: none
 execution_modes: jit, ci, mcp, persistent
 side_effects: none

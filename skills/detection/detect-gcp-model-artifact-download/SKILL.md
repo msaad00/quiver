@@ -10,6 +10,11 @@ description: >-
   Use when the user wants to spot suspicious model artifact collection from
   Cloud Storage. Do NOT use for generic bucket access monitoring, generic data
   exfiltration, or Azure/AWS object-store reads.
+purpose: Detect successful GCS object downloads that look like model-weight or checkpoint artifact collection.
+capability: detect
+persistence: none
+telemetry: stderr_jsonl
+privilege_escalation: none
 license: Apache-2.0
 approval_model: none
 execution_modes: jit, ci, mcp, persistent

@@ -11,6 +11,11 @@ description: >-
   exfil instructions", or "MCP output says to upload secrets". Do NOT use for
   leaked credential material itself, tool descriptions, or semantic jailbreak
   claims.
+purpose: Detect MCP tool-call responses that explicitly instruct an agent to exfiltrate conversation history, prompts, files, or secrets.
+capability: detect
+persistence: none
+telemetry: stderr_jsonl
+privilege_escalation: none
 license: Apache-2.0
 approval_model: none
 execution_modes: jit, ci, mcp, persistent

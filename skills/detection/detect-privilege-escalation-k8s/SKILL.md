@@ -11,6 +11,11 @@ description: >-
   on raw audit logs — pipe them through ingest-k8s-audit-ocsf first. Do NOT
   use for CloudTrail, GCP, or Azure detection. Do NOT use as a compliance
   check; this emits findings on observed behavior.
+purpose: Detect Kubernetes privilege-escalation patterns from normalized kube-apiserver audit events in OCSF or native mode.
+capability: detect
+persistence: none
+telemetry: stderr_jsonl
+privilege_escalation: none
 license: Apache-2.0
 approval_model: none
 execution_modes: jit, ci, mcp, persistent

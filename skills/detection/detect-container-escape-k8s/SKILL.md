@@ -11,6 +11,11 @@ description: >-
   patching, `kubectl debug`, suspicious `kubectl exec`, or Falco / Tracee
   runtime breakout signals. Do NOT use on raw audit logs — pipe them through
   ingest-k8s-audit-ocsf first for the audit stream.
+purpose: Detect Kubernetes container-escape signals from normalized kube-apiserver audit events in native or OCSF mode.
+capability: detect
+persistence: none
+telemetry: stderr_jsonl
+privilege_escalation: none
 license: Apache-2.0
 approval_model: none
 execution_modes: jit, ci, mcp, persistent

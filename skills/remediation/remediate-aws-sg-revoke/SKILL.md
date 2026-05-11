@@ -20,8 +20,12 @@ description: >-
   use to delete the whole SG (deletes other legitimate rules), for VPC
   Network ACL changes (different API surface), for GCP firewall or Azure
   NSG (separate skills per #307 phases B + C), or to bypass the deny-list.
-license: Apache-2.0
+purpose: Revoke an AWS Security Group ingress rule flagged as open to the internet.
 capability: write-cloud
+persistence: cloud_state
+telemetry: stderr_jsonl
+privilege_escalation: read_write
+license: Apache-2.0
 approval_model: human_required
 execution_modes: jit, ci, mcp, persistent
 side_effects: writes-cloud, writes-storage, writes-audit

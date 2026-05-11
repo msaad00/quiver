@@ -17,8 +17,12 @@ description: >-
   "apply deny-all NetworkPolicy after escape finding," "re-verify K8s
   quarantine policy," "kill the compromised pod," "drain the affected node,"
   or "collect K8s container-escape forensics."
-license: Apache-2.0
+purpose: Contain a Kubernetes container-escape signal by planning, applying, or re-verifying a namespace-scoped deny-all NetworkPolicy for the targeted pod or workload selector.
 capability: write-cloud
+persistence: cloud_state
+telemetry: stderr_jsonl
+privilege_escalation: read_write
+license: Apache-2.0
 approval_model: human_required
 execution_modes: jit, ci, mcp, persistent
 side_effects: writes-cloud, writes-storage, writes-audit

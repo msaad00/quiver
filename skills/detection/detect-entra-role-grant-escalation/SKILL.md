@@ -13,6 +13,11 @@ description: >-
   ingest-entra-directory-audit-ocsf first. Do NOT use as a generic Entra
   credential-addition, Conditional Access, or directory-role-assignment
   detector.
+purpose: Detect successful Microsoft Entra app-role grants to service principals from OCSF 1.8 API Activity (6003) events or the native API activity projection produced by ingest-entra-directory-audit-ocsf. This slice stays in...
+capability: detect
+persistence: none
+telemetry: stderr_jsonl
+privilege_escalation: none
 license: Apache-2.0
 approval_model: none
 execution_modes: jit, ci, mcp, persistent

@@ -12,8 +12,12 @@ description: >-
   access check, or CloudTrail validation. Do NOT use for GCP, Azure, or on-prem; do
   NOT use `--auto-remediate` for unsupported controls, for CloudTrail bootstrap, or to
   bypass protected-resource deny-lists.
-license: Apache-2.0
+purpose: Assess AWS accounts against CIS AWS Foundations Benchmark v3.0. Runs 22 automated read-only checks across IAM, Storage, Logging, Networking, and security services. Produces per-control pass/fail results with remediati...
 capability: write-cloud
+persistence: audit_log
+telemetry: stderr_jsonl
+privilege_escalation: read
+license: Apache-2.0
 approval_model: human_required
 execution_modes: jit, ci, mcp, persistent
 side_effects: writes-cloud, writes-audit

@@ -10,6 +10,11 @@ description: >-
   the user mentions "system prompt leakage", "prompt extraction", "hidden
   instructions exposed", or "LLM07 via MCP". Do NOT use for generic jailbreak
   language, semantic prompt leakage claims, or tool-description inspection.
+purpose: Detect MCP tool-call responses that look like leaked system-prompt or hidden instruction material from native or OCSF Application Activity records emitted by ingest-mcp-proxy-ocsf.
+capability: detect
+persistence: none
+telemetry: stderr_jsonl
+privilege_escalation: none
 license: Apache-2.0
 approval_model: none
 execution_modes: jit, ci, mcp, persistent

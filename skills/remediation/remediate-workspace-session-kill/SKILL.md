@@ -27,8 +27,12 @@ description: >-
   (only operates on the target's home tenant), mobile-device wipe
   (separate API surface and authorization model), and group/role
   unwind (the suspicious-login finding doesn't carry that context).
-license: Apache-2.0
+purpose: Contain a Google Workspace account takeover by signing the user out and forcing a password change at next login.
 capability: write-identity
+persistence: cloud_state
+telemetry: stderr_jsonl
+privilege_escalation: read_write
+license: Apache-2.0
 approval_model: human_required
 execution_modes: jit, ci, mcp, persistent
 side_effects: writes-identity, writes-storage, writes-audit

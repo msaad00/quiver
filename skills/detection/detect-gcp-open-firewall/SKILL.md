@@ -18,6 +18,11 @@ description: >-
   EGRESS firewall changes, for rules created with `disabled: true`, or
   as a posture check (CSPM evaluates state at rest; this detector fires
   on the create/patch event so response can be near-real-time).
+purpose: "Use when GCP audit log shows compute.firewalls.insert or compute.firewalls.patch opening 0.0.0.0/0 or ::/0 to risky admin / DB / cache ports; ATT&CK T1190 (Exploit Public-Facing Application). Reads OCSF 1.8 API Activi..."
+capability: detect
+persistence: none
+telemetry: stderr_jsonl
+privilege_escalation: none
 license: Apache-2.0
 approval_model: none
 execution_modes: jit, ci, mcp, persistent

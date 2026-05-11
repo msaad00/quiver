@@ -12,6 +12,11 @@ description: >-
   Azure Activity, or K8s audit logs (use ingest-cloudtrail-ocsf / ingest-gcp-audit-ocsf
   / ingest-azure-activity-ocsf / ingest-k8s-audit-ocsf respectively). Do NOT use as a
   detection skill — this skill only normalises, it does not flag anything.
+purpose: Convert raw MCP proxy logs (from agent-bom proxy or any MCP JSON-RPC middleware) into Application Activity records.
+capability: ingest
+persistence: none
+telemetry: stderr_jsonl
+privilege_escalation: none
 license: Apache-2.0
 approval_model: none
 execution_modes: jit, ci, mcp, persistent

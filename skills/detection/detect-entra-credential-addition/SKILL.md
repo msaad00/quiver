@@ -13,6 +13,11 @@ description: >-
   persistence. Do NOT use on raw Graph directoryAudit payloads — normalize them
   through ingest-entra-directory-audit-ocsf first. Do NOT use as a generic
   Entra app-role escalation or administrative drift detector.
+purpose: Detect successful Microsoft Entra application or service-principal credential additions from OCSF 1.8 API Activity (6003) events or the native API activity projection produced by ingest-entra-directory-audit-ocsf. The...
+capability: detect
+persistence: none
+telemetry: stderr_jsonl
+privilege_escalation: none
 license: Apache-2.0
 approval_model: none
 execution_modes: jit, ci, mcp, persistent

@@ -25,8 +25,12 @@ description: >-
   Workspace user deprovisioning. Do NOT bypass the grace period, write to
   the audit table by hand, disable the protected-object deny-list, or run
   the worker on a tenant `Global Administrator` ObjectId.
-license: Apache-2.0
+purpose: Use when Azure Entra ID user departure manifest needs surgical IAM teardown for departed employees.
 capability: write-cloud
+persistence: cloud_state
+telemetry: stderr_jsonl
+privilege_escalation: read_write
+license: Apache-2.0
 approval_model: human_required
 execution_modes: jit, ci, mcp, persistent
 side_effects: writes-identity, writes-storage, writes-database, writes-audit

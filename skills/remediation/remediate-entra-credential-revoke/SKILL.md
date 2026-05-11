@@ -23,8 +23,12 @@ description: >-
   or GCP. Out of scope: targeted credential keyId revocation (the detector
   does not carry the offending keyId; operator selects from the triage list)
   and tenant-wide policy changes.
-license: Apache-2.0
+purpose: Contain a Microsoft Entra credential-addition or app-role-grant escalation by disabling the targeted service principal (accountEnabled=false) and emitting a triage payload that lists the SP's current keyCredentials, p...
 capability: write-identity
+persistence: cloud_state
+telemetry: stderr_jsonl
+privilege_escalation: read_write
+license: Apache-2.0
 approval_model: human_required
 execution_modes: jit, ci, mcp, persistent
 side_effects: writes-identity, writes-storage, writes-audit

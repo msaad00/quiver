@@ -15,6 +15,11 @@ description: >-
   NOT use on raw ClickHouse `system.query_log` rows — normalize them through
   the upstream ClickHouse ingest pipeline first. Do NOT use as a generic
   data-loss detector for non-ClickHouse warehouses.
+purpose: Detect single-principal bulk row export out of a ClickHouse cluster.
+capability: detect
+persistence: none
+telemetry: stderr_jsonl
+privilege_escalation: none
 license: Apache-2.0
 approval_model: none
 execution_modes: jit, ci, mcp, persistent

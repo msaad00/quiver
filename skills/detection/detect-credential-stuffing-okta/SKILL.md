@@ -14,6 +14,11 @@ description: >-
   first. Do NOT use as a generic MFA-fatigue detector (use
   detect-okta-mfa-fatigue). Do NOT use on Entra, Workspace, or CloudTrail
   — those have their own detectors.
+purpose: Detect credential-stuffing and password-spraying bursts against Okta user accounts from OCSF 1.8 Authentication (3002) events or the native authentication projection produced by ingest-okta-system-log-ocsf. Tracks one...
+capability: detect
+persistence: none
+telemetry: stderr_jsonl
+privilege_escalation: none
 license: Apache-2.0
 approval_model: none
 execution_modes: jit, ci, mcp, persistent

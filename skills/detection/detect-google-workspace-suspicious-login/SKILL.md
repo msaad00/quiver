@@ -14,6 +14,11 @@ description: >-
   Workspace Admin SDK payloads — normalize them through
   ingest-google-workspace-login-ocsf first. Do NOT use as a generic MFA
   detector or for non-Workspace identity sources.
+purpose: Detect suspicious Google Workspace login bursts from OCSF 1.8 Authentication (3002) events or the native authentication projection produced by ingest-google-workspace-login-ocsf. The first slice stays narrow and verif...
+capability: detect
+persistence: none
+telemetry: stderr_jsonl
+privilege_escalation: none
 license: Apache-2.0
 approval_model: none
 execution_modes: jit, ci, mcp, persistent

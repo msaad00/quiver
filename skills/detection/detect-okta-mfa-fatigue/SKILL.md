@@ -12,6 +12,11 @@ description: >-
   MFA denial bursts. Do NOT use on raw Okta System Log JSON — normalize it
   through ingest-okta-system-log-ocsf first. Do NOT use as a generic failed-logon
   detector or credential-stuffing rule.
+purpose: Detect repeated Okta Verify push-challenge and denial bursts from OCSF 1.8 Authentication (3002) events or the native authentication projection produced by ingest-okta-system-log-ocsf. Tracks one user at a time, looks...
+capability: detect
+persistence: none
+telemetry: stderr_jsonl
+privilege_escalation: none
 license: Apache-2.0
 approval_model: none
 execution_modes: jit, ci, mcp, persistent

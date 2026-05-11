@@ -10,6 +10,11 @@ description: >-
   (assessment-only, Reader role only); do NOT claim full CIS Azure coverage —
   only 32 of 60 controls are implemented, see the Roadmap section in this file
   for the gap.
+purpose: Assess Azure subscriptions against a curated subset of CIS Azure Foundations Benchmark v2.1. Automates 32 high-impact read-only checks across Identity, Defender for Cloud, Storage, Database, Logging, Networking, Compu...
+capability: evaluate
+persistence: none
+telemetry: stderr_jsonl
+privilege_escalation: read
 license: Apache-2.0
 approval_model: none
 execution_modes: jit, ci, mcp, persistent

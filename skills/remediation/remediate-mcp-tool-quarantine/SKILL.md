@@ -20,8 +20,12 @@ description: >-
   those belong to their own remediation skills. Out of scope: revoking the
   MCP server itself, mutating remote tool definitions, or contacting the
   third-party MCP server author.
-license: Apache-2.0
+purpose: Quarantine an MCP tool flagged by detect-mcp-tool-drift (T1195.001 supply chain compromise) or detect-prompt-injection-mcp-proxy (MITRE ATLAS AML.T0051) by appending a structured entry to a JSONL quarantine file the o...
 capability: write-storage
+persistence: cloud_state
+telemetry: stderr_jsonl
+privilege_escalation: read_write
+license: Apache-2.0
 approval_model: human_required
 execution_modes: jit, ci, mcp, persistent
 side_effects: writes-storage, writes-audit

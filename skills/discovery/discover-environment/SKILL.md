@@ -14,6 +14,11 @@ description: >-
   Native output is deterministic graph JSON. Optional `--output-format
   ocsf-cloud-resources-inventory` wraps the snapshot as OCSF Discovery / Cloud
   Resources Inventory Info [5023] while preserving the graph under `unmapped`.
+purpose: Discover cloud infrastructure and map it to a security graph with MITRE ATT&CK and ATLAS technique overlays.
+capability: discover
+persistence: none
+telemetry: stderr_jsonl
+privilege_escalation: read
 license: Apache-2.0
 approval_model: none
 execution_modes: jit, ci, mcp, persistent

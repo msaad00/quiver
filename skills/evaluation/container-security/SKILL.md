@@ -10,6 +10,11 @@ description: >-
   (this skill only reads configs, it never touches a Docker daemon). Do NOT use
   for Kubernetes cluster posture (use k8s-security-benchmark) or GPU runtime
   isolation (use gpu-cluster-security).
+purpose: Audit container image and runtime security against the CIS Docker Benchmark.
+capability: evaluate
+persistence: none
+telemetry: stderr_jsonl
+privilege_escalation: read
 license: Apache-2.0
 approval_model: none
 execution_modes: jit, ci, mcp, persistent

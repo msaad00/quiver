@@ -12,6 +12,11 @@ description: >-
   Workspace identity telemetry into an OCSF pipeline. Do NOT use for raw Google
   Cloud Audit Logs, Okta System Log, or as a detector or policy engine — this
   skill only normalizes verified Workspace login audit payloads.
+purpose: Convert verified Google Workspace Admin SDK Reports API login audit events into OCSF 1.8 Identity & Access Management events. The first slice maps Google Workspace login success, login failure, logout, and 2-step veri...
+capability: ingest
+persistence: none
+telemetry: stderr_jsonl
+privilege_escalation: none
 license: Apache-2.0
 approval_model: none
 execution_modes: jit, ci, mcp, persistent

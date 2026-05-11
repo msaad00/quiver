@@ -11,6 +11,11 @@ description: >-
   audit logs or OCSF findings — this skill expects asset inventory, not events.
   Do NOT use as a live monitor or to claim compliance by itself — it produces a
   point-in-time inventory artifact and never mutates cloud state.
+purpose: Generate a deterministic, CycloneDX-aligned AI BOM from point-in-time AI asset inventory snapshots.
+capability: discover
+persistence: none
+telemetry: stderr_jsonl
+privilege_escalation: read
 license: Apache-2.0
 approval_model: none
 execution_modes: jit, ci, mcp, persistent

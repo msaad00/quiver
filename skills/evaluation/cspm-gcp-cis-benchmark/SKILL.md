@@ -10,6 +10,11 @@ description: >-
   findings (assessment-only, zero write permissions); do NOT claim full CIS GCP
   coverage — 30 of ~60 numbered controls are implemented, see the Roadmap section
   for the remaining gap.
+purpose: Assess GCP projects against a curated subset of CIS GCP Foundations Benchmark v3.0 controls. Automates 30 high-impact read-only checks across IAM, Cloud Storage, logging/monitoring, VPC networking, Compute Engine, Clo...
+capability: evaluate
+persistence: none
+telemetry: stderr_jsonl
+privilege_escalation: read
 license: Apache-2.0
 approval_model: none
 execution_modes: jit, ci, mcp, persistent

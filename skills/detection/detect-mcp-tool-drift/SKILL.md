@@ -15,6 +15,11 @@ description: >-
   tool, different sessions) — that is a legitimate MCP server update, not an
   attack; a separate detector will cover it. Do NOT use as a compliance check;
   this is an active detection skill.
+purpose: Detect MCP tool schema drift mid-session — the MCP tool-poisoning / rug-pull attack pattern.
+capability: detect
+persistence: none
+telemetry: stderr_jsonl
+privilege_escalation: none
 license: Apache-2.0
 approval_model: none
 execution_modes: jit, ci, mcp, persistent

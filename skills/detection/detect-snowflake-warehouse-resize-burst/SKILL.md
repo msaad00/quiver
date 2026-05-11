@@ -13,6 +13,11 @@ description: >-
   takeover). Do NOT use on raw Snowflake QUERY_HISTORY JSON before OCSF
   normalization, as a billing-cost detector, or on non-Snowflake API
   Activity 6003.
+purpose: Detect sudden compute scaling on a Snowflake warehouse that crosses the configured size-jump threshold inside a sliding window.
+capability: detect
+persistence: none
+telemetry: stderr_jsonl
+privilege_escalation: none
 license: Apache-2.0
 approval_model: none
 execution_modes: jit, ci, mcp, persistent

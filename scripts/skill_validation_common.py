@@ -38,8 +38,17 @@ NETWORK_EGRESS_RE = re.compile(r"^(?:\*\.)?(?:[A-Za-z0-9-]+\.)+[A-Za-z0-9-]+$")
 FRONTMATTER_KEY_ORDER = (
     "name",
     "description",
-    "license",
+    # Agent-bom trust-heuristic axis fields. They live immediately after
+    # description so a human reviewer sees the trust posture before the
+    # operational metadata. See `scripts/add_skill_trust_frontmatter.py`
+    # for the derivation rules and `docs/SKILL_CONTRACT.md` for the
+    # field definitions.
+    "purpose",
     "capability",
+    "persistence",
+    "telemetry",
+    "privilege_escalation",
+    "license",
     "approval_model",
     "execution_modes",
     "side_effects",

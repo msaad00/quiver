@@ -17,6 +17,11 @@ description: >-
   (different surface — see CSPM benchmarks), for service-mesh L7
   authorisation (Envoy / Istio emit a different log shape), or as a
   substitute for application-layer authorization tests in CI.
+purpose: "Detect OWASP Top 10 A01:2021 (Broken Access Control) signals in HTTP access logs."
+capability: detect
+persistence: none
+telemetry: stderr_jsonl
+privilege_escalation: none
 license: Apache-2.0
 approval_model: none
 execution_modes: jit, ci, mcp, persistent

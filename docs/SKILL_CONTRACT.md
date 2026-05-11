@@ -30,6 +30,11 @@ Optional:
 
 - `name`
 - `description`
+- `purpose`
+- `capability`
+- `persistence`
+- `telemetry`
+- `privilege_escalation`
 - `license`
 - `approval_model`
 - `execution_modes`
@@ -44,6 +49,47 @@ Optional:
 - `approver_roles`
 - `min_approvers`
 - `mcp_timeout_seconds`
+
+## Trust-heuristic fields
+
+The five trust-heuristic fields feed `agent-bom skills scan` so the
+purpose-and-capability and persistence-and-privilege axes resolve to
+`pass` / `info` instead of `warn`. They live immediately after
+`description` so a human reviewer sees the trust posture before the
+operational metadata.
+
+- `purpose` — one-sentence purpose statement. Distinct from
+  `description`, which carries the full routing prose. Derive from the
+  first sentence of `description`.
+- `capability` — the layer verb the skill performs. Allowed values:
+  - `ingest` — skills under `skills/ingestion/`
+  - `detect` — skills under `skills/detection/`
+  - `discover` — skills under `skills/discovery/`
+  - `evaluate` — skills under `skills/evaluation/`
+  - `view` — skills under `skills/view/`
+  - `output` — skills under `skills/output/`
+  - `remediate` — skills under `skills/remediation/`
+  - legacy values `read-only`, `write-cloud`, `write-identity`,
+    `write-sink`, `write-storage` remain valid where already declared
+    and continue to drive the MCP tool registry's read-only hint.
+- `persistence` — declares what the skill persists:
+  - `none` — read-only skills with `side_effects: none`
+  - `audit_log` — skills that emit findings via a `writes-audit` scope
+  - `cloud_state` — skills under `skills/remediation/` (mutate cloud
+    resources)
+- `telemetry` — declares what runtime telemetry is emitted. Every
+  shipped skill uses `stderr_jsonl` because runtime logs route through
+  `skills/_shared/logging.py`.
+- `privilege_escalation` — declares the cloud privilege the skill
+  needs:
+  - `none` — ingest/detect/view/output (no live cloud calls)
+  - `read` — discover/evaluate (cloud read APIs)
+  - `read_write` — remediation (cloud write APIs)
+
+`scripts/add_skill_trust_frontmatter.py` derives all five values from
+existing frontmatter and the skill's path, never from guesses; running
+`python scripts/add_skill_trust_frontmatter.py --check` is a CI gate
+that refuses drift.
 
 Rules:
 

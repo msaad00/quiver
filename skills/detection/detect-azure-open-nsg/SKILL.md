@@ -19,6 +19,11 @@ description: >-
   ingress exposure), for Deny rules (not granting access), or for rules
   whose source prefix is a private CIDR (10.0.0.0/8, 172.16.0.0/12,
   192.168.0.0/16, VirtualNetwork tag, AzureLoadBalancer tag, etc.).
+purpose: "Use when Azure activity log shows Microsoft.Network/networkSecurityGroups/securityRules/write opening * / Internet / 0.0.0.0/0 / ::/0 to risky admin/DB/cache ports; ATT&CK T1190. Reads OCSF 1.8 API Activity (class 600..."
+capability: detect
+persistence: none
+telemetry: stderr_jsonl
+privilege_escalation: none
 license: Apache-2.0
 approval_model: none
 execution_modes: jit, ci, mcp, persistent

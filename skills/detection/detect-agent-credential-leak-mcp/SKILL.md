@@ -11,6 +11,11 @@ description: >-
   responses. Do NOT use on `tools/list` metadata, non-MCP logs, or as a
   semantic prompt-injection classifier. This first slice is a deterministic
   regex detector on native MCP response bodies.
+purpose: Detect credential-looking material leaked in MCP tool-call responses.
+capability: detect
+persistence: none
+telemetry: stderr_jsonl
+privilege_escalation: none
 license: Apache-2.0
 approval_model: none
 execution_modes: jit, ci, persistent

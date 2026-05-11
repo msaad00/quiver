@@ -19,6 +19,11 @@ description: >-
   a manifest-completeness + freshness check, not the assessment itself.
   Do NOT use to grade GOVERN, MAP, or MEASURE — those ship as sibling
   skills.
+purpose: Implements 10 of the NIST AI RMF 1.0 MANAGE function's ~14 documented subcategories. Use when an org wants to programmatically validate their NIST AI RMF MANAGE posture against a manifest of risk-register rows, respon...
+capability: evaluate
+persistence: none
+telemetry: stderr_jsonl
+privilege_escalation: read
 license: Apache-2.0
 approval_model: none
 execution_modes: jit, ci, mcp, persistent

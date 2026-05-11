@@ -10,6 +10,11 @@ description: >-
   policy bypass", "MCP output tells the agent to ignore policy", or
   "indirect prompt injection via tool results". Do NOT use for tool
   descriptions, generic unsafe text, or semantic jailbreak claims.
+purpose: Detect MCP tool-call responses that try to override an agent's safety or approval policy.
+capability: detect
+persistence: none
+telemetry: stderr_jsonl
+privilege_escalation: none
 license: Apache-2.0
 approval_model: none
 execution_modes: jit, ci, mcp, persistent

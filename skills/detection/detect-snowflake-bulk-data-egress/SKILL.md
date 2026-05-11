@@ -13,6 +13,11 @@ description: >-
   Do NOT use on raw Snowflake QUERY_HISTORY rows — normalize them through the
   upstream Snowflake ingest pipeline first. Do NOT use as a generic data-loss
   detector for non-Snowflake warehouses.
+purpose: Detect single-principal bulk data egress out of Snowflake.
+capability: detect
+persistence: none
+telemetry: stderr_jsonl
+privilege_escalation: none
 license: Apache-2.0
 approval_model: none
 execution_modes: jit, ci, mcp, persistent
