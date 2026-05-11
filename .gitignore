@@ -57,3 +57,6 @@ terraform.tfvars
 # scripts/runner_e2e.sh; the source-of-truth for the numbers is
 # the CI workflow artifact + the generated docs/RUNTIME_PROFILES.md.
 runtime-profile-results.jsonl
+
+# Security-grades scanner output cache
+.cache/

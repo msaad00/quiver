@@ -60,6 +60,10 @@ Five surfaces, one bundle: **CLI · CI · MCP · webhook receiver · persistent 
 
 **Which vendor signals normalize to OCSF today?** [`docs/INGEST_COVERAGE.md`](docs/INGEST_COVERAGE.md) — the canonical vendor × source × OCSF class matrix, 16 mappings shipped (AWS · GCP · Azure · Entra · K8s · Okta · Workspace · MCP) plus the 9 documented roadmap rows (GitHub, Slack, Workday, Salesforce, SAP, AWS Config, native ClickHouse audit, AWS web-app exfil pipeline, Workspace beyond-login).
 
+**Why this and not an LLM-generated detector?** [`docs/WHY.md`](docs/WHY.md) — the positioning doc. Short version: the skills are LLM-portable but the trust contract (OCSF wire lock, HMAC-chained audit, HITL gates, three-layer sandbox, precision/recall scoring, five-surface harness) is what you can't prompt-generate. Cost framing: ~12 engineer-weeks to roll your own to parity.
+
+**Independent security grades.** [`docs/SECURITY_GRADES.md`](docs/SECURITY_GRADES.md) — auto-generated, regenerated weekly by `scripts/regen_security_grades.py`: Bandit (code findings), pip-audit (CVEs), agent-bom (skill trust + provenance), 13 in-repo trust-contract validators. Composite grade visible at the top of the doc.
+
 ## Architecture
 
 External signals enter through two intake layers, pass through two analyze layers, exit through two act layers, and persist through one output layer. MCP, CLI, CI, webhook, and runners all invoke the same skill bundle — the surface is transport, not behavior.

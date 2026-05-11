@@ -1,0 +1,62 @@
+name: Security grades
+
+on:
+  schedule:
+    - cron: "37 4 * * 1"  # weekly Monday 04:37 UTC
+  pull_request:
+    paths:
+      - "pyproject.toml"
+      - "uv.lock"
+      - "scripts/regen_security_grades.py"
+      - "docs/SECURITY_GRADES.md"
+      - ".github/workflows/security-grades.yml"
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+concurrency:
+  group: security-grades-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  grades:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          enable-cache: true
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: "3.11"
+
+      - name: Install dev + agent-bom
+        run: |
+          uv sync --group dev
+          uv pip install agent-bom
+
+      - name: Regenerate security grades
+        run: uv run python scripts/regen_security_grades.py
+
+      - name: Check for drift (PR only)
+        if: github.event_name == 'pull_request'
+        run: uv run python scripts/regen_security_grades.py --check
+
+      - name: Upload generated doc
+        uses: actions/upload-artifact@v5
+        with:
+          name: security-grades
+          path: docs/SECURITY_GRADES.md
+
+      - name: Upload scanner caches
+        uses: actions/upload-artifact@v5
+        with:
+          name: scanner-output
+          path: .cache/
+          if-no-files-found: ignore
