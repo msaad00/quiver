@@ -4,14 +4,14 @@ This file is **generated from [`framework-coverage.json`](framework-coverage.jso
 
 - Registry version: `0.8.1`
 - Registry updated: `2026-04-24`
-- Total shipped skills in registry: **105**
+- Total shipped skills in registry: **107**
 
 ## Roll-up
 
 | Framework | Version | Shipped skills mapped | Coverage target |
 |---|---|---|---|
-| OCSF | 1.8.0 | **84** | — |
-| MITRE ATT&CK | v14 | **69** | 100% mapped coverage |
+| OCSF | 1.8.0 | **86** | — |
+| MITRE ATT&CK | v14 | **71** | 100% mapped coverage |
 | MITRE ATLAS | current | **14** | 100% mapped coverage |
 | CIS AWS Foundations | v3.0 | **4** | — |
 | CIS GCP Foundations | v3.0 | **5** | — |
@@ -37,7 +37,7 @@ Shipped skills mapped counts the number of skills in the registry that declare t
 
 - Registry id: `ocsf-1.8`
 
-Shipped skills mapped: **84**
+Shipped skills mapped: **86**
 
 | Skill | Layer | Providers | Asset classes |
 |---|---|---|---|
@@ -47,6 +47,7 @@ Shipped skills mapped: **84**
 | [`detect-aws-login-profile-creation`](../skills/detection/detect-aws-login-profile-creation) | detection | aws | iam-users, login-profiles, credentials, cloudtrail |
 | [`detect-aws-model-artifact-download`](../skills/detection/detect-aws-model-artifact-download) | detection | aws | object-storage, objects, model-artifacts, audit-logs |
 | [`detect-aws-open-security-group`](../skills/detection/detect-aws-open-security-group) | detection | aws | security-groups, ingress-rules, cloudtrail |
+| [`detect-aws-s3-cross-region-replication`](../skills/detection/detect-aws-s3-cross-region-replication) | detection | aws | object-storage, replication |
 | [`detect-azure-activity-logs-disabled`](../skills/detection/detect-azure-activity-logs-disabled) | detection | azure | activity-logs, diagnostic-settings, logging |
 | [`detect-azure-open-nsg`](../skills/detection/detect-azure-open-nsg) | detection | azure | network-security-groups, ingress-rules, azure-activity |
 | [`detect-clickhouse-bulk-export`](../skills/detection/detect-clickhouse-bulk-export) | detection | clickhouse | warehouse, queries, external-endpoints, identities |
@@ -59,6 +60,7 @@ Shipped skills mapped: **84**
 | [`detect-gcp-audit-logs-disabled`](../skills/detection/detect-gcp-audit-logs-disabled) | detection | gcp | audit-logs, logging-sinks, log-streams |
 | [`detect-gcp-model-artifact-download`](../skills/detection/detect-gcp-model-artifact-download) | detection | gcp | object-storage, objects, model-artifacts, audit-logs |
 | [`detect-gcp-open-firewall`](../skills/detection/detect-gcp-open-firewall) | detection | gcp | vpc-firewall-rules, ingress-rules, cloud-audit-logs |
+| [`detect-gcp-outbound-peering-anomaly`](../skills/detection/detect-gcp-outbound-peering-anomaly) | detection | gcp | network, peering |
 | [`detect-gcp-service-account-key-creation`](../skills/detection/detect-gcp-service-account-key-creation) | detection | gcp | identities, service-accounts, credentials, audit-logs |
 | [`detect-gcp-service-account-token-minting`](../skills/detection/detect-gcp-service-account-token-minting) | detection | gcp | identities, service-accounts, credentials, audit-logs |
 | [`detect-github-actions-secret-disclosure`](../skills/detection/detect-github-actions-secret-disclosure) | detection | github | actions, workflow-logs, secrets |
@@ -133,7 +135,7 @@ Shipped skills mapped: **84**
 - Asset classes in scope: identities, api, network, clusters, containers, findings
 - Coverage target: 100% mapped coverage
 
-Shipped skills mapped: **69**
+Shipped skills mapped: **71**
 
 | Skill | Layer | Providers | Asset classes |
 |---|---|---|---|
@@ -142,6 +144,7 @@ Shipped skills mapped: **69**
 | [`detect-aws-login-profile-creation`](../skills/detection/detect-aws-login-profile-creation) | detection | aws | iam-users, login-profiles, credentials, cloudtrail |
 | [`detect-aws-model-artifact-download`](../skills/detection/detect-aws-model-artifact-download) | detection | aws | object-storage, objects, model-artifacts, audit-logs |
 | [`detect-aws-open-security-group`](../skills/detection/detect-aws-open-security-group) | detection | aws | security-groups, ingress-rules, cloudtrail |
+| [`detect-aws-s3-cross-region-replication`](../skills/detection/detect-aws-s3-cross-region-replication) | detection | aws | object-storage, replication |
 | [`detect-azure-activity-logs-disabled`](../skills/detection/detect-azure-activity-logs-disabled) | detection | azure | activity-logs, diagnostic-settings, logging |
 | [`detect-azure-open-nsg`](../skills/detection/detect-azure-open-nsg) | detection | azure | network-security-groups, ingress-rules, azure-activity |
 | [`detect-clickhouse-bulk-export`](../skills/detection/detect-clickhouse-bulk-export) | detection | clickhouse | warehouse, queries, external-endpoints, identities |
@@ -154,6 +157,7 @@ Shipped skills mapped: **69**
 | [`detect-gcp-audit-logs-disabled`](../skills/detection/detect-gcp-audit-logs-disabled) | detection | gcp | audit-logs, logging-sinks, log-streams |
 | [`detect-gcp-model-artifact-download`](../skills/detection/detect-gcp-model-artifact-download) | detection | gcp | object-storage, objects, model-artifacts, audit-logs |
 | [`detect-gcp-open-firewall`](../skills/detection/detect-gcp-open-firewall) | detection | gcp | vpc-firewall-rules, ingress-rules, cloud-audit-logs |
+| [`detect-gcp-outbound-peering-anomaly`](../skills/detection/detect-gcp-outbound-peering-anomaly) | detection | gcp | network, peering |
 | [`detect-gcp-service-account-key-creation`](../skills/detection/detect-gcp-service-account-key-creation) | detection | gcp | identities, service-accounts, credentials, audit-logs |
 | [`detect-gcp-service-account-token-minting`](../skills/detection/detect-gcp-service-account-token-minting) | detection | gcp | identities, service-accounts, credentials, audit-logs |
 | [`detect-github-actions-secret-disclosure`](../skills/detection/detect-github-actions-secret-disclosure) | detection | github | actions, workflow-logs, secrets |

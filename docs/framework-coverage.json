@@ -262,6 +262,28 @@
       ]
     },
     {
+      "path": "skills/detection/detect-aws-s3-cross-region-replication",
+      "layer": "detection",
+      "providers": [
+        "aws"
+      ],
+      "asset_classes": [
+        "object-storage",
+        "replication"
+      ],
+      "frameworks": [
+        "ocsf-1.8",
+        "mitre-attack-v14"
+      ],
+      "coverage_status": "validated",
+      "execution_modes": [
+        "cli",
+        "ci",
+        "mcp",
+        "persistent"
+      ]
+    },
+    {
       "path": "skills/detection/detect-azure-activity-logs-disabled",
       "layer": "detection",
       "providers": [
@@ -545,6 +567,28 @@
         "mitre-attack-v14",
         "ocsf-1.8",
         "cis-gcp-v3"
+      ],
+      "coverage_status": "validated",
+      "execution_modes": [
+        "cli",
+        "ci",
+        "mcp",
+        "persistent"
+      ]
+    },
+    {
+      "path": "skills/detection/detect-gcp-outbound-peering-anomaly",
+      "layer": "detection",
+      "providers": [
+        "gcp"
+      ],
+      "asset_classes": [
+        "network",
+        "peering"
+      ],
+      "frameworks": [
+        "ocsf-1.8",
+        "mitre-attack-v14"
       ],
       "coverage_status": "validated",
       "execution_modes": [
