@@ -1,0 +1,237 @@
+{
+  "schema_version": "1",
+  "catalog_revision": "2026-05",
+  "fingerprints": [
+    {
+      "name": "ignore-all-previous-instructions",
+      "mitre_id": "AML.T0043",
+      "regex_pattern": "ignore\\s+(?:all\\s+)?(?:the\\s+)?(?:previous|prior|above|earlier)\\s+(?:instructions|prompts|messages|rules)",
+      "severity": "high",
+      "source": "OWASP LLM Top 10 LLM01 example bank"
+    },
+    {
+      "name": "disregard-prior-context",
+      "mitre_id": "AML.T0043",
+      "regex_pattern": "(?:disregard|forget|ignore)\\s+(?:everything|all|the\\s+stuff|whatever)\\s+(?:above|before|earlier|previously)",
+      "severity": "high",
+      "source": "OWASP LLM Top 10 LLM01 example bank"
+    },
+    {
+      "name": "new-instructions-override",
+      "mitre_id": "AML.T0043",
+      "regex_pattern": "(?:new|updated)\\s+instructions\\s*:.*(?:override|replace|supersede)",
+      "severity": "high",
+      "source": "OWASP LLM Top 10 LLM01 example bank"
+    },
+    {
+      "name": "act-as-jailbreak-dan",
+      "mitre_id": "AML.T0043",
+      "regex_pattern": "(?:you\\s+are\\s+now|act\\s+as|pretend\\s+to\\s+be)\\s+(?:dan|stan|dude|aim|developer\\s+mode)",
+      "severity": "high",
+      "source": "Public jailbreak corpora referenced in OWASP LLM Top 10"
+    },
+    {
+      "name": "no-restrictions-roleplay",
+      "mitre_id": "AML.T0043",
+      "regex_pattern": "(?:without|with\\s+no|free\\s+of)\\s+(?:restrictions|filters|safety|guardrails|moderation|limitations)",
+      "severity": "high",
+      "source": "OWASP LLM01 jailbreak taxonomy"
+    },
+    {
+      "name": "evil-roleplay",
+      "mitre_id": "AML.T0043",
+      "regex_pattern": "(?:act|behave|respond)\\s+as\\s+(?:an\\s+)?(?:evil|malicious|unethical|amoral)\\s+(?:ai|assistant|model|version)",
+      "severity": "high",
+      "source": "Public jailbreak corpora — DAN family"
+    },
+    {
+      "name": "system-prompt-extraction",
+      "mitre_id": "AML.T0043",
+      "regex_pattern": "(?:repeat|print|show|reveal|display)\\s+(?:your|the)\\s+(?:system\\s+prompt|initial\\s+prompt|original\\s+instructions|instructions)",
+      "severity": "high",
+      "source": "OWASP LLM07 system-prompt leakage examples"
+    },
+    {
+      "name": "system-prompt-extraction-verbatim",
+      "mitre_id": "AML.T0043",
+      "regex_pattern": "(?:what|tell\\s+me\\s+what)\\s+(?:is|are)\\s+(?:your|the)\\s+(?:system\\s+prompt|initial\\s+instructions|hidden\\s+prompt)",
+      "severity": "high",
+      "source": "OWASP LLM07 system-prompt leakage examples"
+    },
+    {
+      "name": "system-prompt-extraction-first-message",
+      "mitre_id": "AML.T0043",
+      "regex_pattern": "(?:print|output|return|show)\\s+(?:your|the)\\s+(?:first|initial|opening)\\s+message",
+      "severity": "high",
+      "source": "OWASP LLM07 system-prompt leakage examples"
+    },
+    {
+      "name": "developer-mode-toggle",
+      "mitre_id": "AML.T0043",
+      "regex_pattern": "(?:enable|activate|enter|switch\\s+to)\\s+developer\\s+mode",
+      "severity": "high",
+      "source": "Public jailbreak corpora — Developer Mode family"
+    },
+    {
+      "name": "god-mode-toggle",
+      "mitre_id": "AML.T0043",
+      "regex_pattern": "(?:enable|activate|enter)\\s+(?:god|admin|root|sudo)\\s+mode",
+      "severity": "high",
+      "source": "Public jailbreak corpora referenced in OWASP LLM Top 10"
+    },
+    {
+      "name": "instruction-redirection",
+      "mitre_id": "AML.T0043",
+      "regex_pattern": "from\\s+now\\s+on,?\\s+(?:you\\s+(?:will|must)|ignore|disregard|always)",
+      "severity": "medium",
+      "source": "OWASP LLM01 example bank"
+    },
+    {
+      "name": "tool-result-tag-smuggle",
+      "mitre_id": "AML.T0043",
+      "regex_pattern": "</tool_result>",
+      "severity": "high",
+      "source": "OWASP LLM02 insecure output handling examples"
+    },
+    {
+      "name": "system-tag-smuggle",
+      "mitre_id": "AML.T0043",
+      "regex_pattern": "</system>",
+      "severity": "high",
+      "source": "OWASP LLM02 insecure output handling examples"
+    },
+    {
+      "name": "user-tag-smuggle",
+      "mitre_id": "AML.T0043",
+      "regex_pattern": "<\\|im_start\\|>\\s*system",
+      "severity": "high",
+      "source": "OWASP LLM02 — ChatML role-marker smuggling"
+    },
+    {
+      "name": "assistant-tag-smuggle",
+      "mitre_id": "AML.T0043",
+      "regex_pattern": "<\\|im_end\\|>",
+      "severity": "medium",
+      "source": "OWASP LLM02 — ChatML role-marker smuggling"
+    },
+    {
+      "name": "encoded-base64-prefix",
+      "mitre_id": "AML.T0043",
+      "regex_pattern": "data:text/plain;base64,[A-Za-z0-9+/=]{16,}",
+      "severity": "medium",
+      "source": "NIST AI 600-1 adversarial ML — encoded payload smuggling"
+    },
+    {
+      "name": "unicode-escape-flood",
+      "mitre_id": "AML.T0043",
+      "regex_pattern": "(?:\\\\u[0-9a-fA-F]{4}){8,}",
+      "severity": "medium",
+      "source": "NIST AI 600-1 adversarial ML — encoding-based evasion"
+    },
+    {
+      "name": "html-comment-smuggle",
+      "mitre_id": "AML.T0043",
+      "regex_pattern": "<!--\\s*(?:ignore|override|system|admin)",
+      "severity": "medium",
+      "source": "OWASP LLM02 — markdown comment smuggling"
+    },
+    {
+      "name": "do-anything-now",
+      "mitre_id": "AML.T0043",
+      "regex_pattern": "do\\s+anything\\s+now",
+      "severity": "high",
+      "source": "Public jailbreak corpora — DAN family"
+    },
+    {
+      "name": "pretend-no-policy",
+      "mitre_id": "AML.T0043",
+      "regex_pattern": "pretend\\s+(?:there\\s+(?:is|are)\\s+no\\s+(?:rules|policies|guidelines))",
+      "severity": "medium",
+      "source": "OWASP LLM01 jailbreak taxonomy"
+    },
+    {
+      "name": "fictional-scenario-bypass",
+      "mitre_id": "AML.T0043",
+      "regex_pattern": "(?:imagine|pretend|suppose).{0,40}(?:hypothetical|fictional).{0,80}(?:no\\s+(?:rules|consequences|laws))",
+      "severity": "medium",
+      "source": "OWASP LLM01 jailbreak taxonomy"
+    },
+    {
+      "name": "reveal-hidden-rules",
+      "mitre_id": "AML.T0043",
+      "regex_pattern": "(?:reveal|expose|disclose|leak)\\s+(?:your|the)\\s+(?:hidden|secret|private|internal)\\s+(?:rules|prompt|instructions|context)",
+      "severity": "high",
+      "source": "OWASP LLM07 system-prompt leakage examples"
+    },
+    {
+      "name": "credential-exfil-prompt",
+      "mitre_id": "AML.T0043",
+      "regex_pattern": "(?:print|show|reveal|output)\\s+(?:all\\s+)?(?:api\\s+keys|credentials|secrets|tokens|passwords)",
+      "severity": "high",
+      "source": "OWASP LLM06 sensitive-information disclosure"
+    },
+    {
+      "name": "translate-to-bypass",
+      "mitre_id": "AML.T0043",
+      "regex_pattern": "translate\\s+(?:the\\s+following|this)\\s+(?:into|to)\\s+(?:base64|rot13|leetspeak|morse)",
+      "severity": "medium",
+      "source": "NIST AI 600-1 — encoding-based bypass"
+    },
+    {
+      "name": "uppercase-shout-override",
+      "mitre_id": "AML.T0043",
+      "regex_pattern": "(?:IMPORTANT|URGENT|CRITICAL|ATTENTION):?\\s+(?:IGNORE|OVERRIDE|DISREGARD)\\s+(?:ALL\\s+)?(?:PREVIOUS|PRIOR)",
+      "severity": "high",
+      "source": "OWASP LLM01 example bank — emphasis-based redirection"
+    },
+    {
+      "name": "indirect-injection-via-resource",
+      "mitre_id": "AML.T0043",
+      "regex_pattern": "when\\s+you\\s+read\\s+(?:this|the\\s+content|the\\s+document),?\\s+(?:ignore|forget|disregard)",
+      "severity": "high",
+      "source": "OWASP LLM01 — indirect prompt injection class"
+    },
+    {
+      "name": "json-system-injection",
+      "mitre_id": "AML.T0043",
+      "regex_pattern": "\\{\\s*\"role\"\\s*:\\s*\"system\"\\s*,\\s*\"content\"",
+      "severity": "high",
+      "source": "OWASP LLM02 — chat-message smuggling"
+    },
+    {
+      "name": "prompt-leak-via-summarize",
+      "mitre_id": "AML.T0043",
+      "regex_pattern": "summarize\\s+(?:your|the)\\s+(?:full|entire|complete)\\s+(?:context|prompt|instructions|history)",
+      "severity": "medium",
+      "source": "OWASP LLM07 system-prompt leakage examples"
+    },
+    {
+      "name": "exception-override",
+      "mitre_id": "AML.T0043",
+      "regex_pattern": "you\\s+are\\s+(?:authorized|permitted|allowed)\\s+(?:to\\s+)?(?:bypass|ignore|skip)\\s+(?:safety|policy|guidelines)",
+      "severity": "high",
+      "source": "OWASP LLM01 — false-authority injection"
+    },
+    {
+      "name": "policy-disable-injection",
+      "mitre_id": "AML.T0043",
+      "regex_pattern": "(?:safety|content)\\s+(?:filter|policy|moderation)\\s+(?:off|disabled|bypassed)",
+      "severity": "high",
+      "source": "OWASP LLM01 jailbreak taxonomy"
+    },
+    {
+      "name": "prompt-leak-debug",
+      "mitre_id": "AML.T0043",
+      "regex_pattern": "debug\\s+mode:?\\s+(?:print|show|dump)\\s+(?:prompt|instructions|context)",
+      "severity": "medium",
+      "source": "OWASP LLM07 — debug-flag exploitation"
+    },
+    {
+      "name": "chained-tool-exfil",
+      "mitre_id": "AML.T0043",
+      "regex_pattern": "send\\s+(?:the|this|all)\\s+(?:above|chat|history|context)\\s+to\\s+https?://",
+      "severity": "high",
+      "source": "OWASP LLM06 — context exfiltration via tool calls"
+    }
+  ]
+}

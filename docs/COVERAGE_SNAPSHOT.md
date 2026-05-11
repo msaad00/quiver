@@ -6,7 +6,7 @@ Auto-generated from [`framework-coverage.json`](framework-coverage.json) by [`sc
 python scripts/coverage_summary.py --write
 ```
 
-**Total shipped skills:** 107
+**Total shipped skills:** 110
 
 ## By cloud / vendor
 
@@ -14,22 +14,22 @@ Skills overlap when a skill targets multiple providers (the `multi` row), so the
 
 | Cloud / vendor | Skills | % of repo |
 |---|---:|---:|
-| AWS | 23 | 21.5% |
-| Multi-cloud (vendor-neutral) | 21 | 19.6% |
-| Azure | 18 | 16.8% |
-| GCP | 18 | 16.8% |
-| Snowflake | 13 | 12.1% |
-| MCP / AI runtime | 11 | 10.3% |
-| Kubernetes | 9 | 8.4% |
-| ClickHouse | 4 | 3.7% |
-| Okta | 4 | 3.7% |
-| Databricks | 4 | 3.7% |
-| Microsoft Entra | 4 | 3.7% |
-| github | 4 | 3.7% |
-| Slack | 4 | 3.7% |
-| Microsoft Graph | 3 | 2.8% |
-| Google Workspace | 3 | 2.8% |
-| Containers (runtime) | 3 | 2.8% |
+| AWS | 23 | 20.9% |
+| Multi-cloud (vendor-neutral) | 21 | 19.1% |
+| Azure | 18 | 16.4% |
+| GCP | 18 | 16.4% |
+| MCP / AI runtime | 14 | 12.7% |
+| Snowflake | 13 | 11.8% |
+| Kubernetes | 9 | 8.2% |
+| ClickHouse | 4 | 3.6% |
+| Okta | 4 | 3.6% |
+| Databricks | 4 | 3.6% |
+| Microsoft Entra | 4 | 3.6% |
+| github | 4 | 3.6% |
+| Slack | 4 | 3.6% |
+| Microsoft Graph | 3 | 2.7% |
+| Google Workspace | 3 | 2.7% |
+| Containers (runtime) | 3 | 2.7% |
 | Workday | 1 | 0.9% |
 
 ## By framework
@@ -38,36 +38,36 @@ Skills can carry multiple framework tags (e.g. a CIS check tagged with NIST CSF 
 
 | Framework | Skills | % of repo |
 |---|---:|---:|
-| OCSF 1.8 | 86 | 80.4% |
-| MITRE ATT&CK v14 | 71 | 66.4% |
-| SOC 2 TSC | 20 | 18.7% |
-| NIST CSF 2.0 | 20 | 18.7% |
-| OWASP Top 10 | 16 | 15.0% |
-| OWASP LLM Top 10 | 15 | 14.0% |
-| MITRE ATLAS | 14 | 13.1% |
-| OWASP MCP Top 10 | 8 | 7.5% |
-| NIST AI RMF | 8 | 7.5% |
-| CIS Azure v2.1 | 6 | 5.6% |
-| CIS GCP v3 | 5 | 4.7% |
-| CIS AWS v3 | 4 | 3.7% |
-| PCI DSS 4.0 | 4 | 3.7% |
-| ISO 27001:2022 | 3 | 2.8% |
-| CycloneDX ML-BOM | 2 | 1.9% |
-| CIS Controls v8 | 2 | 1.9% |
-| CIS Kubernetes | 2 | 1.9% |
+| OCSF 1.8 | 89 | 80.9% |
+| MITRE ATT&CK v14 | 72 | 65.5% |
+| SOC 2 TSC | 20 | 18.2% |
+| NIST CSF 2.0 | 20 | 18.2% |
+| OWASP LLM Top 10 | 18 | 16.4% |
+| MITRE ATLAS | 16 | 14.5% |
+| OWASP Top 10 | 16 | 14.5% |
+| OWASP MCP Top 10 | 11 | 10.0% |
+| NIST AI RMF | 8 | 7.3% |
+| CIS Azure v2.1 | 6 | 5.5% |
+| CIS GCP v3 | 5 | 4.5% |
+| CIS AWS v3 | 4 | 3.6% |
+| PCI DSS 4.0 | 4 | 3.6% |
+| ISO 27001:2022 | 3 | 2.7% |
+| CycloneDX ML-BOM | 2 | 1.8% |
+| CIS Controls v8 | 2 | 1.8% |
+| CIS Kubernetes | 2 | 1.8% |
 | CIS Docker | 1 | 0.9% |
 
 ## By layer
 
 | Layer | Skills | % of repo |
 |---|---:|---:|
-| detection | 54 | 50.5% |
-| ingestion | 20 | 18.7% |
-| remediation | 12 | 11.2% |
-| evaluation | 11 | 10.3% |
-| discovery | 5 | 4.7% |
-| output | 3 | 2.8% |
-| view | 2 | 1.9% |
+| detection | 57 | 51.8% |
+| ingestion | 20 | 18.2% |
+| remediation | 12 | 10.9% |
+| evaluation | 11 | 10.0% |
+| discovery | 5 | 4.5% |
+| output | 3 | 2.7% |
+| view | 2 | 1.8% |
 
 ## Per-framework control coverage
 
@@ -92,8 +92,8 @@ Per-track breadth toward the published target. The 'Today' column uses **per-con
 
 | Track | Tag | Issue | Target | Today |
 |---|---|---|---:|---:|
-| MITRE ATT&CK breadth | `mitre-attack-v14` | #253 | 50% | 66% |
-| MITRE ATLAS | `mitre-atlas` | #255 | 40% | 13% |
+| MITRE ATT&CK breadth | `mitre-attack-v14` | #253 | 50% | 65% |
+| MITRE ATLAS | `mitre-atlas` | #255 | 40% | 15% |
 | OWASP LLM Top 10 | `owasp-llm-top-10` | #255 | 40% | 0% |
 | OWASP MCP Top 10 | `owasp-mcp-top-10` | #255 | 50% | 0% |
 | OWASP Top 10 (web) | `owasp-top-10` | TBD | 30% | 0% |

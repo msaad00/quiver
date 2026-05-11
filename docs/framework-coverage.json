@@ -779,6 +779,30 @@
       ]
     },
     {
+      "path": "skills/detection/detect-mcp-adversarial-input-corpus",
+      "layer": "detection",
+      "providers": [
+        "mcp"
+      ],
+      "asset_classes": [
+        "prompts",
+        "tools"
+      ],
+      "frameworks": [
+        "ocsf-1.8",
+        "mitre-atlas",
+        "owasp-llm-top-10",
+        "owasp-mcp-top-10"
+      ],
+      "coverage_status": "validated",
+      "execution_modes": [
+        "cli",
+        "ci",
+        "mcp",
+        "persistent"
+      ]
+    },
+    {
       "path": "skills/detection/detect-mcp-model-artifact-tampering",
       "layer": "detection",
       "providers": [
@@ -847,6 +871,31 @@
       ]
     },
     {
+      "path": "skills/detection/detect-mcp-shadow-tool-injection",
+      "layer": "detection",
+      "providers": [
+        "mcp"
+      ],
+      "asset_classes": [
+        "tools",
+        "tool-metadata",
+        "supply-chain"
+      ],
+      "frameworks": [
+        "ocsf-1.8",
+        "mitre-attack-v14",
+        "owasp-llm-top-10",
+        "owasp-mcp-top-10"
+      ],
+      "coverage_status": "validated",
+      "execution_modes": [
+        "cli",
+        "ci",
+        "mcp",
+        "persistent"
+      ]
+    },
+    {
       "path": "skills/detection/detect-mcp-tool-drift",
       "layer": "detection",
       "providers": [
@@ -868,6 +917,30 @@
         "cli",
         "ci",
         "mcp"
+      ]
+    },
+    {
+      "path": "skills/detection/detect-mcp-unbounded-tool-output",
+      "layer": "detection",
+      "providers": [
+        "mcp"
+      ],
+      "asset_classes": [
+        "tools",
+        "rate-limits"
+      ],
+      "frameworks": [
+        "ocsf-1.8",
+        "mitre-atlas",
+        "owasp-llm-top-10",
+        "owasp-mcp-top-10"
+      ],
+      "coverage_status": "validated",
+      "execution_modes": [
+        "cli",
+        "ci",
+        "mcp",
+        "persistent"
       ]
     },
     {

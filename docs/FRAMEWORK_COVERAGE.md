@@ -4,15 +4,15 @@ This file is **generated from [`framework-coverage.json`](framework-coverage.jso
 
 - Registry version: `0.8.1`
 - Registry updated: `2026-04-24`
-- Total shipped skills in registry: **107**
+- Total shipped skills in registry: **110**
 
 ## Roll-up
 
 | Framework | Version | Shipped skills mapped | Coverage target |
 |---|---|---|---|
-| OCSF | 1.8.0 | **86** | — |
-| MITRE ATT&CK | v14 | **71** | 100% mapped coverage |
-| MITRE ATLAS | current | **14** | 100% mapped coverage |
+| OCSF | 1.8.0 | **89** | — |
+| MITRE ATT&CK | v14 | **72** | 100% mapped coverage |
+| MITRE ATLAS | current | **16** | 100% mapped coverage |
 | CIS AWS Foundations | v3.0 | **4** | — |
 | CIS GCP Foundations | v3.0 | **5** | — |
 | CIS Azure Foundations | v2.1 | **6** | — |
@@ -25,8 +25,8 @@ This file is **generated from [`framework-coverage.json`](framework-coverage.jso
 | PCI DSS | 4.0 | **4** | 100% mapped coverage |
 | ISO 27001 | 2022 | **3** | — |
 | OWASP Top 10 | 2021 | **16** | — |
-| OWASP LLM Top 10 | current | **15** | — |
-| OWASP MCP Top 10 | current | **8** | — |
+| OWASP LLM Top 10 | current | **18** | — |
+| OWASP MCP Top 10 | current | **11** | — |
 | CycloneDX ML-BOM | current | **2** | — |
 
 Shipped skills mapped counts the number of skills in the registry that declare this framework under `frameworks`. It does not claim per-control depth; see each skill's `SKILL.md` and `REFERENCES.md` for the concrete controls, techniques, or benchmarks covered.
@@ -37,7 +37,7 @@ Shipped skills mapped counts the number of skills in the registry that declare t
 
 - Registry id: `ocsf-1.8`
 
-Shipped skills mapped: **86**
+Shipped skills mapped: **89**
 
 | Skill | Layer | Providers | Asset classes |
 |---|---|---|---|
@@ -68,10 +68,13 @@ Shipped skills mapped: **86**
 | [`detect-github-pat-creation`](../skills/detection/detect-github-pat-creation) | detection | github | source-control, tokens, identities |
 | [`detect-google-workspace-suspicious-login`](../skills/detection/detect-google-workspace-suspicious-login) | detection | google-workspace | identities, authentication, sessions, mfa |
 | [`detect-lateral-movement`](../skills/detection/detect-lateral-movement) | detection | aws, azure, gcp, multi | iam-roles, role-sessions, applications, service-accounts, service-account-keys, iam-credentials, service-principals, managed-identities, federated-credentials, app-role-assignments, sessions, api, network |
+| [`detect-mcp-adversarial-input-corpus`](../skills/detection/detect-mcp-adversarial-input-corpus) | detection | mcp | prompts, tools |
 | [`detect-mcp-model-artifact-tampering`](../skills/detection/detect-mcp-model-artifact-tampering) | detection | mcp | model-artifacts, tools |
 | [`detect-mcp-model-token-flood`](../skills/detection/detect-mcp-model-token-flood) | detection | mcp | models, rate-limits |
 | [`detect-mcp-plugin-supply-chain`](../skills/detection/detect-mcp-plugin-supply-chain) | detection | mcp | tools, supply-chain |
+| [`detect-mcp-shadow-tool-injection`](../skills/detection/detect-mcp-shadow-tool-injection) | detection | mcp | tools, tool-metadata, supply-chain |
 | [`detect-mcp-tool-drift`](../skills/detection/detect-mcp-tool-drift) | detection | mcp, multi | agent-tools, supply-chain, tool-metadata |
+| [`detect-mcp-unbounded-tool-output`](../skills/detection/detect-mcp-unbounded-tool-output) | detection | mcp | tools, rate-limits |
 | [`detect-okta-mfa-fatigue`](../skills/detection/detect-okta-mfa-fatigue) | detection | okta | identities, authentication, mfa, sessions |
 | [`detect-privilege-escalation-k8s`](../skills/detection/detect-privilege-escalation-k8s) | detection | kubernetes | clusters, containers, identities, secrets |
 | [`detect-prompt-injection-mcp-proxy`](../skills/detection/detect-prompt-injection-mcp-proxy) | detection | mcp, multi | agent-tools, tool-metadata, guardrails |
@@ -135,7 +138,7 @@ Shipped skills mapped: **86**
 - Asset classes in scope: identities, api, network, clusters, containers, findings
 - Coverage target: 100% mapped coverage
 
-Shipped skills mapped: **71**
+Shipped skills mapped: **72**
 
 | Skill | Layer | Providers | Asset classes |
 |---|---|---|---|
@@ -165,6 +168,7 @@ Shipped skills mapped: **71**
 | [`detect-github-pat-creation`](../skills/detection/detect-github-pat-creation) | detection | github | source-control, tokens, identities |
 | [`detect-google-workspace-suspicious-login`](../skills/detection/detect-google-workspace-suspicious-login) | detection | google-workspace | identities, authentication, sessions, mfa |
 | [`detect-lateral-movement`](../skills/detection/detect-lateral-movement) | detection | aws, azure, gcp, multi | iam-roles, role-sessions, applications, service-accounts, service-account-keys, iam-credentials, service-principals, managed-identities, federated-credentials, app-role-assignments, sessions, api, network |
+| [`detect-mcp-shadow-tool-injection`](../skills/detection/detect-mcp-shadow-tool-injection) | detection | mcp | tools, tool-metadata, supply-chain |
 | [`detect-mcp-tool-drift`](../skills/detection/detect-mcp-tool-drift) | detection | mcp, multi | agent-tools, supply-chain, tool-metadata |
 | [`detect-okta-mfa-fatigue`](../skills/detection/detect-okta-mfa-fatigue) | detection | okta | identities, authentication, mfa, sessions |
 | [`detect-privilege-escalation-k8s`](../skills/detection/detect-privilege-escalation-k8s) | detection | kubernetes | clusters, containers, identities, secrets |
@@ -218,13 +222,15 @@ Shipped skills mapped: **71**
 - Asset classes in scope: ai-endpoints, models, datasets, vector-stores, gpu-fleets, evidence
 - Coverage target: 100% mapped coverage
 
-Shipped skills mapped: **14**
+Shipped skills mapped: **16**
 
 | Skill | Layer | Providers | Asset classes |
 |---|---|---|---|
 | [`detect-aws-model-artifact-download`](../skills/detection/detect-aws-model-artifact-download) | detection | aws | object-storage, objects, model-artifacts, audit-logs |
 | [`detect-gcp-model-artifact-download`](../skills/detection/detect-gcp-model-artifact-download) | detection | gcp | object-storage, objects, model-artifacts, audit-logs |
+| [`detect-mcp-adversarial-input-corpus`](../skills/detection/detect-mcp-adversarial-input-corpus) | detection | mcp | prompts, tools |
 | [`detect-mcp-model-artifact-tampering`](../skills/detection/detect-mcp-model-artifact-tampering) | detection | mcp | model-artifacts, tools |
+| [`detect-mcp-unbounded-tool-output`](../skills/detection/detect-mcp-unbounded-tool-output) | detection | mcp | tools, rate-limits |
 | [`detect-prompt-injection-mcp-proxy`](../skills/detection/detect-prompt-injection-mcp-proxy) | detection | mcp, multi | agent-tools, tool-metadata, guardrails |
 | [`detect-system-prompt-extraction`](../skills/detection/detect-system-prompt-extraction) | detection | mcp | agent-tools, tool-results, prompts, instructions |
 | [`detect-tool-output-exfiltration-instructions`](../skills/detection/detect-tool-output-exfiltration-instructions) | detection | mcp | agent-tools, tool-results, instructions, artifacts |
@@ -449,7 +455,7 @@ Shipped skills mapped: **16**
 
 - Registry id: `owasp-llm-top-10`
 
-Shipped skills mapped: **15**
+Shipped skills mapped: **18**
 
 | Skill | Layer | Providers | Asset classes |
 |---|---|---|---|
@@ -460,9 +466,12 @@ Shipped skills mapped: **15**
 | [`detect-github-actions-secret-disclosure`](../skills/detection/detect-github-actions-secret-disclosure) | detection | github | actions, workflow-logs, secrets |
 | [`detect-github-org-secret-exposure`](../skills/detection/detect-github-org-secret-exposure) | detection | github | source-control, secrets, actions |
 | [`detect-github-pat-creation`](../skills/detection/detect-github-pat-creation) | detection | github | source-control, tokens, identities |
+| [`detect-mcp-adversarial-input-corpus`](../skills/detection/detect-mcp-adversarial-input-corpus) | detection | mcp | prompts, tools |
 | [`detect-mcp-model-artifact-tampering`](../skills/detection/detect-mcp-model-artifact-tampering) | detection | mcp | model-artifacts, tools |
 | [`detect-mcp-model-token-flood`](../skills/detection/detect-mcp-model-token-flood) | detection | mcp | models, rate-limits |
 | [`detect-mcp-plugin-supply-chain`](../skills/detection/detect-mcp-plugin-supply-chain) | detection | mcp | tools, supply-chain |
+| [`detect-mcp-shadow-tool-injection`](../skills/detection/detect-mcp-shadow-tool-injection) | detection | mcp | tools, tool-metadata, supply-chain |
+| [`detect-mcp-unbounded-tool-output`](../skills/detection/detect-mcp-unbounded-tool-output) | detection | mcp | tools, rate-limits |
 | [`detect-prompt-injection-mcp-proxy`](../skills/detection/detect-prompt-injection-mcp-proxy) | detection | mcp, multi | agent-tools, tool-metadata, guardrails |
 | [`detect-system-prompt-extraction`](../skills/detection/detect-system-prompt-extraction) | detection | mcp | agent-tools, tool-results, prompts, instructions |
 | [`detect-tool-output-exfiltration-instructions`](../skills/detection/detect-tool-output-exfiltration-instructions) | detection | mcp | agent-tools, tool-results, instructions, artifacts |
@@ -473,13 +482,16 @@ Shipped skills mapped: **15**
 
 - Registry id: `owasp-mcp-top-10`
 
-Shipped skills mapped: **8**
+Shipped skills mapped: **11**
 
 | Skill | Layer | Providers | Asset classes |
 |---|---|---|---|
 | [`detect-agent-credential-leak-mcp`](../skills/detection/detect-agent-credential-leak-mcp) | detection | mcp, multi | agent-tools, tool-results, credentials |
+| [`detect-mcp-adversarial-input-corpus`](../skills/detection/detect-mcp-adversarial-input-corpus) | detection | mcp | prompts, tools |
 | [`detect-mcp-plugin-supply-chain`](../skills/detection/detect-mcp-plugin-supply-chain) | detection | mcp | tools, supply-chain |
+| [`detect-mcp-shadow-tool-injection`](../skills/detection/detect-mcp-shadow-tool-injection) | detection | mcp | tools, tool-metadata, supply-chain |
 | [`detect-mcp-tool-drift`](../skills/detection/detect-mcp-tool-drift) | detection | mcp, multi | agent-tools, supply-chain, tool-metadata |
+| [`detect-mcp-unbounded-tool-output`](../skills/detection/detect-mcp-unbounded-tool-output) | detection | mcp | tools, rate-limits |
 | [`detect-prompt-injection-mcp-proxy`](../skills/detection/detect-prompt-injection-mcp-proxy) | detection | mcp, multi | agent-tools, tool-metadata, guardrails |
 | [`detect-tool-output-exfiltration-instructions`](../skills/detection/detect-tool-output-exfiltration-instructions) | detection | mcp | agent-tools, tool-results, instructions, artifacts |
 | [`detect-tool-output-policy-bypass`](../skills/detection/detect-tool-output-policy-bypass) | detection | mcp | agent-tools, tool-results, instructions, approvals |

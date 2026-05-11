@@ -111,14 +111,20 @@ not do, and what it talks to.
 | Detect | [`detect-slack-oauth-app-install-broad-scope`](../skills/detection/detect-slack-oauth-app-install-broad-scope/) | T1098.005 — Slack app installed with broad OAuth scopes |
 | Detect | [`detect-slack-admin-elevation`](../skills/detection/detect-slack-admin-elevation/) | T1098.003 — Slack admin/owner role grant outside change window |
 
-### AI runtime · MCP · model serving — 14 skills
+### AI runtime · MCP · model serving — 20 skills
 
 | Layer | Skill | What it does |
 |---|---|---|
 | Ingest | [`ingest-mcp-proxy-ocsf`](../skills/ingestion/ingest-mcp-proxy-ocsf/) | MCP proxy logs → OCSF Application Activity 6002 |
 | Discover | [`discover-ai-bom`](../skills/discovery/discover-ai-bom/) | CycloneDX ML-BOM — models, datasets, tools |
 | Detect | [`detect-agent-credential-leak-mcp`](../skills/detection/detect-agent-credential-leak-mcp/) | OWASP MCP — leaked secrets in `tools/call` results |
+| Detect | [`detect-mcp-adversarial-input-corpus`](../skills/detection/detect-mcp-adversarial-input-corpus/) | ATLAS AML.T0043 — frozen adversarial-input fingerprint catalog |
+| Detect | [`detect-mcp-model-artifact-tampering`](../skills/detection/detect-mcp-model-artifact-tampering/) | ATLAS AML.T0010 / OWASP LLM03 — MCP model-artifact tampering |
+| Detect | [`detect-mcp-model-token-flood`](../skills/detection/detect-mcp-model-token-flood/) | OWASP LLM04 / LLM10 — model prompt-token flooding |
+| Detect | [`detect-mcp-plugin-supply-chain`](../skills/detection/detect-mcp-plugin-supply-chain/) | OWASP LLM05 — inputSchema reaches outside the allowlist |
+| Detect | [`detect-mcp-shadow-tool-injection`](../skills/detection/detect-mcp-shadow-tool-injection/) | T1195.001 — tool diverges from the server-registered baseline |
 | Detect | [`detect-mcp-tool-drift`](../skills/detection/detect-mcp-tool-drift/) | T1195.001 — tool-poisoning / rug-pull |
+| Detect | [`detect-mcp-unbounded-tool-output`](../skills/detection/detect-mcp-unbounded-tool-output/) | OWASP LLM10 — tool responses repeatedly breach output ceilings |
 | Detect | [`detect-prompt-injection-mcp-proxy`](../skills/detection/detect-prompt-injection-mcp-proxy/) | OWASP LLM01 — prompt injection patterns |
 | Detect | [`detect-system-prompt-extraction`](../skills/detection/detect-system-prompt-extraction/) | OWASP LLM07 — extraction attempts |
 | Detect | [`detect-tool-output-exfiltration-instructions`](../skills/detection/detect-tool-output-exfiltration-instructions/) | OWASP LLM06 — exfil instructions in tool output |
@@ -203,8 +209,8 @@ Quick orientation:
 | MITRE ATT&CK v14 | `finding_info.attacks` on every detector |
 | MITRE ATLAS | model-exfil + AI-runtime detectors |
 | OWASP Top 10 (web) | `detect-web-*` |
-| OWASP LLM Top 10 | `detect-prompt-injection-*`, `detect-system-prompt-extraction`, `detect-tool-output-*`, `detect-agent-credential-leak-mcp`, `model-serving-security` |
-| OWASP MCP Top 10 | `detect-mcp-tool-drift`, `detect-agent-credential-leak-mcp`, `detect-prompt-injection-mcp-proxy`, `remediate-mcp-tool-quarantine` |
+| OWASP LLM Top 10 | `detect-prompt-injection-*`, `detect-system-prompt-extraction`, `detect-tool-output-*`, `detect-agent-credential-leak-mcp`, `detect-mcp-adversarial-input-corpus`, `detect-mcp-model-artifact-tampering`, `detect-mcp-model-token-flood`, `detect-mcp-plugin-supply-chain`, `detect-mcp-unbounded-tool-output`, `model-serving-security` |
+| OWASP MCP Top 10 | `detect-mcp-tool-drift`, `detect-mcp-shadow-tool-injection`, `detect-mcp-plugin-supply-chain`, `detect-mcp-adversarial-input-corpus`, `detect-mcp-unbounded-tool-output`, `detect-agent-credential-leak-mcp`, `detect-prompt-injection-mcp-proxy`, `remediate-mcp-tool-quarantine` |
 | CIS AWS / GCP / Azure / K8s / Containers | `cspm-*`, `container-security`, `k8s-security-benchmark` |
 | NIST CSF 2.0 | `cspm-*` benchmark mappings + AI runtime evaluators |
 | NIST AI RMF 1.0 | `evaluate-nist-ai-rmf-{govern,map,measure,manage}` (manifest evaluators) + cross-tagged AI runtime skills |
