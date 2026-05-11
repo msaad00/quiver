@@ -4,14 +4,14 @@ This file is **generated from [`framework-coverage.json`](framework-coverage.jso
 
 - Registry version: `0.8.1`
 - Registry updated: `2026-04-24`
-- Total shipped skills in registry: **98**
+- Total shipped skills in registry: **102**
 
 ## Roll-up
 
 | Framework | Version | Shipped skills mapped | Coverage target |
 |---|---|---|---|
-| OCSF | 1.8.0 | **77** | — |
-| MITRE ATT&CK | v14 | **66** | 100% mapped coverage |
+| OCSF | 1.8.0 | **81** | — |
+| MITRE ATT&CK | v14 | **69** | 100% mapped coverage |
 | MITRE ATLAS | current | **13** | 100% mapped coverage |
 | CIS AWS Foundations | v3.0 | **4** | — |
 | CIS GCP Foundations | v3.0 | **5** | — |
@@ -25,7 +25,7 @@ This file is **generated from [`framework-coverage.json`](framework-coverage.jso
 | PCI DSS | 4.0 | **4** | 100% mapped coverage |
 | ISO 27001 | 2022 | **3** | — |
 | OWASP Top 10 | 2021 | **16** | — |
-| OWASP LLM Top 10 | current | **9** | — |
+| OWASP LLM Top 10 | current | **12** | — |
 | OWASP MCP Top 10 | current | **7** | — |
 | CycloneDX ML-BOM | current | **2** | — |
 
@@ -37,7 +37,7 @@ Shipped skills mapped counts the number of skills in the registry that declare t
 
 - Registry id: `ocsf-1.8`
 
-Shipped skills mapped: **77**
+Shipped skills mapped: **81**
 
 | Skill | Layer | Providers | Asset classes |
 |---|---|---|---|
@@ -61,6 +61,9 @@ Shipped skills mapped: **77**
 | [`detect-gcp-open-firewall`](../skills/detection/detect-gcp-open-firewall) | detection | gcp | vpc-firewall-rules, ingress-rules, cloud-audit-logs |
 | [`detect-gcp-service-account-key-creation`](../skills/detection/detect-gcp-service-account-key-creation) | detection | gcp | identities, service-accounts, credentials, audit-logs |
 | [`detect-gcp-service-account-token-minting`](../skills/detection/detect-gcp-service-account-token-minting) | detection | gcp | identities, service-accounts, credentials, audit-logs |
+| [`detect-github-actions-secret-disclosure`](../skills/detection/detect-github-actions-secret-disclosure) | detection | github | actions, workflow-logs, secrets |
+| [`detect-github-org-secret-exposure`](../skills/detection/detect-github-org-secret-exposure) | detection | github | source-control, secrets, actions |
+| [`detect-github-pat-creation`](../skills/detection/detect-github-pat-creation) | detection | github | source-control, tokens, identities |
 | [`detect-google-workspace-suspicious-login`](../skills/detection/detect-google-workspace-suspicious-login) | detection | google-workspace | identities, authentication, sessions, mfa |
 | [`detect-lateral-movement`](../skills/detection/detect-lateral-movement) | detection | aws, azure, gcp, multi | iam-roles, role-sessions, applications, service-accounts, service-account-keys, iam-credentials, service-principals, managed-identities, federated-credentials, app-role-assignments, sessions, api, network |
 | [`detect-mcp-tool-drift`](../skills/detection/detect-mcp-tool-drift) | detection | mcp, multi | agent-tools, supply-chain, tool-metadata |
@@ -100,6 +103,7 @@ Shipped skills mapped: **77**
 | [`ingest-entra-directory-audit-ocsf`](../skills/ingestion/ingest-entra-directory-audit-ocsf) | ingestion | azure, entra, microsoft-graph | identities, applications, service-principals, federated-credentials, audit-logs |
 | [`ingest-gcp-audit-ocsf`](../skills/ingestion/ingest-gcp-audit-ocsf) | ingestion | gcp | api, audit-logs |
 | [`ingest-gcp-scc-ocsf`](../skills/ingestion/ingest-gcp-scc-ocsf) | ingestion | gcp | findings, security-posture |
+| [`ingest-github-audit-log-ocsf`](../skills/ingestion/ingest-github-audit-log-ocsf) | ingestion | github | source-control, identities, authentication, user-access, secrets, audit-logs |
 | [`ingest-google-workspace-login-ocsf`](../skills/ingestion/ingest-google-workspace-login-ocsf) | ingestion | google-workspace | identities, authentication, mfa, sessions, audit-logs |
 | [`ingest-guardduty-ocsf`](../skills/ingestion/ingest-guardduty-ocsf) | ingestion | aws | findings, threat-detections |
 | [`ingest-k8s-audit-ocsf`](../skills/ingestion/ingest-k8s-audit-ocsf) | ingestion | kubernetes | clusters, audit-logs, identities |
@@ -126,7 +130,7 @@ Shipped skills mapped: **77**
 - Asset classes in scope: identities, api, network, clusters, containers, findings
 - Coverage target: 100% mapped coverage
 
-Shipped skills mapped: **66**
+Shipped skills mapped: **69**
 
 | Skill | Layer | Providers | Asset classes |
 |---|---|---|---|
@@ -149,6 +153,9 @@ Shipped skills mapped: **66**
 | [`detect-gcp-open-firewall`](../skills/detection/detect-gcp-open-firewall) | detection | gcp | vpc-firewall-rules, ingress-rules, cloud-audit-logs |
 | [`detect-gcp-service-account-key-creation`](../skills/detection/detect-gcp-service-account-key-creation) | detection | gcp | identities, service-accounts, credentials, audit-logs |
 | [`detect-gcp-service-account-token-minting`](../skills/detection/detect-gcp-service-account-token-minting) | detection | gcp | identities, service-accounts, credentials, audit-logs |
+| [`detect-github-actions-secret-disclosure`](../skills/detection/detect-github-actions-secret-disclosure) | detection | github | actions, workflow-logs, secrets |
+| [`detect-github-org-secret-exposure`](../skills/detection/detect-github-org-secret-exposure) | detection | github | source-control, secrets, actions |
+| [`detect-github-pat-creation`](../skills/detection/detect-github-pat-creation) | detection | github | source-control, tokens, identities |
 | [`detect-google-workspace-suspicious-login`](../skills/detection/detect-google-workspace-suspicious-login) | detection | google-workspace | identities, authentication, sessions, mfa |
 | [`detect-lateral-movement`](../skills/detection/detect-lateral-movement) | detection | aws, azure, gcp, multi | iam-roles, role-sessions, applications, service-accounts, service-account-keys, iam-credentials, service-principals, managed-identities, federated-credentials, app-role-assignments, sessions, api, network |
 | [`detect-mcp-tool-drift`](../skills/detection/detect-mcp-tool-drift) | detection | mcp, multi | agent-tools, supply-chain, tool-metadata |
@@ -434,7 +441,7 @@ Shipped skills mapped: **16**
 
 - Registry id: `owasp-llm-top-10`
 
-Shipped skills mapped: **9**
+Shipped skills mapped: **12**
 
 | Skill | Layer | Providers | Asset classes |
 |---|---|---|---|
@@ -442,6 +449,9 @@ Shipped skills mapped: **9**
 | [`detect-aws-model-artifact-download`](../skills/detection/detect-aws-model-artifact-download) | detection | aws | object-storage, objects, model-artifacts, audit-logs |
 | [`detect-databricks-token-creation`](../skills/detection/detect-databricks-token-creation) | detection | databricks | identities, tokens, workspaces |
 | [`detect-gcp-model-artifact-download`](../skills/detection/detect-gcp-model-artifact-download) | detection | gcp | object-storage, objects, model-artifacts, audit-logs |
+| [`detect-github-actions-secret-disclosure`](../skills/detection/detect-github-actions-secret-disclosure) | detection | github | actions, workflow-logs, secrets |
+| [`detect-github-org-secret-exposure`](../skills/detection/detect-github-org-secret-exposure) | detection | github | source-control, secrets, actions |
+| [`detect-github-pat-creation`](../skills/detection/detect-github-pat-creation) | detection | github | source-control, tokens, identities |
 | [`detect-prompt-injection-mcp-proxy`](../skills/detection/detect-prompt-injection-mcp-proxy) | detection | mcp, multi | agent-tools, tool-metadata, guardrails |
 | [`detect-system-prompt-extraction`](../skills/detection/detect-system-prompt-extraction) | detection | mcp | agent-tools, tool-results, prompts, instructions |
 | [`detect-tool-output-exfiltration-instructions`](../skills/detection/detect-tool-output-exfiltration-instructions) | detection | mcp | agent-tools, tool-results, instructions, artifacts |

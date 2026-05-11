@@ -603,6 +603,78 @@
       ]
     },
     {
+      "path": "skills/detection/detect-github-actions-secret-disclosure",
+      "layer": "detection",
+      "providers": [
+        "github"
+      ],
+      "asset_classes": [
+        "actions",
+        "workflow-logs",
+        "secrets"
+      ],
+      "frameworks": [
+        "ocsf-1.8",
+        "mitre-attack-v14",
+        "owasp-llm-top-10"
+      ],
+      "coverage_status": "validated",
+      "execution_modes": [
+        "cli",
+        "ci",
+        "mcp",
+        "persistent"
+      ]
+    },
+    {
+      "path": "skills/detection/detect-github-org-secret-exposure",
+      "layer": "detection",
+      "providers": [
+        "github"
+      ],
+      "asset_classes": [
+        "source-control",
+        "secrets",
+        "actions"
+      ],
+      "frameworks": [
+        "ocsf-1.8",
+        "mitre-attack-v14",
+        "owasp-llm-top-10"
+      ],
+      "coverage_status": "validated",
+      "execution_modes": [
+        "cli",
+        "ci",
+        "mcp",
+        "persistent"
+      ]
+    },
+    {
+      "path": "skills/detection/detect-github-pat-creation",
+      "layer": "detection",
+      "providers": [
+        "github"
+      ],
+      "asset_classes": [
+        "source-control",
+        "tokens",
+        "identities"
+      ],
+      "frameworks": [
+        "ocsf-1.8",
+        "mitre-attack-v14",
+        "owasp-llm-top-10"
+      ],
+      "coverage_status": "validated",
+      "execution_modes": [
+        "cli",
+        "ci",
+        "mcp",
+        "persistent"
+      ]
+    },
+    {
       "path": "skills/detection/detect-google-workspace-suspicious-login",
       "layer": "detection",
       "providers": [
@@ -1811,6 +1883,31 @@
       "frameworks": [
         "ocsf-1.8",
         "mitre-attack-v14"
+      ],
+      "coverage_status": "validated",
+      "execution_modes": [
+        "cli",
+        "ci",
+        "mcp",
+        "persistent"
+      ]
+    },
+    {
+      "path": "skills/ingestion/ingest-github-audit-log-ocsf",
+      "layer": "ingestion",
+      "providers": [
+        "github"
+      ],
+      "asset_classes": [
+        "source-control",
+        "identities",
+        "authentication",
+        "user-access",
+        "secrets",
+        "audit-logs"
+      ],
+      "frameworks": [
+        "ocsf-1.8"
       ],
       "coverage_status": "validated",
       "execution_modes": [

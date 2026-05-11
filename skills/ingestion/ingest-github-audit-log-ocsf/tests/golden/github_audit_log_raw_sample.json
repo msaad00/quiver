@@ -1,0 +1,57 @@
+[
+  {
+    "_document_id": "doc-pat-001",
+    "@timestamp": 1735689600000,
+    "action": "personal_access_token.access_granted",
+    "actor": "alice",
+    "actor_id": 1001,
+    "actor_ip": "203.0.113.10",
+    "user_agent": "GitHub CLI/2.40.0",
+    "actor_location": {"country_code": "US"},
+    "org": "acme",
+    "org_id": 42,
+    "request_id": "req-pat-001",
+    "programmatic_access_type": "fine_grained_personal_access_token",
+    "token_id": 9001,
+    "hashed_token": "deadbeef",
+    "scopes": ["repo", "workflow"]
+  },
+  {
+    "_document_id": "doc-secret-001",
+    "@timestamp": 1735689660000,
+    "action": "actions.org_secret_update",
+    "actor": "bob",
+    "actor_id": 1002,
+    "actor_ip": "203.0.113.11",
+    "user_agent": "github-actions-cli",
+    "org": "acme",
+    "secret_name": "DEPLOY_KEY",
+    "visibility": "all",
+    "before_visibility": "selected",
+    "selected_repositories": [],
+    "before_selected_repositories": [101, 202, 303],
+    "request_id": "req-secret-001"
+  },
+  {
+    "_document_id": "doc-iam-001",
+    "@timestamp": 1735689720000,
+    "action": "org.add_member",
+    "actor": "carol",
+    "actor_id": 1003,
+    "actor_ip": "203.0.113.12",
+    "user_agent": "github.com",
+    "org": "acme",
+    "permission": "admin",
+    "request_id": "req-iam-001"
+  },
+  {
+    "_document_id": "doc-auth-001",
+    "@timestamp": 1735689780000,
+    "action": "account.failed_login",
+    "actor": "dave",
+    "actor_id": 1004,
+    "actor_ip": "203.0.113.13",
+    "user_agent": "curl/8.0",
+    "request_id": "req-auth-001"
+  }
+]

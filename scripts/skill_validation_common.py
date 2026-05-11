@@ -87,6 +87,7 @@ OFFICIAL_REFERENCE_HOSTS = {
     "docs.aws.amazon.com",
     "docs.databricks.com",
     "docs.docker.com",
+    "docs.github.com",
     "docs.nvidia.com",
     "docs.oasis-open.org",
     "docs.snowflake.com",

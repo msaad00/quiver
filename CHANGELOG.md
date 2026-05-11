@@ -11,42 +11,60 @@ The format is loosely based on Keep a Changelog.
 
 ## [Unreleased]
 
-### Vendor depth — Slack column (closes #33)
+### Vendor depth — SaaS column kickoff (closes #31, closes #33)
 
-- **`ingest-slack-audit-ocsf`** — normalize Slack Audit Logs API
-  (`/audit/v1/logs`, Enterprise Grid) entries into OCSF 1.8 Authentication
-  (3002) for session events, User Access Management (3005) for membership
-  and role-change actions, and API Activity (6003) for app-install / file /
-  channel-create events. Preserves Slack natural IDs (`id`, `date_create`,
-  `context.location`, `context.session_id`, `details.workspace_type`,
-  `details.scopes`, `details.app`) under `unmapped.slack.*`. Uses the
-  Okta-style `_classify_event` pattern with `unmapped_event_type` stderr
-  telemetry plus an `unmapped_event_type_summary` aggregator.
-- **`detect-slack-external-channel-add`** — external-workspace guest added
-  to a sensitive Slack channel. Fires on `private_channel_member_added`,
-  `public_channel_member_added`, or `workspace_user_added_to_workspace`
-  events with `unmapped.slack.workspace_type == "external"` and channel
-  name matching `SLACK_SENSITIVE_CHANNEL_PATTERNS` (default
-  `(?i)(security|sec-ops|finance|legal|engineering-leads|exec)`). Maps to
-  MITRE ATT&CK T1078.004 (severity HIGH).
-- **`detect-slack-oauth-app-install-broad-scope`** — third-party Slack app
-  install / approval that grants broad OAuth scopes. Fires on
-  `app_installed` / `app_approved` when `chat:write` is granted together
-  with any of `files:read` / `channels:read` / `groups:read` / `im:read`
-  (or any wildcard `*:write` scope) AND the app id is not in
-  `SLACK_PREAPPROVED_APP_IDS`. Maps to MITRE ATT&CK T1098.005 (severity
-  HIGH).
-- **`detect-slack-admin-elevation`** — Slack Workspace Admin / Owner role
-  grants outside an authorized identity list or UTC change window. Fires on
-  `role_change_to_admin` / `role_change_to_owner` when the granter is not
-  in `SLACK_AUTHORIZED_GRANTERS` (default empty = fail-open with stderr
-  warning) OR the event hour is outside
-  `SLACK_GRANT_WINDOW_HOURS_UTC` (default `08-18`). Maps to MITRE ATT&CK
-  T1098.003 (severity HIGH).
-- Slack row moves from the `docs/INGEST_COVERAGE.md` Roadmap table into the
-  Shipped table; the ingest layer surfaces three OCSF classes from one
-  vendor source. Repo counts: ingest 15 → 16, detect 43 → 46, total 94 →
-  98.
+The first two SaaS vendor stories land together: GitHub (#31) and Slack
+(#33). Both follow the Okta multi-class IAM ingester pattern — one ingester
+normalizing into multiple OCSF wire classes depending on the source event
+family — and each ships with three detectors covering the persistence,
+scope-widening, and exfil arcs.
+
+#### GitHub (closes #31)
+
+- **`ingest-github-audit-log-ocsf`** — Organization Audit Log → OCSF.
+  Most actions route to API Activity 6003; IAM-shaped (`org.*_member`,
+  `team.*_member`) route to User Access Management 3005; auth actions
+  (`account.login`, `account.failed_login`) route to Authentication 3002.
+  Preserves `request_id`, visibility deltas, `selected_repositories`,
+  secret name + type, workflow log excerpt, PAT scopes, and `hashed_token`
+  under `unmapped.github.*`. `unmapped_event_type` stderr telemetry +
+  end-of-run summary, same contract as the Okta ingester post-#458.
+- **`detect-github-pat-creation`** — T1098.001. Fires HIGH on successful
+  `personal_access_token.create` / `.access_granted`.
+- **`detect-github-org-secret-exposure`** — T1078.004. Fires HIGH when
+  org Actions / Codespaces / Dependabot secret `visibility` flips to
+  `all`, MEDIUM when `selected_repositories` expands past
+  `GITHUB_ORG_SECRET_REPO_DELTA` (default 5).
+- **`detect-github-actions-secret-disclosure`** — T1552.004 CRITICAL.
+  Fires when a successful workflow log contains BOTH GitHub's `***`
+  redaction marker AND a high-entropy substring (≥ 32 chars,
+  base64/hex/JWT) the redactor missed — classic CI exfil-via-encoding
+  vector. Length-truncated previews ship; full secret never on the wire.
+
+#### Slack (closes #33)
+
+- **`ingest-slack-audit-ocsf`** — Audit Logs API (`/audit/v1/logs`,
+  Enterprise Grid) → OCSF. Authentication 3002 for session events, User
+  Access Management 3005 for membership and role-change, API Activity
+  6003 for app / file / channel-create. Preserves natural IDs
+  (`context.location`, `context.session_id`, `details.workspace_type`,
+  `details.scopes`, `details.app`) under `unmapped.slack.*`. Same
+  `_classify_event` + `unmapped_event_type_summary` aggregator.
+- **`detect-slack-external-channel-add`** — T1078.004 HIGH. External
+  workspace guest added to a sensitive channel matching
+  `SLACK_SENSITIVE_CHANNEL_PATTERNS`.
+- **`detect-slack-oauth-app-install-broad-scope`** — T1098.005 HIGH.
+  Third-party app install grants `chat:write` plus a read scope (or any
+  `*:write` wildcard) and the app id is not in
+  `SLACK_PREAPPROVED_APP_IDS`.
+- **`detect-slack-admin-elevation`** — T1098.003 HIGH. Workspace
+  Admin / Owner role grant where the granter is not in
+  `SLACK_AUTHORIZED_GRANTERS` (fail-open by default) or the event hour
+  falls outside `SLACK_GRANT_WINDOW_HOURS_UTC` (default `08-18`).
+
+Both GitHub and Slack rows move from the `docs/INGEST_COVERAGE.md`
+Roadmap table into the Shipped table. **Combined counts: ingest 15 → 17,
+detect 43 → 49, total 94 → 102.**
 
 ### Vendor depth — Snowflake column completed (#436 partial)
 
