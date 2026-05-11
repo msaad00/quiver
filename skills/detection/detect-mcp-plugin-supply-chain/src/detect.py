@@ -150,15 +150,15 @@ def _normalize_event(event: dict[str, Any]) -> dict[str, Any] | None:
     if str(event.get("direction") or "") != "response":
         return None
     raw_tool = event.get("tool")
-    tool: dict[str, Any] = raw_tool if isinstance(raw_tool, dict) else {}
-    tool_name = str(tool.get("name") or event.get("tool_name") or "")
+    native_tool: dict[str, Any] = raw_tool if isinstance(raw_tool, dict) else {}
+    tool_name = str(native_tool.get("name") or event.get("tool_name") or "")
     if not tool_name:
         return None
     return {
         "source_format": schema_mode or "native",
         "session_uid": str(event.get("session_uid") or "sess-unknown"),
         "tool_name": tool_name,
-        "input_schema": _input_schema(tool) if tool else None,
+        "input_schema": _input_schema(native_tool) if native_tool else None,
         "time_ms": _safe_int(event.get("time_ms") or event.get("time")),
         "raw_event": event,
     }
