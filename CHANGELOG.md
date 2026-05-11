@@ -11,6 +11,40 @@ The format is loosely based on Keep a Changelog.
 
 ## [Unreleased]
 
+### Databricks vendor-depth detection — closes Databricks column under #436
+
+Five new Databricks detectors complete the 6/6 plan for the Databricks
+column in #436 (the first, `detect-databricks-token-creation`, shipped in
+v0.11.0). Together they cover MITRE ATT&CK T1098.003, T1059.004 + T1546,
+T1537, T1552.001 and MITRE ATLAS AML.T0040 across the Databricks
+control plane:
+
+- `detect-databricks-unity-catalog-cross-workspace-share` — T1537. Fires
+  on `unityCatalog.{Create,Update}{Recipient,Share}` events when the
+  recipient is external or outside `DATABRICKS_AUTHORIZED_RECIPIENTS`
+  (fail-open default).
+- `detect-databricks-mlflow-model-exfil` — ATLAS AML.T0040 + ATT&CK
+  T1567. Fires on `mlflow.downloadArtifact` /
+  `mlflow.getModelVersionDownloadUri` or cross-workspace
+  `transitionModelVersionStage`; one finding per (model, actor) tuple per
+  24h via `DATABRICKS_MLFLOW_DEDUPE_WINDOW_MIN`.
+- `detect-databricks-cluster-init-script-abuse` — T1059.004 + T1546.
+  Fires on `clusters.{create,edit}` whose `init_scripts[].destination`
+  falls outside `DATABRICKS_INIT_SCRIPT_ALLOWED_PATHS` or matches the
+  unsafe shell-command pattern.
+- `detect-databricks-workspace-admin-grant` — T1098.003. Fires on
+  `accounts.setAdmin` or `iam.addUserToGroup` (`admins` /
+  `account_admins`) when the granter is not in
+  `DATABRICKS_AUTHORIZED_GRANTERS` or the event UTC hour is outside
+  `DATABRICKS_GRANT_WINDOW_HOURS_UTC` (default `08-18`).
+- `detect-databricks-secret-scope-read-burst` — T1552.001. Fires when
+  one principal reads ≥ `DATABRICKS_SECRET_READ_THRESHOLD` distinct
+  secrets from the same scope within
+  `DATABRICKS_SECRET_READ_WINDOW_MIN` minutes (defaults 30 / 10).
+
+Skill counts move from 112 → 117 total and 59 → 64 detection. #436
+remains open for the five remaining ClickHouse detectors.
+
 ## [0.11.0] — 2026-05-11 — Vendor breadth + AI-native depth + trust posture
 
 Skills count on `main`: **112** (15 ingest + 3 sources, 5 discover, 59 detect,

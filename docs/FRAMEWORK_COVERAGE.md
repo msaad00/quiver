@@ -4,15 +4,15 @@ This file is **generated from [`framework-coverage.json`](framework-coverage.jso
 
 - Registry version: `0.8.1`
 - Registry updated: `2026-04-24`
-- Total shipped skills in registry: **112**
+- Total shipped skills in registry: **117**
 
 ## Roll-up
 
 | Framework | Version | Shipped skills mapped | Coverage target |
 |---|---|---|---|
-| OCSF | 1.8.0 | **91** | — |
-| MITRE ATT&CK | v14 | **74** | 100% mapped coverage |
-| MITRE ATLAS | current | **16** | 100% mapped coverage |
+| OCSF | 1.8.0 | **96** | — |
+| MITRE ATT&CK | v14 | **79** | 100% mapped coverage |
+| MITRE ATLAS | current | **17** | 100% mapped coverage |
 | CIS AWS Foundations | v3.0 | **4** | — |
 | CIS GCP Foundations | v3.0 | **5** | — |
 | CIS Azure Foundations | v2.1 | **6** | — |
@@ -24,8 +24,8 @@ This file is **generated from [`framework-coverage.json`](framework-coverage.jso
 | SOC 2 TSC | current | **20** | 100% mapped coverage |
 | PCI DSS | 4.0 | **4** | 100% mapped coverage |
 | ISO 27001 | 2022 | **3** | — |
-| OWASP Top 10 | 2021 | **16** | — |
-| OWASP LLM Top 10 | current | **18** | — |
+| OWASP Top 10 | 2021 | **20** | — |
+| OWASP LLM Top 10 | current | **19** | — |
 | OWASP MCP Top 10 | current | **11** | — |
 | CycloneDX ML-BOM | current | **2** | — |
 
@@ -37,7 +37,7 @@ Shipped skills mapped counts the number of skills in the registry that declare t
 
 - Registry id: `ocsf-1.8`
 
-Shipped skills mapped: **91**
+Shipped skills mapped: **96**
 
 | Skill | Layer | Providers | Asset classes |
 |---|---|---|---|
@@ -56,7 +56,12 @@ Shipped skills mapped: **91**
 | [`detect-cloudtrail-disabled`](../skills/detection/detect-cloudtrail-disabled) | detection | aws | cloudtrail, audit-trails, logging |
 | [`detect-container-escape-k8s`](../skills/detection/detect-container-escape-k8s) | detection | kubernetes | clusters, containers, runtime |
 | [`detect-credential-stuffing-okta`](../skills/detection/detect-credential-stuffing-okta) | detection | okta | identities, authentication, sessions |
+| [`detect-databricks-cluster-init-script-abuse`](../skills/detection/detect-databricks-cluster-init-script-abuse) | detection | databricks | warehouse, clusters, init-scripts |
+| [`detect-databricks-mlflow-model-exfil`](../skills/detection/detect-databricks-mlflow-model-exfil) | detection | databricks | warehouse, mlflow, ml-models |
+| [`detect-databricks-secret-scope-read-burst`](../skills/detection/detect-databricks-secret-scope-read-burst) | detection | databricks | warehouse, secrets, credentials |
 | [`detect-databricks-token-creation`](../skills/detection/detect-databricks-token-creation) | detection | databricks | identities, tokens, workspaces |
+| [`detect-databricks-unity-catalog-cross-workspace-share`](../skills/detection/detect-databricks-unity-catalog-cross-workspace-share) | detection | databricks | warehouse, unity-catalog, delta-sharing |
+| [`detect-databricks-workspace-admin-grant`](../skills/detection/detect-databricks-workspace-admin-grant) | detection | databricks | warehouse, identities, rbac |
 | [`detect-entra-credential-addition`](../skills/detection/detect-entra-credential-addition) | detection | azure, entra, microsoft-graph | identities, applications, service-principals, federated-credentials |
 | [`detect-entra-role-grant-escalation`](../skills/detection/detect-entra-role-grant-escalation) | detection | azure, entra, microsoft-graph | identities, applications, service-principals, app-role-assignments |
 | [`detect-gcp-audit-logs-disabled`](../skills/detection/detect-gcp-audit-logs-disabled) | detection | gcp | audit-logs, logging-sinks, log-streams |
@@ -140,7 +145,7 @@ Shipped skills mapped: **91**
 - Asset classes in scope: identities, api, network, clusters, containers, findings
 - Coverage target: 100% mapped coverage
 
-Shipped skills mapped: **74**
+Shipped skills mapped: **79**
 
 | Skill | Layer | Providers | Asset classes |
 |---|---|---|---|
@@ -158,7 +163,12 @@ Shipped skills mapped: **74**
 | [`detect-cloudtrail-disabled`](../skills/detection/detect-cloudtrail-disabled) | detection | aws | cloudtrail, audit-trails, logging |
 | [`detect-container-escape-k8s`](../skills/detection/detect-container-escape-k8s) | detection | kubernetes | clusters, containers, runtime |
 | [`detect-credential-stuffing-okta`](../skills/detection/detect-credential-stuffing-okta) | detection | okta | identities, authentication, sessions |
+| [`detect-databricks-cluster-init-script-abuse`](../skills/detection/detect-databricks-cluster-init-script-abuse) | detection | databricks | warehouse, clusters, init-scripts |
+| [`detect-databricks-mlflow-model-exfil`](../skills/detection/detect-databricks-mlflow-model-exfil) | detection | databricks | warehouse, mlflow, ml-models |
+| [`detect-databricks-secret-scope-read-burst`](../skills/detection/detect-databricks-secret-scope-read-burst) | detection | databricks | warehouse, secrets, credentials |
 | [`detect-databricks-token-creation`](../skills/detection/detect-databricks-token-creation) | detection | databricks | identities, tokens, workspaces |
+| [`detect-databricks-unity-catalog-cross-workspace-share`](../skills/detection/detect-databricks-unity-catalog-cross-workspace-share) | detection | databricks | warehouse, unity-catalog, delta-sharing |
+| [`detect-databricks-workspace-admin-grant`](../skills/detection/detect-databricks-workspace-admin-grant) | detection | databricks | warehouse, identities, rbac |
 | [`detect-entra-credential-addition`](../skills/detection/detect-entra-credential-addition) | detection | azure, entra, microsoft-graph | identities, applications, service-principals, federated-credentials |
 | [`detect-entra-role-grant-escalation`](../skills/detection/detect-entra-role-grant-escalation) | detection | azure, entra, microsoft-graph | identities, applications, service-principals, app-role-assignments |
 | [`detect-gcp-audit-logs-disabled`](../skills/detection/detect-gcp-audit-logs-disabled) | detection | gcp | audit-logs, logging-sinks, log-streams |
@@ -226,11 +236,12 @@ Shipped skills mapped: **74**
 - Asset classes in scope: ai-endpoints, models, datasets, vector-stores, gpu-fleets, evidence
 - Coverage target: 100% mapped coverage
 
-Shipped skills mapped: **16**
+Shipped skills mapped: **17**
 
 | Skill | Layer | Providers | Asset classes |
 |---|---|---|---|
 | [`detect-aws-model-artifact-download`](../skills/detection/detect-aws-model-artifact-download) | detection | aws | object-storage, objects, model-artifacts, audit-logs |
+| [`detect-databricks-mlflow-model-exfil`](../skills/detection/detect-databricks-mlflow-model-exfil) | detection | databricks | warehouse, mlflow, ml-models |
 | [`detect-gcp-model-artifact-download`](../skills/detection/detect-gcp-model-artifact-download) | detection | gcp | object-storage, objects, model-artifacts, audit-logs |
 | [`detect-mcp-adversarial-input-corpus`](../skills/detection/detect-mcp-adversarial-input-corpus) | detection | mcp | prompts, tools |
 | [`detect-mcp-model-artifact-tampering`](../skills/detection/detect-mcp-model-artifact-tampering) | detection | mcp | model-artifacts, tools |
@@ -434,11 +445,15 @@ Shipped skills mapped: **3**
 
 - Registry id: `owasp-top-10`
 
-Shipped skills mapped: **16**
+Shipped skills mapped: **20**
 
 | Skill | Layer | Providers | Asset classes |
 |---|---|---|---|
 | [`detect-clickhouse-bulk-export`](../skills/detection/detect-clickhouse-bulk-export) | detection | clickhouse | warehouse, queries, external-endpoints, identities |
+| [`detect-databricks-cluster-init-script-abuse`](../skills/detection/detect-databricks-cluster-init-script-abuse) | detection | databricks | warehouse, clusters, init-scripts |
+| [`detect-databricks-secret-scope-read-burst`](../skills/detection/detect-databricks-secret-scope-read-burst) | detection | databricks | warehouse, secrets, credentials |
+| [`detect-databricks-unity-catalog-cross-workspace-share`](../skills/detection/detect-databricks-unity-catalog-cross-workspace-share) | detection | databricks | warehouse, unity-catalog, delta-sharing |
+| [`detect-databricks-workspace-admin-grant`](../skills/detection/detect-databricks-workspace-admin-grant) | detection | databricks | warehouse, identities, rbac |
 | [`detect-slack-admin-elevation`](../skills/detection/detect-slack-admin-elevation) | detection | slack | identities, rbac, saas |
 | [`detect-slack-external-channel-add`](../skills/detection/detect-slack-external-channel-add) | detection | slack | identities, channels, saas |
 | [`detect-slack-oauth-app-install-broad-scope`](../skills/detection/detect-slack-oauth-app-install-broad-scope) | detection | slack | identities, oauth-apps, saas |
@@ -459,12 +474,13 @@ Shipped skills mapped: **16**
 
 - Registry id: `owasp-llm-top-10`
 
-Shipped skills mapped: **18**
+Shipped skills mapped: **19**
 
 | Skill | Layer | Providers | Asset classes |
 |---|---|---|---|
 | [`detect-agent-credential-leak-mcp`](../skills/detection/detect-agent-credential-leak-mcp) | detection | mcp, multi | agent-tools, tool-results, credentials |
 | [`detect-aws-model-artifact-download`](../skills/detection/detect-aws-model-artifact-download) | detection | aws | object-storage, objects, model-artifacts, audit-logs |
+| [`detect-databricks-mlflow-model-exfil`](../skills/detection/detect-databricks-mlflow-model-exfil) | detection | databricks | warehouse, mlflow, ml-models |
 | [`detect-databricks-token-creation`](../skills/detection/detect-databricks-token-creation) | detection | databricks | identities, tokens, workspaces |
 | [`detect-gcp-model-artifact-download`](../skills/detection/detect-gcp-model-artifact-download) | detection | gcp | object-storage, objects, model-artifacts, audit-logs |
 | [`detect-github-actions-secret-disclosure`](../skills/detection/detect-github-actions-secret-disclosure) | detection | github | actions, workflow-logs, secrets |

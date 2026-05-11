@@ -497,6 +497,127 @@
       ]
     },
     {
+      "path": "skills/detection/detect-databricks-unity-catalog-cross-workspace-share",
+      "layer": "detection",
+      "providers": [
+        "databricks"
+      ],
+      "asset_classes": [
+        "warehouse",
+        "unity-catalog",
+        "delta-sharing"
+      ],
+      "frameworks": [
+        "ocsf-1.8",
+        "mitre-attack-v14",
+        "owasp-top-10"
+      ],
+      "coverage_status": "validated",
+      "execution_modes": [
+        "cli",
+        "ci",
+        "mcp",
+        "persistent"
+      ]
+    },
+    {
+      "path": "skills/detection/detect-databricks-mlflow-model-exfil",
+      "layer": "detection",
+      "providers": [
+        "databricks"
+      ],
+      "asset_classes": [
+        "warehouse",
+        "mlflow",
+        "ml-models"
+      ],
+      "frameworks": [
+        "ocsf-1.8",
+        "mitre-attack-v14",
+        "mitre-atlas",
+        "owasp-llm-top-10"
+      ],
+      "coverage_status": "validated",
+      "execution_modes": [
+        "cli",
+        "ci",
+        "mcp",
+        "persistent"
+      ]
+    },
+    {
+      "path": "skills/detection/detect-databricks-cluster-init-script-abuse",
+      "layer": "detection",
+      "providers": [
+        "databricks"
+      ],
+      "asset_classes": [
+        "warehouse",
+        "clusters",
+        "init-scripts"
+      ],
+      "frameworks": [
+        "ocsf-1.8",
+        "mitre-attack-v14",
+        "owasp-top-10"
+      ],
+      "coverage_status": "validated",
+      "execution_modes": [
+        "cli",
+        "ci",
+        "mcp",
+        "persistent"
+      ]
+    },
+    {
+      "path": "skills/detection/detect-databricks-workspace-admin-grant",
+      "layer": "detection",
+      "providers": [
+        "databricks"
+      ],
+      "asset_classes": [
+        "warehouse",
+        "identities",
+        "rbac"
+      ],
+      "frameworks": [
+        "ocsf-1.8",
+        "mitre-attack-v14",
+        "owasp-top-10"
+      ],
+      "coverage_status": "validated",
+      "execution_modes": [
+        "cli",
+        "ci",
+        "mcp",
+        "persistent"
+      ]
+    },
+    {
+      "path": "skills/detection/detect-databricks-secret-scope-read-burst",
+      "layer": "detection",
+      "providers": [
+        "databricks"
+      ],
+      "asset_classes": [
+        "warehouse",
+        "secrets",
+        "credentials"
+      ],
+      "frameworks": [
+        "ocsf-1.8",
+        "mitre-attack-v14",
+        "owasp-top-10"
+      ],
+      "coverage_status": "validated",
+      "execution_modes": [
+        "cli",
+        "ci",
+        "mcp",
+        "persistent"
+      ]
+    },
+    {
       "path": "skills/detection/detect-entra-credential-addition",
       "layer": "detection",
       "providers": [

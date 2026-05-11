@@ -144,7 +144,7 @@ not do, and what it talks to.
 | Detect | [`detect-web-broken-access-control`](../skills/detection/detect-web-broken-access-control/) | OWASP A01 — IDOR / forced-browsing |
 | Detect | [`detect-web-injection`](../skills/detection/detect-web-injection/) | OWASP A03 — SQLi / shell / NoSQL / template injection |
 
-### Warehouse (Snowflake · Databricks · ClickHouse) — 11 skills
+### Warehouse (Snowflake · Databricks · ClickHouse) — 16 skills
 
 | Layer | Skill | What it does |
 |---|---|---|
@@ -159,6 +159,11 @@ not do, and what it talks to.
 | Detect | [`detect-snowflake-replication-config-change`](../skills/detection/detect-snowflake-replication-config-change/) | T1537 — Snowflake account / database replication to unauthorized accounts |
 | Detect | [`detect-clickhouse-bulk-export`](../skills/detection/detect-clickhouse-bulk-export/) | T1567 — bulk row export via INTO OUTFILE / s3() / URL() |
 | Detect | [`detect-databricks-token-creation`](../skills/detection/detect-databricks-token-creation/) | T1098.001 — Databricks personal access token issuance |
+| Detect | [`detect-databricks-unity-catalog-cross-workspace-share`](../skills/detection/detect-databricks-unity-catalog-cross-workspace-share/) | T1537 — Databricks Unity Catalog cross-workspace / external Delta Sharing |
+| Detect | [`detect-databricks-mlflow-model-exfil`](../skills/detection/detect-databricks-mlflow-model-exfil/) | AML.T0040 / T1567 — Databricks MLflow model-artifact exfiltration |
+| Detect | [`detect-databricks-cluster-init-script-abuse`](../skills/detection/detect-databricks-cluster-init-script-abuse/) | T1059.004 / T1546 — Databricks cluster init-script abuse |
+| Detect | [`detect-databricks-workspace-admin-grant`](../skills/detection/detect-databricks-workspace-admin-grant/) | T1098.003 — Databricks workspace / account admin grant outside change window |
+| Detect | [`detect-databricks-secret-scope-read-burst`](../skills/detection/detect-databricks-secret-scope-read-burst/) | T1552.001 — Databricks secret-scope read burst (pre-exfil enumeration) |
 
 ### Cross-environment plumbing — 13 skills
 
@@ -184,14 +189,14 @@ not do, and what it talks to.
 |---|---:|---|
 | Ingest | 16 | [`skills/ingestion/`](../skills/ingestion/) (excludes the 3 warehouse sources below) |
 | Discover | 5 | [`skills/discovery/`](../skills/discovery/) |
-| Detect | 46 | [`skills/detection/`](../skills/detection/) |
+| Detect | 51 | [`skills/detection/`](../skills/detection/) |
 | Evaluate | 11 | [`skills/evaluation/`](../skills/evaluation/) |
 | Remediate | 12 | [`skills/remediation/`](../skills/remediation/) |
 | View | 2 | [`skills/view/`](../skills/view/) |
 | Output | 3 | [`skills/output/`](../skills/output/) |
 | Source | 3 | warehouse adapters: `source-databricks-query`, `source-s3-select`, `source-snowflake-query` (filed under `skills/ingestion/` on disk) |
 
-Total = 16 + 5 + 46 + 11 + 12 + 2 + 3 + 3 = **98**.
+Total = 16 + 5 + 51 + 11 + 12 + 2 + 3 + 3 = **103**.
 
 ## By framework
 
