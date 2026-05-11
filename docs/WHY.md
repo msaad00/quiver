@@ -1,43 +1,64 @@
 # Why this repo exists
 
-You can ask Claude to write a regex that detects SQL injection in a log line.
-You'll get one in 30 seconds. **That's not the job this repo competes for.**
+**This repo is built for LLMs and agents to use.** MCP wrapper, Agent SDK
+hook, Python library shim, CLI pipes, webhook receiver, cloud runners — every
+surface exists so a Claude agent / Cursor session / GitHub Actions step / cron
+job can call one of these 90 skills the same way it would call any other tool.
 
-This page answers the harder version of the question: *why use these 90 skills
-instead of having an LLM (or a junior engineer) write 90 of your own?*
+So the question isn't *"LLM versus this repo."* It's:
+
+> *Your agent needs skills to invoke. Should it use these 90 — or should it
+> generate ad-hoc Python on the fly and run that?*
+
+Both options keep the LLM in the loop. The difference is **what runs inside
+the trust boundary the agent crosses** when it fires a tool.
 
 ## The short answer
 
-The detection rules are the easy part. The **trust contract around them** is
+Skill content is the easy part. The **trust contract around the skill** is
 the hard part — and the trust contract is not LLM-generable.
 
-A locked OCSF 1.8 wire shape; an HMAC-chained audit log with a tamper-evident
-verifier; HITL approval gates that enforce `min_approvers` before any
-subprocess fires; three layers of sandbox; per-detector precision/recall
-scoring against a labelled corpus; the same skill bundle running unchanged in
-CLI, CI, MCP, webhook, and cloud-runner surfaces — none of that fits in an
-LLM prompt. **That's what this repo gives you.**
+When your agent fires `remediate-aws-sg-revoke` because a tool description
+said so (legitimately, or because a poisoned MCP server slipped a
+prompt-injected instruction through a `tools/list` response), what stops the
+security-group rule from actually getting revoked without human review? **The
+guards in this repo, not the LLM:**
 
-The skills are portable. The trust contract is the moat.
+- **HITL approval context** required before subprocess spawn — `min_approvers`
+  enforced in the wrapper, not the model.
+- **Operator allowlist** intersected with caller context intersected with
+  workflow preset — the model cannot widen what the operator allowed.
+- **Three sandbox layers** around the subprocess — always-on RLIMIT,
+  hardened container, opt-in OS sandbox (`bwrap` / `sandbox-exec`).
+- **HMAC-chained audit log** — every call leaves a tamper-evident record an
+  incident responder can replay.
+- **Default-deny, dry-run-first** on every write-capable skill.
 
-## What an LLM gives you
+A function the LLM generated at runtime has **none** of those. It runs as
+your user, with your full credentials, and the first time you see the
+resulting damage is in `git log` (if you're lucky) or in your cloud bill.
 
-A Python file. Maybe a regex. Maybe a SQL query. It:
+The skills are LLM-portable. The trust contract is the moat.
 
-- emits some ad-hoc dict shape (yours, this morning's edition)
-- runs once and exits
-- writes nothing to an audit log
+## What "LLM-generated ad-hoc Python" gives your agent
+
+A function. Maybe a regex. Maybe a SQL query. It:
+
+- emits some ad-hoc dict shape (yours, this morning's edition; the next call gets a different shape)
+- runs once and exits, no observability
+- writes nothing to an audit log — there's no log to write to
 - has no concept of "two-person approval before this fires"
-- has no calibration against red-team data
-- has no test, no fixture, no snapshot
-- runs as your user with full local credentials
-- maps to MITRE ATT&CK roughly ("this looks like T1098 I think")
+- has no calibration against red-team data ("looks like T1098 I think")
+- has no test, no fixture, no snapshot — same input next month gives different output
+- runs in-process or via `eval` / `exec` with your full credentials
+- composes with the next ad-hoc tool the agent generates only by accident
 
-For an ad-hoc analysis on one cloud, that's enough. For anything more — a
-detection pipeline, a compliance trail, an agent acting on production
-infrastructure — it isn't.
+For one-off interactive analysis ("scan this CloudTrail JSON for access-key
+creations"), that's fine. For anything an agent runs against real
+infrastructure on a recurring basis, it's a footgun — especially once
+prompt-injection from a third-party MCP server enters the picture.
 
-## What this repo gives you that doesn't fit in a prompt
+## What this repo gives the agent that ad-hoc code doesn't
 
 ### 1. Locked OCSF 1.8 wire contract — composable by construction
 Every detector emits the same OCSF Detection Finding 2004 envelope. Every
@@ -206,10 +227,11 @@ Stay-honest list. Don't adopt this if:
 
 ## The positioning sentence
 
-> **Production-grade detection content, OCSF on the wire, HITL-audited,
-> sandboxed, runs the same in CLI / CI / MCP / webhook / cloud runner. The
-> skills are LLM-portable but the trust contract is not — that's the part
-> you can't generate.**
+> **Production-grade security skills for LLMs and agents to invoke — OCSF on
+> the wire, HITL-audited, sandboxed, MCP-callable, runs the same in CLI /
+> CI / MCP / webhook / cloud runner. The skills are LLM-portable but the
+> trust contract that wraps them is not — that's the part your agent can't
+> generate at runtime.**
 
 ## Further reading
 
