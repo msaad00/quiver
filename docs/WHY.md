@@ -1,43 +1,146 @@
 # Why this repo exists
 
-You can ask Claude to write a regex that detects SQL injection in a log line.
-You'll get one in 30 seconds. **That's not the job this repo competes for.**
+**This repo is built for LLMs and agents to use.** MCP wrapper, Agent SDK
+hook, Python library shim, CLI pipes, webhook receiver, cloud runners — every
+surface exists so a Claude agent / Cursor session / GitHub Actions step / cron
+job can call one of these 90 skills the same way it would call any other tool.
 
-This page answers the harder version of the question: *why use these 90 skills
-instead of having an LLM (or a junior engineer) write 90 of your own?*
+So the question isn't *"LLM versus this repo."* It's:
+
+> *Your agent needs skills to invoke. Should it use these 90 — or should it
+> generate ad-hoc Python on the fly, or have you commit LLM-written skills,
+> or have your team write the same 90 from scratch?*
+
+All four options keep the LLM in the loop. The difference is **what runs
+inside the trust boundary the agent crosses** when it fires a tool — and
+who pays the engineering bill to put it there.
 
 ## The short answer
 
-The detection rules are the easy part. The **trust contract around them** is
-the hard part — and the trust contract is not LLM-generable.
+Skill content is the easy part. The **trust contract around the skill**, the
+**calibration that makes the detector accurate**, and the **cross-cutting
+maintenance** are the hard parts — and none of them are LLM-generable.
 
-A locked OCSF 1.8 wire shape; an HMAC-chained audit log with a tamper-evident
-verifier; HITL approval gates that enforce `min_approvers` before any
-subprocess fires; three layers of sandbox; per-detector precision/recall
-scoring against a labelled corpus; the same skill bundle running unchanged in
-CLI, CI, MCP, webhook, and cloud-runner surfaces — none of that fits in an
-LLM prompt. **That's what this repo gives you.**
+When your agent fires `remediate-aws-sg-revoke` because a tool description
+said so (legitimately, or because a poisoned MCP server slipped a
+prompt-injected instruction through a `tools/list` response), what stops the
+security-group rule from actually getting revoked without human review? **The
+guards in this repo, not the LLM:**
 
-The skills are portable. The trust contract is the moat.
+- **HITL approval context** required before subprocess spawn — `min_approvers` enforced in the wrapper, not the model.
+- **Operator allowlist** intersected with caller context intersected with workflow preset — the model cannot widen what the operator allowed.
+- **Three sandbox layers** around the subprocess — always-on RLIMIT, hardened container, opt-in OS sandbox (`bwrap` / `sandbox-exec`).
+- **HMAC-chained audit log** — every call leaves a tamper-evident record an incident responder can replay.
+- **Default-deny, dry-run-first** on every write-capable skill.
 
-## What an LLM gives you
+A function the LLM generated at runtime has **none** of those. It runs as
+your user, with your full credentials, and the first time you see the
+resulting damage is in `git log` (if you're lucky) or in your cloud bill.
 
-A Python file. Maybe a regex. Maybe a SQL query. It:
+The skills are LLM-portable. The trust contract is the moat.
 
-- emits some ad-hoc dict shape (yours, this morning's edition)
-- runs once and exits
-- writes nothing to an audit log
-- has no concept of "two-person approval before this fires"
-- has no calibration against red-team data
-- has no test, no fixture, no snapshot
-- runs as your user with full local credentials
-- maps to MITRE ATT&CK roughly ("this looks like T1098 I think")
+## Three flavours of "skip this repo" — three different answers
 
-For an ad-hoc analysis on one cloud, that's enough. For anything more — a
-detection pipeline, a compliance trail, an agent acting on production
-infrastructure — it isn't.
+There are three serious versions of *"why use these 90, why not roll our own?"*
+The argument is different for each.
 
-## What this repo gives you that doesn't fit in a prompt
+### A. *"My agent will just write the Python at runtime."*
+
+Covered above. Answer: the agent can't write the trust contract around the
+code (HITL gates, allowlist, sandbox, audit chain, default-deny) because the
+contract has to live **outside** the function the agent generates — and the
+agent has no privileged surface to install one. Runtime-generated code runs
+as your user with your creds and zero observability. The first time a
+prompt-injected `tools/list` response convinces the agent to fire a delete
+operation, you find out via your cloud bill.
+
+### B. *"I'll ask my agent to write skills, review the diff, commit them."*
+
+Better posture (humans in the loop), but the LLM still can't generate the
+parts that matter:
+
+- **Calibration values are not in the training data.** What threshold of
+  `bytes_scanned` separates Snowflake bulk egress from a legitimate
+  analyst's `COPY INTO`? How many MFA push events in what window before
+  Okta MFA fatigue fires without false-positive storms? Those come from
+  real telemetry + red-team corpora — not from prompting. An LLM will
+  pick a plausible-sounding number ("threshold = 1000") and you'll learn
+  later it was the wrong number.
+- **Framework mappings drift silently.** MITRE ATT&CK technique IDs,
+  OWASP A-numbers, OCSF activity IDs — the LLM will hallucinate close
+  matches ("this is T1098 I think"). Our `framework-coverage.json` +
+  CI gate refuse drift; LLM-generated metadata doesn't have a gate
+  behind it.
+- **OCSF wire-class choice is non-obvious.** Should a Snowflake
+  `GRANT_ROLE` event normalize to OCSF API Activity 6003 or User Access
+  Management 3005? The right answer depends on the OCSF 1.8 catalog
+  semantics — read the spec wrong and your downstream detector misses
+  the event. We've made that choice once, snapshot-tested it; LLM-
+  generated skills make it 90 times, inconsistently.
+- **Vendor-schema fidelity is research.** The Entra Directory Audit
+  schema, the Okta System Log event-type taxonomy, the Snowflake
+  `query_history` columns that come and go between Snowflake releases —
+  fidelity here comes from reading vendor docs deeply and watching them
+  change over time. The LLM saw a snapshot of those docs at training
+  time. Six months from now its mapping is stale and silently wrong.
+- **Cross-skill composition needs context the LLM doesn't have.**
+  `detect-snowflake-bulk-data-egress` reads `unmapped.snowflake.bytes_scanned`
+  because that's what `source-snowflake-query` emits, because that's
+  what Snowflake's `RESULT_SCAN(LAST_QUERY_ID())` returns under that
+  exact name. Get any link in that chain wrong and the detector silently
+  fires on nothing. The LLM has to be spoon-fed every adjacent
+  contract; we've already done that work and locked it in snapshot tests.
+- **No precision/recall feedback loop.** You committed the LLM's skill.
+  Is it any good? Without a labelled corpus + scorer, you find out
+  in production — or you don't. v0.10.0's
+  [`scoring/`](../skills/detection-engineering/scoring/) is the loop.
+
+### C. *"My team will write all 90 skills from scratch."*
+
+This works — at cost. The repo's
+[cost-framing table](#the-cost-framing--roll-your-own-to-parity) below
+estimates **~500 engineer-hours / ~12 weeks** to reach feature parity
+with v0.10.0 before the first detector is written. That's the harness
+cost. Detector content is on top of that — six hours per detector × 39
+detectors = another **~240 hours**, plus the calibration work, plus the
+captured-fixture corpus, plus the framework-mapping research. Realistic
+all-in: a small team for a quarter to land what the repo ships today.
+
+Then comes the **maintenance tax**:
+
+- **Every OCSF version bump** (1.7 → 1.8 → 1.9) touches every ingester
+  and every detector. We rev once; a fork revs N times.
+- **Every MITRE ATT&CK release** (v14 → v15) changes technique IDs and
+  retires some. The repo's framework-coverage gate forces an update.
+  Your fork has to do that work on its own.
+- **Every vendor schema change** (Snowflake adds a column, Okta retires
+  an event type, Entra renames a field) is a contract change. We see
+  it once across the OSS commons; a fork sees it per-team.
+- **The five-surface harness** (CLI + CI + MCP + webhook + cloud-runner)
+  has to evolve together. Slip one surface and the contract drifts.
+  Same `SKILL.md` runs all five here; a fork that picks two has to
+  port back when it needs the third.
+
+The OSS commons is the real argument against a fork: shared maintenance
+amortizes across every adopter. Your team's engineering time gets spent
+on what's unique to your environment (custom detectors, internal
+playbooks, your compliance overlay) instead of re-implementing the
+audit-chain HMAC verifier for the fourth time.
+
+### When forking still makes sense
+
+- You need detection content under a proprietary licence and Apache-2.0
+  is the wrong fit.
+- Your environment requires a single-cloud-deep stack and a generic
+  multi-cloud harness is overhead you don't want.
+- Your platform team is large enough that the maintenance tax pays for
+  itself in flexibility.
+
+Otherwise, the answer is: contribute upstream, not fork. The CONTRIBUTING
+flow is documented; a single new ingester or detector lands in days,
+not quarters.
+
+## What this repo gives the agent that ad-hoc code doesn't
 
 ### 1. Locked OCSF 1.8 wire contract — composable by construction
 Every detector emits the same OCSF Detection Finding 2004 envelope. Every
@@ -206,10 +309,12 @@ Stay-honest list. Don't adopt this if:
 
 ## The positioning sentence
 
-> **Production-grade detection content, OCSF on the wire, HITL-audited,
-> sandboxed, runs the same in CLI / CI / MCP / webhook / cloud runner. The
-> skills are LLM-portable but the trust contract is not — that's the part
-> you can't generate.**
+> **Production-grade security skills for LLMs and agents to invoke — OCSF on
+> the wire, HITL-audited, sandboxed, MCP-callable, runs the same in CLI /
+> CI / MCP / webhook / cloud runner. The skills are LLM-portable but the
+> trust contract that wraps them, the calibration that makes them accurate,
+> and the cross-cutting maintenance are not — that's the part your agent
+> can't generate at runtime and your team shouldn't reimplement in-house.**
 
 ## Further reading
 
