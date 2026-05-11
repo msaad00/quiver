@@ -4,14 +4,14 @@ This file is **generated from [`framework-coverage.json`](framework-coverage.jso
 
 - Registry version: `0.8.1`
 - Registry updated: `2026-04-24`
-- Total shipped skills in registry: **90**
+- Total shipped skills in registry: **94**
 
 ## Roll-up
 
 | Framework | Version | Shipped skills mapped | Coverage target |
 |---|---|---|---|
-| OCSF | 1.8.0 | **69** | — |
-| MITRE ATT&CK | v14 | **59** | 100% mapped coverage |
+| OCSF | 1.8.0 | **73** | — |
+| MITRE ATT&CK | v14 | **63** | 100% mapped coverage |
 | MITRE ATLAS | current | **13** | 100% mapped coverage |
 | CIS AWS Foundations | v3.0 | **4** | — |
 | CIS GCP Foundations | v3.0 | **5** | — |
@@ -24,7 +24,7 @@ This file is **generated from [`framework-coverage.json`](framework-coverage.jso
 | SOC 2 TSC | current | **20** | 100% mapped coverage |
 | PCI DSS | 4.0 | **4** | 100% mapped coverage |
 | ISO 27001 | 2022 | **3** | — |
-| OWASP Top 10 | 2021 | **9** | — |
+| OWASP Top 10 | 2021 | **13** | — |
 | OWASP LLM Top 10 | current | **9** | — |
 | OWASP MCP Top 10 | current | **7** | — |
 | CycloneDX ML-BOM | current | **2** | — |
@@ -37,7 +37,7 @@ Shipped skills mapped counts the number of skills in the registry that declare t
 
 - Registry id: `ocsf-1.8`
 
-Shipped skills mapped: **69**
+Shipped skills mapped: **73**
 
 | Skill | Layer | Providers | Asset classes |
 |---|---|---|---|
@@ -71,6 +71,10 @@ Shipped skills mapped: **69**
 | [`detect-sensitive-secret-read-k8s`](../skills/detection/detect-sensitive-secret-read-k8s) | detection | kubernetes | clusters, secrets, identities |
 | [`detect-snowflake-account-key-creation`](../skills/detection/detect-snowflake-account-key-creation) | detection | snowflake | warehouse, identities, credentials |
 | [`detect-snowflake-bulk-data-egress`](../skills/detection/detect-snowflake-bulk-data-egress) | detection | snowflake | warehouse, queries, external-stages, identities |
+| [`detect-snowflake-failed-mfa-burst`](../skills/detection/detect-snowflake-failed-mfa-burst) | detection | snowflake | warehouse, identities, authentication, mfa |
+| [`detect-snowflake-network-policy-disable`](../skills/detection/detect-snowflake-network-policy-disable) | detection | snowflake | warehouse, network-policies, identities |
+| [`detect-snowflake-replication-config-change`](../skills/detection/detect-snowflake-replication-config-change) | detection | snowflake | warehouse, databases, replication, identities |
+| [`detect-snowflake-session-policy-bypass`](../skills/detection/detect-snowflake-session-policy-bypass) | detection | snowflake | warehouse, policies, identities, sessions |
 | [`detect-snowflake-share-creation`](../skills/detection/detect-snowflake-share-creation) | detection | snowflake | warehouse, shares, identities |
 | [`detect-snowflake-unauthorized-grant`](../skills/detection/detect-snowflake-unauthorized-grant) | detection | snowflake | warehouse, identities, rbac |
 | [`detect-snowflake-warehouse-resize-burst`](../skills/detection/detect-snowflake-warehouse-resize-burst) | detection | snowflake | warehouse, compute, identities |
@@ -118,7 +122,7 @@ Shipped skills mapped: **69**
 - Asset classes in scope: identities, api, network, clusters, containers, findings
 - Coverage target: 100% mapped coverage
 
-Shipped skills mapped: **59**
+Shipped skills mapped: **63**
 
 | Skill | Layer | Providers | Asset classes |
 |---|---|---|---|
@@ -150,6 +154,10 @@ Shipped skills mapped: **59**
 | [`detect-sensitive-secret-read-k8s`](../skills/detection/detect-sensitive-secret-read-k8s) | detection | kubernetes | clusters, secrets, identities |
 | [`detect-snowflake-account-key-creation`](../skills/detection/detect-snowflake-account-key-creation) | detection | snowflake | warehouse, identities, credentials |
 | [`detect-snowflake-bulk-data-egress`](../skills/detection/detect-snowflake-bulk-data-egress) | detection | snowflake | warehouse, queries, external-stages, identities |
+| [`detect-snowflake-failed-mfa-burst`](../skills/detection/detect-snowflake-failed-mfa-burst) | detection | snowflake | warehouse, identities, authentication, mfa |
+| [`detect-snowflake-network-policy-disable`](../skills/detection/detect-snowflake-network-policy-disable) | detection | snowflake | warehouse, network-policies, identities |
+| [`detect-snowflake-replication-config-change`](../skills/detection/detect-snowflake-replication-config-change) | detection | snowflake | warehouse, databases, replication, identities |
+| [`detect-snowflake-session-policy-bypass`](../skills/detection/detect-snowflake-session-policy-bypass) | detection | snowflake | warehouse, policies, identities, sessions |
 | [`detect-snowflake-share-creation`](../skills/detection/detect-snowflake-share-creation) | detection | snowflake | warehouse, shares, identities |
 | [`detect-snowflake-unauthorized-grant`](../skills/detection/detect-snowflake-unauthorized-grant) | detection | snowflake | warehouse, identities, rbac |
 | [`detect-snowflake-warehouse-resize-burst`](../skills/detection/detect-snowflake-warehouse-resize-burst) | detection | snowflake | warehouse, compute, identities |
@@ -394,13 +402,17 @@ Shipped skills mapped: **3**
 
 - Registry id: `owasp-top-10`
 
-Shipped skills mapped: **9**
+Shipped skills mapped: **13**
 
 | Skill | Layer | Providers | Asset classes |
 |---|---|---|---|
 | [`detect-clickhouse-bulk-export`](../skills/detection/detect-clickhouse-bulk-export) | detection | clickhouse | warehouse, queries, external-endpoints, identities |
 | [`detect-snowflake-account-key-creation`](../skills/detection/detect-snowflake-account-key-creation) | detection | snowflake | warehouse, identities, credentials |
 | [`detect-snowflake-bulk-data-egress`](../skills/detection/detect-snowflake-bulk-data-egress) | detection | snowflake | warehouse, queries, external-stages, identities |
+| [`detect-snowflake-failed-mfa-burst`](../skills/detection/detect-snowflake-failed-mfa-burst) | detection | snowflake | warehouse, identities, authentication, mfa |
+| [`detect-snowflake-network-policy-disable`](../skills/detection/detect-snowflake-network-policy-disable) | detection | snowflake | warehouse, network-policies, identities |
+| [`detect-snowflake-replication-config-change`](../skills/detection/detect-snowflake-replication-config-change) | detection | snowflake | warehouse, databases, replication, identities |
+| [`detect-snowflake-session-policy-bypass`](../skills/detection/detect-snowflake-session-policy-bypass) | detection | snowflake | warehouse, policies, identities, sessions |
 | [`detect-snowflake-share-creation`](../skills/detection/detect-snowflake-share-creation) | detection | snowflake | warehouse, shares, identities |
 | [`detect-snowflake-unauthorized-grant`](../skills/detection/detect-snowflake-unauthorized-grant) | detection | snowflake | warehouse, identities, rbac |
 | [`detect-snowflake-warehouse-resize-burst`](../skills/detection/detect-snowflake-warehouse-resize-burst) | detection | snowflake | warehouse, compute, identities |

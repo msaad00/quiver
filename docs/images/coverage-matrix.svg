@@ -1,6 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="1890" viewBox="0 0 1400 1890" role="img" aria-labelledby="cm-title cm-desc">
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="1970" viewBox="0 0 1400 1970" role="img" aria-labelledby="cm-title cm-desc">
   <title id="cm-title">cloud-ai-security-skills — detection and posture coverage matrix</title>
-  <desc id="cm-desc">Coverage matrix visualizing the gap between shipped detection and posture skills and their paired remediation, with ATT&amp;CK or ATLAS technique IDs where the detector emits them and framework notes where it does not. Rows list every shipped detection (39) plus every CSPM benchmark family (4 native CIS scopes). Columns are: skill name, mapping or note, detector or check shipped status, paired remediation status, and the tracking issue or notes. Green cells mean a closed loop is shipped; amber cells mean a remediation skill is on the roadmap; red cells mean no remediation exists or is planned. Thirteen of twenty-nine detection rows are closed loops today; lateral-movement is intentionally detection-only because the response is per-arm fan-out via existing remediation skills, and the access-key, login-profile, GCP service-account-key, GCP service-account-token-minting, discovery-burst, cross-account-copy, logging-impairment, AWS and GCP model-artifact-download, MCP credential-leak, system-prompt-extraction, tool-output-policy-bypass, and tool-output-exfiltration-instructions slices are still detection-first. The matrix is the single source of truth for closed-loop coverage and updates whenever a remediation skill ships.</desc>
+  <desc id="cm-desc">Coverage matrix visualizing the gap between shipped detection and posture skills and their paired remediation, with ATT&amp;CK or ATLAS technique IDs where the detector emits them and framework notes where it does not. Rows list every shipped detection (43) plus every CSPM benchmark family (4 native CIS scopes). Columns are: skill name, mapping or note, detector or check shipped status, paired remediation status, and the tracking issue or notes. Green cells mean a closed loop is shipped; amber cells mean a remediation skill is on the roadmap; red cells mean no remediation exists or is planned. Thirteen of forty-three detection rows are closed loops today; lateral-movement is intentionally detection-only because the response is per-arm fan-out via existing remediation skills, and the access-key, login-profile, GCP service-account-key, GCP service-account-token-minting, discovery-burst, cross-account-copy, logging-impairment, AWS and GCP model-artifact-download, MCP credential-leak, system-prompt-extraction, tool-output-policy-bypass, and tool-output-exfiltration-instructions slices are still detection-first. The matrix is the single source of truth for closed-loop coverage and updates whenever a remediation skill ships.</desc>
 
   <defs>
     <linearGradient id="bg2" x1="0" y1="0" x2="1" y2="1">
@@ -51,7 +51,7 @@
   <line x1="48" y1="212" x2="1352" y2="212" stroke="#334155" stroke-width="1.5"/>
 
   <!-- DETECTION SECTION -->
-  <text x="48" y="244" fill="#5eead4" font-family="Inter, system-ui, sans-serif" font-size="15" font-weight="900">DETECTION (39)</text>
+  <text x="48" y="244" fill="#5eead4" font-family="Inter, system-ui, sans-serif" font-size="15" font-weight="900">DETECTION (43)</text>
 
   <!-- Row stride 38 starting at y=276; badge y = row_text_y - 16 (badge height 22) -->
   <g font-family="Inter, system-ui, sans-serif">
@@ -327,66 +327,94 @@
     <rect x="880"  y="1538" width="40" height="22" rx="4" fill="#7f1d1d" stroke="#ef4444"/>
     <text x="1020" y="1554" fill="#fee2e2" font-size="13">detection-only — Snowflake privileged-role grant slice (#436)</text>
   </g>
+  <g font-family="Inter, system-ui, sans-serif">
+    <text x="48"   y="1574" fill="#f1f5f9" font-size="14">detect-snowflake-failed-mfa-burst</text>
+    <text x="430"  y="1574" fill="#cbd5e1" font-size="14">T1110 / T1621 (TA0006) · OWASP A07:2021</text>
+    <rect x="760"  y="1558" width="40" height="22" rx="4" fill="#16a34a" stroke="#22c55e"/>
+    <rect x="880"  y="1558" width="40" height="22" rx="4" fill="#7f1d1d" stroke="#ef4444"/>
+    <text x="1020" y="1574" fill="#fee2e2" font-size="13">detection-only — Snowflake failed-MFA burst slice (#436)</text>
+  </g>
+  <g font-family="Inter, system-ui, sans-serif">
+    <text x="48"   y="1594" fill="#f1f5f9" font-size="14">detect-snowflake-session-policy-bypass</text>
+    <text x="430"  y="1594" fill="#cbd5e1" font-size="14">T1098.003 (TA0003) · OWASP A05:2021</text>
+    <rect x="760"  y="1578" width="40" height="22" rx="4" fill="#16a34a" stroke="#22c55e"/>
+    <rect x="880"  y="1578" width="40" height="22" rx="4" fill="#7f1d1d" stroke="#ef4444"/>
+    <text x="1020" y="1594" fill="#fee2e2" font-size="13">detection-only — Snowflake session-policy idle-timeout widening slice (#436)</text>
+  </g>
+  <g font-family="Inter, system-ui, sans-serif">
+    <text x="48"   y="1614" fill="#f1f5f9" font-size="14">detect-snowflake-network-policy-disable</text>
+    <text x="430"  y="1614" fill="#cbd5e1" font-size="14">T1562.007 (TA0005) · OWASP A05:2021</text>
+    <rect x="760"  y="1598" width="40" height="22" rx="4" fill="#16a34a" stroke="#22c55e"/>
+    <rect x="880"  y="1598" width="40" height="22" rx="4" fill="#7f1d1d" stroke="#ef4444"/>
+    <text x="1020" y="1614" fill="#fee2e2" font-size="13">detection-only — Snowflake network-policy disable / widen slice (#436)</text>
+  </g>
+  <g font-family="Inter, system-ui, sans-serif">
+    <text x="48"   y="1634" fill="#f1f5f9" font-size="14">detect-snowflake-replication-config-change</text>
+    <text x="430"  y="1634" fill="#cbd5e1" font-size="14">T1537 (TA0010) · OWASP A04:2021</text>
+    <rect x="760"  y="1618" width="40" height="22" rx="4" fill="#16a34a" stroke="#22c55e"/>
+    <rect x="880"  y="1618" width="40" height="22" rx="4" fill="#7f1d1d" stroke="#ef4444"/>
+    <text x="1020" y="1634" fill="#fee2e2" font-size="13">detection-only — Snowflake account / database replication config slice (#436)</text>
+  </g>
 
   <!-- EVALUATION SECTION -->
-  <text x="48" y="1588" fill="#5eead4" font-family="Inter, system-ui, sans-serif" font-size="15" font-weight="900">EVALUATION / CSPM (4 platforms · 91 checks · NIST AI RMF 40 subcategories)</text>
+  <text x="48" y="1668" fill="#5eead4" font-family="Inter, system-ui, sans-serif" font-size="15" font-weight="900">EVALUATION / CSPM (4 platforms · 91 checks · NIST AI RMF 40 subcategories)</text>
 
   <g font-family="Inter, system-ui, sans-serif">
-    <text x="48"   y="1602" fill="#f1f5f9" font-size="15">cspm-aws-cis-benchmark</text>
-    <text x="430"  y="1602" fill="#cbd5e1" font-size="14">CIS AWS Foundations 3.0</text>
-    <rect x="760"  y="1586" width="40" height="22" rx="4" fill="#16a34a" stroke="#22c55e"/>
-    <rect x="880"  y="1586" width="40" height="22" rx="4" fill="#b45309" stroke="#f59e0b"/>
-    <text x="1020" y="1602" fill="#fef3c7" font-size="13">#242 #254 · guarded --auto-remediate shipped</text>
+    <text x="48"   y="1682" fill="#f1f5f9" font-size="15">cspm-aws-cis-benchmark</text>
+    <text x="430"  y="1682" fill="#cbd5e1" font-size="14">CIS AWS Foundations 3.0</text>
+    <rect x="760"  y="1666" width="40" height="22" rx="4" fill="#16a34a" stroke="#22c55e"/>
+    <rect x="880"  y="1666" width="40" height="22" rx="4" fill="#b45309" stroke="#f59e0b"/>
+    <text x="1020" y="1682" fill="#fef3c7" font-size="13">#242 #254 · guarded --auto-remediate shipped</text>
   </g>
   <g font-family="Inter, system-ui, sans-serif">
-    <text x="48"   y="1632" fill="#f1f5f9" font-size="15">cspm-gcp-cis-benchmark</text>
-    <text x="430"  y="1632" fill="#cbd5e1" font-size="14">CIS GCP Foundations 3.0</text>
-    <rect x="760"  y="1616" width="40" height="22" rx="4" fill="#16a34a" stroke="#22c55e"/>
-    <rect x="880"  y="1616" width="40" height="22" rx="4" fill="#b45309" stroke="#f59e0b"/>
-    <text x="1020" y="1632" fill="#fef3c7" font-size="13">#242 #254 · auto-remediate tracked</text>
+    <text x="48"   y="1712" fill="#f1f5f9" font-size="15">cspm-gcp-cis-benchmark</text>
+    <text x="430"  y="1712" fill="#cbd5e1" font-size="14">CIS GCP Foundations 3.0</text>
+    <rect x="760"  y="1696" width="40" height="22" rx="4" fill="#16a34a" stroke="#22c55e"/>
+    <rect x="880"  y="1696" width="40" height="22" rx="4" fill="#b45309" stroke="#f59e0b"/>
+    <text x="1020" y="1712" fill="#fef3c7" font-size="13">#242 #254 · auto-remediate tracked</text>
   </g>
   <g font-family="Inter, system-ui, sans-serif">
-    <text x="48"   y="1662" fill="#f1f5f9" font-size="15">cspm-azure-cis-benchmark</text>
-    <text x="430"  y="1662" fill="#cbd5e1" font-size="14">CIS Azure Foundations 2.1</text>
-    <rect x="760"  y="1646" width="40" height="22" rx="4" fill="#16a34a" stroke="#22c55e"/>
-    <rect x="880"  y="1646" width="40" height="22" rx="4" fill="#b45309" stroke="#f59e0b"/>
-    <text x="1020" y="1662" fill="#fef3c7" font-size="13">#242 #254 · auto-remediate tracked</text>
+    <text x="48"   y="1742" fill="#f1f5f9" font-size="15">cspm-azure-cis-benchmark</text>
+    <text x="430"  y="1742" fill="#cbd5e1" font-size="14">CIS Azure Foundations 2.1</text>
+    <rect x="760"  y="1726" width="40" height="22" rx="4" fill="#16a34a" stroke="#22c55e"/>
+    <rect x="880"  y="1726" width="40" height="22" rx="4" fill="#b45309" stroke="#f59e0b"/>
+    <text x="1020" y="1742" fill="#fef3c7" font-size="13">#242 #254 · auto-remediate tracked</text>
   </g>
   <g font-family="Inter, system-ui, sans-serif">
-    <text x="48"   y="1692" fill="#f1f5f9" font-size="15">k8s + container + model + gpu benchmarks</text>
-    <text x="430"  y="1692" fill="#cbd5e1" font-size="14">CIS K8s · NIST SSDF · OWASP LLM</text>
-    <rect x="760"  y="1676" width="40" height="22" rx="4" fill="#16a34a" stroke="#22c55e"/>
-    <rect x="880"  y="1676" width="40" height="22" rx="4" fill="#1e3a8a" stroke="#3b82f6"/>
-    <text x="1020" y="1692" fill="#dbeafe" font-size="13">posture-only · selective containment exists elsewhere</text>
+    <text x="48"   y="1772" fill="#f1f5f9" font-size="15">k8s + container + model + gpu benchmarks</text>
+    <text x="430"  y="1772" fill="#cbd5e1" font-size="14">CIS K8s · NIST SSDF · OWASP LLM</text>
+    <rect x="760"  y="1756" width="40" height="22" rx="4" fill="#16a34a" stroke="#22c55e"/>
+    <rect x="880"  y="1756" width="40" height="22" rx="4" fill="#1e3a8a" stroke="#3b82f6"/>
+    <text x="1020" y="1772" fill="#dbeafe" font-size="13">posture-only · selective containment exists elsewhere</text>
 
-    <text x="48"   y="1722" fill="#f1f5f9" font-size="15">evaluate-nist-ai-rmf-govern</text>
-    <text x="430"  y="1722" fill="#cbd5e1" font-size="14">NIST AI RMF 1.0 GOVERN (10 subcategories)</text>
-    <rect x="760"  y="1706" width="40" height="22" rx="4" fill="#16a34a" stroke="#22c55e"/>
-    <rect x="880"  y="1706" width="40" height="22" rx="4" fill="#1e3a8a" stroke="#3b82f6"/>
-    <text x="1020" y="1722" fill="#dbeafe" font-size="13">manifest-completeness audit · org-level qualitative assessment deferred (#435)</text>
+    <text x="48"   y="1802" fill="#f1f5f9" font-size="15">evaluate-nist-ai-rmf-govern</text>
+    <text x="430"  y="1802" fill="#cbd5e1" font-size="14">NIST AI RMF 1.0 GOVERN (10 subcategories)</text>
+    <rect x="760"  y="1786" width="40" height="22" rx="4" fill="#16a34a" stroke="#22c55e"/>
+    <rect x="880"  y="1786" width="40" height="22" rx="4" fill="#1e3a8a" stroke="#3b82f6"/>
+    <text x="1020" y="1802" fill="#dbeafe" font-size="13">manifest-completeness audit · org-level qualitative assessment deferred (#435)</text>
 
-    <text x="48"   y="1752" fill="#f1f5f9" font-size="15">evaluate-nist-ai-rmf-map</text>
-    <text x="430"  y="1752" fill="#cbd5e1" font-size="14">NIST AI RMF 1.0 MAP (10 subcategories)</text>
-    <rect x="760"  y="1736" width="40" height="22" rx="4" fill="#16a34a" stroke="#22c55e"/>
-    <rect x="880"  y="1736" width="40" height="22" rx="4" fill="#1e3a8a" stroke="#3b82f6"/>
-    <text x="1020" y="1752" fill="#dbeafe" font-size="13">manifest-completeness audit · org-level qualitative assessment deferred (#435)</text>
+    <text x="48"   y="1832" fill="#f1f5f9" font-size="15">evaluate-nist-ai-rmf-map</text>
+    <text x="430"  y="1832" fill="#cbd5e1" font-size="14">NIST AI RMF 1.0 MAP (10 subcategories)</text>
+    <rect x="760"  y="1816" width="40" height="22" rx="4" fill="#16a34a" stroke="#22c55e"/>
+    <rect x="880"  y="1816" width="40" height="22" rx="4" fill="#1e3a8a" stroke="#3b82f6"/>
+    <text x="1020" y="1832" fill="#dbeafe" font-size="13">manifest-completeness audit · org-level qualitative assessment deferred (#435)</text>
 
-    <text x="48"   y="1782" fill="#f1f5f9" font-size="15">evaluate-nist-ai-rmf-measure</text>
-    <text x="430"  y="1782" fill="#cbd5e1" font-size="14">NIST AI RMF 1.0 MEASURE (10 subcategories)</text>
-    <rect x="760"  y="1766" width="40" height="22" rx="4" fill="#16a34a" stroke="#22c55e"/>
-    <rect x="880"  y="1766" width="40" height="22" rx="4" fill="#1e3a8a" stroke="#3b82f6"/>
-    <text x="1020" y="1782" fill="#dbeafe" font-size="13">manifest-completeness audit · org-level qualitative assessment deferred (#435)</text>
+    <text x="48"   y="1862" fill="#f1f5f9" font-size="15">evaluate-nist-ai-rmf-measure</text>
+    <text x="430"  y="1862" fill="#cbd5e1" font-size="14">NIST AI RMF 1.0 MEASURE (10 subcategories)</text>
+    <rect x="760"  y="1846" width="40" height="22" rx="4" fill="#16a34a" stroke="#22c55e"/>
+    <rect x="880"  y="1846" width="40" height="22" rx="4" fill="#1e3a8a" stroke="#3b82f6"/>
+    <text x="1020" y="1862" fill="#dbeafe" font-size="13">manifest-completeness audit · org-level qualitative assessment deferred (#435)</text>
 
-    <text x="48"   y="1812" fill="#f1f5f9" font-size="15">evaluate-nist-ai-rmf-manage</text>
-    <text x="430"  y="1812" fill="#cbd5e1" font-size="14">NIST AI RMF 1.0 MANAGE (10 subcategories)</text>
-    <rect x="760"  y="1796" width="40" height="22" rx="4" fill="#16a34a" stroke="#22c55e"/>
-    <rect x="880"  y="1796" width="40" height="22" rx="4" fill="#1e3a8a" stroke="#3b82f6"/>
-    <text x="1020" y="1812" fill="#dbeafe" font-size="13">manifest-completeness audit · org-level qualitative assessment deferred (#435)</text>
+    <text x="48"   y="1892" fill="#f1f5f9" font-size="15">evaluate-nist-ai-rmf-manage</text>
+    <text x="430"  y="1892" fill="#cbd5e1" font-size="14">NIST AI RMF 1.0 MANAGE (10 subcategories)</text>
+    <rect x="760"  y="1876" width="40" height="22" rx="4" fill="#16a34a" stroke="#22c55e"/>
+    <rect x="880"  y="1876" width="40" height="22" rx="4" fill="#1e3a8a" stroke="#3b82f6"/>
+    <text x="1020" y="1892" fill="#dbeafe" font-size="13">manifest-completeness audit · org-level qualitative assessment deferred (#435)</text>
   </g>
 
   <!-- Footer (two lines to fit canvas) -->
   <g font-family="Inter, system-ui, sans-serif">
-    <text x="48" y="1856" fill="#94a3b8" font-size="13">Closed-loop ratio: <tspan fill="#5eead4" font-weight="900">13 / 39</tspan> · <tspan fill="#f87171" font-weight="900">lateral-movement stays detection-only by design, and the AWS access-key, login-profile, GCP service-account-key/token-minting, discovery, exfiltration, logging, AWS and GCP model-artifact collection, MCP leakage, system-prompt, policy-bypass, response-exfiltration, Snowflake bulk-egress, Snowflake share-creation, Snowflake account-key, Snowflake warehouse resize-burst, Snowflake unauthorized-grant, ClickHouse bulk-export, and Databricks token-creation slices are detection-first today</tspan></text>
-    <text x="48" y="1874" fill="#94a3b8" font-size="13">All writes HITL-gated, dry-run-default, dual-audited (DynamoDB + KMS S3, before + after) · contract enforced by scripts/validate_safe_skill_bar.py · CSPM auto-remediation tracked at #242 #254</text>
+    <text x="48" y="1936" fill="#94a3b8" font-size="13">Closed-loop ratio: <tspan fill="#5eead4" font-weight="900">13 / 43</tspan> · <tspan fill="#f87171" font-weight="900">lateral-movement stays detection-only by design, and the AWS access-key, login-profile, GCP service-account-key/token-minting, discovery, exfiltration, logging, AWS and GCP model-artifact collection, MCP leakage, system-prompt, policy-bypass, response-exfiltration, Snowflake bulk-egress, Snowflake share-creation, Snowflake account-key, Snowflake warehouse resize-burst, Snowflake unauthorized-grant, Snowflake failed-MFA burst, Snowflake session-policy bypass, Snowflake network-policy disable, Snowflake replication-config change, ClickHouse bulk-export, and Databricks token-creation slices are detection-first today</tspan></text>
+    <text x="48" y="1954" fill="#94a3b8" font-size="13">All writes HITL-gated, dry-run-default, dual-audited (DynamoDB + KMS S3, before + after) · contract enforced by scripts/validate_safe_skill_bar.py · CSPM auto-remediation tracked at #242 #254</text>
   </g>
 </svg>

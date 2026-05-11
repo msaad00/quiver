@@ -11,6 +11,33 @@ The format is loosely based on Keep a Changelog.
 
 ## [Unreleased]
 
+### Vendor depth — Snowflake column completed (#436 partial)
+
+- **`detect-snowflake-failed-mfa-burst`** — credential stuffing / MFA bombing
+  against Snowflake's login surface. Reads OCSF Authentication 3002 events
+  normalized from `account_usage.login_history`, fires when failed-MFA events
+  for one principal cross `SNOWFLAKE_MFA_FAIL_THRESHOLD` (default 8) inside
+  `SNOWFLAKE_MFA_FAIL_WINDOW_MIN` (default 10) (T1110 / T1621, severity HIGH).
+- **`detect-snowflake-session-policy-bypass`** — persistence via session-policy
+  idle-timeout widening. Fires on `ALTER SESSION POLICY` /
+  `CREATE SESSION POLICY` events that raise `SESSION_IDLE_TIMEOUT_MINS` or
+  `SESSION_UI_IDLE_TIMEOUT_MINS` above `SNOWFLAKE_SESSION_POLICY_MAX_IDLE_MINS`
+  (default 30) (T1098.003, severity HIGH).
+- **`detect-snowflake-network-policy-disable`** — cloud-firewall impairment.
+  Fires on `ALTER ACCOUNT SET NETWORK_POLICY = NULL` or any network-policy
+  modification that adds `0.0.0.0/0` / `::/0` to the allowed IP list
+  (T1562.007, severity HIGH).
+- **`detect-snowflake-replication-config-change`** — account / database
+  replication used as exfiltration. Fires on `ALTER ACCOUNT SET REPLICATION`,
+  `ALTER DATABASE ... ENABLE REPLICATION TO ACCOUNTS`, and the failover-group
+  variants when any target account is outside
+  `SNOWFLAKE_AUTHORIZED_REPLICATION_TARGETS`; default allowlist empty fails
+  open with a stderr warning so operators see the missing config (T1537,
+  severity HIGH).
+- **Snowflake column under #436 fully landed (6/6).** Counts bumped: detection
+  39 → 43, repo total 90 → 94. Remaining 11 detectors (5 Databricks, 5
+  ClickHouse, 1 ClickHouse vendor-depth slot) stay open.
+
 ## [0.10.0] — 2026-05-10 — Vendor depth, AI governance, runtime reliability
 
 Skills count on `main`: **90** (15 ingest, 5 discover, 39 detect, 11 evaluate,

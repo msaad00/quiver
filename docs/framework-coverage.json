@@ -930,6 +930,105 @@
       ]
     },
     {
+      "path": "skills/detection/detect-snowflake-failed-mfa-burst",
+      "layer": "detection",
+      "providers": [
+        "snowflake"
+      ],
+      "asset_classes": [
+        "warehouse",
+        "identities",
+        "authentication",
+        "mfa"
+      ],
+      "frameworks": [
+        "ocsf-1.8",
+        "mitre-attack-v14",
+        "owasp-top-10"
+      ],
+      "coverage_status": "validated",
+      "execution_modes": [
+        "cli",
+        "ci",
+        "mcp",
+        "persistent"
+      ]
+    },
+    {
+      "path": "skills/detection/detect-snowflake-session-policy-bypass",
+      "layer": "detection",
+      "providers": [
+        "snowflake"
+      ],
+      "asset_classes": [
+        "warehouse",
+        "policies",
+        "identities",
+        "sessions"
+      ],
+      "frameworks": [
+        "ocsf-1.8",
+        "mitre-attack-v14",
+        "owasp-top-10"
+      ],
+      "coverage_status": "validated",
+      "execution_modes": [
+        "cli",
+        "ci",
+        "mcp",
+        "persistent"
+      ]
+    },
+    {
+      "path": "skills/detection/detect-snowflake-network-policy-disable",
+      "layer": "detection",
+      "providers": [
+        "snowflake"
+      ],
+      "asset_classes": [
+        "warehouse",
+        "network-policies",
+        "identities"
+      ],
+      "frameworks": [
+        "ocsf-1.8",
+        "mitre-attack-v14",
+        "owasp-top-10"
+      ],
+      "coverage_status": "validated",
+      "execution_modes": [
+        "cli",
+        "ci",
+        "mcp",
+        "persistent"
+      ]
+    },
+    {
+      "path": "skills/detection/detect-snowflake-replication-config-change",
+      "layer": "detection",
+      "providers": [
+        "snowflake"
+      ],
+      "asset_classes": [
+        "warehouse",
+        "databases",
+        "replication",
+        "identities"
+      ],
+      "frameworks": [
+        "ocsf-1.8",
+        "mitre-attack-v14",
+        "owasp-top-10"
+      ],
+      "coverage_status": "validated",
+      "execution_modes": [
+        "cli",
+        "ci",
+        "mcp",
+        "persistent"
+      ]
+    },
+    {
       "path": "skills/detection/detect-system-prompt-extraction",
       "layer": "detection",
       "providers": [

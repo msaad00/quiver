@@ -82,6 +82,10 @@ is the row you can take to your auditor.
 | `detect-sensitive-secret-read-k8s` | detection | ✅ | ✅ | ✅ | ✅ golden fixture | ✅ 1.8 | ✅ |
 | `detect-snowflake-account-key-creation` | detection | ✅ | ✅ | ✅ | ✅ golden fixture | ✅ 1.8 | ✅ |
 | `detect-snowflake-bulk-data-egress` | detection | ✅ | ✅ | ✅ | ✅ golden fixture | ✅ 1.8 | ✅ |
+| `detect-snowflake-failed-mfa-burst` | detection | ✅ | ✅ | ✅ | ✅ golden fixture | ✅ 1.8 | ✅ |
+| `detect-snowflake-network-policy-disable` | detection | ✅ | ✅ | ✅ | ✅ golden fixture | ✅ 1.8 | ✅ |
+| `detect-snowflake-replication-config-change` | detection | ✅ | ✅ | ✅ | ✅ golden fixture | ✅ 1.8 | ✅ |
+| `detect-snowflake-session-policy-bypass` | detection | ✅ | ✅ | ✅ | ✅ golden fixture | ✅ 1.8 | ✅ |
 | `detect-snowflake-share-creation` | detection | ✅ | ✅ | ✅ | ✅ golden fixture | ✅ 1.8 | ✅ |
 | `detect-snowflake-unauthorized-grant` | detection | ✅ | ✅ | ✅ | ✅ golden fixture | ✅ 1.8 | ✅ |
 | `detect-snowflake-warehouse-resize-burst` | detection | ✅ | ✅ | ✅ | ✅ golden fixture | ✅ 1.8 | ✅ |
@@ -120,7 +124,7 @@ is the row you can take to your auditor.
 | `sink-s3-jsonl` | output | ⚠️ append-only sink | ✅ | ✅ | ✅ audit + re-verify | n/a | ✅ |
 | `sink-snowflake-jsonl` | output | ⚠️ append-only sink | ✅ | ✅ | ✅ audit + re-verify | n/a | ✅ |
 
-_90 skills · generated from SKILL.md frontmatter + layer conventions. Run `python scripts/generate_security_bar_matrix.py` to refresh after adding a skill; CI enforces parity via `--check`._
+_94 skills · generated from SKILL.md frontmatter + layer conventions. Run `python scripts/generate_security_bar_matrix.py` to refresh after adding a skill; CI enforces parity via `--check`._
 <!-- AUTO-GENERATED MATRIX END -->
 
 ## How to add a skill that satisfies the bar

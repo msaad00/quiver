@@ -120,7 +120,7 @@ not do, and what it talks to.
 | Detect | [`detect-web-broken-access-control`](../skills/detection/detect-web-broken-access-control/) | OWASP A01 — IDOR / forced-browsing |
 | Detect | [`detect-web-injection`](../skills/detection/detect-web-injection/) | OWASP A03 — SQLi / shell / NoSQL / template injection |
 
-### Warehouse (Snowflake · Databricks · ClickHouse) — 7 skills
+### Warehouse (Snowflake · Databricks · ClickHouse) — 11 skills
 
 | Layer | Skill | What it does |
 |---|---|---|
@@ -129,6 +129,10 @@ not do, and what it talks to.
 | Detect | [`detect-snowflake-account-key-creation`](../skills/detection/detect-snowflake-account-key-creation/) | T1098.001 — Snowflake RSA public-key auth bound to a user |
 | Detect | [`detect-snowflake-warehouse-resize-burst`](../skills/detection/detect-snowflake-warehouse-resize-burst/) | T1496 — Snowflake warehouse compute scale-up burst |
 | Detect | [`detect-snowflake-unauthorized-grant`](../skills/detection/detect-snowflake-unauthorized-grant/) | T1098.003 — Snowflake privileged-role grant by unauthorized identity |
+| Detect | [`detect-snowflake-failed-mfa-burst`](../skills/detection/detect-snowflake-failed-mfa-burst/) | T1110 / T1621 — Snowflake failed-MFA burst against one principal |
+| Detect | [`detect-snowflake-session-policy-bypass`](../skills/detection/detect-snowflake-session-policy-bypass/) | T1098.003 — Snowflake session-policy idle-timeout widening |
+| Detect | [`detect-snowflake-network-policy-disable`](../skills/detection/detect-snowflake-network-policy-disable/) | T1562.007 — Snowflake network-policy disable / widening to 0.0.0.0/0 |
+| Detect | [`detect-snowflake-replication-config-change`](../skills/detection/detect-snowflake-replication-config-change/) | T1537 — Snowflake account / database replication to unauthorized accounts |
 | Detect | [`detect-clickhouse-bulk-export`](../skills/detection/detect-clickhouse-bulk-export/) | T1567 — bulk row export via INTO OUTFILE / s3() / URL() |
 | Detect | [`detect-databricks-token-creation`](../skills/detection/detect-databricks-token-creation/) | T1098.001 — Databricks personal access token issuance |
 
@@ -156,14 +160,14 @@ not do, and what it talks to.
 |---|---:|---|
 | Ingest | 15 | [`skills/ingestion/`](../skills/ingestion/) (excludes the 3 warehouse sources below) |
 | Discover | 5 | [`skills/discovery/`](../skills/discovery/) |
-| Detect | 39 | [`skills/detection/`](../skills/detection/) |
+| Detect | 43 | [`skills/detection/`](../skills/detection/) |
 | Evaluate | 11 | [`skills/evaluation/`](../skills/evaluation/) |
 | Remediate | 12 | [`skills/remediation/`](../skills/remediation/) |
 | View | 2 | [`skills/view/`](../skills/view/) |
 | Output | 3 | [`skills/output/`](../skills/output/) |
 | Source | 3 | warehouse adapters: `source-databricks-query`, `source-s3-select`, `source-snowflake-query` (filed under `skills/ingestion/` on disk) |
 
-Total = 15 + 5 + 39 + 11 + 12 + 2 + 3 + 3 = **90**.
+Total = 15 + 5 + 43 + 11 + 12 + 2 + 3 + 3 = **94**.
 
 ## By framework
 
