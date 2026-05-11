@@ -102,6 +102,15 @@ not do, and what it talks to.
 | Remediate | [`remediate-okta-session-kill`](../skills/remediation/remediate-okta-session-kill/) | HITL — kill Okta sessions on principal |
 | Remediate | [`remediate-workspace-session-kill`](../skills/remediation/remediate-workspace-session-kill/) | HITL — sign-out Workspace user |
 
+### SaaS (Slack) — 4 skills
+
+| Layer | Skill | What it does |
+|---|---|---|
+| Ingest | [`ingest-slack-audit-ocsf`](../skills/ingestion/ingest-slack-audit-ocsf/) | Slack Audit Logs API → OCSF Authentication 3002 / User Access 3005 / API Activity 6003 |
+| Detect | [`detect-slack-external-channel-add`](../skills/detection/detect-slack-external-channel-add/) | T1078.004 — external guest added to a sensitive Slack channel |
+| Detect | [`detect-slack-oauth-app-install-broad-scope`](../skills/detection/detect-slack-oauth-app-install-broad-scope/) | T1098.005 — Slack app installed with broad OAuth scopes |
+| Detect | [`detect-slack-admin-elevation`](../skills/detection/detect-slack-admin-elevation/) | T1098.003 — Slack admin/owner role grant outside change window |
+
 ### AI runtime · MCP · model serving — 14 skills
 
 | Layer | Skill | What it does |

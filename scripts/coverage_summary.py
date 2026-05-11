@@ -117,6 +117,7 @@ PROVIDER_LABEL = {
     "microsoft-graph": "Microsoft Graph",
     "containers": "Containers (runtime)",
     "workday": "Workday",
+    "slack": "Slack",
 }
 
 FRAMEWORK_LABEL = {

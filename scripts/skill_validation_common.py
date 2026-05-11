@@ -103,6 +103,7 @@ OFFICIAL_REFERENCE_HOSTS = {
     "modelcontextprotocol.io",
     "nvidia.custhelp.com",
     "ocsf.io",
+    "api.slack.com",
     "schema.ocsf.io",
     "www.aicpa-cima.com",
     "www.cisecurity.org",

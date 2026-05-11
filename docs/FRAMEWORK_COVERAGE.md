@@ -4,14 +4,14 @@ This file is **generated from [`framework-coverage.json`](framework-coverage.jso
 
 - Registry version: `0.8.1`
 - Registry updated: `2026-04-24`
-- Total shipped skills in registry: **98**
+- Total shipped skills in registry: **102**
 
 ## Roll-up
 
 | Framework | Version | Shipped skills mapped | Coverage target |
 |---|---|---|---|
-| OCSF | 1.8.0 | **77** | — |
-| MITRE ATT&CK | v14 | **66** | 100% mapped coverage |
+| OCSF | 1.8.0 | **81** | — |
+| MITRE ATT&CK | v14 | **69** | 100% mapped coverage |
 | MITRE ATLAS | current | **13** | 100% mapped coverage |
 | CIS AWS Foundations | v3.0 | **4** | — |
 | CIS GCP Foundations | v3.0 | **5** | — |
@@ -24,7 +24,7 @@ This file is **generated from [`framework-coverage.json`](framework-coverage.jso
 | SOC 2 TSC | current | **20** | 100% mapped coverage |
 | PCI DSS | 4.0 | **4** | 100% mapped coverage |
 | ISO 27001 | 2022 | **3** | — |
-| OWASP Top 10 | 2021 | **13** | — |
+| OWASP Top 10 | 2021 | **16** | — |
 | OWASP LLM Top 10 | current | **12** | — |
 | OWASP MCP Top 10 | current | **7** | — |
 | CycloneDX ML-BOM | current | **2** | — |
@@ -37,7 +37,7 @@ Shipped skills mapped counts the number of skills in the registry that declare t
 
 - Registry id: `ocsf-1.8`
 
-Shipped skills mapped: **77**
+Shipped skills mapped: **81**
 
 | Skill | Layer | Providers | Asset classes |
 |---|---|---|---|
@@ -72,6 +72,9 @@ Shipped skills mapped: **77**
 | [`detect-prompt-injection-mcp-proxy`](../skills/detection/detect-prompt-injection-mcp-proxy) | detection | mcp, multi | agent-tools, tool-metadata, guardrails |
 | [`detect-s3-cross-account-copy`](../skills/detection/detect-s3-cross-account-copy) | detection | aws | storage, buckets, objects, identities, cloudtrail |
 | [`detect-sensitive-secret-read-k8s`](../skills/detection/detect-sensitive-secret-read-k8s) | detection | kubernetes | clusters, secrets, identities |
+| [`detect-slack-admin-elevation`](../skills/detection/detect-slack-admin-elevation) | detection | slack | identities, rbac, saas |
+| [`detect-slack-external-channel-add`](../skills/detection/detect-slack-external-channel-add) | detection | slack | identities, channels, saas |
+| [`detect-slack-oauth-app-install-broad-scope`](../skills/detection/detect-slack-oauth-app-install-broad-scope) | detection | slack | identities, oauth-apps, saas |
 | [`detect-snowflake-account-key-creation`](../skills/detection/detect-snowflake-account-key-creation) | detection | snowflake | warehouse, identities, credentials |
 | [`detect-snowflake-bulk-data-egress`](../skills/detection/detect-snowflake-bulk-data-egress) | detection | snowflake | warehouse, queries, external-stages, identities |
 | [`detect-snowflake-failed-mfa-burst`](../skills/detection/detect-snowflake-failed-mfa-burst) | detection | snowflake | warehouse, identities, authentication, mfa |
@@ -108,6 +111,7 @@ Shipped skills mapped: **77**
 | [`ingest-nsg-flow-logs-azure-ocsf`](../skills/ingestion/ingest-nsg-flow-logs-azure-ocsf) | ingestion | azure | network, flow-logs |
 | [`ingest-okta-system-log-ocsf`](../skills/ingestion/ingest-okta-system-log-ocsf) | ingestion | okta | identities, authentication, user-access, groups, applications, audit-logs |
 | [`ingest-security-hub-ocsf`](../skills/ingestion/ingest-security-hub-ocsf) | ingestion | aws | findings, security-posture |
+| [`ingest-slack-audit-ocsf`](../skills/ingestion/ingest-slack-audit-ocsf) | ingestion | slack | identities, channels, workspaces, oauth-apps, audit-logs |
 | [`ingest-vpc-flow-logs-gcp-ocsf`](../skills/ingestion/ingest-vpc-flow-logs-gcp-ocsf) | ingestion | gcp | network, flow-logs |
 | [`ingest-vpc-flow-logs-ocsf`](../skills/ingestion/ingest-vpc-flow-logs-ocsf) | ingestion | aws | network, flow-logs |
 | [`source-databricks-query`](../skills/ingestion/source-databricks-query) | ingestion | databricks | lakehouse, query-results, audit-logs |
@@ -126,7 +130,7 @@ Shipped skills mapped: **77**
 - Asset classes in scope: identities, api, network, clusters, containers, findings
 - Coverage target: 100% mapped coverage
 
-Shipped skills mapped: **66**
+Shipped skills mapped: **69**
 
 | Skill | Layer | Providers | Asset classes |
 |---|---|---|---|
@@ -159,6 +163,9 @@ Shipped skills mapped: **66**
 | [`detect-privilege-escalation-k8s`](../skills/detection/detect-privilege-escalation-k8s) | detection | kubernetes | clusters, containers, identities, secrets |
 | [`detect-s3-cross-account-copy`](../skills/detection/detect-s3-cross-account-copy) | detection | aws | storage, buckets, objects, identities, cloudtrail |
 | [`detect-sensitive-secret-read-k8s`](../skills/detection/detect-sensitive-secret-read-k8s) | detection | kubernetes | clusters, secrets, identities |
+| [`detect-slack-admin-elevation`](../skills/detection/detect-slack-admin-elevation) | detection | slack | identities, rbac, saas |
+| [`detect-slack-external-channel-add`](../skills/detection/detect-slack-external-channel-add) | detection | slack | identities, channels, saas |
+| [`detect-slack-oauth-app-install-broad-scope`](../skills/detection/detect-slack-oauth-app-install-broad-scope) | detection | slack | identities, oauth-apps, saas |
 | [`detect-snowflake-account-key-creation`](../skills/detection/detect-snowflake-account-key-creation) | detection | snowflake | warehouse, identities, credentials |
 | [`detect-snowflake-bulk-data-egress`](../skills/detection/detect-snowflake-bulk-data-egress) | detection | snowflake | warehouse, queries, external-stages, identities |
 | [`detect-snowflake-failed-mfa-burst`](../skills/detection/detect-snowflake-failed-mfa-burst) | detection | snowflake | warehouse, identities, authentication, mfa |
@@ -409,11 +416,14 @@ Shipped skills mapped: **3**
 
 - Registry id: `owasp-top-10`
 
-Shipped skills mapped: **13**
+Shipped skills mapped: **16**
 
 | Skill | Layer | Providers | Asset classes |
 |---|---|---|---|
 | [`detect-clickhouse-bulk-export`](../skills/detection/detect-clickhouse-bulk-export) | detection | clickhouse | warehouse, queries, external-endpoints, identities |
+| [`detect-slack-admin-elevation`](../skills/detection/detect-slack-admin-elevation) | detection | slack | identities, rbac, saas |
+| [`detect-slack-external-channel-add`](../skills/detection/detect-slack-external-channel-add) | detection | slack | identities, channels, saas |
+| [`detect-slack-oauth-app-install-broad-scope`](../skills/detection/detect-slack-oauth-app-install-broad-scope) | detection | slack | identities, oauth-apps, saas |
 | [`detect-snowflake-account-key-creation`](../skills/detection/detect-snowflake-account-key-creation) | detection | snowflake | warehouse, identities, credentials |
 | [`detect-snowflake-bulk-data-egress`](../skills/detection/detect-snowflake-bulk-data-egress) | detection | snowflake | warehouse, queries, external-stages, identities |
 | [`detect-snowflake-failed-mfa-burst`](../skills/detection/detect-snowflake-failed-mfa-burst) | detection | snowflake | warehouse, identities, authentication, mfa |
