@@ -21,7 +21,8 @@ REGISTRY = REPO_ROOT / "docs" / "framework-coverage.json"
 
 
 def load_registry() -> dict:
-    return json.loads(REGISTRY.read_text())
+    data: dict = json.loads(REGISTRY.read_text())
+    return data
 
 
 def layer_counts(reg: dict) -> Counter:
@@ -67,43 +68,38 @@ def main() -> int:
     layers = layer_counts(reg)
     fws = framework_counts(reg)
 
-    errors: list[str] = []
-
     readme = REPO_ROOT / "README.md"
-    errors.append(check(readme, r"(\d+)\s+shipped skill bundles", total, "README total"))
-    errors.append(check(readme, r"Total:\s+(\d+)\s+shipped skills", total, "README total (table footer)"))
-    errors.append(check(readme, r"\*\*Ingest\*\*\s+\|\s+(\d+)", layers["ingestion"], "README ingest"))
-    errors.append(check(readme, r"\*\*Discover\*\*\s+\|\s+(\d+)", layers["discovery"], "README discover"))
-    errors.append(check(readme, r"\*\*Detect\*\*\s+\|\s+(\d+)", layers["detection"], "README detect"))
-    errors.append(check(readme, r"\*\*Evaluate\*\*\s+\|\s+(\d+)", layers["evaluation"], "README evaluate"))
-    errors.append(check(readme, r"\*\*Remediate\*\*\s+\|\s+(\d+)", layers["remediation"], "README remediate"))
-    errors.append(check(readme, r"\*\*View\*\*\s+\|\s+(\d+)", layers["view"], "README view"))
-    errors.append(check(readme, r"\*\*Output\*\*\s+\|\s+(\d+)", layers["output"], "README output"))
-    errors.append(check(readme, r"\*\*Sources\*\*\s+\|\s+(\d+)", layers["sources"], "README sources"))
-
     skill_index = REPO_ROOT / "docs" / "SKILL_INDEX.md"
-    errors.append(check(skill_index, r"The same (\d+) skill bundles", total, "SKILL_INDEX total"))
-
     agents = REPO_ROOT / "AGENTS.md"
-    errors.append(check(agents, r"`ingestion/`\*\*:\s+(\d+)\s+ingest skills", layers["ingestion"], "AGENTS ingestion"))
-    errors.append(check(agents, r"ingest skills plus (\d+)\s+source adapters", layers["sources"], "AGENTS sources"))
-    errors.append(check(agents, r"`discovery/`\*\*:\s+(\d+)\s+read-only", layers["discovery"], "AGENTS discovery"))
-    errors.append(check(agents, r"`detection/`\*\*:\s+(\d+)\s+deterministic", layers["detection"], "AGENTS detection"))
-    errors.append(check(agents, r"`evaluation/`\*\*:\s+(\d+)\s+posture", layers["evaluation"], "AGENTS evaluation"))
-    errors.append(check(agents, r"`remediation/`\*\*:\s+(\d+)\s+HITL", layers["remediation"], "AGENTS remediation"))
-    errors.append(check(agents, r"`output/`\*\*:\s+(\d+)\s+append-only", layers["output"], "AGENTS output"))
-
     mappings = REPO_ROOT / "docs" / "FRAMEWORK_MAPPINGS.md"
-    errors.append(
+
+    candidates: list[str | None] = [
+        check(readme, r"(\d+)\s+shipped skill bundles", total, "README total"),
+        check(readme, r"Total:\s+(\d+)\s+shipped skills", total, "README total (table footer)"),
+        check(readme, r"\*\*Ingest\*\*\s+\|\s+(\d+)", layers["ingestion"], "README ingest"),
+        check(readme, r"\*\*Discover\*\*\s+\|\s+(\d+)", layers["discovery"], "README discover"),
+        check(readme, r"\*\*Detect\*\*\s+\|\s+(\d+)", layers["detection"], "README detect"),
+        check(readme, r"\*\*Evaluate\*\*\s+\|\s+(\d+)", layers["evaluation"], "README evaluate"),
+        check(readme, r"\*\*Remediate\*\*\s+\|\s+(\d+)", layers["remediation"], "README remediate"),
+        check(readme, r"\*\*View\*\*\s+\|\s+(\d+)", layers["view"], "README view"),
+        check(readme, r"\*\*Output\*\*\s+\|\s+(\d+)", layers["output"], "README output"),
+        check(readme, r"\*\*Sources\*\*\s+\|\s+(\d+)", layers["sources"], "README sources"),
+        check(skill_index, r"The same (\d+) skill bundles", total, "SKILL_INDEX total"),
+        check(agents, r"`ingestion/`\*\*:\s+(\d+)\s+ingest skills", layers["ingestion"], "AGENTS ingestion"),
+        check(agents, r"ingest skills plus (\d+)\s+source adapters", layers["sources"], "AGENTS sources"),
+        check(agents, r"`discovery/`\*\*:\s+(\d+)\s+read-only", layers["discovery"], "AGENTS discovery"),
+        check(agents, r"`detection/`\*\*:\s+(\d+)\s+deterministic", layers["detection"], "AGENTS detection"),
+        check(agents, r"`evaluation/`\*\*:\s+(\d+)\s+posture", layers["evaluation"], "AGENTS evaluation"),
+        check(agents, r"`remediation/`\*\*:\s+(\d+)\s+HITL", layers["remediation"], "AGENTS remediation"),
+        check(agents, r"`output/`\*\*:\s+(\d+)\s+append-only", layers["output"], "AGENTS output"),
         check(
             mappings,
             r"MITRE ATT&CK v14\*\*\s+\|\s+[^|]+\|\s+(\d+)\s+mapped skills",
             fws.get("mitre-attack-v14", 0),
             "FRAMEWORK_MAPPINGS ATT&CK",
-        )
-    )
-
-    errors = [e for e in errors if e]
+        ),
+    ]
+    errors: list[str] = [e for e in candidates if e is not None]
     if errors:
         print("Doc-count drift detected (source of truth: docs/framework-coverage.json):", file=sys.stderr)
         for e in errors:
