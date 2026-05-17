@@ -66,7 +66,7 @@ webhook = [
 
 mcp-sse = [
   "sse-starlette>=2,<4",
-  "starlette>=0.39,<1",
+  "starlette>=0.39,<2",
   { include-group = "http-client" },
 ]
 
