@@ -60,7 +60,7 @@ jobs:
         # Hadolint catches the usual Dockerfile mistakes (no `--no-cache-dir`
         # on `apt-get`, missing user, etc.). Continue-on-error so the lint
         # does not block on style nits, but the report is still attached.
-        uses: hadolint/hadolint-action@v3.1.0
+        uses: hadolint/hadolint-action@v3.3.0
         with:
           dockerfile: runners/mcp-sse/Dockerfile
           failure-threshold: error
