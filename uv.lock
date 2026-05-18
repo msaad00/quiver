@@ -554,7 +554,7 @@ http-client = [
 ]
 http-runtime = [{ name = "uvicorn", extras = ["standard"], specifier = ">=0.30,<1" }]
 iam-departures = [
-    { name = "clickhouse-connect", specifier = ">=0.7,<1" },
+    { name = "clickhouse-connect", specifier = ">=0.7,<2" },
     { name = "databricks-sql-connector", specifier = ">=4.2.5,<5" },
     { name = "google-api-python-client", specifier = ">=2,<3" },
     { name = "httpx", specifier = ">=0.27,<1" },
