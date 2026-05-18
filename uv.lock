@@ -565,7 +565,7 @@ mcp = [{ name = "pyyaml", specifier = ">=6,<7" }]
 mcp-sse = [
     { name = "httpx", specifier = ">=0.27,<1" },
     { name = "sse-starlette", specifier = ">=2,<4" },
-    { name = "starlette", specifier = ">=0.39,<1" },
+    { name = "starlette", specifier = ">=0.39,<2" },
     { name = "urllib3", specifier = ">=2.7.0,<3" },
 ]
 webhook = [{ name = "fastapi", specifier = ">=0.115,<1" }]
