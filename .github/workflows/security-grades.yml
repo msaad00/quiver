@@ -49,13 +49,13 @@ jobs:
         run: uv run python scripts/regen_security_grades.py --check
 
       - name: Upload generated doc
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v7
         with:
           name: security-grades
           path: docs/SECURITY_GRADES.md
 
       - name: Upload scanner caches
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v7
         with:
           name: scanner-output
           path: .cache/

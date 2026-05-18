@@ -55,7 +55,7 @@ jobs:
 
       - name: Upload scoring-results.json
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: scoring-results
           path: scoring-results.json
