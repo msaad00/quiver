@@ -106,7 +106,7 @@ The repo ships an end-to-end, closed-loop story on ClickHouse: OCSF ingest skill
 | Replay | any `detect-*` / `view-*` / `discover-control-evidence` | re-run the same skill bundle against historical lake rows |
 | Loop | `sink-clickhouse-jsonl` → findings / evidence / audit | replay output lands back in append-only tables |
 
-Why ClickHouse for this lake — operator-owned deployment, MergeTree tables, materialized-view rollups, `TTL` retention without external lifecycle services, and row policies for multi-tenant isolation. Full hero walk-through: [`docs/CLICKHOUSE_DATA_LAKE.md`](docs/CLICKHOUSE_DATA_LAKE.md). Use a different shipped sink/source lane when the customer has already standardized on another warehouse or object-lake contract.
+Why ClickHouse for this lake — operator-owned deployment, MergeTree tables, materialized-view rollups, `TTL` retention without external lifecycle services, row policies for multi-tenant isolation, and a ClickHouse-native dashboard/query pack. Full hero walk-through: [`docs/CLICKHOUSE_DATA_LAKE.md`](docs/CLICKHOUSE_DATA_LAKE.md). Use a different shipped sink/source lane when the customer has already standardized on another warehouse or object-lake contract.
 
 ## Agent integrations
 
