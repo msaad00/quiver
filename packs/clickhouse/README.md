@@ -18,7 +18,7 @@ It is the DDL contract behind:
 | `TTL` clauses | Per-table retention without an external lifecycle service |
 | Row policies | Multi-tenant isolation via `JSONExtractString(payload, ..., uid)` |
 | Self-hosted **or** ClickHouse Cloud | Sovereign deployment is one Helm chart away |
-| Query templates | SQL-native operator surfaces without changing the lake contract |
+| Dashboard query catalog + Cloud SQL Console | ClickHouse-native operator queries over the same rollups |
 
 ## Layout
 
@@ -42,6 +42,11 @@ packs/clickhouse/
 │   ├── backfill_detection_window.sql
 │   ├── audit_trail_last_hour.sql
 │   └── top_rules_by_finding_volume.sql
+│
+├── dashboards/                           # ClickHouse-native operator UX
+│   ├── system_dashboards.sql             # same-schema dashboard query catalog
+│   ├── cloud_console_queries.sql         # paste-and-save queries for ClickHouse Cloud SQL Console
+│   └── README.md
 │
 └── golden/expected_columns.json          # column-name lock for CI checks
 ```

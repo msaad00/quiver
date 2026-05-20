@@ -64,7 +64,7 @@ different substrates. Use the ClickHouse lane when these constraints matter:
 | Hot analytical reads | MergeTree tables, skip indexes, and rollups keep replay queries small and predictable. |
 | Replay economics | Raw OCSF JSONL stays append-only while materialized views answer operator summary questions. |
 | Sovereign deployment | Can run inside the customer's cloud, VPC, Kubernetes cluster, identity, and audit boundary. |
-| SQL-native operator UX | Materialized views and query templates support ClickHouse-native or existing dashboard surfaces without changing the lake contract. |
+| ClickHouse-native operator UX | Same-schema dashboard query catalog plus Cloud SQL Console queries are shipped in the pack. |
 
 Pick this lane for an **operator-owned, low-latency, replayable security
 lake**. Pick another shipped sink/source lane when the customer's existing
@@ -203,9 +203,13 @@ agent-callable:
 ## Non-goals
 
 - This doc does not turn the repo into a SIEM. The lake replaces the SIEM's
-  **storage tier**, and the operator UX stays SQL-native: materialized views
-  and query templates provide stable surfaces for ClickHouse-native consoles
-  or existing dashboard tools.
+  **storage tier**, and the operator UX stays inside ClickHouse: the repo
+  ships a ClickHouse-native dashboard pack under
+  [`packs/clickhouse/dashboards/`](../packs/clickhouse/dashboards/) — rows
+  for `system.dashboards` (embedded `/dashboards` server, 22.10+) and saved
+  queries for the ClickHouse Cloud SQL Console, both keyed off the same
+  materialized views. No external visualization vendor enters the trust
+  contract.
 - The sink and source skills do not perform encryption-at-rest or
   TLS-in-flight on their own. Both are properties of the ClickHouse cluster
   the operator provisions.
@@ -216,6 +220,7 @@ agent-callable:
 ## Related
 
 - [`packs/clickhouse/README.md`](../packs/clickhouse/README.md) — pack contents and CLI run-through
+- [`packs/clickhouse/dashboards/`](../packs/clickhouse/dashboards/) — ClickHouse-native operator UX (`system.dashboards` + Cloud SQL Console)
 - [`SINK_CONTRACT.md`](SINK_CONTRACT.md) — what every sink must do, and what it must not
 - [`AGENT_DATA_LAKE_FLOW.md`](AGENT_DATA_LAKE_FLOW.md) — the three repo-supported lake flows
 - [`ARCHITECTURE.md`](ARCHITECTURE.md) — the 7-layer skill model behind the diagram

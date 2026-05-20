@@ -519,7 +519,7 @@ This is the architectural roadmap. Vendor-story PRs (#29–#39) continue in para
 | **PR W — sink-security-lake-ocsf** | OCSF Parquet with AWS Security Lake partitioning (zero-transform target) | P1 | Most strategic sink — AWS Security Lake *is* OCSF-native |
 | **PR Y — Ramp vendor story** | `ingest-ramp-ocsf` + `detect-ramp-vendor-change-with-payment` + `detect-ramp-spend-limit-bypass` + `detect-ramp-card-to-unknown-merchant` | P1 | First non-cloud, business-logic vendor story |
 | **PR Z — ingest-snowflake-audit-ocsf** | Snowflake `ACCOUNT_USAGE` audit into OCSF | P2 | Closes the loop: Cortex Code users can detect on their own platform |
-| ~~**PR AA — sink-clickhouse-ocsf**~~ **(shipped — Unreleased)** | MergeTree DDL pack (`packs/clickhouse/`), `sink-clickhouse-jsonl` write side, `source-clickhouse-query` read side, materialized-view rollups, row-policy tenant isolation, [`docs/CLICKHOUSE_DATA_LAKE.md`](CLICKHOUSE_DATA_LAKE.md) hero use case | done | Closes the ClickHouse story end-to-end |
+| ~~**PR AA — sink-clickhouse-ocsf**~~ **(shipped — Unreleased)** | MergeTree DDL pack (`packs/clickhouse/`), `sink-clickhouse-jsonl` write side, `source-clickhouse-query` read side, materialized-view rollups, row-policy tenant isolation, ClickHouse-native dashboard query catalog ([`packs/clickhouse/dashboards/`](../packs/clickhouse/dashboards/)), [`docs/CLICKHOUSE_DATA_LAKE.md`](CLICKHOUSE_DATA_LAKE.md) hero use case | done | Closes the ClickHouse story end-to-end |
 | **PR BB — enrich-asset-inventory-ocsf** | Joins findings with `discover-environment` graph | P2 | Turns findings into triageable blast-radius context |
 
 ## 14. Non-goals (explicit)
