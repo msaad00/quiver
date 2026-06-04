@@ -10,9 +10,9 @@ CREATE DYNAMIC TABLE IF NOT EXISTS security_db.ops.events_by_class_daily
   COMMENT = 'Daily event counts by OCSF class_uid. Refreshes incrementally.'
   AS
     SELECT
-        TO_DATE(ingested_at)                   AS bucket_day,
-        payload:class_uid::number              AS class_uid,
-        schema_mode                            AS schema_mode,
-        COUNT(*)                               AS event_count
+        TO_DATE(ingested_at) AS bucket_day,
+        payload:class_uid::number AS class_uid,
+        schema_mode AS schema_mode,
+        COUNT(*) AS event_count
     FROM security_db.ops.events_sink
     GROUP BY 1, 2, 3;

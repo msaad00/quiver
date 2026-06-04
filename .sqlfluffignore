@@ -1,1 +1,4 @@
 packs/clickhouse/**/*.sql
+# CREATE ROW ACCESS POLICY is valid Snowflake but its predicate body is not yet
+# modeled by sqlfluff's snowflake dialect parser; exclude only this one file.
+packs/snowflake/ddl/06_row_policies.sql

@@ -10,10 +10,10 @@ CREATE DYNAMIC TABLE IF NOT EXISTS security_db.ops.remediations_by_outcome_daily
   COMMENT = 'Daily remediation outcome counts by skill. Refreshes incrementally.'
   AS
     SELECT
-        TO_DATE(ingested_at)                       AS bucket_day,
-        payload:skill::string                      AS skill_name,
-        payload:remediation_status::string         AS remediation_state,
-        COUNT(*)                                   AS outcome_count
+        TO_DATE(ingested_at) AS bucket_day,
+        payload:skill::string AS skill_name,
+        payload:remediation_status::string AS remediation_state,
+        COUNT(*) AS outcome_count
     FROM security_db.ops.audit_sink
     WHERE payload:record_type::string = 'remediation_audit'
     GROUP BY 1, 2, 3;

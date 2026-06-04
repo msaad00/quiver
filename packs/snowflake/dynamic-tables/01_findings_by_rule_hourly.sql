@@ -16,10 +16,10 @@ CREATE DYNAMIC TABLE IF NOT EXISTS security_db.ops.findings_by_rule_hourly
   COMMENT = 'Hourly finding counts by rule/severity. Refreshes incrementally.'
   AS
     SELECT
-        DATE_TRUNC('hour', ingested_at)        AS bucket_hour,
-        payload:finding_info.uid::string       AS rule_uid,
-        payload:severity::string               AS severity,
-        schema_mode                            AS schema_mode,
-        COUNT(*)                               AS finding_count
+        DATE_TRUNC('hour', ingested_at) AS bucket_hour,
+        payload:finding_info.uid::string AS rule_uid,
+        payload:severity::string AS severity,
+        schema_mode AS schema_mode,
+        COUNT(*) AS finding_count
     FROM security_db.ops.findings_sink
     GROUP BY 1, 2, 3, 4;

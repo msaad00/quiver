@@ -31,11 +31,11 @@
 --   );
 
 CREATE ICEBERG TABLE IF NOT EXISTS security_db.ops.findings_sink (
-    payload      VARIANT,
-    schema_mode  STRING,
-    event_uid    STRING,
-    finding_uid  STRING,
-    ingested_at  TIMESTAMP_LTZ
+    payload VARIANT,
+    schema_mode STRING,
+    event_uid STRING,
+    finding_uid STRING,
+    ingested_at TIMESTAMP_LTZ
 )
   CATALOG = 'SNOWFLAKE'
   EXTERNAL_VOLUME = 'security_lake_vol'
@@ -43,11 +43,11 @@ CREATE ICEBERG TABLE IF NOT EXISTS security_db.ops.findings_sink (
   COMMENT = 'Open-format (Iceberg) findings sink. Horizon-governed; Spark-readable.';
 
 CREATE ICEBERG TABLE IF NOT EXISTS security_db.ops.events_sink (
-    payload      VARIANT,
-    schema_mode  STRING,
-    event_uid    STRING,
-    finding_uid  STRING,
-    ingested_at  TIMESTAMP_LTZ
+    payload VARIANT,
+    schema_mode STRING,
+    event_uid STRING,
+    finding_uid STRING,
+    ingested_at TIMESTAMP_LTZ
 )
   CATALOG = 'SNOWFLAKE'
   EXTERNAL_VOLUME = 'security_lake_vol'

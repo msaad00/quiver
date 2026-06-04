@@ -11,11 +11,11 @@
 -- Time Travel: 7 days, for operator UNDROP / point-in-time recovery.
 
 CREATE TABLE IF NOT EXISTS security_db.ops.findings_sink (
-    payload      VARIANT       NOT NULL,
-    schema_mode  STRING,
-    event_uid    STRING,
-    finding_uid  STRING,
-    ingested_at  TIMESTAMP_TZ  DEFAULT CURRENT_TIMESTAMP()
+    payload VARIANT NOT NULL,
+    schema_mode STRING,
+    event_uid STRING,
+    finding_uid STRING,
+    ingested_at TIMESTAMP_TZ DEFAULT CURRENT_TIMESTAMP()
 )
 CLUSTER BY (schema_mode, finding_uid)
 DATA_RETENTION_TIME_IN_DAYS = 7
