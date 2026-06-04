@@ -108,6 +108,22 @@ The repo ships an end-to-end, closed-loop story on ClickHouse: OCSF ingest skill
 
 Why ClickHouse for this lake — operator-owned deployment, MergeTree tables, materialized-view rollups, `TTL` retention without external lifecycle services, and row policies for multi-tenant isolation. Full hero walk-through: [`docs/CLICKHOUSE_DATA_LAKE.md`](docs/CLICKHOUSE_DATA_LAKE.md). Use a different shipped sink/source lane when the customer has already standardized on another warehouse or object-lake contract.
 
+## Snowflake-powered security data lake (hero use case)
+
+The same closed loop ships warehouse-native on Snowflake, for customers who run their enterprise lakehouse there: OCSF ingest skills write through `sink-snowflake-jsonl`, detectors replay from `source-snowflake-query` under a read-only SQL allowlist, and remediation audit records land back in the same lake. Built on current Snowflake — dynamic-table rollups, row access policies, and an optional Snowflake-managed Apache Iceberg variant so the lake stays open-format and Spark/Trino-readable through the Horizon Catalog.
+
+![Snowflake security data lake closed-loop architecture. Seventeen ingest skills normalize cloud, identity, Kubernetes, MCP, and SaaS signals to OCSF JSONL and write append-only into Snowflake through sink-snowflake-jsonl, with Openflow and Snowpipe Streaming as managed in-VPC ingest options. Four tables in security_db.ops hold events, findings, evidence, and audit rows under row access policies, optionally as Snowflake-managed Apache Iceberg governed by the Horizon Catalog. Three dynamic tables roll up rule volume, event-class volume, and remediation outcomes. source-snowflake-query replays bounded SELECT/WITH/SHOW/DESCRIBE statements into detection (including nine Snowflake-native detectors), view, and evidence skills. New findings, evidence artifacts, and HITL remediation audit records write back through the same sink.](docs/images/snowflake-data-lake.svg)
+
+| Stage | Skill | Role |
+|---|---|---|
+| Write | [`sink-snowflake-jsonl`](skills/output/sink-snowflake-jsonl/SKILL.md) | append-only insert · dry-run by default · identifier-validated |
+| Schema | [`packs/snowflake/`](packs/snowflake/) | one-shot DDL · dynamic-table rollups · row access policies · managed-Iceberg option |
+| Read | [`source-snowflake-query`](skills/ingestion/source-snowflake-query/SKILL.md) | read-only SQL allowlist · `SELECT` / `WITH` / `SHOW` / `DESCRIBE` only |
+| Replay | any `detect-*` / `view-*` / `discover-control-evidence` | re-run the same skill bundle against historical lake rows |
+| Loop | `sink-snowflake-jsonl` → findings / evidence / audit | replay output lands back in append-only tables |
+
+Why Snowflake for this lake — managed elasticity, unified Horizon Catalog governance, native Trust Center posture signals, and open Apache Iceberg storage that avoids engine lock-in. Full hero walk-through: [`docs/SNOWFLAKE_DATA_LAKE.md`](docs/SNOWFLAKE_DATA_LAKE.md). Pick the ClickHouse lane instead for a self-hosted, low-latency operator-owned lake.
+
 ## Agent integrations
 
 Every agent / IDE goes through the same stdio MCP wrapper. Audit trail, HITL gates, allowlists, RLIMIT enforcement, and timeouts are identical across clients.

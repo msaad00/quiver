@@ -11,6 +11,28 @@ The format is loosely based on Keep a Changelog.
 
 ## [Unreleased]
 
+### Snowflake security data lake — hero use case end-to-end
+
+`packs/snowflake/` turns Snowflake into a closed-loop security data lake, the
+warehouse-native counterpart to the ClickHouse hero pack. It is the DDL
+contract behind the existing `sink-snowflake-jsonl` (write) and
+`source-snowflake-query` (read) skills — no new application code is needed to
+stand the lake up.
+
+- DDL: `events_sink` / `findings_sink` / `evidence_sink` / `audit_sink` with
+  VARIANT payloads, clustering keys, Time Travel, and suspended retention
+  tasks; a `tenant_role_map` + row access policy isolate tenants by
+  `payload:cloud.account.uid`.
+- Rollups as **dynamic tables** (incremental, auto-refreshing): findings by
+  rule/hour, events by OCSF class/day, remediation outcomes/day.
+- Optional **Snowflake-managed Apache Iceberg** variant
+  (`ddl/07_iceberg_open_format.sql`) keeps the lake in open Parquet, readable
+  and writable by external engines through the Horizon Catalog — no engine
+  lock-in.
+- Replay query templates plus the [`docs/SNOWFLAKE_DATA_LAKE.md`](docs/SNOWFLAKE_DATA_LAKE.md)
+  hero walk-through and a closed-loop architecture diagram. ARCHITECTURE.md
+  PR AC is marked shipped.
+
 ### Databricks vendor-depth detection — closes Databricks column under #436
 
 Five new Databricks detectors complete the 6/6 plan for the Databricks

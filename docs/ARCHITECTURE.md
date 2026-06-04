@@ -313,7 +313,8 @@ cloud-ai-security-skills/
 ├── packs/                    # L8 — SQL packs and warehouse-native analytics
 │   ├── lateral-movement/
 │   ├── privilege-escalation-k8s/
-│   └── clickhouse/
+│   ├── clickhouse/
+│   └── snowflake/
 ├── tests/integration/
 └── docs/
     ├── ARCHITECTURE.md
@@ -520,6 +521,7 @@ This is the architectural roadmap. Vendor-story PRs (#29–#39) continue in para
 | **PR Y — Ramp vendor story** | `ingest-ramp-ocsf` + `detect-ramp-vendor-change-with-payment` + `detect-ramp-spend-limit-bypass` + `detect-ramp-card-to-unknown-merchant` | P1 | First non-cloud, business-logic vendor story |
 | **PR Z — ingest-snowflake-audit-ocsf** | Snowflake `ACCOUNT_USAGE` audit into OCSF | P2 | Closes the loop: Cortex Code users can detect on their own platform |
 | ~~**PR AA — sink-clickhouse-ocsf**~~ **(shipped — Unreleased)** | MergeTree DDL pack (`packs/clickhouse/`), `sink-clickhouse-jsonl` write side, `source-clickhouse-query` read side, materialized-view rollups, row-policy tenant isolation, [`docs/CLICKHOUSE_DATA_LAKE.md`](CLICKHOUSE_DATA_LAKE.md) hero use case | done | Closes the ClickHouse story end-to-end |
+| ~~**PR AC — snowflake-hero-data-lake**~~ **(shipped — Unreleased)** | DDL pack (`packs/snowflake/`) with VARIANT sinks, dynamic-table rollups, row access policies, and an optional Snowflake-managed Iceberg variant; pairs the existing `sink-snowflake-jsonl` + `source-snowflake-query` skills with [`docs/SNOWFLAKE_DATA_LAKE.md`](SNOWFLAKE_DATA_LAKE.md) | done | Closes the Snowflake story end-to-end (warehouse-native, open-format lane) |
 | **PR BB — enrich-asset-inventory-ocsf** | Joins findings with `discover-environment` graph | P2 | Turns findings into triageable blast-radius context |
 
 ## 14. Non-goals (explicit)

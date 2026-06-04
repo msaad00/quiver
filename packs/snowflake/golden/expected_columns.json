@@ -1,0 +1,9 @@
+{
+  "security_db.ops.findings_sink": ["payload", "schema_mode", "event_uid", "finding_uid", "ingested_at"],
+  "security_db.ops.events_sink": ["payload", "schema_mode", "event_uid", "finding_uid", "ingested_at"],
+  "security_db.ops.evidence_sink": ["payload", "schema_mode", "event_uid", "finding_uid", "ingested_at"],
+  "security_db.ops.audit_sink": ["payload", "schema_mode", "event_uid", "finding_uid", "ingested_at"],
+  "security_db.ops.findings_by_rule_hourly": ["bucket_hour", "rule_uid", "severity", "schema_mode", "finding_count"],
+  "security_db.ops.events_by_class_daily": ["bucket_day", "class_uid", "schema_mode", "event_count"],
+  "security_db.ops.remediations_by_outcome_daily": ["bucket_day", "skill_name", "remediation_state", "outcome_count"]
+}
