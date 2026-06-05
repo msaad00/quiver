@@ -12,7 +12,7 @@
   <a href="https://github.com/msaad00/agent-bom"><img alt="Scanned by agent-bom" src="https://img.shields.io/badge/scanned_by-agent--bom-164e63"></a>
 </p>
 
-<p align="center"><strong>117 production-grade security skills for cloud and AI — OCSF on the wire, MCP-ready, HITL-audited, sandboxed, runs everywhere the same bundle can.</strong></p>
+<p align="center"><strong>119 production-grade security skills for cloud and AI — OCSF on the wire, MCP-ready, HITL-audited, sandboxed, runs everywhere the same bundle can.</strong></p>
 
 ---
 
@@ -68,7 +68,7 @@ Five surfaces, one bundle: **CLI · CI · MCP · webhook receiver · persistent 
 
 **Find a skill:** [`docs/SKILL_INDEX.md`](docs/SKILL_INDEX.md) groups every shipped skill by **environment** (AWS · GCP · Azure/Entra · K8s · Identity · AI/MCP · Web · Cross-env) and by **purpose** (ingest / discover / detect / evaluate / remediate / view / output / source), and points at the framework-mapping docs for control-catalog pivots.
 
-**Which vendor signals normalize to OCSF today?** [`docs/INGEST_COVERAGE.md`](docs/INGEST_COVERAGE.md) — the canonical vendor × source × OCSF class matrix, **18 mappings shipped** (AWS · GCP · Azure · Entra · K8s · Okta · Workspace · MCP · **GitHub · Slack**) plus the 7 documented roadmap rows (Workday, Salesforce, SAP, AWS Config, native ClickHouse audit, AWS web-app exfil pipeline, Workspace beyond-login).
+**Which vendor signals normalize to OCSF today?** [`docs/INGEST_COVERAGE.md`](docs/INGEST_COVERAGE.md) — the canonical vendor × source × OCSF class matrix, **19 mappings shipped** (AWS · GCP · Azure · Entra · K8s · Okta · Workspace · MCP · **GitHub · Slack**) plus the 6 documented roadmap rows (Workday, Salesforce, SAP, native ClickHouse audit, AWS web-app exfil pipeline, Workspace beyond-login).
 
 **Why use these skills (vs ad-hoc Python your agent writes at runtime, vs LLM-written skills you commit, vs your team writing 90 from scratch)?** [`docs/WHY.md`](docs/WHY.md) — three different alternatives, three different answers. This repo is built for LLMs and agents to invoke (MCP, Agent SDK, library, CLI, webhook, runners — every surface). What you can't prompt-generate: the trust contract (HITL gates, three-layer sandbox, HMAC-chained audit, allowlist intersection, OCSF wire lock), the calibration values (real-corpus thresholds), the cross-cutting maintenance (OCSF version bumps, MITRE catalog updates, vendor schema drift). Cost framing: ~12 engineer-weeks of harness + ~240 hours of detector content to reach v0.10.0 parity, then the maintenance tax per release.
 
@@ -96,7 +96,7 @@ Deeper reads: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) · [`docs/HARNESS.m
 
 The repo ships an end-to-end, closed-loop story on ClickHouse: OCSF ingest skills write through `sink-clickhouse-jsonl`, detectors replay from `source-clickhouse-query` under a read-only SQL allowlist, and remediation audit records can land back in the same lake. Stateless skills, stateful lake, stable UIDs for duplicate-aware replay.
 
-![ClickHouse security data lake closed-loop architecture. Seventeen ingest skills normalize cloud, identity, Kubernetes, MCP, and SaaS signals to OCSF JSONL and write append-only into ClickHouse through sink-clickhouse-jsonl. Four MergeTree tables hold events, findings, evidence, and audit rows. Three materialized views roll up rule volume, event-class volume, and remediation outcomes. source-clickhouse-query replays bounded SELECT/WITH/SHOW/DESCRIBE statements into detection, view, and evidence skills. New findings, evidence artifacts, and HITL remediation audit records can write back through the same sink.](docs/images/clickhouse-data-lake.svg)
+![ClickHouse security data lake closed-loop architecture. Eighteen ingest skills normalize cloud, identity, Kubernetes, MCP, and SaaS signals to OCSF JSONL and write append-only into ClickHouse through sink-clickhouse-jsonl. Four MergeTree tables hold events, findings, evidence, and audit rows. Three materialized views roll up rule volume, event-class volume, and remediation outcomes. source-clickhouse-query replays bounded SELECT/WITH/SHOW/DESCRIBE statements into detection, view, and evidence skills. New findings, evidence artifacts, and HITL remediation audit records can write back through the same sink.](docs/images/clickhouse-data-lake.svg)
 
 | Stage | Skill | Role |
 |---|---|---|
@@ -112,7 +112,7 @@ Why ClickHouse for this lake — operator-owned deployment, MergeTree tables, ma
 
 The same closed loop ships warehouse-native on Snowflake, for customers who run their enterprise lakehouse there: OCSF ingest skills write through `sink-snowflake-jsonl`, detectors replay from `source-snowflake-query` under a read-only SQL allowlist, and remediation audit records land back in the same lake. Built on current Snowflake — dynamic-table rollups, row access policies, and an optional Snowflake-managed Apache Iceberg variant so the lake stays open-format and Spark/Trino-readable through the Horizon Catalog.
 
-![Snowflake security data lake closed-loop architecture. Seventeen ingest skills normalize cloud, identity, Kubernetes, MCP, and SaaS signals to OCSF JSONL and write append-only into Snowflake through sink-snowflake-jsonl, with Openflow and Snowpipe Streaming as managed in-VPC ingest options. Four tables in security_db.ops hold events, findings, evidence, and audit rows under row access policies, optionally as Snowflake-managed Apache Iceberg governed by the Horizon Catalog. Three dynamic tables roll up rule volume, event-class volume, and remediation outcomes. source-snowflake-query replays bounded SELECT/WITH/SHOW/DESCRIBE statements into detection (including nine Snowflake-native detectors), view, and evidence skills. New findings, evidence artifacts, and HITL remediation audit records write back through the same sink.](docs/images/snowflake-data-lake.svg)
+![Snowflake security data lake closed-loop architecture. Eighteen ingest skills normalize cloud, identity, Kubernetes, MCP, and SaaS signals to OCSF JSONL and write append-only into Snowflake through sink-snowflake-jsonl, with Openflow and Snowpipe Streaming as managed in-VPC ingest options. Four tables in security_db.ops hold events, findings, evidence, and audit rows under row access policies, optionally as Snowflake-managed Apache Iceberg governed by the Horizon Catalog. Three dynamic tables roll up rule volume, event-class volume, and remediation outcomes. source-snowflake-query replays bounded SELECT/WITH/SHOW/DESCRIBE statements into detection (including nine Snowflake-native detectors), view, and evidence skills. New findings, evidence artifacts, and HITL remediation audit records write back through the same sink.](docs/images/snowflake-data-lake.svg)
 
 | Stage | Skill | Role |
 |---|---|---|
