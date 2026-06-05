@@ -1,6 +1,6 @@
 # Skill index — find a skill fast
 
-The same 118 skill bundles, pivoted three ways:
+The same 119 skill bundles, pivoted three ways:
 
 1. **[By environment](#by-environment)** — pick a cloud or platform, see every skill that touches it.
 2. **[By purpose](#by-purpose)** — pick a layer (ingest / discover / detect / evaluate / remediate / view / output / source).
@@ -15,11 +15,12 @@ not do, and what it talks to.
 
 ## By environment
 
-### AWS — 14 skills
+### AWS — 15 skills
 
 | Layer | Skill | What it does |
 |---|---|---|
 | Ingest | [`ingest-cloudtrail-ocsf`](../skills/ingestion/ingest-cloudtrail-ocsf/) | CloudTrail → OCSF 1.8 API Activity 6003 |
+| Ingest | [`ingest-aws-config-ocsf`](../skills/ingestion/ingest-aws-config-ocsf/) | AWS Config → OCSF API Activity 6003 / Compliance Finding 2003 |
 | Ingest | [`ingest-guardduty-ocsf`](../skills/ingestion/ingest-guardduty-ocsf/) | GuardDuty findings → OCSF Detection Finding 2004 |
 | Ingest | [`ingest-security-hub-ocsf`](../skills/ingestion/ingest-security-hub-ocsf/) | Security Hub findings → OCSF |
 | Ingest | [`ingest-vpc-flow-logs-ocsf`](../skills/ingestion/ingest-vpc-flow-logs-ocsf/) | VPC Flow Logs → OCSF Network Activity |

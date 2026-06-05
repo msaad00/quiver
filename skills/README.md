@@ -23,6 +23,7 @@ Raw source formats to OCSF 1.8 JSONL.
 | Skill | Scope |
 |---|---|
 | [`ingest-cloudtrail-ocsf`](ingestion/ingest-cloudtrail-ocsf/) | AWS CloudTrail |
+| [`ingest-aws-config-ocsf`](ingestion/ingest-aws-config-ocsf/) | AWS Config configuration items and compliance changes |
 | [`ingest-vpc-flow-logs-ocsf`](ingestion/ingest-vpc-flow-logs-ocsf/) | AWS VPC Flow Logs |
 | [`ingest-vpc-flow-logs-gcp-ocsf`](ingestion/ingest-vpc-flow-logs-gcp-ocsf/) | GCP VPC Flow Logs |
 | [`ingest-nsg-flow-logs-azure-ocsf`](ingestion/ingest-nsg-flow-logs-azure-ocsf/) | Azure NSG Flow Logs |
