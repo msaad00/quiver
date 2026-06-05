@@ -1,4 +1,4 @@
-![Agentic security skills for cloud and AI — 118 shipped skill bundles. OCSF 1.8 on the wire. 131 CIS + NIST AI RMF benchmark checks. Framework coverage across MITRE ATT&CK, MITRE ATLAS, OWASP Top 10, and OWASP LLM Top 10. MCP-audited tool calls. HITL dual-audited remediation. Runs against AWS, GCP, Azure, Kubernetes, Okta, Microsoft Entra, Google Workspace, GitHub, Slack, Snowflake, Databricks, ClickHouse, and MCP proxy. Access surfaces: CLI, CI, MCP, and persistent cloud runners.](docs/images/hero-banner.svg)
+![Agentic security skills for cloud and AI — 119 shipped skill bundles. OCSF 1.8 on the wire. 131 CIS + NIST AI RMF benchmark checks. Framework coverage across MITRE ATT&CK, MITRE ATLAS, OWASP Top 10, and OWASP LLM Top 10. MCP-audited tool calls. HITL dual-audited remediation. Runs against AWS, GCP, Azure, Kubernetes, Okta, Microsoft Entra, Google Workspace, GitHub, Slack, Snowflake, Databricks, ClickHouse, and MCP proxy. Access surfaces: CLI, CI, MCP, and persistent cloud runners.](docs/images/hero-banner.svg)
 
 <p align="center">
   <a href="https://github.com/msaad00/cloud-ai-security-skills/actions/workflows/ci.yml?query=branch%3Amain"><img alt="CI" src="https://github.com/msaad00/cloud-ai-security-skills/actions/workflows/ci.yml/badge.svg?branch=main"></a>
@@ -51,11 +51,11 @@ Five surfaces, one bundle: **CLI · CI · MCP · webhook receiver · persistent 
 
 ## What this repo gives you
 
-**118 shipped skill bundles** — atomic, deterministic, single-concern. Twelve are guarded write paths; the other 101 are read-only. Drop one into a pipeline, an agent, a Step Function, or a `python ... | python ...` one-liner.
+**119 shipped skill bundles** — atomic, deterministic, single-concern. Twelve are guarded write paths; the rest are read-only skills or append-only source/output adapters. Drop one into a pipeline, an agent, a Step Function, or a `python ... | python ...` one-liner.
 
 | Layer | Count | Purpose | Output |
 |---|---:|---|---|
-| **Ingest** | 17 | normalize raw cloud / identity / K8s / MCP / SaaS signal | OCSF 1.8 (native opt-in) |
+| **Ingest** | 18 | normalize raw cloud / identity / K8s / MCP / SaaS signal | OCSF 1.8 (native opt-in) |
 | **Discover** | 5 | inventory · graph · AI BOM · evidence · IAM-departure planning | native / bridge JSON |
 | **Detect** | 64 | deterministic rules tagged with MITRE ATT&CK / ATLAS / OWASP | OCSF Detection Finding 2004 |
 | **Evaluate** | 11 | 131 posture and benchmark checks across CIS / NIST / NIST AI RMF / SOC 2 | compliance result |
@@ -64,7 +64,7 @@ Five surfaces, one bundle: **CLI · CI · MCP · webhook receiver · persistent 
 | **Output** | 3 | append-only sinks | S3 · Snowflake · ClickHouse |
 | **Sources** | 4 | warehouse query adapters | S3 Select · Snowflake · Databricks · ClickHouse |
 
-**Total: 118 shipped skills.**  Live counts and per-framework coverage in [`docs/COVERAGE_SNAPSHOT.md`](docs/COVERAGE_SNAPSHOT.md) (auto-generated, CI-gated).
+**Total: 119 shipped skills.**  Live counts and per-framework coverage in [`docs/COVERAGE_SNAPSHOT.md`](docs/COVERAGE_SNAPSHOT.md) (auto-generated, CI-gated).
 
 **Find a skill:** [`docs/SKILL_INDEX.md`](docs/SKILL_INDEX.md) groups every shipped skill by **environment** (AWS · GCP · Azure/Entra · K8s · Identity · AI/MCP · Web · Cross-env) and by **purpose** (ingest / discover / detect / evaluate / remediate / view / output / source), and points at the framework-mapping docs for control-catalog pivots.
 

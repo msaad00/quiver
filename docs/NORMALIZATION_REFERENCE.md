@@ -60,6 +60,7 @@ Short rule:
 | Source skill | Raw source | Native `record_type` | Default OCSF class | Main natural IDs kept | Main repo-stable IDs / correlation |
 |---|---|---|---|---|---|
 | `ingest-cloudtrail-ocsf` | AWS CloudTrail | `api_activity` | API Activity `6003` | `eventID`, `recipientAccountId`, `eventName`, `eventSource` | `event_uid`, `metadata.uid`, `api.request.uid = eventID` |
+| `ingest-aws-config-ocsf` | AWS Config configuration items and compliance changes | `aws_config_configuration_item`, `aws_config_compliance_finding` | API Activity `6003`, Compliance Finding `2003` | Config `configurationStateId`, `resourceType`, `resourceId`, Config rule name | deterministic `metadata.uid` from account, region, resource, rule, status, and recorded time; raw Config context preserved under `unmapped.aws_config` |
 | `ingest-vpc-flow-logs-ocsf` | AWS VPC Flow Logs | `network_activity` | Network Activity `4001` | no single immutable vendor event ID in the raw format | deterministic `event_uid` from normalized flow tuple; account, ENI, instance, and timing context preserved |
 | `ingest-guardduty-ocsf` | AWS GuardDuty finding JSON | `detection_finding` | Detection Finding `2004` | GuardDuty `Id`, `Arn` | `finding_uid = det-gd-<sha256(Id)>`; raw GuardDuty `Id` preserved in evidence |
 | `ingest-gcp-audit-ocsf` | GCP Cloud Audit Logs | `api_activity` | API Activity `6003` | `insertId`, `methodName`, `serviceName`, `resourceName` | deterministic `event_uid`; `api.request.uid = insertId` |

@@ -7,11 +7,12 @@ This page is the single source of truth for **"which signal can I send and
 get OCSF out the other side?"** The rows below are the canonical answer at
 HEAD; the roadmap rows below are tracked in their linked issues.
 
-## Currently shipped — 18 ingest mappings
+## Currently shipped — 19 ingest mappings
 
 | Vendor | Source signal | OCSF 1.8 class | Skill |
 |---|---|---|---|
 | AWS | CloudTrail event records | API Activity 6003 | [`ingest-cloudtrail-ocsf`](../skills/ingestion/ingest-cloudtrail-ocsf/) |
+| AWS | Config item history + compliance changes | API Activity 6003 / Compliance Finding 2003 | [`ingest-aws-config-ocsf`](../skills/ingestion/ingest-aws-config-ocsf/) — closes [`#29`](https://github.com/msaad00/cloud-ai-security-skills/issues/29) |
 | AWS | GuardDuty findings | Detection Finding 2004 | [`ingest-guardduty-ocsf`](../skills/ingestion/ingest-guardduty-ocsf/) |
 | AWS | Security Hub findings | Detection Finding 2004 | [`ingest-security-hub-ocsf`](../skills/ingestion/ingest-security-hub-ocsf/) |
 | AWS | VPC Flow Logs | Network Activity 4001 | [`ingest-vpc-flow-logs-ocsf`](../skills/ingestion/ingest-vpc-flow-logs-ocsf/) |
@@ -30,7 +31,7 @@ HEAD; the roadmap rows below are tracked in their linked issues.
 | Slack | Audit Logs API (`/audit/v1/logs`, Enterprise Grid) | Authentication 3002 / User Access 3005 / API Activity 6003 | [`ingest-slack-audit-ocsf`](../skills/ingestion/ingest-slack-audit-ocsf/) — closes [`#33`](https://github.com/msaad00/cloud-ai-security-skills/issues/33) |
 | AWS / GCP / Azure | Cross-cloud secret-scan + AI-BOM input pipes | (consumed by downstream detect-agent-credential-leak-mcp / discover-ai-bom) | covered transitively via the four above |
 
-> 18 rows for 17 ingest skills: Entra, Okta, GitHub, and Slack each emit
+> 19 rows for 18 ingest skills: Entra, Okta, GitHub, Slack, and AWS Config each emit
 > multiple OCSF classes depending on the source event family, so each is
 > listed once in the table but produces more than one OCSF class on the wire.
 
@@ -55,7 +56,6 @@ records already shaped as OCSF API Activity 6003 by an upstream pipeline.
 
 | Vendor | Source | Target OCSF class | Tracking |
 |---|---|---|---|
-| AWS | Config item history + change stream | Compliance Finding 2003 | [`#29`](https://github.com/msaad00/cloud-ai-security-skills/issues/29) — `ingest-aws-config-ocsf` + paired CIS-AWS evaluator |
 | ClickHouse | `system.query_log` native ingest | API Activity 6003 | [`#436`](https://github.com/msaad00/cloud-ai-security-skills/issues/436) — `ingest-clickhouse-query-log-ocsf` |
 | AWS | Lambda + API Gateway access logs | HTTP Activity 4002 | [`#253`](https://github.com/msaad00/cloud-ai-security-skills/issues/253) — first detection-side use case is the web-app exfil arc |
 | Google Workspace | Drive / Admin / Mobile feeds (beyond login) | API Activity 6003 + IAM 3001/3005 | [`#32`](https://github.com/msaad00/cloud-ai-security-skills/issues/32) — vendor story PR L |

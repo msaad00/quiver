@@ -2175,6 +2175,32 @@
       ]
     },
     {
+      "path": "skills/ingestion/ingest-aws-config-ocsf",
+      "layer": "ingestion",
+      "providers": [
+        "aws"
+      ],
+      "asset_classes": [
+        "configuration",
+        "security-posture",
+        "compliance-evidence"
+      ],
+      "frameworks": [
+        "ocsf-1.8",
+        "cis-aws-v3",
+        "nist-csf-2.0",
+        "iso-27001-2022",
+        "soc2-tsc"
+      ],
+      "coverage_status": "validated",
+      "execution_modes": [
+        "cli",
+        "ci",
+        "mcp",
+        "persistent"
+      ]
+    },
+    {
       "path": "skills/ingestion/ingest-entra-directory-audit-ocsf",
       "layer": "ingestion",
       "providers": [

@@ -1,0 +1,28 @@
+[
+  {
+    "Type": "Notification",
+    "MessageId": "cfg-msg-1",
+    "TopicArn": "arn:aws:sns:us-east-1:111122223333:config-topic",
+    "Message": "{\"messageType\":\"ConfigurationItemChangeNotification\",\"notificationCreationTime\":\"2026-04-19T04:20:01.000Z\",\"configurationItemDiff\":{\"changeType\":\"UPDATE\",\"changedProperties\":{\"Configuration.Versioning.Status\":{\"previousValue\":\"Suspended\",\"updatedValue\":\"Enabled\",\"changeType\":\"UPDATE\"}}},\"configurationItem\":{\"configurationItemVersion\":\"1.3\",\"configurationItemCaptureTime\":\"2026-04-19T04:20:00.000Z\",\"configurationStateId\":1713500400000,\"awsAccountId\":\"111122223333\",\"configurationItemStatus\":\"OK\",\"resourceType\":\"AWS::S3::Bucket\",\"resourceId\":\"prod-logs-bucket\",\"resourceName\":\"prod-logs-bucket\",\"ARN\":\"arn:aws:s3:::prod-logs-bucket\",\"awsRegion\":\"us-east-1\",\"configuration\":{\"name\":\"prod-logs-bucket\",\"versioningConfiguration\":{\"status\":\"Enabled\"},\"bucketEncryption\":{\"serverSideEncryptionConfiguration\":[{\"rule\":{\"applyServerSideEncryptionByDefault\":{\"sseAlgorithm\":\"AES256\"}}}]},\"tags\":[{\"key\":\"Environment\",\"value\":\"prod\"}]},\"supplementaryConfiguration\":{},\"tags\":{\"Environment\":\"prod\"},\"relationships\":[]}}"
+  },
+  {
+    "messageType": "ComplianceChangeNotification",
+    "awsAccountId": "111122223333",
+    "awsRegion": "us-east-1",
+    "notificationCreationTime": "2026-04-19T04:26:01.000Z",
+    "newEvaluationResult": {
+      "evaluationResultIdentifier": {
+        "evaluationResultQualifier": {
+          "configRuleName": "s3-bucket-server-side-encryption-enabled",
+          "resourceType": "AWS::S3::Bucket",
+          "resourceId": "prod-logs-bucket"
+        },
+        "orderingTimestamp": "2026-04-19T04:25:00.000Z"
+      },
+      "complianceType": "NON_COMPLIANT",
+      "resultRecordedTime": "2026-04-19T04:26:00.000Z",
+      "annotation": "Bucket default encryption is missing or drifted.",
+      "resultToken": "config-rule-token-1"
+    }
+  }
+]
