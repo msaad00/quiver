@@ -48,6 +48,13 @@ side + replay loop), the documented hero use case is
 [`CLICKHOUSE_DATA_LAKE.md`](CLICKHOUSE_DATA_LAKE.md). It composes
 `sink-clickhouse-jsonl`, [`packs/clickhouse/`](../packs/clickhouse/), and
 `source-clickhouse-query` into one closed loop with content-addressed uids,
-TTL-managed retention, and tenant-isolating row policies. Snowflake and AWS
-Security Lake remain first-class alternatives — pick by substrate, not by
-feature.
+TTL-managed retention, and tenant-isolating row policies.
+
+The same closed loop ships warehouse-native on Snowflake — see
+[`SNOWFLAKE_DATA_LAKE.md`](SNOWFLAKE_DATA_LAKE.md), which composes
+`sink-snowflake-jsonl`, [`packs/snowflake/`](../packs/snowflake/), and
+`source-snowflake-query` with dynamic-table rollups, row access policies, and
+an optional Snowflake-managed Iceberg variant for open-format storage. Pick the
+ClickHouse lane for a self-hosted low-latency lake, the Snowflake lane for a
+governed open lakehouse, AWS Security Lake for an OCSF-native object lake —
+by substrate, not by feature.

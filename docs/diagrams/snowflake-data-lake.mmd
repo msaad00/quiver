@@ -1,0 +1,65 @@
+%% Snowflake security data lake — closed-loop lanes.
+%% Hero-narrative companion to docs/SNOWFLAKE_DATA_LAKE.md.
+%% Render with `mmdc -i snowflake-data-lake.mmd -o snowflake-data-lake.svg`.
+
+flowchart LR
+    classDef signal    fill:#111827,stroke:#64748b,color:#f8fafc
+    classDef transform fill:#083344,stroke:#22d3ee,color:#ecfeff
+    classDef lake      fill:#0c2a4d,stroke:#29b5e8,color:#e0f2fe
+    classDef query     fill:#1e1b4b,stroke:#a78bfa,color:#f5f3ff
+    classDef output    fill:#064e3b,stroke:#34d399,color:#ecfdf5
+    classDef audit     fill:#4c0519,stroke:#fb7185,color:#fff1f2
+
+    subgraph SIG["Signals already covered by ingest-*"]
+      direction TB
+      AWS["AWS<br/>CloudTrail · VPC · GuardDuty · Security Hub"]:::signal
+      GCP["GCP<br/>audit · SCC · VPC flow"]:::signal
+      AZ["Azure / Entra<br/>activity · Defender · NSG · directory audit"]:::signal
+      IDP["Identity + SaaS<br/>Okta · Workspace · GitHub · Slack"]:::signal
+      KSP["Kubernetes + MCP<br/>API audit · proxy events"]:::signal
+    end
+
+    subgraph L1["Normalize and write"]
+      direction TB
+      ING["17 ingest-* skills<br/>OCSF 1.8 JSONL"]:::transform
+      SINK["sink-snowflake-jsonl<br/>append-only insert · dry-run default"]:::transform
+      FLOW["Openflow / Snowpipe Streaming<br/>managed in-VPC ingest (optional)"]:::transform
+    end
+
+    subgraph LAKE["Snowflake security data lake — security_db.ops"]
+      direction TB
+      HOT["events_sink<br/>90-day hot tier"]:::lake
+      FIND["findings_sink<br/>365-day finding history"]:::lake
+      EVID["evidence_sink<br/>7-year evidence hold"]:::lake
+      AUD["audit_sink<br/>legal-hold audit chain"]:::lake
+      DT["rollup dynamic tables<br/>rule volume · event class volume · remediation outcomes"]:::lake
+      ICE["managed Iceberg + Horizon Catalog<br/>open format · Spark/Trino readable"]:::lake
+    end
+
+    subgraph REPLAY["Read, replay, and decide"]
+      direction TB
+      SRC["source-snowflake-query<br/>SELECT / WITH / SHOW / DESCRIBE only"]:::query
+      DET["detect-* skills<br/>incl. 9 Snowflake-native detectors"]:::query
+      VIEW["view-* + discover-control-evidence<br/>SARIF · attack-flow · Trust Center evidence"]:::output
+      REM["remediate-* skills<br/>HITL gated · dry-run first"]:::audit
+    end
+
+    SIG ==> ING
+    ING --> SINK
+    FLOW -. "managed ingest" .-> HOT
+    SINK -- "events" --> HOT
+    SINK -- "findings" --> FIND
+    SINK -- "evidence" --> EVID
+    HOT --> DT
+    FIND --> DT
+    AUD --> DT
+    HOT -. "open format" .- ICE
+    FIND -. "open format" .- ICE
+    HOT -- "replay window" --> SRC
+    FIND -- "review window" --> SRC
+    SRC --> DET
+    SRC --> VIEW
+    DET -- "new findings" --> SINK
+    DET --> REM
+    REM -- "audit record" --> AUD
+    VIEW -- "evidence artifacts" --> EVID
