@@ -129,16 +129,16 @@ wheels = [
 
 [[package]]
 name = "azure-mgmt-storage"
-version = "21.2.1"
+version = "25.0.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
-    { name = "azure-common" },
     { name = "azure-mgmt-core" },
     { name = "isodate" },
+    { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/b9/9b/0542c8081fe6ff808b04986892861e88775c3900c391657f796d69643f13/azure-mgmt-storage-21.2.1.tar.gz", hash = "sha256:503a7ff9c31254092b0656445f5728bfdfda2d09d46a82e97019eaa9a1ecec64", size = 1891868, upload-time = "2024-06-27T07:17:00.339Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/47/6a/62d21f86b62cf990cb7d63f470dd4a766277a68a71543ef9331e0ee16f7d/azure_mgmt_storage-25.0.0.tar.gz", hash = "sha256:52c4bb1fb395fcfa7a2e8fb024c1dabc5a67bd6fa23c0d2d5a7fb29314f172d2", size = 228272, upload-time = "2026-05-20T08:37:01.135Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/85/c4/3d10a87525911adc041e6858019d8dd1c6934b43bf99c3505d9a9f353c7a/azure_mgmt_storage-21.2.1-py3-none-any.whl", hash = "sha256:f97df1fa39cde9dbacf2cd96c9cba1fc196932185e24853e276f74b18a0bd031", size = 3184235, upload-time = "2024-06-27T07:17:04.274Z" },
+    { url = "https://files.pythonhosted.org/packages/3d/ca/92239e71a92cd3a60c5c6175539defcec5ffa086bd9507817330cf7f4662/azure_mgmt_storage-25.0.0-py3-none-any.whl", hash = "sha256:7824840e8251aa6b2c27abf29cbd0ab86fc6685aa69e44f61c2f53168e71ff2d", size = 215194, upload-time = "2026-05-20T08:37:02.555Z" },
 ]
 
 [[package]]
@@ -526,7 +526,7 @@ azure = [
     { name = "azure-identity", specifier = ">=1.17,<2" },
     { name = "azure-mgmt-network", specifier = ">=28,<31" },
     { name = "azure-mgmt-resource", specifier = ">=25,<26" },
-    { name = "azure-mgmt-storage", specifier = ">=21,<25" },
+    { name = "azure-mgmt-storage", specifier = ">=21,<26" },
 ]
 dev = [
     { name = "bandit", extras = ["toml"], specifier = ">=1.9.4,<2" },
