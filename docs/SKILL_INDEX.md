@@ -1,6 +1,6 @@
 # Skill index — find a skill fast
 
-The same 120 skill bundles, pivoted three ways:
+The same 123 skill bundles, pivoted three ways:
 
 1. **[By environment](#by-environment)** — pick a cloud or platform, see every skill that touches it.
 2. **[By purpose](#by-purpose)** — pick a layer (ingest / discover / detect / evaluate / remediate / view / output / source).
@@ -92,15 +92,18 @@ not do, and what it talks to.
 | Detect | [`detect-github-org-secret-exposure`](../skills/detection/detect-github-org-secret-exposure/) | T1078.004 — org-level Actions / Codespaces / Dependabot secret scope widened |
 | Detect | [`detect-github-actions-secret-disclosure`](../skills/detection/detect-github-actions-secret-disclosure/) | T1552.004 — workflow log encodes a secret past the redactor |
 
-### Identity (Okta · Google Workspace) — 7 skills
+### Identity (Okta · Google Workspace) — 10 skills
 
 | Layer | Skill | What it does |
 |---|---|---|
+| Ingest | [`ingest-workspace-admin-ocsf`](../skills/ingestion/ingest-workspace-admin-ocsf/) | Workspace Admin SDK Reports API → OCSF Authentication 3002 / Account Change 3001 |
 | Ingest | [`ingest-google-workspace-login-ocsf`](../skills/ingestion/ingest-google-workspace-login-ocsf/) | Workspace login events → OCSF Authentication 3002 |
 | Ingest | [`ingest-okta-system-log-ocsf`](../skills/ingestion/ingest-okta-system-log-ocsf/) | Okta System Log → OCSF |
 | Detect | [`detect-credential-stuffing-okta`](../skills/detection/detect-credential-stuffing-okta/) | T1110.004 — high-velocity Okta auth failures |
+| Detect | [`detect-admin-role-grant-workspace`](../skills/detection/detect-admin-role-grant-workspace/) | T1098.003 — Workspace Super Admin role grant outside break-glass allowlist |
 | Detect | [`detect-google-workspace-suspicious-login`](../skills/detection/detect-google-workspace-suspicious-login/) | T1078.004 — impossible-travel / risky-IP login |
 | Detect | [`detect-okta-mfa-fatigue`](../skills/detection/detect-okta-mfa-fatigue/) | T1621 — MFA-bombing |
+| Detect | [`detect-suspicious-oauth-grant-workspace`](../skills/detection/detect-suspicious-oauth-grant-workspace/) | T1550.001 — Workspace OAuth client granted high-risk scopes |
 | Remediate | [`remediate-okta-session-kill`](../skills/remediation/remediate-okta-session-kill/) | HITL — kill Okta sessions on principal |
 | Remediate | [`remediate-workspace-session-kill`](../skills/remediation/remediate-workspace-session-kill/) | HITL — sign-out Workspace user |
 
@@ -190,16 +193,16 @@ not do, and what it talks to.
 
 | Layer | Count | Index |
 |---|---:|---|
-| Ingest | 18 | [`skills/ingestion/`](../skills/ingestion/) (excludes the 4 warehouse sources below) |
+| Ingest | 19 | [`skills/ingestion/`](../skills/ingestion/) (excludes the 4 warehouse sources below) |
 | Discover | 5 | [`skills/discovery/`](../skills/discovery/) |
-| Detect | 64 | [`skills/detection/`](../skills/detection/) |
+| Detect | 66 | [`skills/detection/`](../skills/detection/) |
 | Evaluate | 12 | [`skills/evaluation/`](../skills/evaluation/) |
 | Remediate | 12 | [`skills/remediation/`](../skills/remediation/) |
 | View | 2 | [`skills/view/`](../skills/view/) |
 | Output | 3 | [`skills/output/`](../skills/output/) |
 | Source | 4 | warehouse adapters: `source-clickhouse-query`, `source-databricks-query`, `source-s3-select`, `source-snowflake-query` (filed under `skills/ingestion/` on disk) |
 
-Total = 18 + 5 + 64 + 12 + 12 + 2 + 3 + 4 = **120**.
+Total = 19 + 5 + 66 + 12 + 12 + 2 + 3 + 4 = **123**.
 
 ## By framework
 

@@ -7,7 +7,7 @@ This page is the single source of truth for **"which signal can I send and
 get OCSF out the other side?"** The rows below are the canonical answer at
 HEAD; the roadmap rows below are tracked in their linked issues.
 
-## Currently shipped — 19 ingest mappings
+## Currently shipped — 19 ingest skills
 
 | Vendor | Source signal | OCSF 1.8 class | Skill |
 |---|---|---|---|
@@ -26,12 +26,13 @@ HEAD; the roadmap rows below are tracked in their linked issues.
 | Kubernetes | API server audit log | API Activity 6003 | [`ingest-k8s-audit-ocsf`](../skills/ingestion/ingest-k8s-audit-ocsf/) |
 | Okta | System Log | IAM events — Authentication 3002 / Account Change 3001 / User Access 3005 | [`ingest-okta-system-log-ocsf`](../skills/ingestion/ingest-okta-system-log-ocsf/) |
 | Google Workspace | Login activity (Reports API) | Authentication 3002 | [`ingest-google-workspace-login-ocsf`](../skills/ingestion/ingest-google-workspace-login-ocsf/) |
+| Google Workspace | Admin SDK Reports API login / token / admin activity | Authentication 3002 / Account Change 3001 | [`ingest-workspace-admin-ocsf`](../skills/ingestion/ingest-workspace-admin-ocsf/) — closes [`#32`](https://github.com/msaad00/cloud-ai-security-skills/issues/32) |
 | GitHub | Organization Audit Log | API Activity 6003 / Authentication 3002 / User Access 3005 | [`ingest-github-audit-log-ocsf`](../skills/ingestion/ingest-github-audit-log-ocsf/) — closes [`#31`](https://github.com/msaad00/cloud-ai-security-skills/issues/31) |
 | MCP proxy | JSON-RPC request/response log | Application Activity 6002 | [`ingest-mcp-proxy-ocsf`](../skills/ingestion/ingest-mcp-proxy-ocsf/) |
 | Slack | Audit Logs API (`/audit/v1/logs`, Enterprise Grid) | Authentication 3002 / User Access 3005 / API Activity 6003 | [`ingest-slack-audit-ocsf`](../skills/ingestion/ingest-slack-audit-ocsf/) — closes [`#33`](https://github.com/msaad00/cloud-ai-security-skills/issues/33) |
 | AWS / GCP / Azure | Cross-cloud secret-scan + AI-BOM input pipes | (consumed by downstream detect-agent-credential-leak-mcp / discover-ai-bom) | covered transitively via the four above |
 
-> 19 rows for 18 ingest skills: Entra, Okta, GitHub, Slack, and AWS Config each emit
+> 20 rows for 19 ingest skills: Entra, Okta, GitHub, Slack, AWS Config, and Workspace Admin each emit
 > multiple OCSF classes depending on the source event family, so each is
 > listed once in the table but produces more than one OCSF class on the wire.
 
@@ -58,7 +59,7 @@ records already shaped as OCSF API Activity 6003 by an upstream pipeline.
 |---|---|---|---|
 | ClickHouse | `system.query_log` native ingest | API Activity 6003 | [`#436`](https://github.com/msaad00/cloud-ai-security-skills/issues/436) — `ingest-clickhouse-query-log-ocsf` |
 | AWS | Lambda + API Gateway access logs | HTTP Activity 4002 | [`#253`](https://github.com/msaad00/cloud-ai-security-skills/issues/253) — first detection-side use case is the web-app exfil arc |
-| Google Workspace | Drive / Admin / Mobile feeds (beyond login) | API Activity 6003 + IAM 3001/3005 | [`#32`](https://github.com/msaad00/cloud-ai-security-skills/issues/32) — vendor story PR L |
+| Google Workspace | Drive / Mobile feeds (beyond login, token, and admin role activity) | API Activity 6003 + User Access 3005 | [`#32`](https://github.com/msaad00/cloud-ai-security-skills/issues/32) — follow-on vendor depth |
 | Workday | HR events stream | (proprietary → canonical departure manifest, not OCSF) | [`#34`](https://github.com/msaad00/cloud-ai-security-skills/issues/34) — vendor story PR N; existing `iam-departures-reconciler` is the consumer |
 | Salesforce | Setup Audit Trail + Event Monitoring | API Activity 6003 + Authentication 3002 | [`#35`](https://github.com/msaad00/cloud-ai-security-skills/issues/35) — vendor story PR O |
 | SAP | Security Audit Log | API Activity 6003 | [`#36`](https://github.com/msaad00/cloud-ai-security-skills/issues/36) — vendor story PR P |

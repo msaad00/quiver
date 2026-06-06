@@ -26,15 +26,15 @@ Skills are organised into layered categories. See [`skills/README.md`](skills/RE
 
 Current shipped surface on `main`:
 
-- **`ingestion/`**: 18 ingest skills plus 4 source adapters
+- **`ingestion/`**: 19 ingest skills plus 4 source adapters
 - **`discovery/`**: 5 read-only skills including `iam-departures-reconciler`
-- **`detection/`**: 64 deterministic ATT&CK-tagged detectors
+- **`detection/`**: 66 deterministic ATT&CK-tagged detectors
 - **`evaluation/`**: 12 posture / benchmark families
 - **`view/`**: 2 render/export skills
 - **`remediation/`**: 12 HITL-gated write skills across AWS, GCP, Azure, Kubernetes, Okta, Workspace, Entra, and MCP
 - **`output/`**: 3 append-only sinks
 
-**Total shipped: 120 skill bundles.** Auto-generated per-framework rollup in [`docs/FRAMEWORK_COVERAGE.md`](docs/FRAMEWORK_COVERAGE.md); per-skill registry in [`docs/framework-coverage.json`](docs/framework-coverage.json).
+**Total shipped: 123 skill bundles.** Auto-generated per-framework rollup in [`docs/FRAMEWORK_COVERAGE.md`](docs/FRAMEWORK_COVERAGE.md); per-skill registry in [`docs/framework-coverage.json`](docs/framework-coverage.json).
 
 Notable current skills that older agent memory often misses:
 

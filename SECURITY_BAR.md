@@ -47,6 +47,7 @@ is the row you can take to your auditor.
 | `ingest-slack-audit-ocsf` | ingestion | ✅ | ✅ | ✅ | ✅ golden fixture | ✅ 1.8 | ✅ |
 | `ingest-vpc-flow-logs-gcp-ocsf` | ingestion | ✅ | ✅ | ✅ | ✅ golden fixture | ✅ 1.8 | ✅ |
 | `ingest-vpc-flow-logs-ocsf` | ingestion | ✅ | ✅ | ✅ | ✅ golden fixture | ✅ 1.8 | ✅ |
+| `ingest-workspace-admin-ocsf` | ingestion | ✅ | ✅ | ✅ | ✅ golden fixture | ✅ 1.8 | ✅ |
 | `source-clickhouse-query` | ingestion | ✅ | ✅ | ✅ | ✅ golden fixture | ✅ 1.8 | ✅ |
 | `source-databricks-query` | ingestion | ✅ | ✅ | ✅ | ✅ golden fixture | ✅ 1.8 | ✅ |
 | `source-s3-select` | ingestion | ✅ | ✅ | ✅ | ✅ golden fixture | ✅ 1.8 | ✅ |
@@ -56,6 +57,7 @@ is the row you can take to your auditor.
 | `discover-control-evidence` | discovery | ✅ | ✅ | ✅ | ✅ deterministic | n/a | ✅ |
 | `discover-environment` | discovery | ✅ | ✅ | ✅ | ✅ deterministic | n/a | ✅ |
 | `iam-departures-reconciler` | discovery | ✅ | ✅ | ✅ | ✅ deterministic | n/a | ✅ |
+| `detect-admin-role-grant-workspace` | detection | ✅ | ✅ | ✅ | ✅ golden fixture | ✅ 1.8 | ✅ |
 | `detect-agent-credential-leak-mcp` | detection | ✅ | ✅ | ✅ | ✅ golden fixture | ✅ 1.8 | ✅ |
 | `detect-aws-access-key-creation` | detection | ✅ | ✅ | ✅ | ✅ golden fixture | ✅ 1.8 | ✅ |
 | `detect-aws-cloudtrail-event-selector-tampering` | detection | ✅ | ✅ | ✅ | ✅ golden fixture | ✅ 1.8 | ✅ |
@@ -114,6 +116,7 @@ is the row you can take to your auditor.
 | `detect-snowflake-share-creation` | detection | ✅ | ✅ | ✅ | ✅ golden fixture | ✅ 1.8 | ✅ |
 | `detect-snowflake-unauthorized-grant` | detection | ✅ | ✅ | ✅ | ✅ golden fixture | ✅ 1.8 | ✅ |
 | `detect-snowflake-warehouse-resize-burst` | detection | ✅ | ✅ | ✅ | ✅ golden fixture | ✅ 1.8 | ✅ |
+| `detect-suspicious-oauth-grant-workspace` | detection | ✅ | ✅ | ✅ | ✅ golden fixture | ✅ 1.8 | ✅ |
 | `detect-system-prompt-extraction` | detection | ✅ | ✅ | ✅ | ✅ golden fixture | ✅ 1.8 | ✅ |
 | `detect-tool-output-exfiltration-instructions` | detection | ✅ | ✅ | ✅ | ✅ golden fixture | ✅ 1.8 | ✅ |
 | `detect-tool-output-policy-bypass` | detection | ✅ | ✅ | ✅ | ✅ golden fixture | ✅ 1.8 | ✅ |
@@ -150,7 +153,7 @@ is the row you can take to your auditor.
 | `sink-s3-jsonl` | output | ⚠️ append-only sink | ✅ | ✅ | ✅ audit + re-verify | n/a | ✅ |
 | `sink-snowflake-jsonl` | output | ⚠️ append-only sink | ✅ | ✅ | ✅ audit + re-verify | n/a | ✅ |
 
-_120 skills · generated from SKILL.md frontmatter + layer conventions. Run `python scripts/generate_security_bar_matrix.py` to refresh after adding a skill; CI enforces parity via `--check`._
+_123 skills · generated from SKILL.md frontmatter + layer conventions. Run `python scripts/generate_security_bar_matrix.py` to refresh after adding a skill; CI enforces parity via `--check`._
 <!-- AUTO-GENERATED MATRIX END -->
 
 ## How to add a skill that satisfies the bar
