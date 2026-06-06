@@ -47,6 +47,7 @@ is the row you can take to your auditor.
 | `ingest-slack-audit-ocsf` | ingestion | ✅ | ✅ | ✅ | ✅ golden fixture | ✅ 1.8 | ✅ |
 | `ingest-vpc-flow-logs-gcp-ocsf` | ingestion | ✅ | ✅ | ✅ | ✅ golden fixture | ✅ 1.8 | ✅ |
 | `ingest-vpc-flow-logs-ocsf` | ingestion | ✅ | ✅ | ✅ | ✅ golden fixture | ✅ 1.8 | ✅ |
+| `ingest-workday-audit-ocsf` | ingestion | ✅ | ✅ | ✅ | ✅ golden fixture | ✅ 1.8 | ✅ |
 | `ingest-workspace-admin-ocsf` | ingestion | ✅ | ✅ | ✅ | ✅ golden fixture | ✅ 1.8 | ✅ |
 | `source-clickhouse-query` | ingestion | ✅ | ✅ | ✅ | ✅ golden fixture | ✅ 1.8 | ✅ |
 | `source-databricks-query` | ingestion | ✅ | ✅ | ✅ | ✅ golden fixture | ✅ 1.8 | ✅ |
@@ -92,6 +93,7 @@ is the row you can take to your auditor.
 | `detect-github-pat-creation` | detection | ✅ | ✅ | ✅ | ✅ golden fixture | ✅ 1.8 | ✅ |
 | `detect-google-workspace-suspicious-login` | detection | ✅ | ✅ | ✅ | ✅ golden fixture | ✅ 1.8 | ✅ |
 | `detect-lateral-movement` | detection | ✅ | ✅ | ✅ | ✅ golden fixture | ✅ 1.8 | ✅ |
+| `detect-mass-termination-anomaly` | detection | ✅ | ✅ | ✅ | ✅ golden fixture | ✅ 1.8 | ✅ |
 | `detect-mcp-adversarial-input-corpus` | detection | ✅ | ✅ | ✅ | ✅ golden fixture | ✅ 1.8 | ✅ |
 | `detect-mcp-model-artifact-tampering` | detection | ✅ | ✅ | ✅ | ✅ golden fixture | ✅ 1.8 | ✅ |
 | `detect-mcp-model-token-flood` | detection | ✅ | ✅ | ✅ | ✅ golden fixture | ✅ 1.8 | ✅ |
@@ -153,7 +155,7 @@ is the row you can take to your auditor.
 | `sink-s3-jsonl` | output | ⚠️ append-only sink | ✅ | ✅ | ✅ audit + re-verify | n/a | ✅ |
 | `sink-snowflake-jsonl` | output | ⚠️ append-only sink | ✅ | ✅ | ✅ audit + re-verify | n/a | ✅ |
 
-_123 skills · generated from SKILL.md frontmatter + layer conventions. Run `python scripts/generate_security_bar_matrix.py` to refresh after adding a skill; CI enforces parity via `--check`._
+_125 skills · generated from SKILL.md frontmatter + layer conventions. Run `python scripts/generate_security_bar_matrix.py` to refresh after adding a skill; CI enforces parity via `--check`._
 <!-- AUTO-GENERATED MATRIX END -->
 
 ## How to add a skill that satisfies the bar

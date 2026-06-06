@@ -190,11 +190,11 @@ For the detailed contract, see:
 | Layer | Status | Current shape |
 |---|---|---|
 | L0 external sources | external | cloud APIs, raw logs, SaaS identity feeds, lakehouse tables |
-| L1 ingest | shipping | 17 source-specific ingesters plus 3 read-only source adapters; ingest and detect are fully dual-mode where OCSF-native parity makes sense |
-| L2 discover | shipping | environment graph, AI BOM, cloud control evidence, control evidence |
-| L3 detect | shipping | 66 shipped detectors across cloud, identity, Kubernetes, MCP / agent, warehouse, and SaaS signals (GitHub, Slack, Workspace) |
-| L4 evaluate | shipping | 7 benchmark and posture skills across AWS, GCP, Azure, Kubernetes, containers, GPU, and model-serving paths with native and opt-in OCSF 2003 output |
-| L5 remediate | shipping | IAM departures is the flagship write path; Okta session kill ships as the containment remediator |
+| L1 ingest | shipping | 20 source-specific ingesters plus 4 read-only source adapters; ingest and detect are fully dual-mode where OCSF-native parity makes sense |
+| L2 discover | shipping | 5 read-only inventory, graph, AI BOM, cloud control evidence, and departure-planning skills |
+| L3 detect | shipping | 67 shipped detectors across cloud, identity, Kubernetes, MCP / agent, warehouse, and SaaS signals (GitHub, Slack, Workspace, Workday) |
+| L4 evaluate | shipping | 12 benchmark and posture skills across AWS, GCP, Azure, Kubernetes, containers, GPU, AI RMF, and model-serving paths with native and opt-in OCSF 2003 output |
+| L5 remediate | shipping | 12 HITL-gated write paths across IAM departures, network revocation, session / credential containment, Kubernetes, Workspace, Entra, and MCP |
 | L6 view | shipping | SARIF and Mermaid attack-flow exports |
 | L7 sinks | shipping | `sink-snowflake-jsonl`, `sink-clickhouse-jsonl`, and `sink-s3-jsonl` ship today under `skills/output/` |
 | L8 query packs | partial shipping | `packs/lateral-movement/` and `packs/privilege-escalation-k8s/` are shipped; broader pack coverage remains future work |
