@@ -4,14 +4,14 @@ This file is **generated from [`framework-coverage.json`](framework-coverage.jso
 
 - Registry version: `0.11.0`
 - Registry updated: `2026-05-17`
-- Total shipped skills in registry: **123**
+- Total shipped skills in registry: **125**
 
 ## Roll-up
 
 | Framework | Version | Shipped skills mapped | Coverage target |
 |---|---|---|---|
-| OCSF | 1.8.0 | **102** | — |
-| MITRE ATT&CK | v14 | **81** | 100% mapped coverage |
+| OCSF | 1.8.0 | **104** | — |
+| MITRE ATT&CK | v14 | **82** | 100% mapped coverage |
 | MITRE ATLAS | current | **17** | 100% mapped coverage |
 | CIS AWS Foundations | v3.0 | **6** | — |
 | CIS GCP Foundations | v3.0 | **5** | — |
@@ -24,7 +24,7 @@ This file is **generated from [`framework-coverage.json`](framework-coverage.jso
 | SOC 2 TSC | current | **22** | 100% mapped coverage |
 | PCI DSS | 4.0 | **4** | 100% mapped coverage |
 | ISO 27001 | 2022 | **5** | — |
-| OWASP Top 10 | 2021 | **22** | — |
+| OWASP Top 10 | 2021 | **23** | — |
 | OWASP LLM Top 10 | current | **19** | — |
 | OWASP MCP Top 10 | current | **11** | — |
 | CycloneDX ML-BOM | current | **2** | — |
@@ -37,7 +37,7 @@ Shipped skills mapped counts the number of skills in the registry that declare t
 
 - Registry id: `ocsf-1.8`
 
-Shipped skills mapped: **102**
+Shipped skills mapped: **104**
 
 | Skill | Layer | Providers | Asset classes |
 |---|---|---|---|
@@ -76,6 +76,7 @@ Shipped skills mapped: **102**
 | [`detect-github-pat-creation`](../skills/detection/detect-github-pat-creation) | detection | github | source-control, tokens, identities |
 | [`detect-google-workspace-suspicious-login`](../skills/detection/detect-google-workspace-suspicious-login) | detection | google-workspace | identities, authentication, sessions, mfa |
 | [`detect-lateral-movement`](../skills/detection/detect-lateral-movement) | detection | aws, azure, gcp, multi | iam-roles, role-sessions, applications, service-accounts, service-account-keys, iam-credentials, service-principals, managed-identities, federated-credentials, app-role-assignments, sessions, api, network |
+| [`detect-mass-termination-anomaly`](../skills/detection/detect-mass-termination-anomaly) | detection | workday | identities, hr-events, offboarding, audit-logs |
 | [`detect-mcp-adversarial-input-corpus`](../skills/detection/detect-mcp-adversarial-input-corpus) | detection | mcp | prompts, tools |
 | [`detect-mcp-model-artifact-tampering`](../skills/detection/detect-mcp-model-artifact-tampering) | detection | mcp | model-artifacts, tools |
 | [`detect-mcp-model-token-flood`](../skills/detection/detect-mcp-model-token-flood) | detection | mcp | models, rate-limits |
@@ -133,6 +134,7 @@ Shipped skills mapped: **102**
 | [`ingest-slack-audit-ocsf`](../skills/ingestion/ingest-slack-audit-ocsf) | ingestion | slack | identities, channels, workspaces, oauth-apps, audit-logs |
 | [`ingest-vpc-flow-logs-gcp-ocsf`](../skills/ingestion/ingest-vpc-flow-logs-gcp-ocsf) | ingestion | gcp | network, flow-logs |
 | [`ingest-vpc-flow-logs-ocsf`](../skills/ingestion/ingest-vpc-flow-logs-ocsf) | ingestion | aws | network, flow-logs |
+| [`ingest-workday-audit-ocsf`](../skills/ingestion/ingest-workday-audit-ocsf) | ingestion | workday | identities, hr-events, offboarding, audit-logs |
 | [`ingest-workspace-admin-ocsf`](../skills/ingestion/ingest-workspace-admin-ocsf) | ingestion | google-workspace | identities, authentication, oauth, admin-roles, audit-logs |
 | [`source-clickhouse-query`](../skills/ingestion/source-clickhouse-query) | ingestion | clickhouse | lakehouse, query-results, audit-logs |
 | [`source-databricks-query`](../skills/ingestion/source-databricks-query) | ingestion | databricks | lakehouse, query-results, audit-logs |
@@ -151,7 +153,7 @@ Shipped skills mapped: **102**
 - Asset classes in scope: identities, api, network, clusters, containers, findings
 - Coverage target: 100% mapped coverage
 
-Shipped skills mapped: **81**
+Shipped skills mapped: **82**
 
 | Skill | Layer | Providers | Asset classes |
 |---|---|---|---|
@@ -189,6 +191,7 @@ Shipped skills mapped: **81**
 | [`detect-github-pat-creation`](../skills/detection/detect-github-pat-creation) | detection | github | source-control, tokens, identities |
 | [`detect-google-workspace-suspicious-login`](../skills/detection/detect-google-workspace-suspicious-login) | detection | google-workspace | identities, authentication, sessions, mfa |
 | [`detect-lateral-movement`](../skills/detection/detect-lateral-movement) | detection | aws, azure, gcp, multi | iam-roles, role-sessions, applications, service-accounts, service-account-keys, iam-credentials, service-principals, managed-identities, federated-credentials, app-role-assignments, sessions, api, network |
+| [`detect-mass-termination-anomaly`](../skills/detection/detect-mass-termination-anomaly) | detection | workday | identities, hr-events, offboarding, audit-logs |
 | [`detect-mcp-shadow-tool-injection`](../skills/detection/detect-mcp-shadow-tool-injection) | detection | mcp | tools, tool-metadata, supply-chain |
 | [`detect-mcp-tool-drift`](../skills/detection/detect-mcp-tool-drift) | detection | mcp, multi | agent-tools, supply-chain, tool-metadata |
 | [`detect-okta-mfa-fatigue`](../skills/detection/detect-okta-mfa-fatigue) | detection | okta | identities, authentication, mfa, sessions |
@@ -461,7 +464,7 @@ Shipped skills mapped: **5**
 
 - Registry id: `owasp-top-10`
 
-Shipped skills mapped: **22**
+Shipped skills mapped: **23**
 
 | Skill | Layer | Providers | Asset classes |
 |---|---|---|---|
@@ -471,6 +474,7 @@ Shipped skills mapped: **22**
 | [`detect-databricks-secret-scope-read-burst`](../skills/detection/detect-databricks-secret-scope-read-burst) | detection | databricks | warehouse, secrets, credentials |
 | [`detect-databricks-unity-catalog-cross-workspace-share`](../skills/detection/detect-databricks-unity-catalog-cross-workspace-share) | detection | databricks | warehouse, unity-catalog, delta-sharing |
 | [`detect-databricks-workspace-admin-grant`](../skills/detection/detect-databricks-workspace-admin-grant) | detection | databricks | warehouse, identities, rbac |
+| [`detect-mass-termination-anomaly`](../skills/detection/detect-mass-termination-anomaly) | detection | workday | identities, hr-events, offboarding, audit-logs |
 | [`detect-slack-admin-elevation`](../skills/detection/detect-slack-admin-elevation) | detection | slack | identities, rbac, saas |
 | [`detect-slack-external-channel-add`](../skills/detection/detect-slack-external-channel-add) | detection | slack | identities, channels, saas |
 | [`detect-slack-oauth-app-install-broad-scope`](../skills/detection/detect-slack-oauth-app-install-broad-scope) | detection | slack | identities, oauth-apps, saas |
