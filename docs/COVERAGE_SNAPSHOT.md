@@ -6,7 +6,7 @@ Auto-generated from [`framework-coverage.json`](framework-coverage.json) by [`sc
 python scripts/coverage_summary.py --write
 ```
 
-**Total shipped skills:** 120
+**Total shipped skills:** 123
 
 ## By cloud / vendor
 
@@ -14,22 +14,22 @@ Skills overlap when a skill targets multiple providers (the `multi` row), so the
 
 | Cloud / vendor | Skills | % of repo |
 |---|---:|---:|
-| AWS | 26 | 21.7% |
-| Multi-cloud (vendor-neutral) | 21 | 17.5% |
-| Azure | 19 | 15.8% |
-| GCP | 18 | 15.0% |
-| MCP / AI runtime | 14 | 11.7% |
-| Snowflake | 13 | 10.8% |
-| Kubernetes | 9 | 7.5% |
-| Databricks | 9 | 7.5% |
-| ClickHouse | 5 | 4.2% |
+| AWS | 26 | 21.1% |
+| Multi-cloud (vendor-neutral) | 21 | 17.1% |
+| Azure | 19 | 15.4% |
+| GCP | 18 | 14.6% |
+| MCP / AI runtime | 14 | 11.4% |
+| Snowflake | 13 | 10.6% |
+| Kubernetes | 9 | 7.3% |
+| Databricks | 9 | 7.3% |
+| Google Workspace | 6 | 4.9% |
+| ClickHouse | 5 | 4.1% |
 | Okta | 4 | 3.3% |
 | Microsoft Entra | 4 | 3.3% |
 | github | 4 | 3.3% |
 | Slack | 4 | 3.3% |
-| Microsoft Graph | 3 | 2.5% |
-| Google Workspace | 3 | 2.5% |
-| Containers (runtime) | 3 | 2.5% |
+| Microsoft Graph | 3 | 2.4% |
+| Containers (runtime) | 3 | 2.4% |
 | Workday | 1 | 0.8% |
 
 ## By framework
@@ -38,36 +38,36 @@ Skills can carry multiple framework tags (e.g. a CIS check tagged with NIST CSF 
 
 | Framework | Skills | % of repo |
 |---|---:|---:|
-| OCSF 1.8 | 99 | 82.5% |
-| MITRE ATT&CK v14 | 79 | 65.8% |
-| SOC 2 TSC | 22 | 18.3% |
-| NIST CSF 2.0 | 22 | 18.3% |
-| OWASP Top 10 | 20 | 16.7% |
-| OWASP LLM Top 10 | 19 | 15.8% |
-| MITRE ATLAS | 17 | 14.2% |
-| OWASP MCP Top 10 | 11 | 9.2% |
-| NIST AI RMF | 8 | 6.7% |
-| CIS AWS v3 | 6 | 5.0% |
-| CIS Azure v2.1 | 6 | 5.0% |
-| CIS GCP v3 | 5 | 4.2% |
-| ISO 27001:2022 | 5 | 4.2% |
+| OCSF 1.8 | 102 | 82.9% |
+| MITRE ATT&CK v14 | 81 | 65.9% |
+| OWASP Top 10 | 22 | 17.9% |
+| SOC 2 TSC | 22 | 17.9% |
+| NIST CSF 2.0 | 22 | 17.9% |
+| OWASP LLM Top 10 | 19 | 15.4% |
+| MITRE ATLAS | 17 | 13.8% |
+| OWASP MCP Top 10 | 11 | 8.9% |
+| NIST AI RMF | 8 | 6.5% |
+| CIS AWS v3 | 6 | 4.9% |
+| CIS Azure v2.1 | 6 | 4.9% |
+| CIS GCP v3 | 5 | 4.1% |
+| ISO 27001:2022 | 5 | 4.1% |
 | PCI DSS 4.0 | 4 | 3.3% |
-| CycloneDX ML-BOM | 2 | 1.7% |
-| CIS Controls v8 | 2 | 1.7% |
-| CIS Kubernetes | 2 | 1.7% |
+| CycloneDX ML-BOM | 2 | 1.6% |
+| CIS Controls v8 | 2 | 1.6% |
+| CIS Kubernetes | 2 | 1.6% |
 | CIS Docker | 1 | 0.8% |
 
 ## By layer
 
 | Layer | Skills | % of repo |
 |---|---:|---:|
-| detection | 64 | 53.3% |
-| ingestion | 22 | 18.3% |
-| evaluation | 12 | 10.0% |
-| remediation | 12 | 10.0% |
-| discovery | 5 | 4.2% |
-| output | 3 | 2.5% |
-| view | 2 | 1.7% |
+| detection | 66 | 53.7% |
+| ingestion | 23 | 18.7% |
+| evaluation | 12 | 9.8% |
+| remediation | 12 | 9.8% |
+| discovery | 5 | 4.1% |
+| output | 3 | 2.4% |
+| view | 2 | 1.6% |
 
 ## Per-framework control coverage
 

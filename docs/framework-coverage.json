@@ -138,6 +138,31 @@
       ]
     },
     {
+      "path": "skills/detection/detect-admin-role-grant-workspace",
+      "layer": "detection",
+      "providers": [
+        "google-workspace"
+      ],
+      "asset_classes": [
+        "identities",
+        "rbac",
+        "admin-roles",
+        "audit-logs"
+      ],
+      "frameworks": [
+        "ocsf-1.8",
+        "mitre-attack-v14",
+        "owasp-top-10"
+      ],
+      "coverage_status": "validated",
+      "execution_modes": [
+        "cli",
+        "ci",
+        "mcp",
+        "persistent"
+      ]
+    },
+    {
       "path": "skills/detection/detect-aws-access-key-creation",
       "layer": "detection",
       "providers": [
@@ -900,6 +925,32 @@
       "frameworks": [
         "ocsf-1.8",
         "mitre-attack-v14"
+      ],
+      "coverage_status": "validated",
+      "execution_modes": [
+        "cli",
+        "ci",
+        "mcp",
+        "persistent"
+      ]
+    },
+    {
+      "path": "skills/detection/detect-suspicious-oauth-grant-workspace",
+      "layer": "detection",
+      "providers": [
+        "google-workspace"
+      ],
+      "asset_classes": [
+        "identities",
+        "oauth",
+        "applications",
+        "tokens",
+        "audit-logs"
+      ],
+      "frameworks": [
+        "ocsf-1.8",
+        "mitre-attack-v14",
+        "owasp-top-10"
       ],
       "coverage_status": "validated",
       "execution_modes": [
@@ -2334,6 +2385,30 @@
         "authentication",
         "mfa",
         "sessions",
+        "audit-logs"
+      ],
+      "frameworks": [
+        "ocsf-1.8"
+      ],
+      "coverage_status": "validated",
+      "execution_modes": [
+        "cli",
+        "ci",
+        "mcp",
+        "persistent"
+      ]
+    },
+    {
+      "path": "skills/ingestion/ingest-workspace-admin-ocsf",
+      "layer": "ingestion",
+      "providers": [
+        "google-workspace"
+      ],
+      "asset_classes": [
+        "identities",
+        "authentication",
+        "oauth",
+        "admin-roles",
         "audit-logs"
       ],
       "frameworks": [

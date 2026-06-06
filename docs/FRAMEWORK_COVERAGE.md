@@ -4,14 +4,14 @@ This file is **generated from [`framework-coverage.json`](framework-coverage.jso
 
 - Registry version: `0.11.0`
 - Registry updated: `2026-05-17`
-- Total shipped skills in registry: **120**
+- Total shipped skills in registry: **123**
 
 ## Roll-up
 
 | Framework | Version | Shipped skills mapped | Coverage target |
 |---|---|---|---|
-| OCSF | 1.8.0 | **99** | — |
-| MITRE ATT&CK | v14 | **79** | 100% mapped coverage |
+| OCSF | 1.8.0 | **102** | — |
+| MITRE ATT&CK | v14 | **81** | 100% mapped coverage |
 | MITRE ATLAS | current | **17** | 100% mapped coverage |
 | CIS AWS Foundations | v3.0 | **6** | — |
 | CIS GCP Foundations | v3.0 | **5** | — |
@@ -24,7 +24,7 @@ This file is **generated from [`framework-coverage.json`](framework-coverage.jso
 | SOC 2 TSC | current | **22** | 100% mapped coverage |
 | PCI DSS | 4.0 | **4** | 100% mapped coverage |
 | ISO 27001 | 2022 | **5** | — |
-| OWASP Top 10 | 2021 | **20** | — |
+| OWASP Top 10 | 2021 | **22** | — |
 | OWASP LLM Top 10 | current | **19** | — |
 | OWASP MCP Top 10 | current | **11** | — |
 | CycloneDX ML-BOM | current | **2** | — |
@@ -37,10 +37,11 @@ Shipped skills mapped counts the number of skills in the registry that declare t
 
 - Registry id: `ocsf-1.8`
 
-Shipped skills mapped: **99**
+Shipped skills mapped: **102**
 
 | Skill | Layer | Providers | Asset classes |
 |---|---|---|---|
+| [`detect-admin-role-grant-workspace`](../skills/detection/detect-admin-role-grant-workspace) | detection | google-workspace | identities, rbac, admin-roles, audit-logs |
 | [`detect-agent-credential-leak-mcp`](../skills/detection/detect-agent-credential-leak-mcp) | detection | mcp, multi | agent-tools, tool-results, credentials |
 | [`detect-aws-access-key-creation`](../skills/detection/detect-aws-access-key-creation) | detection | aws | iam-users, access-keys, credentials, cloudtrail |
 | [`detect-aws-cloudtrail-event-selector-tampering`](../skills/detection/detect-aws-cloudtrail-event-selector-tampering) | detection | aws | cloudtrail, audit-log, trails |
@@ -99,6 +100,7 @@ Shipped skills mapped: **99**
 | [`detect-snowflake-share-creation`](../skills/detection/detect-snowflake-share-creation) | detection | snowflake | warehouse, shares, identities |
 | [`detect-snowflake-unauthorized-grant`](../skills/detection/detect-snowflake-unauthorized-grant) | detection | snowflake | warehouse, identities, rbac |
 | [`detect-snowflake-warehouse-resize-burst`](../skills/detection/detect-snowflake-warehouse-resize-burst) | detection | snowflake | warehouse, compute, identities |
+| [`detect-suspicious-oauth-grant-workspace`](../skills/detection/detect-suspicious-oauth-grant-workspace) | detection | google-workspace | identities, oauth, applications, tokens, audit-logs |
 | [`detect-system-prompt-extraction`](../skills/detection/detect-system-prompt-extraction) | detection | mcp | agent-tools, tool-results, prompts, instructions |
 | [`detect-tool-output-exfiltration-instructions`](../skills/detection/detect-tool-output-exfiltration-instructions) | detection | mcp | agent-tools, tool-results, instructions, artifacts |
 | [`detect-tool-output-policy-bypass`](../skills/detection/detect-tool-output-policy-bypass) | detection | mcp | agent-tools, tool-results, instructions, approvals |
@@ -131,6 +133,7 @@ Shipped skills mapped: **99**
 | [`ingest-slack-audit-ocsf`](../skills/ingestion/ingest-slack-audit-ocsf) | ingestion | slack | identities, channels, workspaces, oauth-apps, audit-logs |
 | [`ingest-vpc-flow-logs-gcp-ocsf`](../skills/ingestion/ingest-vpc-flow-logs-gcp-ocsf) | ingestion | gcp | network, flow-logs |
 | [`ingest-vpc-flow-logs-ocsf`](../skills/ingestion/ingest-vpc-flow-logs-ocsf) | ingestion | aws | network, flow-logs |
+| [`ingest-workspace-admin-ocsf`](../skills/ingestion/ingest-workspace-admin-ocsf) | ingestion | google-workspace | identities, authentication, oauth, admin-roles, audit-logs |
 | [`source-clickhouse-query`](../skills/ingestion/source-clickhouse-query) | ingestion | clickhouse | lakehouse, query-results, audit-logs |
 | [`source-databricks-query`](../skills/ingestion/source-databricks-query) | ingestion | databricks | lakehouse, query-results, audit-logs |
 | [`source-s3-select`](../skills/ingestion/source-s3-select) | ingestion | aws | object-storage, query-results, audit-logs |
@@ -148,10 +151,11 @@ Shipped skills mapped: **99**
 - Asset classes in scope: identities, api, network, clusters, containers, findings
 - Coverage target: 100% mapped coverage
 
-Shipped skills mapped: **79**
+Shipped skills mapped: **81**
 
 | Skill | Layer | Providers | Asset classes |
 |---|---|---|---|
+| [`detect-admin-role-grant-workspace`](../skills/detection/detect-admin-role-grant-workspace) | detection | google-workspace | identities, rbac, admin-roles, audit-logs |
 | [`detect-aws-access-key-creation`](../skills/detection/detect-aws-access-key-creation) | detection | aws | iam-users, access-keys, credentials, cloudtrail |
 | [`detect-aws-cloudtrail-event-selector-tampering`](../skills/detection/detect-aws-cloudtrail-event-selector-tampering) | detection | aws | cloudtrail, audit-log, trails |
 | [`detect-aws-enumeration-burst`](../skills/detection/detect-aws-enumeration-burst) | detection | aws | identities, compute, storage, network, organizations, cloudtrail |
@@ -203,6 +207,7 @@ Shipped skills mapped: **79**
 | [`detect-snowflake-share-creation`](../skills/detection/detect-snowflake-share-creation) | detection | snowflake | warehouse, shares, identities |
 | [`detect-snowflake-unauthorized-grant`](../skills/detection/detect-snowflake-unauthorized-grant) | detection | snowflake | warehouse, identities, rbac |
 | [`detect-snowflake-warehouse-resize-burst`](../skills/detection/detect-snowflake-warehouse-resize-burst) | detection | snowflake | warehouse, compute, identities |
+| [`detect-suspicious-oauth-grant-workspace`](../skills/detection/detect-suspicious-oauth-grant-workspace) | detection | google-workspace | identities, oauth, applications, tokens, audit-logs |
 | [`detect-web-auth-failures`](../skills/detection/detect-web-auth-failures) | detection | multi | http-access-logs, authentication, sessions, mfa |
 | [`detect-web-broken-access-control`](../skills/detection/detect-web-broken-access-control) | detection | multi | http-access-logs, api-gateway, web-apps, identities |
 | [`detect-web-injection`](../skills/detection/detect-web-injection) | detection | multi | http-access-logs, api-gateway, web-apps, request-payloads |
@@ -456,10 +461,11 @@ Shipped skills mapped: **5**
 
 - Registry id: `owasp-top-10`
 
-Shipped skills mapped: **20**
+Shipped skills mapped: **22**
 
 | Skill | Layer | Providers | Asset classes |
 |---|---|---|---|
+| [`detect-admin-role-grant-workspace`](../skills/detection/detect-admin-role-grant-workspace) | detection | google-workspace | identities, rbac, admin-roles, audit-logs |
 | [`detect-clickhouse-bulk-export`](../skills/detection/detect-clickhouse-bulk-export) | detection | clickhouse | warehouse, queries, external-endpoints, identities |
 | [`detect-databricks-cluster-init-script-abuse`](../skills/detection/detect-databricks-cluster-init-script-abuse) | detection | databricks | warehouse, clusters, init-scripts |
 | [`detect-databricks-secret-scope-read-burst`](../skills/detection/detect-databricks-secret-scope-read-burst) | detection | databricks | warehouse, secrets, credentials |
@@ -477,6 +483,7 @@ Shipped skills mapped: **20**
 | [`detect-snowflake-share-creation`](../skills/detection/detect-snowflake-share-creation) | detection | snowflake | warehouse, shares, identities |
 | [`detect-snowflake-unauthorized-grant`](../skills/detection/detect-snowflake-unauthorized-grant) | detection | snowflake | warehouse, identities, rbac |
 | [`detect-snowflake-warehouse-resize-burst`](../skills/detection/detect-snowflake-warehouse-resize-burst) | detection | snowflake | warehouse, compute, identities |
+| [`detect-suspicious-oauth-grant-workspace`](../skills/detection/detect-suspicious-oauth-grant-workspace) | detection | google-workspace | identities, oauth, applications, tokens, audit-logs |
 | [`detect-web-auth-failures`](../skills/detection/detect-web-auth-failures) | detection | multi | http-access-logs, authentication, sessions, mfa |
 | [`detect-web-broken-access-control`](../skills/detection/detect-web-broken-access-control) | detection | multi | http-access-logs, api-gateway, web-apps, identities |
 | [`detect-web-injection`](../skills/detection/detect-web-injection) | detection | multi | http-access-logs, api-gateway, web-apps, request-payloads |
