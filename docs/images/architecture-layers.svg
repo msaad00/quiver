@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1400" height="780" viewBox="0 0 1400 780" role="img" aria-labelledby="layers-title layers-desc">
   <title id="layers-title">cloud-ai-security-skills architecture layers</title>
-  <desc id="layers-desc">Seven skill layers presented as a clean architecture board. Signals enter on the left and feed two intake layers: L1 Ingest with 20 ingesters plus 4 source adapters, and L2 Discover with 5 inventory, graph, AI BOM, and evidence skills. Intake feeds two analyze layers: L3 Detect with 67 deterministic MITRE-tagged findings emitting OCSF Detection Finding 2004, and L4 Evaluate with 12 benchmark families covering 143 checks. Analyze feeds two act layers: L5 Remediate with 12 HITL dual-audited write paths, and L6 View with 2 OCSF-to-render converters. L7 Output persists to three append-only sinks: S3, Snowflake, and ClickHouse. The diagram emphasizes counts, role of each layer, and wire-format guidance without dense text.</desc>
+  <desc id="layers-desc">Seven skill layers presented as a clean architecture board. Signals enter on the left and feed two intake layers: L1 Ingest with 21 ingesters plus 4 source adapters, and L2 Discover with 5 inventory, graph, AI BOM, and evidence skills. Intake feeds two analyze layers: L3 Detect with 69 deterministic MITRE-tagged findings emitting OCSF Detection Finding 2004, and L4 Evaluate with 12 benchmark families covering 143 checks. Analyze feeds two act layers: L5 Remediate with 12 HITL dual-audited write paths, and L6 View with 2 OCSF-to-render converters. L7 Output persists to three append-only sinks: S3, Snowflake, and ClickHouse. The diagram emphasizes counts, role of each layer, and wire-format guidance without dense text.</desc>
 
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
@@ -64,15 +64,15 @@
       </g>
       <text x="110" y="540" font-size="13" fill="#94a3b8">AWS · GCP · Azure · K8s</text>
       <text x="110" y="560" font-size="13" fill="#94a3b8">Okta · Entra · Workspace</text>
-      <text x="110" y="580" font-size="13" fill="#94a3b8">Slack · Workday · Snowflake</text>
-      <text x="110" y="600" font-size="13" fill="#94a3b8">Databricks · ClickHouse · MCP</text>
+      <text x="110" y="580" font-size="13" fill="#94a3b8">Slack · Workday · Salesforce</text>
+      <text x="110" y="600" font-size="13" fill="#94a3b8">Snowflake · Databricks · MCP</text>
     </g>
 
     <!-- L1 Ingest + L2 Discover (boxes widened to 260, descriptions wrapped to 2 short lines) -->
     <g filter="url(#shadow)">
       <rect x="322" y="228" width="260" height="180" rx="28" fill="#112244" stroke="#60a5fa" stroke-width="1.6"/>
       <text x="354" y="270" font-size="18" font-weight="800" fill="#dbeafe">L1 Ingest</text>
-      <text x="354" y="332" font-size="56" font-weight="900" fill="#ffffff">20 + 4</text>
+      <text x="354" y="332" font-size="56" font-weight="900" fill="#ffffff">21 + 4</text>
       <text x="354" y="364" font-size="15" fill="#bfdbfe">normalize source data to</text>
       <text x="354" y="386" font-size="15" fill="#bfdbfe">OCSF 1.8 or native JSONL</text>
 
@@ -87,7 +87,7 @@
     <g filter="url(#shadow)">
       <rect x="642" y="228" width="260" height="180" rx="28" fill="#0a3b35" stroke="#34d399" stroke-width="1.6"/>
       <text x="674" y="270" font-size="18" font-weight="800" fill="#d1fae5">L3 Detect</text>
-      <text x="674" y="332" font-size="56" font-weight="900" fill="#ffffff">67</text>
+      <text x="674" y="332" font-size="56" font-weight="900" fill="#ffffff">69</text>
       <text x="674" y="364" font-size="15" fill="#a7f3d0">deterministic MITRE-tagged</text>
       <text x="674" y="386" font-size="15" fill="#a7f3d0">OCSF Detection Finding 2004</text>
 

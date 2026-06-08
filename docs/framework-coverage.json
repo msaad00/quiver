@@ -163,6 +163,31 @@
       ]
     },
     {
+      "path": "skills/detection/detect-api-anomaly-salesforce",
+      "layer": "detection",
+      "providers": [
+        "salesforce"
+      ],
+      "asset_classes": [
+        "crm-data",
+        "api-activity",
+        "integrations",
+        "audit-logs"
+      ],
+      "frameworks": [
+        "ocsf-1.8",
+        "mitre-attack-v14",
+        "owasp-top-10"
+      ],
+      "coverage_status": "validated",
+      "execution_modes": [
+        "cli",
+        "ci",
+        "mcp",
+        "persistent"
+      ]
+    },
+    {
       "path": "skills/detection/detect-mass-termination-anomaly",
       "layer": "detection",
       "providers": [
@@ -172,6 +197,31 @@
         "identities",
         "hr-events",
         "offboarding",
+        "audit-logs"
+      ],
+      "frameworks": [
+        "ocsf-1.8",
+        "mitre-attack-v14",
+        "owasp-top-10"
+      ],
+      "coverage_status": "validated",
+      "execution_modes": [
+        "cli",
+        "ci",
+        "mcp",
+        "persistent"
+      ]
+    },
+    {
+      "path": "skills/detection/detect-bulk-export-salesforce",
+      "layer": "detection",
+      "providers": [
+        "salesforce"
+      ],
+      "asset_classes": [
+        "crm-data",
+        "reports",
+        "bulk-api",
         "audit-logs"
       ],
       "frameworks": [
@@ -2457,6 +2507,29 @@
         "identities",
         "hr-events",
         "offboarding",
+        "audit-logs"
+      ],
+      "frameworks": [
+        "ocsf-1.8"
+      ],
+      "coverage_status": "validated",
+      "execution_modes": [
+        "cli",
+        "ci",
+        "mcp",
+        "persistent"
+      ]
+    },
+    {
+      "path": "skills/ingestion/ingest-salesforce-event-mon-ocsf",
+      "layer": "ingestion",
+      "providers": [
+        "salesforce"
+      ],
+      "asset_classes": [
+        "crm-data",
+        "api-activity",
+        "reports",
         "audit-logs"
       ],
       "frameworks": [

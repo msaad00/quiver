@@ -40,6 +40,7 @@ Raw source formats to OCSF 1.8 JSONL.
 | [`ingest-github-audit-log-ocsf`](ingestion/ingest-github-audit-log-ocsf/) | GitHub Organization Audit Log |
 | [`ingest-slack-audit-ocsf`](ingestion/ingest-slack-audit-ocsf/) | Slack Audit Logs API |
 | [`ingest-workday-audit-ocsf`](ingestion/ingest-workday-audit-ocsf/) | Workday REST / RaaS audit reports |
+| [`ingest-salesforce-event-mon-ocsf`](ingestion/ingest-salesforce-event-mon-ocsf/) | Salesforce Event Monitoring EventLogFile / REST exports |
 | [`ingest-k8s-audit-ocsf`](ingestion/ingest-k8s-audit-ocsf/) | Kubernetes audit logs |
 | [`ingest-mcp-proxy-ocsf`](ingestion/ingest-mcp-proxy-ocsf/) | MCP proxy activity |
 
@@ -58,6 +59,8 @@ Deterministic OCSF-to-finding rules.
 | [`detect-google-workspace-suspicious-login`](detection/detect-google-workspace-suspicious-login/) | provider-marked suspicious Workspace login or repeated failures followed by success |
 | [`detect-suspicious-oauth-grant-workspace`](detection/detect-suspicious-oauth-grant-workspace/) | Google Workspace OAuth client authorized with high-risk scopes |
 | [`detect-mass-termination-anomaly`](detection/detect-mass-termination-anomaly/) | Workday mass-termination spike across a short HR offboarding window |
+| [`detect-bulk-export-salesforce`](detection/detect-bulk-export-salesforce/) | Salesforce large export followed by session close |
+| [`detect-api-anomaly-salesforce`](detection/detect-api-anomaly-salesforce/) | Salesforce API usage by a user or integration outside baseline |
 | [`detect-aws-access-key-creation`](detection/detect-aws-access-key-creation/) | successful AWS IAM `CreateAccessKey` operations against IAM users (T1098.001 Additional Cloud Credentials) |
 | [`detect-aws-login-profile-creation`](detection/detect-aws-login-profile-creation/) | successful AWS IAM `CreateLoginProfile` operations against IAM users (T1098.001 Additional Cloud Credentials) |
 | [`detect-gcp-service-account-key-creation`](detection/detect-gcp-service-account-key-creation/) | successful GCP IAM `CreateServiceAccountKey` operations against service accounts (T1098.001 Additional Cloud Credentials) |

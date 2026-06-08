@@ -21,7 +21,7 @@ flowchart LR
 
     subgraph L1["Normalize and write"]
       direction TB
-      ING["19 ingest-* skills<br/>OCSF 1.8 JSONL"]:::transform
+      ING["21 ingest-* skills<br/>OCSF 1.8 JSONL"]:::transform
       SINK["sink-clickhouse-jsonl<br/>append-only insert · dry-run default"]:::transform
     end
 

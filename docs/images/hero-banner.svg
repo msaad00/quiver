@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1280" height="540" viewBox="0 0 1280 540" role="img" aria-labelledby="title desc">
   <title id="title">agentic security skills for cloud and AI — production-grade security skills for cloud and AI systems</title>
-  <desc id="desc">Hero banner for the agentic security skills for cloud and AI repository (cloud-ai-security-skills). Left panel shows the wordmark, tagline, and capability pills for 125 shipped skill bundles, OCSF 1.8, 143 CIS + NIST AI RMF benchmark checks, MITRE ATT&amp;CK, MITRE ATLAS, OWASP Top 10, OWASP LLM Top 10 framework coverage, MCP-audited tool calls, and HITL dual-audited remediation. Right panel shows the current shipped layer counts: 20 ingest, 5 discover, 67 detect, 12 evaluate, 12 remediate, 2 view, 3 output, and 4 source adapters. A footer strip shows vendor coverage across AWS, GCP, Azure, Kubernetes, Okta, Entra, Google Workspace, Slack, Workday, Snowflake, Databricks, ClickHouse, and MCP plus access surfaces for CLI, CI, MCP, and runners.</desc>
+  <desc id="desc">Hero banner for the agentic security skills for cloud and AI repository (cloud-ai-security-skills). Left panel shows the wordmark, tagline, and capability pills for 128 shipped skill bundles, OCSF 1.8, 143 CIS + NIST AI RMF benchmark checks, MITRE ATT&amp;CK, MITRE ATLAS, OWASP Top 10, OWASP LLM Top 10 framework coverage, MCP-audited tool calls, and HITL dual-audited remediation. Right panel shows the current shipped layer counts: 21 ingest, 5 discover, 69 detect, 12 evaluate, 12 remediate, 2 view, 3 output, and 4 source adapters. A footer strip shows vendor coverage across AWS, GCP, Azure, Kubernetes, Okta, Entra, Google Workspace, Slack, Workday, Salesforce, Snowflake, Databricks, ClickHouse, and MCP plus access surfaces for CLI, CI, MCP, and runners.</desc>
 
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
@@ -66,7 +66,7 @@
     <g transform="translate(80,272)">
       <g>
         <rect x="0" y="0" width="160" height="36" rx="12" fill="#0f1d36" stroke="#3b82f6"/>
-        <text x="14" y="23" fill="#93c5fd" font-size="16" font-weight="900">125</text>
+        <text x="14" y="23" fill="#93c5fd" font-size="16" font-weight="900">128</text>
         <text x="48" y="23" fill="#dbe4f0" font-size="12" font-weight="700">shipped skills</text>
       </g>
       <g transform="translate(172,0)">
@@ -137,7 +137,7 @@
       <g>
         <rect x="0" y="0" width="206" height="36" rx="12" fill="#0f1d36" stroke="#3b82f6"/>
         <text x="14" y="23" fill="#dbeafe" font-size="13" font-weight="800">L1 Ingest</text>
-        <text x="190" y="23" text-anchor="end" fill="#93c5fd" font-size="13" font-weight="900">20</text>
+        <text x="190" y="23" text-anchor="end" fill="#93c5fd" font-size="13" font-weight="900">21</text>
       </g>
       <g transform="translate(218,0)">
         <rect x="0" y="0" width="206" height="36" rx="12" fill="#0f1d36" stroke="#3b82f6"/>
@@ -147,7 +147,7 @@
       <g transform="translate(0,48)">
         <rect x="0" y="0" width="206" height="36" rx="12" fill="#0f2a28" stroke="#2dd4bf"/>
         <text x="14" y="23" fill="#d1fae5" font-size="13" font-weight="800">L3 Detect</text>
-        <text x="190" y="23" text-anchor="end" fill="#5eead4" font-size="13" font-weight="900">67</text>
+        <text x="190" y="23" text-anchor="end" fill="#5eead4" font-size="13" font-weight="900">69</text>
       </g>
       <g transform="translate(218,48)">
         <rect x="0" y="0" width="206" height="36" rx="12" fill="#0f2a28" stroke="#2dd4bf"/>

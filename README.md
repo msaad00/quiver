@@ -1,4 +1,4 @@
-![Agentic security skills for cloud and AI — 125 shipped skill bundles. OCSF 1.8 on the wire. 143 CIS + NIST AI RMF benchmark checks. Framework coverage across MITRE ATT&CK, MITRE ATLAS, OWASP Top 10, and OWASP LLM Top 10. MCP-audited tool calls. HITL dual-audited remediation. Runs against AWS, GCP, Azure, Kubernetes, Okta, Microsoft Entra, Google Workspace, GitHub, Slack, Workday, Snowflake, Databricks, ClickHouse, and MCP proxy. Access surfaces: CLI, CI, MCP, and persistent cloud runners.](docs/images/hero-banner.svg)
+![Agentic security skills for cloud and AI — 128 shipped skill bundles. OCSF 1.8 on the wire. 143 CIS + NIST AI RMF benchmark checks. Framework coverage across MITRE ATT&CK, MITRE ATLAS, OWASP Top 10, and OWASP LLM Top 10. MCP-audited tool calls. HITL dual-audited remediation. Runs against AWS, GCP, Azure, Kubernetes, Okta, Microsoft Entra, Google Workspace, GitHub, Slack, Workday, Salesforce, Snowflake, Databricks, ClickHouse, and MCP proxy. Access surfaces: CLI, CI, MCP, and persistent cloud runners.](docs/images/hero-banner.svg)
 
 <p align="center">
   <a href="https://github.com/msaad00/cloud-ai-security-skills/actions/workflows/ci.yml?query=branch%3Amain"><img alt="CI" src="https://github.com/msaad00/cloud-ai-security-skills/actions/workflows/ci.yml/badge.svg?branch=main"></a>
@@ -12,7 +12,7 @@
   <a href="https://github.com/msaad00/agent-bom"><img alt="Scanned by agent-bom" src="https://img.shields.io/badge/scanned_by-agent--bom-164e63"></a>
 </p>
 
-<p align="center"><strong>125 production-grade security skills for cloud and AI — OCSF on the wire, MCP-ready, HITL-audited, sandboxed, runs everywhere the same bundle can.</strong></p>
+<p align="center"><strong>128 production-grade security skills for cloud and AI — OCSF on the wire, MCP-ready, HITL-audited, sandboxed, runs everywhere the same bundle can.</strong></p>
 
 ---
 
@@ -51,24 +51,24 @@ Five surfaces, one bundle: **CLI · CI · MCP · webhook receiver · persistent 
 
 ## What this repo gives you
 
-**125 shipped skill bundles** — atomic, deterministic, single-concern. Twelve are guarded write paths; the rest are read-only skills or append-only source/output adapters. Drop one into a pipeline, an agent, a Step Function, or a `python ... | python ...` one-liner.
+**128 shipped skill bundles** — atomic, deterministic, single-concern. Twelve are guarded write paths; the rest are read-only skills or append-only source/output adapters. Drop one into a pipeline, an agent, a Step Function, or a `python ... | python ...` one-liner.
 
 | Layer | Count | Purpose | Output |
 |---|---:|---|---|
-| **Ingest** | 20 | normalize raw cloud / identity / K8s / MCP / SaaS signal | OCSF 1.8 (native opt-in) |
+| **Ingest** | 21 | normalize raw cloud / identity / K8s / MCP / SaaS signal | OCSF 1.8 (native opt-in) |
 | **Discover** | 5 | inventory · graph · AI BOM · evidence · IAM-departure planning | native / bridge JSON |
-| **Detect** | 67 | deterministic rules tagged with MITRE ATT&CK / ATLAS / OWASP | OCSF Detection Finding 2004 |
+| **Detect** | 69 | deterministic rules tagged with MITRE ATT&CK / ATLAS / OWASP | OCSF Detection Finding 2004 |
 | **Evaluate** | 12 | 143 posture and benchmark checks across CIS / NIST / NIST AI RMF / SOC 2 | compliance result |
 | **Remediate** | 12 | guarded write paths — IAM departures × 3 clouds, network revoke × 3, session/credential kill × 4, K8s × 2, MCP tool quarantine | audited action trail |
 | **View** | 2 | findings → review formats | SARIF · Mermaid |
 | **Output** | 3 | append-only sinks | S3 · Snowflake · ClickHouse |
 | **Sources** | 4 | warehouse query adapters | S3 Select · Snowflake · Databricks · ClickHouse |
 
-**Total: 125 shipped skills.**  Live counts and per-framework coverage in [`docs/COVERAGE_SNAPSHOT.md`](docs/COVERAGE_SNAPSHOT.md) (auto-generated, CI-gated).
+**Total: 128 shipped skills.**  Live counts and per-framework coverage in [`docs/COVERAGE_SNAPSHOT.md`](docs/COVERAGE_SNAPSHOT.md) (auto-generated, CI-gated).
 
 **Find a skill:** [`docs/SKILL_INDEX.md`](docs/SKILL_INDEX.md) groups every shipped skill by **environment** (AWS · GCP · Azure/Entra · K8s · Identity · AI/MCP · Web · Cross-env) and by **purpose** (ingest / discover / detect / evaluate / remediate / view / output / source), and points at the framework-mapping docs for control-catalog pivots.
 
-**Which vendor signals normalize to OCSF today?** [`docs/INGEST_COVERAGE.md`](docs/INGEST_COVERAGE.md) — the canonical vendor × source × OCSF class matrix, **20 mappings shipped** (AWS · GCP · Azure · Entra · K8s · Okta · Workspace · MCP · **GitHub · Slack · Workday**) plus the 5 documented roadmap rows (Salesforce, SAP, native ClickHouse audit, AWS web-app exfil pipeline, Workspace beyond-login).
+**Which vendor signals normalize to OCSF today?** [`docs/INGEST_COVERAGE.md`](docs/INGEST_COVERAGE.md) — the canonical vendor × source × OCSF class matrix, **21 mappings shipped** (AWS · GCP · Azure · Entra · K8s · Okta · Workspace · MCP · **GitHub · Slack · Workday · Salesforce**) plus the 4 documented roadmap rows (SAP, native ClickHouse audit, AWS web-app exfil pipeline, Workspace beyond-login).
 
 **Why use these skills (vs ad-hoc Python your agent writes at runtime, vs LLM-written skills you commit, vs your team writing 90 from scratch)?** [`docs/WHY.md`](docs/WHY.md) — three different alternatives, three different answers. This repo is built for LLMs and agents to invoke (MCP, Agent SDK, library, CLI, webhook, runners — every surface). What you can't prompt-generate: the trust contract (HITL gates, three-layer sandbox, HMAC-chained audit, allowlist intersection, OCSF wire lock), the calibration values (real-corpus thresholds), the cross-cutting maintenance (OCSF version bumps, MITRE catalog updates, vendor schema drift). Cost framing: ~12 engineer-weeks of harness + ~240 hours of detector content to reach v0.10.0 parity, then the maintenance tax per release.
 
@@ -96,7 +96,7 @@ Deeper reads: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) · [`docs/HARNESS.m
 
 The repo ships an end-to-end, closed-loop story on ClickHouse: OCSF ingest skills write through `sink-clickhouse-jsonl`, detectors replay from `source-clickhouse-query` under a read-only SQL allowlist, and remediation audit records can land back in the same lake. Stateless skills, stateful lake, stable UIDs for duplicate-aware replay.
 
-![ClickHouse security data lake closed-loop architecture. Nineteen ingest skills normalize cloud, identity, Kubernetes, MCP, and SaaS signals to OCSF JSONL and write append-only into ClickHouse through sink-clickhouse-jsonl. Four MergeTree tables hold events, findings, evidence, and audit rows. Three materialized views roll up rule volume, event-class volume, and remediation outcomes. source-clickhouse-query replays bounded SELECT/WITH/SHOW/DESCRIBE statements into detection, view, and evidence skills. New findings, evidence artifacts, and HITL remediation audit records can write back through the same sink.](docs/images/clickhouse-data-lake.svg)
+![ClickHouse security data lake closed-loop architecture. Twenty-one ingest skills normalize cloud, identity, Kubernetes, MCP, and SaaS signals to OCSF JSONL and write append-only into ClickHouse through sink-clickhouse-jsonl. Four MergeTree tables hold events, findings, evidence, and audit rows. Three materialized views roll up rule volume, event-class volume, and remediation outcomes. source-clickhouse-query replays bounded SELECT/WITH/SHOW/DESCRIBE statements into detection, view, and evidence skills. New findings, evidence artifacts, and HITL remediation audit records can write back through the same sink.](docs/images/clickhouse-data-lake.svg)
 
 | Stage | Skill | Role |
 |---|---|---|
@@ -112,7 +112,7 @@ Why ClickHouse for this lake — operator-owned deployment, MergeTree tables, ma
 
 The same closed loop ships warehouse-native on Snowflake, for customers who run their enterprise lakehouse there: OCSF ingest skills write through `sink-snowflake-jsonl`, detectors replay from `source-snowflake-query` under a read-only SQL allowlist, and remediation audit records land back in the same lake. Built on current Snowflake — dynamic-table rollups, row access policies, and an optional Snowflake-managed Apache Iceberg variant so the lake stays open-format and Spark/Trino-readable through the Horizon Catalog.
 
-![Snowflake security data lake closed-loop architecture. Nineteen ingest skills normalize cloud, identity, Kubernetes, MCP, and SaaS signals to OCSF JSONL and write append-only into Snowflake through sink-snowflake-jsonl, with Openflow and Snowpipe Streaming as managed in-VPC ingest options. Four tables in security_db.ops hold events, findings, evidence, and audit rows under row access policies, optionally as Snowflake-managed Apache Iceberg governed by the Horizon Catalog. Three dynamic tables roll up rule volume, event-class volume, and remediation outcomes. source-snowflake-query replays bounded SELECT/WITH/SHOW/DESCRIBE statements into detection (including nine Snowflake-native detectors), view, and evidence skills. New findings, evidence artifacts, and HITL remediation audit records write back through the same sink.](docs/images/snowflake-data-lake.svg)
+![Snowflake security data lake closed-loop architecture. Twenty-one ingest skills normalize cloud, identity, Kubernetes, MCP, and SaaS signals to OCSF JSONL and write append-only into Snowflake through sink-snowflake-jsonl, with Openflow and Snowpipe Streaming as managed in-VPC ingest options. Four tables in security_db.ops hold events, findings, evidence, and audit rows under row access policies, optionally as Snowflake-managed Apache Iceberg governed by the Horizon Catalog. Three dynamic tables roll up rule volume, event-class volume, and remediation outcomes. source-snowflake-query replays bounded SELECT/WITH/SHOW/DESCRIBE statements into detection (including nine Snowflake-native detectors), view, and evidence skills. New findings, evidence artifacts, and HITL remediation audit records write back through the same sink.](docs/images/snowflake-data-lake.svg)
 
 | Stage | Skill | Role |
 |---|---|---|
@@ -183,7 +183,7 @@ Full discussion: [`docs/ARCHITECTURE.md §3 + §6`](docs/ARCHITECTURE.md). Pinne
 <details>
 <summary><b>Closed-loop coverage</b> — which detections have a paired remediation</summary>
 
-![Closed-loop coverage matrix — 13 of 67 shipped detections are closed loops today; lateral movement is intentionally detection-only, and the AWS access-key, AWS login-profile, AWS discovery-burst, AWS cross-account S3 copy, AWS/GCP/Azure logging-impairment, AWS/GCP model-artifact download, GCP service-account-key creation, GCP service-account-token minting, MCP credential-leak, system-prompt-extraction, tool-output-policy-bypass, tool-output-exfiltration-instructions, Snowflake bulk egress, Snowflake share creation, Snowflake account-key creation, Snowflake warehouse resize burst, Snowflake unauthorized grant, Snowflake failed-MFA burst, Snowflake session-policy bypass, Snowflake network-policy disable, Snowflake replication-config change, ClickHouse bulk export, Databricks token-creation, Databricks Unity Catalog cross-workspace share, Databricks MLflow model exfil, Databricks cluster init-script abuse, Databricks workspace admin grant, Databricks secret-scope read burst, GitHub PAT creation, GitHub org-secret exposure, GitHub Actions secret disclosure, Workspace OAuth grant, Workspace admin-role grant, and Workday mass-termination anomaly slices are detection-first today.](docs/images/coverage-matrix.svg)
+![Closed-loop coverage matrix — 13 of 69 shipped detections are closed loops today; lateral movement is intentionally detection-only, and the AWS access-key, AWS login-profile, AWS discovery-burst, AWS cross-account S3 copy, AWS/GCP/Azure logging-impairment, AWS/GCP model-artifact download, GCP service-account-key creation, GCP service-account-token minting, MCP credential-leak, system-prompt-extraction, tool-output-policy-bypass, tool-output-exfiltration-instructions, Snowflake bulk egress, Snowflake share creation, Snowflake account-key creation, Snowflake warehouse resize burst, Snowflake unauthorized grant, Snowflake failed-MFA burst, Snowflake session-policy bypass, Snowflake network-policy disable, Snowflake replication-config change, ClickHouse bulk export, Databricks token-creation, Databricks Unity Catalog cross-workspace share, Databricks MLflow model exfil, Databricks cluster init-script abuse, Databricks workspace admin grant, Databricks secret-scope read burst, GitHub PAT creation, GitHub org-secret exposure, GitHub Actions secret disclosure, Workspace OAuth grant, Workspace admin-role grant, Workday mass-termination anomaly, Salesforce bulk export, and Salesforce API anomaly slices are detection-first today.](docs/images/coverage-matrix.svg)
 
 </details>
 

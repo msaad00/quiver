@@ -26,15 +26,15 @@ Skills are organised into layered categories. See [`skills/README.md`](skills/RE
 
 Current shipped surface on `main`:
 
-- **`ingestion/`**: 20 ingest skills plus 4 source adapters
+- **`ingestion/`**: 21 ingest skills plus 4 source adapters
 - **`discovery/`**: 5 read-only skills including `iam-departures-reconciler`
-- **`detection/`**: 67 deterministic ATT&CK-tagged detectors
+- **`detection/`**: 69 deterministic ATT&CK-tagged detectors
 - **`evaluation/`**: 12 posture / benchmark families
 - **`view/`**: 2 render/export skills
 - **`remediation/`**: 12 HITL-gated write skills across AWS, GCP, Azure, Kubernetes, Okta, Workspace, Entra, and MCP
 - **`output/`**: 3 append-only sinks
 
-**Total shipped: 125 skill bundles.** Auto-generated per-framework rollup in [`docs/FRAMEWORK_COVERAGE.md`](docs/FRAMEWORK_COVERAGE.md); per-skill registry in [`docs/framework-coverage.json`](docs/framework-coverage.json).
+**Total shipped: 128 skill bundles.** Auto-generated per-framework rollup in [`docs/FRAMEWORK_COVERAGE.md`](docs/FRAMEWORK_COVERAGE.md); per-skill registry in [`docs/framework-coverage.json`](docs/framework-coverage.json).
 
 Notable current skills that older agent memory often misses:
 
@@ -43,6 +43,7 @@ Notable current skills that older agent memory often misses:
 - identity / SaaS containment now includes `remediate-entra-credential-revoke`, `remediate-workspace-session-kill`, and `iam-departures-azure-entra` / `iam-departures-gcp`
 - MCP / AI-native coverage includes both `detect-prompt-injection-mcp-proxy` and `remediate-mcp-tool-quarantine`
 - Workday coverage now includes `ingest-workday-audit-ocsf` and `detect-mass-termination-anomaly`
+- Salesforce coverage now includes `ingest-salesforce-event-mon-ocsf`, `detect-bulk-export-salesforce`, and `detect-api-anomaly-salesforce`
 
 Compose via stdin/stdout pipes. The shared wire contract is pinned in
 [`skills/detection-engineering/OCSF_CONTRACT.md`](skills/detection-engineering/OCSF_CONTRACT.md).

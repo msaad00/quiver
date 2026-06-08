@@ -20,7 +20,7 @@ from individual `SKILL.md` files.
 | Framework | Status | Where it appears |
 |---|---|---|
 | **OCSF 1.8** | core wire contract | all ingestion, detection, and view flows |
-| **MITRE ATT&CK v14** | strong and broader | 82 mapped skills across cloud, identity, Kubernetes, container, MCP, SaaS, Databricks, and remediation paths. Auto-generated rollup in [`docs/FRAMEWORK_COVERAGE.md`](FRAMEWORK_COVERAGE.md); per-skill mapping in [`docs/framework-coverage.json`](framework-coverage.json) |
+| **MITRE ATT&CK v14** | strong and broader | 84 mapped skills across cloud, identity, Kubernetes, container, MCP, SaaS, Databricks, and remediation paths. Auto-generated rollup in [`docs/FRAMEWORK_COVERAGE.md`](FRAMEWORK_COVERAGE.md); per-skill mapping in [`docs/framework-coverage.json`](framework-coverage.json) |
 | **MITRE ATLAS** | partial but real | AI-oriented evaluation, discovery, MCP prompt-injection plus response-layer override and exfiltration detection, and the first AWS + GCP cloud-native model-artifact collection slices |
 | **CIS Benchmarks / Controls** | strong | AWS, GCP, Azure, Kubernetes, container evaluation skills |
 | **NIST CSF 2.0** | strong | evaluation and some remediation skills |

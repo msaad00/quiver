@@ -4,14 +4,14 @@ This file is **generated from [`framework-coverage.json`](framework-coverage.jso
 
 - Registry version: `0.11.0`
 - Registry updated: `2026-05-17`
-- Total shipped skills in registry: **125**
+- Total shipped skills in registry: **128**
 
 ## Roll-up
 
 | Framework | Version | Shipped skills mapped | Coverage target |
 |---|---|---|---|
-| OCSF | 1.8.0 | **104** | — |
-| MITRE ATT&CK | v14 | **82** | 100% mapped coverage |
+| OCSF | 1.8.0 | **107** | — |
+| MITRE ATT&CK | v14 | **84** | 100% mapped coverage |
 | MITRE ATLAS | current | **17** | 100% mapped coverage |
 | CIS AWS Foundations | v3.0 | **6** | — |
 | CIS GCP Foundations | v3.0 | **5** | — |
@@ -24,7 +24,7 @@ This file is **generated from [`framework-coverage.json`](framework-coverage.jso
 | SOC 2 TSC | current | **22** | 100% mapped coverage |
 | PCI DSS | 4.0 | **4** | 100% mapped coverage |
 | ISO 27001 | 2022 | **5** | — |
-| OWASP Top 10 | 2021 | **23** | — |
+| OWASP Top 10 | 2021 | **25** | — |
 | OWASP LLM Top 10 | current | **19** | — |
 | OWASP MCP Top 10 | current | **11** | — |
 | CycloneDX ML-BOM | current | **2** | — |
@@ -37,12 +37,13 @@ Shipped skills mapped counts the number of skills in the registry that declare t
 
 - Registry id: `ocsf-1.8`
 
-Shipped skills mapped: **104**
+Shipped skills mapped: **107**
 
 | Skill | Layer | Providers | Asset classes |
 |---|---|---|---|
 | [`detect-admin-role-grant-workspace`](../skills/detection/detect-admin-role-grant-workspace) | detection | google-workspace | identities, rbac, admin-roles, audit-logs |
 | [`detect-agent-credential-leak-mcp`](../skills/detection/detect-agent-credential-leak-mcp) | detection | mcp, multi | agent-tools, tool-results, credentials |
+| [`detect-api-anomaly-salesforce`](../skills/detection/detect-api-anomaly-salesforce) | detection | salesforce | crm-data, api-activity, integrations, audit-logs |
 | [`detect-aws-access-key-creation`](../skills/detection/detect-aws-access-key-creation) | detection | aws | iam-users, access-keys, credentials, cloudtrail |
 | [`detect-aws-cloudtrail-event-selector-tampering`](../skills/detection/detect-aws-cloudtrail-event-selector-tampering) | detection | aws | cloudtrail, audit-log, trails |
 | [`detect-aws-enumeration-burst`](../skills/detection/detect-aws-enumeration-burst) | detection | aws | identities, compute, storage, network, organizations, cloudtrail |
@@ -53,6 +54,7 @@ Shipped skills mapped: **104**
 | [`detect-azure-activity-logs-disabled`](../skills/detection/detect-azure-activity-logs-disabled) | detection | azure | activity-logs, diagnostic-settings, logging |
 | [`detect-azure-open-nsg`](../skills/detection/detect-azure-open-nsg) | detection | azure | network-security-groups, ingress-rules, azure-activity |
 | [`detect-azure-private-endpoint-to-external-sub`](../skills/detection/detect-azure-private-endpoint-to-external-sub) | detection | azure | private-link, network, subscriptions |
+| [`detect-bulk-export-salesforce`](../skills/detection/detect-bulk-export-salesforce) | detection | salesforce | crm-data, reports, bulk-api, audit-logs |
 | [`detect-clickhouse-bulk-export`](../skills/detection/detect-clickhouse-bulk-export) | detection | clickhouse | warehouse, queries, external-endpoints, identities |
 | [`detect-cloudtrail-disabled`](../skills/detection/detect-cloudtrail-disabled) | detection | aws | cloudtrail, audit-trails, logging |
 | [`detect-container-escape-k8s`](../skills/detection/detect-container-escape-k8s) | detection | kubernetes | clusters, containers, runtime |
@@ -130,6 +132,7 @@ Shipped skills mapped: **104**
 | [`ingest-mcp-proxy-ocsf`](../skills/ingestion/ingest-mcp-proxy-ocsf) | ingestion | mcp, multi | agent-tools, application-activity |
 | [`ingest-nsg-flow-logs-azure-ocsf`](../skills/ingestion/ingest-nsg-flow-logs-azure-ocsf) | ingestion | azure | network, flow-logs |
 | [`ingest-okta-system-log-ocsf`](../skills/ingestion/ingest-okta-system-log-ocsf) | ingestion | okta | identities, authentication, user-access, groups, applications, audit-logs |
+| [`ingest-salesforce-event-mon-ocsf`](../skills/ingestion/ingest-salesforce-event-mon-ocsf) | ingestion | salesforce | crm-data, api-activity, reports, audit-logs |
 | [`ingest-security-hub-ocsf`](../skills/ingestion/ingest-security-hub-ocsf) | ingestion | aws | findings, security-posture |
 | [`ingest-slack-audit-ocsf`](../skills/ingestion/ingest-slack-audit-ocsf) | ingestion | slack | identities, channels, workspaces, oauth-apps, audit-logs |
 | [`ingest-vpc-flow-logs-gcp-ocsf`](../skills/ingestion/ingest-vpc-flow-logs-gcp-ocsf) | ingestion | gcp | network, flow-logs |
@@ -153,11 +156,12 @@ Shipped skills mapped: **104**
 - Asset classes in scope: identities, api, network, clusters, containers, findings
 - Coverage target: 100% mapped coverage
 
-Shipped skills mapped: **82**
+Shipped skills mapped: **84**
 
 | Skill | Layer | Providers | Asset classes |
 |---|---|---|---|
 | [`detect-admin-role-grant-workspace`](../skills/detection/detect-admin-role-grant-workspace) | detection | google-workspace | identities, rbac, admin-roles, audit-logs |
+| [`detect-api-anomaly-salesforce`](../skills/detection/detect-api-anomaly-salesforce) | detection | salesforce | crm-data, api-activity, integrations, audit-logs |
 | [`detect-aws-access-key-creation`](../skills/detection/detect-aws-access-key-creation) | detection | aws | iam-users, access-keys, credentials, cloudtrail |
 | [`detect-aws-cloudtrail-event-selector-tampering`](../skills/detection/detect-aws-cloudtrail-event-selector-tampering) | detection | aws | cloudtrail, audit-log, trails |
 | [`detect-aws-enumeration-burst`](../skills/detection/detect-aws-enumeration-burst) | detection | aws | identities, compute, storage, network, organizations, cloudtrail |
@@ -168,6 +172,7 @@ Shipped skills mapped: **82**
 | [`detect-azure-activity-logs-disabled`](../skills/detection/detect-azure-activity-logs-disabled) | detection | azure | activity-logs, diagnostic-settings, logging |
 | [`detect-azure-open-nsg`](../skills/detection/detect-azure-open-nsg) | detection | azure | network-security-groups, ingress-rules, azure-activity |
 | [`detect-azure-private-endpoint-to-external-sub`](../skills/detection/detect-azure-private-endpoint-to-external-sub) | detection | azure | private-link, network, subscriptions |
+| [`detect-bulk-export-salesforce`](../skills/detection/detect-bulk-export-salesforce) | detection | salesforce | crm-data, reports, bulk-api, audit-logs |
 | [`detect-clickhouse-bulk-export`](../skills/detection/detect-clickhouse-bulk-export) | detection | clickhouse | warehouse, queries, external-endpoints, identities |
 | [`detect-cloudtrail-disabled`](../skills/detection/detect-cloudtrail-disabled) | detection | aws | cloudtrail, audit-trails, logging |
 | [`detect-container-escape-k8s`](../skills/detection/detect-container-escape-k8s) | detection | kubernetes | clusters, containers, runtime |
@@ -464,11 +469,13 @@ Shipped skills mapped: **5**
 
 - Registry id: `owasp-top-10`
 
-Shipped skills mapped: **23**
+Shipped skills mapped: **25**
 
 | Skill | Layer | Providers | Asset classes |
 |---|---|---|---|
 | [`detect-admin-role-grant-workspace`](../skills/detection/detect-admin-role-grant-workspace) | detection | google-workspace | identities, rbac, admin-roles, audit-logs |
+| [`detect-api-anomaly-salesforce`](../skills/detection/detect-api-anomaly-salesforce) | detection | salesforce | crm-data, api-activity, integrations, audit-logs |
+| [`detect-bulk-export-salesforce`](../skills/detection/detect-bulk-export-salesforce) | detection | salesforce | crm-data, reports, bulk-api, audit-logs |
 | [`detect-clickhouse-bulk-export`](../skills/detection/detect-clickhouse-bulk-export) | detection | clickhouse | warehouse, queries, external-endpoints, identities |
 | [`detect-databricks-cluster-init-script-abuse`](../skills/detection/detect-databricks-cluster-init-script-abuse) | detection | databricks | warehouse, clusters, init-scripts |
 | [`detect-databricks-secret-scope-read-burst`](../skills/detection/detect-databricks-secret-scope-read-burst) | detection | databricks | warehouse, secrets, credentials |

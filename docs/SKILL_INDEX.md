@@ -1,6 +1,6 @@
 # Skill index — find a skill fast
 
-The same 125 skill bundles, pivoted three ways:
+The same 128 skill bundles, pivoted three ways:
 
 1. **[By environment](#by-environment)** — pick a cloud or platform, see every skill that touches it.
 2. **[By purpose](#by-purpose)** — pick a layer (ingest / discover / detect / evaluate / remediate / view / output / source).
@@ -107,16 +107,19 @@ not do, and what it talks to.
 | Remediate | [`remediate-okta-session-kill`](../skills/remediation/remediate-okta-session-kill/) | HITL — kill Okta sessions on principal |
 | Remediate | [`remediate-workspace-session-kill`](../skills/remediation/remediate-workspace-session-kill/) | HITL — sign-out Workspace user |
 
-### SaaS (Slack · Workday) — 6 skills
+### SaaS (Slack · Workday · Salesforce) — 9 skills
 
 | Layer | Skill | What it does |
 |---|---|---|
 | Ingest | [`ingest-slack-audit-ocsf`](../skills/ingestion/ingest-slack-audit-ocsf/) | Slack Audit Logs API → OCSF Authentication 3002 / User Access 3005 / API Activity 6003 |
 | Ingest | [`ingest-workday-audit-ocsf`](../skills/ingestion/ingest-workday-audit-ocsf/) | Workday REST / RaaS audit reports → OCSF Account Change 3001 |
+| Ingest | [`ingest-salesforce-event-mon-ocsf`](../skills/ingestion/ingest-salesforce-event-mon-ocsf/) | Salesforce Event Monitoring → OCSF Application Activity 6002 |
 | Detect | [`detect-slack-external-channel-add`](../skills/detection/detect-slack-external-channel-add/) | T1078.004 — external guest added to a sensitive Slack channel |
 | Detect | [`detect-slack-oauth-app-install-broad-scope`](../skills/detection/detect-slack-oauth-app-install-broad-scope/) | T1098.005 — Slack app installed with broad OAuth scopes |
 | Detect | [`detect-slack-admin-elevation`](../skills/detection/detect-slack-admin-elevation/) | T1098.003 — Slack admin/owner role grant outside change window |
 | Detect | [`detect-mass-termination-anomaly`](../skills/detection/detect-mass-termination-anomaly/) | T1098 — Workday termination spike across a short HR offboarding window |
+| Detect | [`detect-bulk-export-salesforce`](../skills/detection/detect-bulk-export-salesforce/) | T1567 — Salesforce large export followed by session close |
+| Detect | [`detect-api-anomaly-salesforce`](../skills/detection/detect-api-anomaly-salesforce/) | T1078.004 — Salesforce API usage outside actor baseline |
 
 ### AI runtime · MCP · model serving — 20 skills
 
@@ -195,16 +198,16 @@ not do, and what it talks to.
 
 | Layer | Count | Index |
 |---|---:|---|
-| Ingest | 20 | [`skills/ingestion/`](../skills/ingestion/) (excludes the 4 warehouse sources below) |
+| Ingest | 21 | [`skills/ingestion/`](../skills/ingestion/) (excludes the 4 warehouse sources below) |
 | Discover | 5 | [`skills/discovery/`](../skills/discovery/) |
-| Detect | 67 | [`skills/detection/`](../skills/detection/) |
+| Detect | 69 | [`skills/detection/`](../skills/detection/) |
 | Evaluate | 12 | [`skills/evaluation/`](../skills/evaluation/) |
 | Remediate | 12 | [`skills/remediation/`](../skills/remediation/) |
 | View | 2 | [`skills/view/`](../skills/view/) |
 | Output | 3 | [`skills/output/`](../skills/output/) |
 | Source | 4 | warehouse adapters: `source-clickhouse-query`, `source-databricks-query`, `source-s3-select`, `source-snowflake-query` (filed under `skills/ingestion/` on disk) |
 
-Total = 20 + 5 + 67 + 12 + 12 + 2 + 3 + 4 = **125**.
+Total = 21 + 5 + 69 + 12 + 12 + 2 + 3 + 4 = **128**.
 
 ## By framework
 
