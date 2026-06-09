@@ -4,14 +4,14 @@ This file is **generated from [`framework-coverage.json`](framework-coverage.jso
 
 - Registry version: `0.11.0`
 - Registry updated: `2026-05-17`
-- Total shipped skills in registry: **128**
+- Total shipped skills in registry: **131**
 
 ## Roll-up
 
 | Framework | Version | Shipped skills mapped | Coverage target |
 |---|---|---|---|
-| OCSF | 1.8.0 | **107** | — |
-| MITRE ATT&CK | v14 | **84** | 100% mapped coverage |
+| OCSF | 1.8.0 | **110** | — |
+| MITRE ATT&CK | v14 | **86** | 100% mapped coverage |
 | MITRE ATLAS | current | **17** | 100% mapped coverage |
 | CIS AWS Foundations | v3.0 | **6** | — |
 | CIS GCP Foundations | v3.0 | **5** | — |
@@ -24,7 +24,7 @@ This file is **generated from [`framework-coverage.json`](framework-coverage.jso
 | SOC 2 TSC | current | **22** | 100% mapped coverage |
 | PCI DSS | 4.0 | **4** | 100% mapped coverage |
 | ISO 27001 | 2022 | **5** | — |
-| OWASP Top 10 | 2021 | **25** | — |
+| OWASP Top 10 | 2021 | **27** | — |
 | OWASP LLM Top 10 | current | **19** | — |
 | OWASP MCP Top 10 | current | **11** | — |
 | CycloneDX ML-BOM | current | **2** | — |
@@ -37,7 +37,7 @@ Shipped skills mapped counts the number of skills in the registry that declare t
 
 - Registry id: `ocsf-1.8`
 
-Shipped skills mapped: **107**
+Shipped skills mapped: **110**
 
 | Skill | Layer | Providers | Asset classes |
 |---|---|---|---|
@@ -90,6 +90,8 @@ Shipped skills mapped: **107**
 | [`detect-privilege-escalation-k8s`](../skills/detection/detect-privilege-escalation-k8s) | detection | kubernetes | clusters, containers, identities, secrets |
 | [`detect-prompt-injection-mcp-proxy`](../skills/detection/detect-prompt-injection-mcp-proxy) | detection | mcp, multi | agent-tools, tool-metadata, guardrails |
 | [`detect-s3-cross-account-copy`](../skills/detection/detect-s3-cross-account-copy) | detection | aws | storage, buckets, objects, identities, cloudtrail |
+| [`detect-sap-mass-change`](../skills/detection/detect-sap-mass-change) | detection | sap | erp-data, sensitive-transactions, audit-logs |
+| [`detect-sap-priv-user-access`](../skills/detection/detect-sap-priv-user-access) | detection | sap | erp-identities, privileged-access, audit-logs |
 | [`detect-sensitive-secret-read-k8s`](../skills/detection/detect-sensitive-secret-read-k8s) | detection | kubernetes | clusters, secrets, identities |
 | [`detect-slack-admin-elevation`](../skills/detection/detect-slack-admin-elevation) | detection | slack | identities, rbac, saas |
 | [`detect-slack-external-channel-add`](../skills/detection/detect-slack-external-channel-add) | detection | slack | identities, channels, saas |
@@ -133,6 +135,7 @@ Shipped skills mapped: **107**
 | [`ingest-nsg-flow-logs-azure-ocsf`](../skills/ingestion/ingest-nsg-flow-logs-azure-ocsf) | ingestion | azure | network, flow-logs |
 | [`ingest-okta-system-log-ocsf`](../skills/ingestion/ingest-okta-system-log-ocsf) | ingestion | okta | identities, authentication, user-access, groups, applications, audit-logs |
 | [`ingest-salesforce-event-mon-ocsf`](../skills/ingestion/ingest-salesforce-event-mon-ocsf) | ingestion | salesforce | crm-data, api-activity, reports, audit-logs |
+| [`ingest-sap-audit-log-ocsf`](../skills/ingestion/ingest-sap-audit-log-ocsf) | ingestion | sap | erp-identities, erp-data, audit-logs |
 | [`ingest-security-hub-ocsf`](../skills/ingestion/ingest-security-hub-ocsf) | ingestion | aws | findings, security-posture |
 | [`ingest-slack-audit-ocsf`](../skills/ingestion/ingest-slack-audit-ocsf) | ingestion | slack | identities, channels, workspaces, oauth-apps, audit-logs |
 | [`ingest-vpc-flow-logs-gcp-ocsf`](../skills/ingestion/ingest-vpc-flow-logs-gcp-ocsf) | ingestion | gcp | network, flow-logs |
@@ -156,7 +159,7 @@ Shipped skills mapped: **107**
 - Asset classes in scope: identities, api, network, clusters, containers, findings
 - Coverage target: 100% mapped coverage
 
-Shipped skills mapped: **84**
+Shipped skills mapped: **86**
 
 | Skill | Layer | Providers | Asset classes |
 |---|---|---|---|
@@ -202,6 +205,8 @@ Shipped skills mapped: **84**
 | [`detect-okta-mfa-fatigue`](../skills/detection/detect-okta-mfa-fatigue) | detection | okta | identities, authentication, mfa, sessions |
 | [`detect-privilege-escalation-k8s`](../skills/detection/detect-privilege-escalation-k8s) | detection | kubernetes | clusters, containers, identities, secrets |
 | [`detect-s3-cross-account-copy`](../skills/detection/detect-s3-cross-account-copy) | detection | aws | storage, buckets, objects, identities, cloudtrail |
+| [`detect-sap-mass-change`](../skills/detection/detect-sap-mass-change) | detection | sap | erp-data, sensitive-transactions, audit-logs |
+| [`detect-sap-priv-user-access`](../skills/detection/detect-sap-priv-user-access) | detection | sap | erp-identities, privileged-access, audit-logs |
 | [`detect-sensitive-secret-read-k8s`](../skills/detection/detect-sensitive-secret-read-k8s) | detection | kubernetes | clusters, secrets, identities |
 | [`detect-slack-admin-elevation`](../skills/detection/detect-slack-admin-elevation) | detection | slack | identities, rbac, saas |
 | [`detect-slack-external-channel-add`](../skills/detection/detect-slack-external-channel-add) | detection | slack | identities, channels, saas |
@@ -469,7 +474,7 @@ Shipped skills mapped: **5**
 
 - Registry id: `owasp-top-10`
 
-Shipped skills mapped: **25**
+Shipped skills mapped: **27**
 
 | Skill | Layer | Providers | Asset classes |
 |---|---|---|---|
@@ -482,6 +487,8 @@ Shipped skills mapped: **25**
 | [`detect-databricks-unity-catalog-cross-workspace-share`](../skills/detection/detect-databricks-unity-catalog-cross-workspace-share) | detection | databricks | warehouse, unity-catalog, delta-sharing |
 | [`detect-databricks-workspace-admin-grant`](../skills/detection/detect-databricks-workspace-admin-grant) | detection | databricks | warehouse, identities, rbac |
 | [`detect-mass-termination-anomaly`](../skills/detection/detect-mass-termination-anomaly) | detection | workday | identities, hr-events, offboarding, audit-logs |
+| [`detect-sap-mass-change`](../skills/detection/detect-sap-mass-change) | detection | sap | erp-data, sensitive-transactions, audit-logs |
+| [`detect-sap-priv-user-access`](../skills/detection/detect-sap-priv-user-access) | detection | sap | erp-identities, privileged-access, audit-logs |
 | [`detect-slack-admin-elevation`](../skills/detection/detect-slack-admin-elevation) | detection | slack | identities, rbac, saas |
 | [`detect-slack-external-channel-add`](../skills/detection/detect-slack-external-channel-add) | detection | slack | identities, channels, saas |
 | [`detect-slack-oauth-app-install-broad-scope`](../skills/detection/detect-slack-oauth-app-install-broad-scope) | detection | slack | identities, oauth-apps, saas |

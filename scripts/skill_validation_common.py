@@ -99,6 +99,7 @@ OFFICIAL_REFERENCE_HOSTS = {
     "capec.mitre.org",
     "grpc.github.io",
     "help.salesforce.com",
+    "help.sap.com",
     "kubernetes.io",
     "learn.microsoft.com",
     "mermaid.js.org",

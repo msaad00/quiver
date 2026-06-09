@@ -213,6 +213,54 @@
       ]
     },
     {
+      "path": "skills/detection/detect-sap-priv-user-access",
+      "layer": "detection",
+      "providers": [
+        "sap"
+      ],
+      "asset_classes": [
+        "erp-identities",
+        "privileged-access",
+        "audit-logs"
+      ],
+      "frameworks": [
+        "ocsf-1.8",
+        "mitre-attack-v14",
+        "owasp-top-10"
+      ],
+      "coverage_status": "validated",
+      "execution_modes": [
+        "cli",
+        "ci",
+        "mcp",
+        "persistent"
+      ]
+    },
+    {
+      "path": "skills/detection/detect-sap-mass-change",
+      "layer": "detection",
+      "providers": [
+        "sap"
+      ],
+      "asset_classes": [
+        "erp-data",
+        "sensitive-transactions",
+        "audit-logs"
+      ],
+      "frameworks": [
+        "ocsf-1.8",
+        "mitre-attack-v14",
+        "owasp-top-10"
+      ],
+      "coverage_status": "validated",
+      "execution_modes": [
+        "cli",
+        "ci",
+        "mcp",
+        "persistent"
+      ]
+    },
+    {
       "path": "skills/detection/detect-bulk-export-salesforce",
       "layer": "detection",
       "providers": [
@@ -2530,6 +2578,28 @@
         "crm-data",
         "api-activity",
         "reports",
+        "audit-logs"
+      ],
+      "frameworks": [
+        "ocsf-1.8"
+      ],
+      "coverage_status": "validated",
+      "execution_modes": [
+        "cli",
+        "ci",
+        "mcp",
+        "persistent"
+      ]
+    },
+    {
+      "path": "skills/ingestion/ingest-sap-audit-log-ocsf",
+      "layer": "ingestion",
+      "providers": [
+        "sap"
+      ],
+      "asset_classes": [
+        "erp-identities",
+        "erp-data",
         "audit-logs"
       ],
       "frameworks": [
