@@ -79,10 +79,11 @@ uv sync --group dev --extra aws
 python examples/agents/anthropic_sdk_security_agent.py
 ```
 
-The LangGraph reference is also dependency-light: it does not require the
-LangGraph package for the demo trace, but its node functions are shaped so a
-production runner can drop them into `StateGraph` without changing the trust
-boundary.
+The LangGraph reference is dependency-light by default but also includes a
+real optional `StateGraph` runtime. The graph keeps security facts in
+deterministic skill nodes, adds a bounded LLM/agent triage node that can only
+rank/summarize/draft/request review, and uses conditional edges for HITL,
+retry, terminal-error escalation, duplicate suppression, and writeback.
 
 ```bash
 # Blocked path: no approval context, no remediation action.
@@ -99,6 +100,13 @@ uv sync --group dev --group langgraph
 DEMO_LANGGRAPH_RUNTIME=yes \
 python examples/agents/langgraph_security_graph.py
 
+# Optional LLM/agent harness metadata: provider/model are recorded in audit,
+# but LLM output is still limited to rank/summarize/draft/request-review.
+DEMO_EXTERNAL_LLM_ALLOWED=yes \
+DEMO_LLM_PROVIDER=openai \
+DEMO_LLM_MODEL=gpt-4.1-mini \
+python examples/agents/langgraph_security_graph.py
+
 # Retryable API error path: no write intent is created without approval;
 # approved retries reuse the same remediation idempotency key.
 DEMO_APPROVE=yes \
@@ -108,7 +116,10 @@ python examples/agents/langgraph_security_graph.py
 
 The LangGraph summary includes `integrity.evidence_hash`,
 `integrity.state_hash`, stable workflow/remediation idempotency keys, and
-retryable-vs-terminal API error classification. Use
+retryable-vs-terminal API error classification. It also includes the
+`harness` provider/model/mode and bounded `agent_recommendations` so operators
+can see which model would have drafted the analyst note without letting that
+model set policy, mappings, approvals, or audit facts. Use
 `DEMO_API_ERROR_STATUS=429` for retryable errors or `403` for terminal errors.
 
 See each example file's module-level docstring for framework-specific

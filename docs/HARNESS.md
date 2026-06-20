@@ -28,6 +28,30 @@ surfaces. None of them forks the skill model:
 | **Library SDK** | [`skills/_shared/library.py`](../skills/_shared/library.py) | external Python apps that want to call skills as functions |
 | **Persistent runners** | [`runners/{aws-s3-sqs,gcp-gcs-pubsub,azure-blob-eventgrid}-detect/`](../runners/) | event-driven detection at cloud scale |
 
+## Optional agentic SOC harness
+
+LangGraph / LangChain / SOAR sit above the five skill surfaces. They may own
+workflow state, model choice, routing, retries, checkpointing, escalation, and
+analyst-note drafting, but they do not own security facts or write authority.
+
+The reference implementation is
+[`examples/agents/langgraph_security_graph.py`](../examples/agents/langgraph_security_graph.py):
+
+```text
+ingest -> normalize -> enrich -> correlate -> confidence -> map
+-> bounded LLM triage -> analyst review
+   approved -> dry-run remediation -> retry/escalate/writeback
+   blocked  -> writeback
+```
+
+The LLM/agent harness records provider/model/mode in state and audit output.
+Its allowed outputs are intentionally narrow: rank findings, summarize
+evidence, draft analyst notes, and request human review. It cannot set CVSS,
+MITRE, EPSS, KEV, tenant scope, idempotency keys, HITL approval, dry-run state,
+or audit-chain facts. The compiled LangGraph path uses conditional edges for
+HITL, retryable API errors, terminal API errors, duplicate write suppression,
+and audit/eval writeback; the offline runner mirrors those routes for tests.
+
 ## Customization knobs
 
 Five tiers of override. Outer wins:
