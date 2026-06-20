@@ -103,9 +103,11 @@ reproducible code paths, while the graph decides which approved surface to call
 next.
 
 The shipped [`examples/agents/langgraph_security_graph.py`](examples/agents/langgraph_security_graph.py)
-shows the reference pattern: one graph node per skill layer, explicit state,
-and a hard HITL node before remediation. Production teams can expand that into
-`ingest -> normalize -> enrich -> correlate -> confidence score -> MITRE/CVSS/EPSS/KEV map -> analyst review -> dry-run remediation -> audit/eval writeback`
+shows the reference pattern as an actual optional LangGraph `StateGraph`:
+one graph node per skill layer, a bounded LLM/agent triage node, explicit
+state, conditional edges for HITL/retry/escalation/writeback, and a hard HITL
+node before remediation. The end-to-end route is
+`ingest -> normalize -> enrich -> correlate -> confidence score -> MITRE/CVSS/EPSS/KEV map -> LLM triage -> analyst review -> dry-run remediation -> retry/escalate/writeback -> audit/eval`
 without moving trust into prompts.
 
 ![Optional agentic SOC orchestrator: LangGraph or LangChain controls the workflow DAG and LLM/model choice, while cloud-ai-security-skills owns deterministic ingest, normalize, enrich, correlate, map, review, audit, eval artifacts, sandbox/RLIMIT, allowlist, dry-run, HITL, and HMAC audit rails.](docs/images/agentic-soc-orchestrator.svg)

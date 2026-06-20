@@ -3,8 +3,8 @@
 The production shape this models is:
 
     ingest -> normalize -> enrich -> correlate -> confidence score
-    -> MITRE/CVSS/EPSS/KEV map -> analyst review -> dry-run remediation
-    -> audit/eval writeback
+    -> MITRE/CVSS/EPSS/KEV map -> bounded LLM triage
+    -> analyst review -> dry-run remediation -> audit/eval writeback
 
 Each node is intentionally a thin, deterministic wrapper around what a real
 LangGraph node would call through MCP, CLI, CI, runner, or library surfaces.
@@ -12,10 +12,9 @@ LangGraph owns state, branches, retries, and checkpointing. The skill bundles
 still own facts, schemas, scores, mappings, dry-run behavior, HITL gates, and
 audit/eval artifacts.
 
-The LangGraph SDK is not pinned as a repo dependency. This module stays
-runnable offline and emits the same deterministic trace a graph runner would
-produce. Real code would replace `run_graph` with `StateGraph` assembly and
-keep these node functions as graph nodes.
+The LangGraph SDK is optional. This module stays runnable offline, and
+`DEMO_LANGGRAPH_RUNTIME=yes` compiles the same nodes into a real StateGraph
+with conditional edges for HITL, retry, escalation, and writeback routing.
 
 Run:
 
@@ -50,11 +49,17 @@ WorkflowStage = Literal[
     "correlate",
     "confidence",
     "map",
+    "llm_triage",
     "review",
     "remediate",
+    "retry_queue",
+    "escalate",
     "writeback",
 ]
 ApiErrorClassification = Literal["retryable", "terminal"]
+LlmMode = Literal["deterministic_offline", "external_llm_optional"]
+ReviewRoute = Literal["remediate", "writeback"]
+RemediationRoute = Literal["retry_queue", "escalate", "writeback"]
 
 
 class CallerContext(TypedDict):
@@ -107,6 +112,23 @@ class FrameworkMap(TypedDict):
     epss_percentile: float
     kev_listed: bool
     controls: list[str]
+
+
+class AgentHarnessConfig(TypedDict):
+    mode: LlmMode
+    provider: str
+    model: str
+    allowed_outputs: list[str]
+    prompt_hash: str
+
+
+class AgentRecommendation(TypedDict):
+    finding_uid: str
+    priority: Literal["critical", "high", "medium", "low"]
+    recommended_action: Literal["request_approval", "investigate", "close"]
+    rationale: str
+    generated_by: str
+    output_hash: str
 
 
 class ReviewDecision(TypedDict):
@@ -164,8 +186,12 @@ class GraphState(TypedDict, total=False):
     correlations: list[Correlation]
     confidence_scores: list[ConfidenceScore]
     framework_maps: list[FrameworkMap]
+    harness_config: AgentHarnessConfig
+    agent_recommendations: list[AgentRecommendation]
     review_decision: ReviewDecision
     remediation_result: RemediationResult
+    retry_record: dict[str, Any]
+    escalation_record: dict[str, Any]
     integrity: IntegrityRecord
     idempotency: IdempotencyRecord
     api_errors: list[ApiErrorRecord]
@@ -183,6 +209,40 @@ def _emit_node(stage: WorkflowStage, **payload: Any) -> None:
 def _stable_hash(payload: Any) -> str:
     encoded = json.dumps(payload, sort_keys=True, separators=(",", ":")).encode()
     return hashlib.sha256(encoded).hexdigest()
+
+
+def _agent_harness_config() -> AgentHarnessConfig:
+    """Describe the LLM/agent harness without requiring a live model."""
+    mode: LlmMode = (
+        "external_llm_optional"
+        if os.environ.get("DEMO_EXTERNAL_LLM_ALLOWED") == "yes"
+        else "deterministic_offline"
+    )
+    provider = os.environ.get("DEMO_LLM_PROVIDER", "deterministic-local")
+    model = os.environ.get("DEMO_LLM_MODEL", "policy-bounded-triage-v1")
+    allowed_outputs = [
+        "rank_findings",
+        "summarize_evidence",
+        "draft_analyst_note",
+        "request_human_review",
+    ]
+    return {
+        "mode": mode,
+        "provider": provider,
+        "model": model,
+        "allowed_outputs": allowed_outputs,
+        "prompt_hash": _stable_hash({
+            "system": "llm may rank, summarize, and draft only",
+            "forbidden": [
+                "approve",
+                "set_security_facts",
+                "change_cvss_mitre_epss_kev",
+                "call_write_tools",
+                "write_audit",
+            ],
+            "allowed_outputs": allowed_outputs,
+        })[:16],
+    }
 
 
 def _classify_api_error(status_code: int) -> ApiErrorClassification:
@@ -215,6 +275,21 @@ def _simulated_api_error(stage: WorkflowStage) -> ApiErrorRecord | None:
 
 def _append_trace(state: GraphState, stage: WorkflowStage) -> None:
     state.setdefault("trace", []).append(stage)
+
+
+def route_after_review(state: GraphState) -> ReviewRoute:
+    decision = state.get("review_decision") or {}
+    return "remediate" if decision.get("status") == "approved" else "writeback"
+
+
+def route_after_remediation(state: GraphState) -> RemediationRoute:
+    result = state.get("remediation_result") or {}
+    reason = result.get("reason")
+    if reason == "retryable_api_error":
+        return "retry_queue"
+    if reason == "terminal_api_error":
+        return "escalate"
+    return "writeback"
 
 
 def ingest_node(state: GraphState) -> GraphState:
@@ -351,6 +426,53 @@ def map_node(state: GraphState) -> GraphState:
     return state
 
 
+def llm_triage_node(state: GraphState) -> GraphState:
+    """Bounded agent layer: rank and summarize only, never decide facts."""
+    _append_trace(state, "llm_triage")
+    harness_config = _agent_harness_config()
+    confidence_by_uid = {
+        score["finding_uid"]: score["score"]
+        for score in state.get("confidence_scores") or []
+    }
+    recommendations = []
+    for mapped in state.get("framework_maps") or []:
+        finding_uid = mapped["finding_uid"]
+        confidence = confidence_by_uid.get(finding_uid, 0.0)
+        recommended_action: Literal["request_approval", "investigate", "close"] = (
+            "request_approval" if confidence >= 0.90 else "investigate"
+        )
+        priority: Literal["critical", "high", "medium", "low"] = (
+            "high" if mapped["cvss"]["base_score"] >= 7.0 else "medium"
+        )
+        recommendation_payload = {
+            "finding_uid": finding_uid,
+            "priority": priority,
+            "recommended_action": recommended_action,
+            "confidence": confidence,
+            "provider": harness_config["provider"],
+            "model": harness_config["model"],
+        }
+        recommendations.append({
+            "finding_uid": finding_uid,
+            "priority": priority,
+            "recommended_action": recommended_action,
+            "rationale": "Deterministic triage from rule confidence, CVSS, EPSS, and mapping coverage.",
+            "generated_by": f"{harness_config['provider']}:{harness_config['model']}",
+            "output_hash": _stable_hash(recommendation_payload)[:16],
+        })
+    state["harness_config"] = harness_config
+    state["agent_recommendations"] = recommendations
+    _emit_node(
+        "llm_triage",
+        mode=harness_config["mode"],
+        provider=harness_config["provider"],
+        model=harness_config["model"],
+        recommendations=len(recommendations),
+        authority="rank_summarize_draft_only",
+    )
+    return state
+
+
 def analyst_review_node(state: GraphState) -> GraphState:
     """Hard pause. No auto-approval and no hallucinated approval context."""
     _append_trace(state, "review")
@@ -370,6 +492,11 @@ def analyst_review_node(state: GraphState) -> GraphState:
             "status": "blocked",
             "reason": "missing approval_context",
             "approval": None,
+        }
+        state["remediation_result"] = {
+            "status": "skipped",
+            "skill": ALLOWED_SKILLS_REMEDIATION,
+            "reason": "review blocked; remediation node not routed",
         }
     state["review_decision"] = decision
     _emit_node("review", status=decision["status"], reason=decision["reason"])
@@ -470,6 +597,48 @@ def dry_run_remediation_node(state: GraphState) -> GraphState:
     return state
 
 
+def retry_queue_node(state: GraphState) -> GraphState:
+    """Schedule a bounded retry without minting a new write intent."""
+    _append_trace(state, "retry_queue")
+    result = state.get("remediation_result") or {}
+    retry_decision = result.get("retry_decision") or {}
+    retry_record = {
+        "status": "scheduled",
+        "idempotency_key": retry_decision.get("idempotency_key"),
+        "max_attempts": retry_decision.get("max_attempts", 0),
+        "retry_after_seconds": retry_decision.get("retry_after_seconds"),
+        "policy": "bounded_retry_same_idempotency_key",
+    }
+    state["retry_record"] = retry_record
+    _emit_node(
+        "retry_queue",
+        status=retry_record["status"],
+        idempotency_key=retry_record["idempotency_key"],
+        max_attempts=retry_record["max_attempts"],
+    )
+    return state
+
+
+def escalation_node(state: GraphState) -> GraphState:
+    """Escalate terminal API failures to a human queue."""
+    _append_trace(state, "escalate")
+    result = state.get("remediation_result") or {}
+    escalation_record = {
+        "status": "queued",
+        "reason": result.get("reason", "manual_review_required"),
+        "idempotency_key": result.get("idempotency_key"),
+        "queue": "security-operations-review",
+    }
+    state["escalation_record"] = escalation_record
+    _emit_node(
+        "escalate",
+        status=escalation_record["status"],
+        reason=escalation_record["reason"],
+        queue=escalation_record["queue"],
+    )
+    return state
+
+
 def audit_eval_writeback_node(state: GraphState) -> GraphState:
     """Emit deterministic audit and eval records for the workflow run."""
     _append_trace(state, "writeback")
@@ -477,6 +646,8 @@ def audit_eval_writeback_node(state: GraphState) -> GraphState:
         "caller_context": state.get("caller_context"),
         "trace": state.get("trace"),
         "findings": state.get("findings"),
+        "harness_config": state.get("harness_config"),
+        "agent_recommendations": state.get("agent_recommendations"),
         "integrity": {
             key: value
             for key, value in (state.get("integrity") or {}).items()
@@ -486,6 +657,8 @@ def audit_eval_writeback_node(state: GraphState) -> GraphState:
         "api_errors": state.get("api_errors") or [],
         "review_decision": state.get("review_decision"),
         "remediation_result": state.get("remediation_result"),
+        "retry_record": state.get("retry_record"),
+        "escalation_record": state.get("escalation_record"),
     }
     state_hash = _stable_hash(summary_payload)
     integrity = dict(state.get("integrity") or {})
@@ -505,6 +678,10 @@ def audit_eval_writeback_node(state: GraphState) -> GraphState:
             1 for error in api_errors if error["classification"] == "retryable"
         ),
         "remediation_status": state.get("remediation_result", {}).get("status"),
+        "route": {
+            "after_review": route_after_review(state),
+            "after_remediation": route_after_remediation(state),
+        },
     }
     eval_status: Literal["pass", "blocked"] = (
         "pass" if state.get("remediation_result", {}).get("status") == "dry_run" else "blocked"
@@ -520,6 +697,8 @@ def audit_eval_writeback_node(state: GraphState) -> GraphState:
             "integrity_hash_present",
             "idempotency_key_stable",
             "api_error_classification",
+            "llm_harness_bounded",
+            "conditional_edges",
         ],
         "status": eval_status,
     }
@@ -536,23 +715,30 @@ NODES = (
     correlate_node,
     confidence_node,
     map_node,
+    llm_triage_node,
     analyst_review_node,
-    dry_run_remediation_node,
-    audit_eval_writeback_node,
 )
 
 
 def run_graph(initial: GraphState) -> GraphState:
-    """Deterministic linear execution.
-
-    A real LangGraph graph would add conditional edges for retries, sandbox
-    replays, escalation, and checkpointing. The security invariant stays the
-    same: every write path reaches `dry_run_remediation_node` only after
-    `analyst_review_node` provides an approval context.
-    """
+    """Deterministic execution that mirrors the StateGraph route decisions."""
     state: GraphState = dict(initial)
     for node in NODES:
         state = node(state)
+    if route_after_review(state) == "remediate":
+        state = dry_run_remediation_node(state)
+        remediation_route = route_after_remediation(state)
+        if remediation_route == "retry_queue":
+            state = retry_queue_node(state)
+        elif remediation_route == "escalate":
+            state = escalation_node(state)
+    else:
+        state.setdefault("remediation_result", {
+            "status": "skipped",
+            "skill": ALLOWED_SKILLS_REMEDIATION,
+            "reason": "review blocked; remediation node not routed",
+        })
+    state = audit_eval_writeback_node(state)
     return state
 
 
@@ -577,8 +763,11 @@ def build_langgraph_app() -> Any:
     graph.add_node("correlate", correlate_node)
     graph.add_node("confidence", confidence_node)
     graph.add_node("map", map_node)
+    graph.add_node("llm_triage", llm_triage_node)
     graph.add_node("review", analyst_review_node)
     graph.add_node("remediate", dry_run_remediation_node)
+    graph.add_node("retry_queue", retry_queue_node)
+    graph.add_node("escalate", escalation_node)
     graph.add_node("writeback", audit_eval_writeback_node)
     graph.add_edge(START, "ingest")
     graph.add_edge("ingest", "normalize")
@@ -586,9 +775,27 @@ def build_langgraph_app() -> Any:
     graph.add_edge("enrich", "correlate")
     graph.add_edge("correlate", "confidence")
     graph.add_edge("confidence", "map")
-    graph.add_edge("map", "review")
-    graph.add_edge("review", "remediate")
-    graph.add_edge("remediate", "writeback")
+    graph.add_edge("map", "llm_triage")
+    graph.add_edge("llm_triage", "review")
+    graph.add_conditional_edges(
+        "review",
+        route_after_review,
+        {
+            "remediate": "remediate",
+            "writeback": "writeback",
+        },
+    )
+    graph.add_conditional_edges(
+        "remediate",
+        route_after_remediation,
+        {
+            "retry_queue": "retry_queue",
+            "escalate": "escalate",
+            "writeback": "writeback",
+        },
+    )
+    graph.add_edge("retry_queue", "writeback")
+    graph.add_edge("escalate", "writeback")
     graph.add_edge("writeback", END)
     return graph.compile()
 
@@ -606,8 +813,12 @@ def summarize(final: GraphState) -> dict[str, Any]:
         "findings_count": len(final.get("findings") or []),
         "confidence_scores": final.get("confidence_scores"),
         "framework_maps": final.get("framework_maps"),
+        "harness": final.get("harness_config"),
+        "agent_recommendations": final.get("agent_recommendations"),
         "review": final.get("review_decision"),
         "remediation": final.get("remediation_result"),
+        "retry": final.get("retry_record"),
+        "escalation": final.get("escalation_record"),
         "integrity": final.get("integrity"),
         "idempotency": final.get("idempotency"),
         "api_errors": final.get("api_errors") or [],

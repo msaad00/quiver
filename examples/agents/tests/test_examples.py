@@ -163,6 +163,18 @@ class TestLangGraphSocWorkflow:
         "correlate",
         "confidence",
         "map",
+        "llm_triage",
+        "review",
+        "writeback",
+    ]
+    EXPECTED_APPROVED_TRACE = [
+        "ingest",
+        "normalize",
+        "enrich",
+        "correlate",
+        "confidence",
+        "map",
+        "llm_triage",
         "review",
         "remediate",
         "writeback",
@@ -202,6 +214,16 @@ class TestLangGraphSocWorkflow:
         summary, _ = self._run()
         assert summary["trace"] == self.EXPECTED_TRACE
         assert summary["findings_count"] == 1
+        assert summary["harness"]["mode"] == "deterministic_offline"
+        assert summary["harness"]["provider"] == "deterministic-local"
+        assert summary["harness"]["allowed_outputs"] == [
+            "rank_findings",
+            "summarize_evidence",
+            "draft_analyst_note",
+            "request_human_review",
+        ]
+        assert summary["agent_recommendations"][0]["recommended_action"] == "request_approval"
+        assert summary["agent_recommendations"][0]["generated_by"] == "deterministic-local:policy-bounded-triage-v1"
         assert summary["confidence_scores"][0]["reason_codes"] == [
             "rule_match",
             "stable_resource_uid",
@@ -218,9 +240,14 @@ class TestLangGraphSocWorkflow:
         summary, result = self._run()
         assert summary["review"]["status"] == "blocked"
         assert summary["remediation"]["status"] == "skipped"
+        assert summary["remediation"]["reason"] == "review blocked; remediation node not routed"
         assert "planned_steps" not in summary["remediation"]
         assert summary["audit"]["event"] == "agentic_soc_workflow"
         assert summary["audit"]["remediation_status"] == "skipped"
+        assert summary["audit"]["route"] == {
+            "after_review": "writeback",
+            "after_remediation": "writeback",
+        }
         assert summary["eval"]["status"] == "blocked"
         assert '"node": "review"' in result.stderr
         assert '"status": "blocked"' in result.stderr
@@ -231,6 +258,7 @@ class TestLangGraphSocWorkflow:
 
     def test_approval_allows_dry_run_only(self):
         summary, _ = self._run(approved=True)
+        assert summary["trace"] == self.EXPECTED_APPROVED_TRACE
         assert summary["review"]["status"] == "approved"
         assert summary["review"]["approval"]["ticket_id"] == "SEC-LANGGRAPH-1"
         assert summary["remediation"]["status"] == "dry_run"
@@ -240,8 +268,25 @@ class TestLangGraphSocWorkflow:
         assert summary["idempotency"]["remediation_key"] == summary["remediation"]["idempotency_key"]
         assert summary["integrity"]["approved_payload_hash"]
         assert summary["audit"]["idempotency_key"] == summary["remediation"]["idempotency_key"]
+        assert summary["audit"]["route"] == {
+            "after_review": "remediate",
+            "after_remediation": "writeback",
+        }
         assert summary["audit"]["remediation_status"] == "dry_run"
         assert summary["eval"]["status"] == "pass"
+
+    def test_llm_harness_records_provider_model_without_granting_authority(self):
+        summary, _ = self._run(extra_env={
+            "DEMO_EXTERNAL_LLM_ALLOWED": "yes",
+            "DEMO_LLM_PROVIDER": "openai",
+            "DEMO_LLM_MODEL": "gpt-4.1-mini",
+        })
+        assert summary["harness"]["mode"] == "external_llm_optional"
+        assert summary["harness"]["provider"] == "openai"
+        assert summary["harness"]["model"] == "gpt-4.1-mini"
+        assert "call_write_tools" not in summary["harness"]["allowed_outputs"]
+        assert summary["agent_recommendations"][0]["generated_by"] == "openai:gpt-4.1-mini"
+        assert summary["remediation"]["status"] == "skipped"
 
     def test_integrity_and_workflow_idempotency_are_stable(self):
         first, _ = self._run()
@@ -268,7 +313,7 @@ class TestLangGraphSocWorkflow:
         summary, _ = self._run(extra_env={"DEMO_API_ERROR_STATUS": "429"})
         assert summary["review"]["status"] == "blocked"
         assert summary["remediation"]["status"] == "skipped"
-        assert summary["remediation"]["reason"] == "no approval_context; HITL gate blocked remediation"
+        assert summary["remediation"]["reason"] == "review blocked; remediation node not routed"
         assert "retry_decision" not in summary["remediation"]
         assert summary["api_errors"] == []
         assert summary["audit"]["api_error_count"] == 0
@@ -278,6 +323,11 @@ class TestLangGraphSocWorkflow:
             approved=True,
             extra_env={"DEMO_API_ERROR_STATUS": "429"},
         )
+        assert summary["trace"] == [
+            *self.EXPECTED_APPROVED_TRACE[:-1],
+            "retry_queue",
+            "writeback",
+        ]
         assert summary["remediation"]["status"] == "skipped"
         assert summary["remediation"]["reason"] == "retryable_api_error"
         assert "planned_steps" not in summary["remediation"]
@@ -285,21 +335,32 @@ class TestLangGraphSocWorkflow:
         retry_decision = summary["remediation"]["retry_decision"]
         assert retry_decision["max_attempts"] == 3
         assert retry_decision["idempotency_key"] == summary["idempotency"]["remediation_key"]
+        assert summary["retry"]["status"] == "scheduled"
+        assert summary["retry"]["idempotency_key"] == summary["idempotency"]["remediation_key"]
         assert summary["audit"]["api_error_count"] == 1
         assert summary["audit"]["retryable_api_error_count"] == 1
+        assert summary["audit"]["route"]["after_remediation"] == "retry_queue"
 
     def test_terminal_api_error_blocks_write_intent(self):
         summary, _ = self._run(
             approved=True,
             extra_env={"DEMO_API_ERROR_STATUS": "403"},
         )
+        assert summary["trace"] == [
+            *self.EXPECTED_APPROVED_TRACE[:-1],
+            "escalate",
+            "writeback",
+        ]
         assert summary["remediation"]["status"] == "skipped"
         assert summary["remediation"]["reason"] == "terminal_api_error"
         assert "planned_steps" not in summary["remediation"]
         assert summary["api_errors"][0]["classification"] == "terminal"
         assert summary["remediation"]["retry_decision"]["max_attempts"] == 0
+        assert summary["escalation"]["status"] == "queued"
+        assert summary["escalation"]["reason"] == "terminal_api_error"
         assert summary["audit"]["api_error_count"] == 1
         assert summary["audit"]["retryable_api_error_count"] == 0
+        assert summary["audit"]["route"]["after_remediation"] == "escalate"
 
     def test_real_langgraph_runtime_when_dependency_is_installed(self):
         pytest.importorskip("langgraph.graph")
@@ -316,9 +377,34 @@ class TestLangGraphSocWorkflow:
         summary = json.loads(result.stdout)
         assert summary["trace"] == self.EXPECTED_TRACE
         assert summary["remediation"]["status"] == "skipped"
+        assert summary["audit"]["route"]["after_review"] == "writeback"
+
+    def test_real_langgraph_runtime_routes_retryable_error(self):
+        pytest.importorskip("langgraph.graph")
+        env = {
+            **os.environ,
+            "DEMO_LANGGRAPH_RUNTIME": "yes",
+            "DEMO_APPROVE": "yes",
+            "DEMO_API_ERROR_STATUS": "429",
+        }
+        result = subprocess.run(
+            [sys.executable, str(self.SCRIPT)],
+            capture_output=True,
+            text=True,
+            timeout=30,
+            check=False,
+            env=env,
+        )
+        assert result.returncode == 0, result.stderr
+        summary = json.loads(result.stdout)
+        assert "retry_queue" in summary["trace"]
+        assert summary["audit"]["route"]["after_remediation"] == "retry_queue"
 
     def test_stategraph_builder_is_present_without_importing_dependency(self):
         text = self.SCRIPT.read_text(encoding="utf-8")
         assert "StateGraph(GraphState)" in text
-        assert 'graph.add_edge("review", "remediate")' in text
+        assert "graph.add_conditional_edges" in text
+        assert "route_after_review" in text
+        assert "route_after_remediation" in text
+        assert 'graph.add_node("llm_triage", llm_triage_node)' in text
         assert "DEMO_LANGGRAPH_RUNTIME" in text
