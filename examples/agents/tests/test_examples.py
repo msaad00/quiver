@@ -501,3 +501,37 @@ class TestLangGraphSocWorkflow:
         assert "route_after_remediation" in text
         assert 'graph.add_node("llm_triage", llm_triage_node)' in text
         assert "DEMO_LANGGRAPH_RUNTIME" in text
+
+
+class TestLangGraphHarnessEvals:
+    """Regression coverage for profile/triage eval tracking."""
+
+    SCRIPT = EXAMPLES / "eval_langgraph_harness.py"
+    DATASET = EXAMPLES / "evals" / "langgraph_triage_golden.json"
+
+    def test_golden_eval_report_passes(self):
+        result = subprocess.run(
+            [sys.executable, str(self.SCRIPT), "--check"],
+            capture_output=True,
+            text=True,
+            timeout=30,
+            check=False,
+        )
+        assert result.returncode == 0, result.stderr
+        report = json.loads(result.stdout)
+        assert report["event"] == "langgraph_agent_harness_eval"
+        assert report["dataset_version"] == "langgraph-agent-harness-golden-v1"
+        assert report["cases_total"] == 3
+        assert report["passed"] == 3
+        assert report["failed"] == 0
+        assert report["pass_rate"] == 1.0
+        assert {case["case_id"] for case in report["results"]} == {
+            "readonly_soc_blocks_remediation",
+            "analyst_triage_records_model_metadata",
+            "remediation_profile_does_not_approve_itself",
+        }
+
+    def test_golden_dataset_is_valid_json(self):
+        payload = json.loads(self.DATASET.read_text(encoding="utf-8"))
+        assert payload["dataset_version"] == "langgraph-agent-harness-golden-v1"
+        assert len(payload["cases"]) == 3

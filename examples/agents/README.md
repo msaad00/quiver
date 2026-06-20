@@ -116,6 +116,9 @@ python examples/agents/langgraph_security_graph.py
 DEMO_APPROVE=yes \
 DEMO_API_ERROR_STATUS=429 \
 python examples/agents/langgraph_security_graph.py
+
+# Offline eval gate: replay golden profile/triage cases and fail on drift.
+python examples/agents/eval_langgraph_harness.py --check
 ```
 
 The LangGraph summary includes `integrity.evidence_hash`,
@@ -135,6 +138,11 @@ Profile examples live under
 | `readonly-soc.json` | read-only SOC replay and triage |
 | `analyst-triage.json` | optional external-model metadata for bounded drafting |
 | `dry-run-remediation.json` | exposes remediation planning, but still requires `DEMO_APPROVE=yes` / approval context |
+
+Eval fixtures live under [`evals/`](evals/). The eval runner is deterministic:
+it replays profile/triage cases, checks recommendation shape, HITL routing,
+allowlist behavior, and remediation blocking, then emits a pass-rate report.
+It does not call a live model and does not use an LLM-as-judge.
 
 See each example file's module-level docstring for framework-specific
 prerequisites.

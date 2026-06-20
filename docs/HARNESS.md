@@ -61,6 +61,20 @@ The example exposes a concrete `agents` manifest and `agent_runs` ledger:
 `audit-writer`. Each run carries an authority label plus input/output hashes
 so replay can detect drift without trusting prompt text.
 
+Eval fixtures live under
+[`examples/agents/evals/`](../examples/agents/evals/). The offline gate
+replays golden profile and triage cases through the same graph, checks bounded
+recommendation shape, HITL routing, allowlist intersection, and remediation
+blocking, then emits a pass-rate report:
+
+```bash
+python examples/agents/eval_langgraph_harness.py --check
+```
+
+This is regression tracking for orchestrator behavior, not an LLM-as-judge.
+It does not call a live model; live model quality checks can be layered on top
+later with the same dataset/version/report contract.
+
 Operator profiles live under
 [`examples/agents/harness_profiles/`](../examples/agents/harness_profiles/).
 They are JSON metadata only: allowed skills, caller context, identity hints,

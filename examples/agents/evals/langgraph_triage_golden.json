@@ -1,0 +1,76 @@
+{
+  "dataset_version": "langgraph-agent-harness-golden-v1",
+  "description": "Offline regression cases for bounded LangGraph agent recommendations, profile loading, HITL routing, and remediation guardrails.",
+  "cases": [
+    {
+      "case_id": "readonly_soc_blocks_remediation",
+      "profile": "examples/agents/harness_profiles/readonly-soc.json",
+      "raw_events": [
+        {
+          "source": "cloudtrail",
+          "event_name": "CreateAccessKey",
+          "actor_uid": "AIDAEXAMPLE",
+          "resource_uid": "arn:aws:iam::111122223333:user/build-bot"
+        }
+      ],
+      "expected": {
+        "profile_id": "readonly-soc",
+        "harness_mode": "deterministic_offline",
+        "recommendation_action": "request_approval",
+        "recommendation_priority": "high",
+        "review_status": "blocked",
+        "remediation_status": "skipped",
+        "route_after_review": "writeback",
+        "effective_allowed_excludes": ["iam-departures-aws"],
+        "triage_forbidden_outputs": ["approval", "write_intent", "audit_chain_mutation"],
+        "planned_steps_absent": true
+      }
+    },
+    {
+      "case_id": "analyst_triage_records_model_metadata",
+      "profile": "examples/agents/harness_profiles/analyst-triage.json",
+      "raw_events": [
+        {
+          "source": "cloudtrail",
+          "event_name": "CreateAccessKey",
+          "actor_uid": "AIDAEXAMPLE",
+          "resource_uid": "arn:aws:iam::111122223333:user/build-bot"
+        }
+      ],
+      "expected": {
+        "profile_id": "analyst-triage",
+        "harness_mode": "external_llm_optional",
+        "recommendation_action": "request_approval",
+        "recommendation_priority": "high",
+        "recommendation_generated_by": "openai:gpt-4.1-mini",
+        "review_status": "blocked",
+        "remediation_status": "skipped",
+        "route_after_review": "writeback",
+        "planned_steps_absent": true
+      }
+    },
+    {
+      "case_id": "remediation_profile_does_not_approve_itself",
+      "profile": "examples/agents/harness_profiles/dry-run-remediation.json",
+      "raw_events": [
+        {
+          "source": "cloudtrail",
+          "event_name": "CreateAccessKey",
+          "actor_uid": "AIDAEXAMPLE",
+          "resource_uid": "arn:aws:iam::111122223333:user/build-bot"
+        }
+      ],
+      "expected": {
+        "profile_id": "dry-run-remediation",
+        "harness_mode": "deterministic_offline",
+        "recommendation_action": "request_approval",
+        "recommendation_priority": "high",
+        "review_status": "blocked",
+        "remediation_status": "skipped",
+        "route_after_review": "writeback",
+        "effective_allowed_includes": ["iam-departures-aws"],
+        "planned_steps_absent": true
+      }
+    }
+  ]
+}

@@ -116,6 +116,8 @@ Operator customization is profile-based: see
 read-only SOC, analyst triage, and HITL-gated dry-run remediation profiles.
 Profiles set allowlists, caller context, identity hints, and model metadata;
 they never store secrets or grant approval.
+Golden eval fixtures in [`examples/agents/evals/`](examples/agents/evals/)
+replay those routes offline and emit a pass-rate report for harness drift.
 
 ![Optional agentic SOC orchestrator: LangGraph or LangChain controls the workflow DAG and LLM/model choice, while cloud-ai-security-skills owns deterministic ingest, normalize, enrich, correlate, map, review, audit, eval artifacts, sandbox/RLIMIT, allowlist, dry-run, HITL, and HMAC audit rails.](docs/images/agentic-soc-orchestrator.svg)
 
