@@ -1,0 +1,40 @@
+{
+  "profile_id": "readonly-soc",
+  "description": "Read-only SOC triage: ingest, replay, detect, map, summarize, and stop before remediation.",
+  "allowed_skills": [
+    "ingest-cloudtrail-ocsf",
+    "source-snowflake-query",
+    "detect-lateral-movement",
+    "cspm-aws-cis-benchmark",
+    "discover-control-evidence",
+    "convert-ocsf-to-sarif"
+  ],
+  "caller_context": {
+    "user_id": "soc-readonly-agent",
+    "email": "soc-readonly@example.com",
+    "session_id": "soc-readonly-demo",
+    "roles": "security_analyst",
+    "allowed_skills": [
+      "detect-lateral-movement",
+      "source-snowflake-query",
+      "convert-ocsf-to-sarif"
+    ]
+  },
+  "cloud_identity_hints": {
+    "aws": "AWS_PROFILE=prod-readonly",
+    "snowflake": "snowflake-cli auth login --authenticator externalbrowser"
+  },
+  "llm": {
+    "mode": "deterministic_offline",
+    "provider": "deterministic-local",
+    "model": "policy-bounded-triage-v1"
+  },
+  "approval_policy": {
+    "remediation_requires_approval_context": true,
+    "approval_source": "not_enabled_for_this_profile"
+  },
+  "runtime": {
+    "langgraph_runtime_optional": true,
+    "dry_run_default": true
+  }
+}

@@ -61,6 +61,14 @@ The example exposes a concrete `agents` manifest and `agent_runs` ledger:
 `audit-writer`. Each run carries an authority label plus input/output hashes
 so replay can detect drift without trusting prompt text.
 
+Operator profiles live under
+[`examples/agents/harness_profiles/`](../examples/agents/harness_profiles/).
+They are JSON metadata only: allowed skills, caller context, identity hints,
+LLM provider/model metadata, and approval-policy documentation. They do not
+store cloud secrets and they do not grant approval. A remediation profile can
+make a dry-run skill visible, but the graph still needs `_approval_context`
+from the operator's IDP or ticketing workflow before routing to remediation.
+
 ## Customization knobs
 
 Five tiers of override. Outer wins:

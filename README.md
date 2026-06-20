@@ -111,6 +111,12 @@ and a hard HITL node before remediation. The end-to-end route is
 `ingest -> normalize -> enrich -> correlate -> confidence score -> MITRE/CVSS/EPSS/KEV map -> LLM triage -> analyst review -> dry-run remediation -> retry/escalate/writeback -> audit/eval`
 without moving trust into prompts.
 
+Operator customization is profile-based: see
+[`examples/agents/harness_profiles/`](examples/agents/harness_profiles/) for
+read-only SOC, analyst triage, and HITL-gated dry-run remediation profiles.
+Profiles set allowlists, caller context, identity hints, and model metadata;
+they never store secrets or grant approval.
+
 ![Optional agentic SOC orchestrator: LangGraph or LangChain controls the workflow DAG and LLM/model choice, while cloud-ai-security-skills owns deterministic ingest, normalize, enrich, correlate, map, review, audit, eval artifacts, sandbox/RLIMIT, allowlist, dry-run, HITL, and HMAC audit rails.](docs/images/agentic-soc-orchestrator.svg)
 
 | Layer | Belongs in | Why |

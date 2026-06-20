@@ -89,6 +89,10 @@ terminal-error escalation, duplicate suppression, and writeback.
 # Blocked path: no approval context, no remediation action.
 python examples/agents/langgraph_security_graph.py
 
+# Profile path: operator-owned roles, allowlists, identity hints, and model metadata.
+DEMO_HARNESS_PROFILE=examples/agents/harness_profiles/readonly-soc.json \
+python examples/agents/langgraph_security_graph.py
+
 # Approved path: remediation reaches dry-run only and writes audit/eval output.
 DEMO_APPROVE=yes \
 DEMO_APPROVER=reviewer@example.com \
@@ -117,11 +121,20 @@ python examples/agents/langgraph_security_graph.py
 The LangGraph summary includes `integrity.evidence_hash`,
 `integrity.state_hash`, stable workflow/remediation idempotency keys, and
 retryable-vs-terminal API error classification. It also includes the
-`harness` provider/model/mode, `agents` manifest, `agent_runs` ledger, and
-bounded `agent_recommendations` so operators can see which role and model would
-have drafted the analyst note without letting that model set policy, mappings,
-approvals, or audit facts. Use
+`profile`, `effective_allowed_skills`, `harness` provider/model/mode, `agents`
+manifest, `agent_runs` ledger, and bounded `agent_recommendations` so
+operators can see which role and model would have drafted the analyst note
+without letting that model set policy, mappings, approvals, or audit facts. Use
 `DEMO_API_ERROR_STATUS=429` for retryable errors or `403` for terminal errors.
+
+Profile examples live under
+[`harness_profiles/`](harness_profiles/):
+
+| Profile | Behavior |
+|---|---|
+| `readonly-soc.json` | read-only SOC replay and triage |
+| `analyst-triage.json` | optional external-model metadata for bounded drafting |
+| `dry-run-remediation.json` | exposes remediation planning, but still requires `DEMO_APPROVE=yes` / approval context |
 
 See each example file's module-level docstring for framework-specific
 prerequisites.
