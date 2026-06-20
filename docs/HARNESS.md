@@ -55,6 +55,14 @@ or audit-chain facts. The compiled LangGraph path uses conditional edges for
 HITL, retryable API errors, terminal API errors, duplicate write suppression,
 and audit/eval writeback; the offline runner mirrors those routes for tests.
 
+Model-backed triage plugs in through a bounded adapter contract. The example
+accepts only `finding_uid`, `priority`, `recommended_action`, and `rationale`
+from an optional adapter fixture; forbidden fields such as `approval`, `cvss`,
+`mitre`, `epss`, `kev`, `tenant_scope`, `idempotency_key`, or `write_intent`
+are rejected and replaced by deterministic fallback. The summary and audit
+record expose `llm_validation` plus accepted/rejected counts so operators can
+see whether model output influenced triage without letting it mutate facts.
+
 The example exposes a concrete `agents` manifest and `agent_runs` ledger:
 `evidence-agent`, `risk-map-agent`, `triage-agent`, `review-gate`,
 `remediation-planner`, `retry-coordinator`, `escalation-agent`, and

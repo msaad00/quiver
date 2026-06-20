@@ -320,6 +320,73 @@ class TestLangGraphSocWorkflow:
         triage_agent = next(agent for agent in summary["agents"] if agent["agent_id"] == "triage-agent")
         assert "approval" in triage_agent["forbidden_outputs"]
         assert "write_intent" in triage_agent["forbidden_outputs"]
+        assert summary["llm_validation"][0]["status"] == "fallback"
+        assert summary["llm_validation"][0]["reason"] == "no_adapter_output"
+
+    def test_llm_adapter_accepts_bounded_triage_output(self, tmp_path: Path):
+        baseline, _ = self._run()
+        finding_uid = baseline["framework_maps"][0]["finding_uid"]
+        fixture = tmp_path / "accepted-llm-output.json"
+        fixture.write_text(json.dumps({
+            "recommendations": [
+                {
+                    "finding_uid": finding_uid,
+                    "priority": "critical",
+                    "recommended_action": "request_approval",
+                    "rationale": "Fixture model ranks the finding for immediate analyst review.",
+                },
+            ],
+        }), encoding="utf-8")
+
+        summary, _ = self._run(extra_env={
+            "DEMO_EXTERNAL_LLM_ALLOWED": "yes",
+            "DEMO_LLM_PROVIDER": "fixture",
+            "DEMO_LLM_MODEL": "triage-fixture-v1",
+            "DEMO_LLM_ADAPTER_FIXTURE": str(fixture),
+        })
+
+        recommendation = summary["agent_recommendations"][0]
+        assert recommendation["priority"] == "critical"
+        assert recommendation["recommended_action"] == "request_approval"
+        assert recommendation["rationale"] == "Fixture model ranks the finding for immediate analyst review."
+        assert recommendation["generated_by"] == "fixture:triage-fixture-v1"
+        assert summary["llm_validation"][0]["status"] == "accepted"
+        assert summary["llm_validation"][0]["reason"] == "schema_valid"
+        assert summary["audit"]["llm_adapter_accepted"] == 1
+        assert summary["audit"]["llm_adapter_rejected"] == 0
+
+    def test_llm_adapter_rejects_forbidden_security_facts(self, tmp_path: Path):
+        baseline, _ = self._run()
+        finding_uid = baseline["framework_maps"][0]["finding_uid"]
+        fixture = tmp_path / "forbidden-llm-output.json"
+        fixture.write_text(json.dumps({
+            "recommendations": [
+                {
+                    "finding_uid": finding_uid,
+                    "priority": "low",
+                    "recommended_action": "close",
+                    "rationale": "This output should not be trusted.",
+                    "approval": {"approver_id": "model"},
+                    "cvss": {"base_score": 0.0},
+                },
+            ],
+        }), encoding="utf-8")
+
+        summary, _ = self._run(extra_env={
+            "DEMO_EXTERNAL_LLM_ALLOWED": "yes",
+            "DEMO_LLM_PROVIDER": "fixture",
+            "DEMO_LLM_MODEL": "triage-fixture-v1",
+            "DEMO_LLM_ADAPTER_FIXTURE": str(fixture),
+        })
+
+        recommendation = summary["agent_recommendations"][0]
+        assert recommendation["priority"] == "high"
+        assert recommendation["recommended_action"] == "request_approval"
+        assert recommendation["rationale"].startswith("Deterministic triage")
+        assert summary["llm_validation"][0]["status"] == "rejected"
+        assert summary["llm_validation"][0]["reason"] == "forbidden_output:approval,cvss"
+        assert summary["audit"]["llm_adapter_accepted"] == 0
+        assert summary["audit"]["llm_adapter_rejected"] == 1
 
     def test_profile_loads_caller_context_and_allowed_skills(self):
         summary, _ = self._run(extra_env={

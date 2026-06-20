@@ -118,6 +118,10 @@ Profiles set allowlists, caller context, identity hints, and model metadata;
 they never store secrets or grant approval.
 Golden eval fixtures in [`examples/agents/evals/`](examples/agents/evals/)
 replay those routes offline and emit a pass-rate report for harness drift.
+The optional LLM adapter path is schema-gated: model output can rank and draft
+triage rationale, but attempts to set approvals, CVSS/MITRE/EPSS/KEV facts,
+tenant scope, idempotency keys, or write intent are rejected and fall back to
+deterministic triage.
 
 ![Optional agentic SOC orchestrator: LangGraph or LangChain controls the workflow DAG and LLM/model choice, while cloud-ai-security-skills owns deterministic ingest, normalize, enrich, correlate, map, review, audit, eval artifacts, sandbox/RLIMIT, allowlist, dry-run, HITL, and HMAC audit rails.](docs/images/agentic-soc-orchestrator.svg)
 

@@ -111,6 +111,14 @@ DEMO_LLM_PROVIDER=openai \
 DEMO_LLM_MODEL=gpt-4.1-mini \
 python examples/agents/langgraph_security_graph.py
 
+# Optional adapter fixture: accepts only finding_uid, priority,
+# recommended_action, and rationale; forbidden security facts fall back closed.
+DEMO_EXTERNAL_LLM_ALLOWED=yes \
+DEMO_LLM_PROVIDER=fixture \
+DEMO_LLM_MODEL=triage-fixture-v1 \
+DEMO_LLM_ADAPTER_FIXTURE=/path/to/recommendations.json \
+python examples/agents/langgraph_security_graph.py
+
 # Retryable API error path: no write intent is created without approval;
 # approved retries reuse the same remediation idempotency key.
 DEMO_APPROVE=yes \
@@ -129,6 +137,8 @@ manifest, `agent_runs` ledger, and bounded `agent_recommendations` so
 operators can see which role and model would have drafted the analyst note
 without letting that model set policy, mappings, approvals, or audit facts. Use
 `DEMO_API_ERROR_STATUS=429` for retryable errors or `403` for terminal errors.
+`llm_validation` records whether an adapter output was accepted, rejected, or
+replaced by deterministic fallback.
 
 Profile examples live under
 [`harness_profiles/`](harness_profiles/):

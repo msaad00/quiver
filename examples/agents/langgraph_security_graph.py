@@ -164,6 +164,14 @@ class AgentRecommendation(TypedDict):
     output_hash: str
 
 
+class LlmValidationRecord(TypedDict):
+    finding_uid: str
+    adapter: str
+    status: Literal["accepted", "fallback", "rejected"]
+    reason: str
+    output_hash: str
+
+
 class ReviewDecision(TypedDict):
     status: Literal["approved", "blocked"]
     reason: str
@@ -225,6 +233,7 @@ class GraphState(TypedDict, total=False):
     agent_manifest: list[AgentDefinition]
     agent_runs: list[AgentRunRecord]
     agent_recommendations: list[AgentRecommendation]
+    llm_validation: list[LlmValidationRecord]
     review_decision: ReviewDecision
     remediation_result: RemediationResult
     retry_record: dict[str, Any]
@@ -435,6 +444,162 @@ def _agent_harness_config(state: GraphState) -> AgentHarnessConfig:
             ],
             "allowed_outputs": allowed_outputs,
         })[:16],
+    }
+
+
+LLM_ADAPTER_ALLOWED_KEYS = {"finding_uid", "priority", "recommended_action", "rationale"}
+LLM_ADAPTER_FORBIDDEN_KEYS = {
+    "approval",
+    "audit_chain_mutation",
+    "cvss",
+    "epss",
+    "idempotency_key",
+    "kev",
+    "mitre",
+    "tenant_scope",
+    "write_intent",
+}
+LLM_ADAPTER_PRIORITIES = {"critical", "high", "medium", "low"}
+LLM_ADAPTER_ACTIONS = {"request_approval", "investigate", "close"}
+
+
+def _load_llm_adapter_recommendations() -> list[dict[str, Any]]:
+    """Load an optional model-output fixture without requiring a live model."""
+    fixture_path = os.environ.get("DEMO_LLM_ADAPTER_FIXTURE")
+    if not fixture_path:
+        return []
+    payload = json.loads(Path(fixture_path).read_text(encoding="utf-8"))
+    if isinstance(payload, list):
+        return payload
+    if isinstance(payload, dict):
+        recommendations = payload.get("recommendations", [])
+        return recommendations if isinstance(recommendations, list) else []
+    return []
+
+
+def _deterministic_triage_recommendation(
+    *,
+    finding_uid: str,
+    mapped: FrameworkMap,
+    confidence: float,
+    harness_config: AgentHarnessConfig,
+) -> AgentRecommendation:
+    recommended_action: Literal["request_approval", "investigate", "close"] = (
+        "request_approval" if confidence >= 0.90 else "investigate"
+    )
+    priority: Literal["critical", "high", "medium", "low"] = (
+        "high" if mapped["cvss"]["base_score"] >= 7.0 else "medium"
+    )
+    recommendation_payload = {
+        "finding_uid": finding_uid,
+        "priority": priority,
+        "recommended_action": recommended_action,
+        "confidence": confidence,
+        "provider": harness_config["provider"],
+        "model": harness_config["model"],
+    }
+    return {
+        "finding_uid": finding_uid,
+        "priority": priority,
+        "recommended_action": recommended_action,
+        "rationale": "Deterministic triage from rule confidence, CVSS, EPSS, and mapping coverage.",
+        "generated_by": f"{harness_config['provider']}:{harness_config['model']}",
+        "output_hash": _stable_hash(recommendation_payload)[:16],
+    }
+
+
+def _validate_llm_adapter_recommendation(
+    *,
+    candidate: dict[str, Any] | None,
+    fallback: AgentRecommendation,
+    finding_uid: str,
+    harness_config: AgentHarnessConfig,
+) -> tuple[AgentRecommendation, LlmValidationRecord]:
+    if not candidate:
+        return fallback, {
+            "finding_uid": finding_uid,
+            "adapter": "deterministic_fallback",
+            "status": "fallback",
+            "reason": "no_adapter_output",
+            "output_hash": fallback["output_hash"],
+        }
+
+    output_hash = _stable_hash(candidate)[:16]
+    forbidden = sorted(key for key in candidate if key in LLM_ADAPTER_FORBIDDEN_KEYS)
+    extra = sorted(key for key in candidate if key not in LLM_ADAPTER_ALLOWED_KEYS)
+    if forbidden:
+        return fallback, {
+            "finding_uid": finding_uid,
+            "adapter": "fixture_llm_adapter",
+            "status": "rejected",
+            "reason": f"forbidden_output:{','.join(forbidden)}",
+            "output_hash": output_hash,
+        }
+    if extra:
+        return fallback, {
+            "finding_uid": finding_uid,
+            "adapter": "fixture_llm_adapter",
+            "status": "rejected",
+            "reason": f"unknown_output:{','.join(extra)}",
+            "output_hash": output_hash,
+        }
+    if candidate.get("finding_uid") != finding_uid:
+        return fallback, {
+            "finding_uid": finding_uid,
+            "adapter": "fixture_llm_adapter",
+            "status": "rejected",
+            "reason": "finding_uid_mismatch",
+            "output_hash": output_hash,
+        }
+    if candidate.get("priority") not in LLM_ADAPTER_PRIORITIES:
+        return fallback, {
+            "finding_uid": finding_uid,
+            "adapter": "fixture_llm_adapter",
+            "status": "rejected",
+            "reason": "invalid_priority",
+            "output_hash": output_hash,
+        }
+    if candidate.get("recommended_action") not in LLM_ADAPTER_ACTIONS:
+        return fallback, {
+            "finding_uid": finding_uid,
+            "adapter": "fixture_llm_adapter",
+            "status": "rejected",
+            "reason": "invalid_recommended_action",
+            "output_hash": output_hash,
+        }
+
+    rationale = str(candidate.get("rationale") or "").strip()
+    if not rationale:
+        return fallback, {
+            "finding_uid": finding_uid,
+            "adapter": "fixture_llm_adapter",
+            "status": "rejected",
+            "reason": "missing_rationale",
+            "output_hash": output_hash,
+        }
+
+    recommendation_payload = {
+        "finding_uid": finding_uid,
+        "priority": candidate["priority"],
+        "recommended_action": candidate["recommended_action"],
+        "rationale": rationale,
+        "provider": harness_config["provider"],
+        "model": harness_config["model"],
+    }
+    accepted: AgentRecommendation = {
+        "finding_uid": finding_uid,
+        "priority": candidate["priority"],
+        "recommended_action": candidate["recommended_action"],
+        "rationale": rationale,
+        "generated_by": f"{harness_config['provider']}:{harness_config['model']}",
+        "output_hash": _stable_hash(recommendation_payload)[:16],
+    }
+    return accepted, {
+        "finding_uid": finding_uid,
+        "adapter": "fixture_llm_adapter",
+        "status": "accepted",
+        "reason": "schema_valid",
+        "output_hash": output_hash,
     }
 
 
@@ -651,38 +816,37 @@ def llm_triage_node(state: GraphState) -> GraphState:
     """Bounded agent layer: rank and summarize only, never decide facts."""
     _append_trace(state, "llm_triage")
     harness_config = _agent_harness_config(state)
+    adapter_recommendations = {
+        recommendation.get("finding_uid"): recommendation
+        for recommendation in _load_llm_adapter_recommendations()
+        if isinstance(recommendation, dict)
+    }
     confidence_by_uid = {
         score["finding_uid"]: score["score"]
         for score in state.get("confidence_scores") or []
     }
     recommendations = []
+    validation_records = []
     for mapped in state.get("framework_maps") or []:
         finding_uid = mapped["finding_uid"]
         confidence = confidence_by_uid.get(finding_uid, 0.0)
-        recommended_action: Literal["request_approval", "investigate", "close"] = (
-            "request_approval" if confidence >= 0.90 else "investigate"
+        fallback = _deterministic_triage_recommendation(
+            finding_uid=finding_uid,
+            mapped=mapped,
+            confidence=confidence,
+            harness_config=harness_config,
         )
-        priority: Literal["critical", "high", "medium", "low"] = (
-            "high" if mapped["cvss"]["base_score"] >= 7.0 else "medium"
+        recommendation, validation = _validate_llm_adapter_recommendation(
+            candidate=adapter_recommendations.get(finding_uid),
+            fallback=fallback,
+            finding_uid=finding_uid,
+            harness_config=harness_config,
         )
-        recommendation_payload = {
-            "finding_uid": finding_uid,
-            "priority": priority,
-            "recommended_action": recommended_action,
-            "confidence": confidence,
-            "provider": harness_config["provider"],
-            "model": harness_config["model"],
-        }
-        recommendations.append({
-            "finding_uid": finding_uid,
-            "priority": priority,
-            "recommended_action": recommended_action,
-            "rationale": "Deterministic triage from rule confidence, CVSS, EPSS, and mapping coverage.",
-            "generated_by": f"{harness_config['provider']}:{harness_config['model']}",
-            "output_hash": _stable_hash(recommendation_payload)[:16],
-        })
+        recommendations.append(recommendation)
+        validation_records.append(validation)
     state["harness_config"] = harness_config
     state["agent_recommendations"] = recommendations
+    state["llm_validation"] = validation_records
     _record_agent_run(
         state,
         agent_id="triage-agent",
@@ -692,7 +856,10 @@ def llm_triage_node(state: GraphState) -> GraphState:
             "framework_maps": state.get("framework_maps"),
             "harness_config": harness_config,
         },
-        outputs={"agent_recommendations": recommendations},
+        outputs={
+            "agent_recommendations": recommendations,
+            "llm_validation": validation_records,
+        },
     )
     _emit_node(
         "llm_triage",
@@ -700,6 +867,8 @@ def llm_triage_node(state: GraphState) -> GraphState:
         provider=harness_config["provider"],
         model=harness_config["model"],
         recommendations=len(recommendations),
+        accepted=sum(1 for record in validation_records if record["status"] == "accepted"),
+        rejected=sum(1 for record in validation_records if record["status"] == "rejected"),
         authority="rank_summarize_draft_only",
     )
     return state
@@ -951,6 +1120,7 @@ def audit_eval_writeback_node(state: GraphState) -> GraphState:
         "agent_manifest": state.get("agent_manifest"),
         "agent_runs": state.get("agent_runs"),
         "agent_recommendations": state.get("agent_recommendations"),
+        "llm_validation": state.get("llm_validation"),
         "integrity": {
             key: value
             for key, value in (state.get("integrity") or {}).items()
@@ -969,6 +1139,7 @@ def audit_eval_writeback_node(state: GraphState) -> GraphState:
     state["integrity"] = integrity
     idempotency = state.get("idempotency") or {}
     api_errors = state.get("api_errors") or []
+    llm_validation = state.get("llm_validation") or []
     audit_record = {
         "event": "agentic_soc_workflow",
         "correlation_id": state.get("caller_context", {}).get("session_id", "graph-demo-1"),
@@ -979,6 +1150,8 @@ def audit_eval_writeback_node(state: GraphState) -> GraphState:
         "idempotency_key": idempotency.get("remediation_key") or idempotency.get("workflow_key"),
         "api_error_count": len(api_errors),
         "agent_run_count": len(state.get("agent_runs") or []),
+        "llm_adapter_accepted": sum(1 for record in llm_validation if record["status"] == "accepted"),
+        "llm_adapter_rejected": sum(1 for record in llm_validation if record["status"] == "rejected"),
         "retryable_api_error_count": sum(
             1 for error in api_errors if error["classification"] == "retryable"
         ),
@@ -1003,6 +1176,7 @@ def audit_eval_writeback_node(state: GraphState) -> GraphState:
             "idempotency_key_stable",
             "api_error_classification",
             "llm_harness_bounded",
+            "llm_adapter_schema_gate",
             "multi_agent_ledger",
             "conditional_edges",
         ],
@@ -1125,6 +1299,7 @@ def summarize(final: GraphState) -> dict[str, Any]:
         "agents": final.get("agent_manifest"),
         "agent_runs": final.get("agent_runs"),
         "agent_recommendations": final.get("agent_recommendations"),
+        "llm_validation": final.get("llm_validation"),
         "review": final.get("review_decision"),
         "remediation": final.get("remediation_result"),
         "retry": final.get("retry_record"),
