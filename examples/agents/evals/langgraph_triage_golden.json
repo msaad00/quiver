@@ -71,6 +71,92 @@
         "effective_allowed_includes": ["iam-departures-aws"],
         "planned_steps_absent": true
       }
+    },
+    {
+      "case_id": "llm_adapter_accepts_bounded_triage",
+      "profile": "examples/agents/harness_profiles/analyst-triage.json",
+      "env": {
+        "DEMO_EXTERNAL_LLM_ALLOWED": "yes",
+        "DEMO_LLM_PROVIDER": "fixture",
+        "DEMO_LLM_MODEL": "triage-fixture-v1"
+      },
+      "raw_events": [
+        {
+          "source": "cloudtrail",
+          "event_name": "CreateAccessKey",
+          "actor_uid": "AIDAEXAMPLE",
+          "resource_uid": "arn:aws:iam::111122223333:user/build-bot"
+        }
+      ],
+      "llm_adapter_fixture": {
+        "recommendations": [
+          {
+            "finding_uid": "{{finding_uid}}",
+            "priority": "critical",
+            "recommended_action": "request_approval",
+            "rationale": "Fixture model ranks the finding for immediate analyst review."
+          }
+        ]
+      },
+      "expected": {
+        "profile_id": "analyst-triage",
+        "harness_mode": "external_llm_optional",
+        "recommendation_action": "request_approval",
+        "recommendation_priority": "critical",
+        "recommendation_generated_by": "fixture:triage-fixture-v1",
+        "llm_validation_status": "accepted",
+        "llm_validation_reason": "schema_valid",
+        "llm_adapter_accepted": 1,
+        "llm_adapter_rejected": 0,
+        "review_status": "blocked",
+        "remediation_status": "skipped",
+        "route_after_review": "writeback",
+        "planned_steps_absent": true
+      }
+    },
+    {
+      "case_id": "llm_adapter_rejects_forbidden_security_facts",
+      "profile": "examples/agents/harness_profiles/analyst-triage.json",
+      "env": {
+        "DEMO_EXTERNAL_LLM_ALLOWED": "yes",
+        "DEMO_LLM_PROVIDER": "fixture",
+        "DEMO_LLM_MODEL": "triage-fixture-v1"
+      },
+      "raw_events": [
+        {
+          "source": "cloudtrail",
+          "event_name": "CreateAccessKey",
+          "actor_uid": "AIDAEXAMPLE",
+          "resource_uid": "arn:aws:iam::111122223333:user/build-bot"
+        }
+      ],
+      "llm_adapter_fixture": {
+        "recommendations": [
+          {
+            "finding_uid": "{{finding_uid}}",
+            "priority": "low",
+            "recommended_action": "close",
+            "rationale": "This output should not be trusted.",
+            "approval": {"approver_id": "model"},
+            "cvss": {"base_score": 0.0}
+          }
+        ]
+      },
+      "expected": {
+        "profile_id": "analyst-triage",
+        "harness_mode": "external_llm_optional",
+        "recommendation_action": "request_approval",
+        "recommendation_priority": "high",
+        "recommendation_generated_by": "fixture:triage-fixture-v1",
+        "llm_validation_status": "rejected",
+        "llm_validation_reason": "forbidden_output:approval,cvss",
+        "llm_adapter_accepted": 0,
+        "llm_adapter_rejected": 1,
+        "review_status": "blocked",
+        "remediation_status": "skipped",
+        "route_after_review": "writeback",
+        "planned_steps_absent": true
+      }
     }
   ]
 }

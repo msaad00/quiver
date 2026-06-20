@@ -15,6 +15,7 @@ import argparse
 import hashlib
 import json
 import os
+import tempfile
 from pathlib import Path
 from typing import Any
 
@@ -22,6 +23,15 @@ from langgraph_security_graph import load_harness_profile, run_graph, summarize
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_DATASET = Path(__file__).with_name("evals") / "langgraph_triage_golden.json"
+ENV_KEYS = [
+    "DEMO_APPROVE",
+    "DEMO_APPROVER",
+    "DEMO_TICKET",
+    "DEMO_EXTERNAL_LLM_ALLOWED",
+    "DEMO_LLM_PROVIDER",
+    "DEMO_LLM_MODEL",
+    "DEMO_LLM_ADAPTER_FIXTURE",
+]
 
 
 def _stable_hash(payload: Any) -> str:
@@ -34,12 +44,8 @@ def _resolve(path_text: str) -> Path:
     return path if path.is_absolute() else REPO_ROOT / path
 
 
-def _without_approval_env() -> dict[str, str | None]:
-    saved = {
-        "DEMO_APPROVE": os.environ.get("DEMO_APPROVE"),
-        "DEMO_APPROVER": os.environ.get("DEMO_APPROVER"),
-        "DEMO_TICKET": os.environ.get("DEMO_TICKET"),
-    }
+def _without_case_env() -> dict[str, str | None]:
+    saved = {key: os.environ.get(key) for key in ENV_KEYS}
     for key in saved:
         os.environ.pop(key, None)
     return saved
@@ -67,6 +73,38 @@ def _triage_agent(summary: dict[str, Any]) -> dict[str, Any]:
     return {}
 
 
+def _first_finding_uid(case: dict[str, Any]) -> str:
+    raw_events = case.get("raw_events") or [{"source": "demo"}]
+    return f"det-evt-{_stable_hash(raw_events[0])[:12]}"
+
+
+def _replace_placeholders(payload: Any, replacements: dict[str, str]) -> Any:
+    if isinstance(payload, str):
+        rendered = payload
+        for key, value in replacements.items():
+            rendered = rendered.replace(f"{{{{{key}}}}}", value)
+        return rendered
+    if isinstance(payload, list):
+        return [_replace_placeholders(item, replacements) for item in payload]
+    if isinstance(payload, dict):
+        return {
+            key: _replace_placeholders(value, replacements)
+            for key, value in payload.items()
+        }
+    return payload
+
+
+def _write_adapter_fixture(case: dict[str, Any]) -> Path | None:
+    fixture = case.get("llm_adapter_fixture")
+    if not fixture:
+        return None
+    rendered = _replace_placeholders(fixture, {"finding_uid": _first_finding_uid(case)})
+    handle = tempfile.NamedTemporaryFile("w", encoding="utf-8", suffix=".json", delete=False)
+    with handle:
+        json.dump(rendered, handle, sort_keys=True)
+    return Path(handle.name)
+
+
 def _check(name: str, actual: Any, expected: Any) -> dict[str, Any]:
     return {
         "name": name,
@@ -77,8 +115,13 @@ def _check(name: str, actual: Any, expected: Any) -> dict[str, Any]:
 
 
 def run_case(case: dict[str, Any]) -> dict[str, Any]:
-    saved_env = _without_approval_env()
+    saved_env = _without_case_env()
+    fixture_path = _write_adapter_fixture(case)
     try:
+        for key, value in (case.get("env") or {}).items():
+            os.environ[key] = str(value)
+        if fixture_path:
+            os.environ["DEMO_LLM_ADAPTER_FIXTURE"] = str(fixture_path)
         profile = load_harness_profile(str(_resolve(case["profile"])))
         initial = {
             "harness_profile": profile,
@@ -87,6 +130,8 @@ def run_case(case: dict[str, Any]) -> dict[str, Any]:
         }
         summary = summarize(run_graph(initial))
     finally:
+        if fixture_path:
+            fixture_path.unlink(missing_ok=True)
         _restore_env(saved_env)
 
     expected = case["expected"]
@@ -108,6 +153,31 @@ def run_case(case: dict[str, Any]) -> dict[str, Any]:
             "recommendation_generated_by",
             recommendation.get("generated_by"),
             expected["recommendation_generated_by"],
+        ))
+
+    if "llm_validation_status" in expected:
+        validation = (summary.get("llm_validation") or [{}])[0]
+        checks.append(_check(
+            "llm_validation_status",
+            validation.get("status"),
+            expected["llm_validation_status"],
+        ))
+        checks.append(_check(
+            "llm_validation_reason",
+            validation.get("reason"),
+            expected["llm_validation_reason"],
+        ))
+
+    if "llm_adapter_accepted" in expected:
+        checks.append(_check(
+            "llm_adapter_accepted",
+            summary["audit"]["llm_adapter_accepted"],
+            expected["llm_adapter_accepted"],
+        ))
+        checks.append(_check(
+            "llm_adapter_rejected",
+            summary["audit"]["llm_adapter_rejected"],
+            expected["llm_adapter_rejected"],
         ))
 
     for skill in expected.get("effective_allowed_includes", []):
@@ -142,6 +212,7 @@ def run_case(case: dict[str, Any]) -> dict[str, Any]:
             "remediation": summary["remediation"],
             "route": summary["audit"]["route"],
             "effective_allowed_skills": summary["effective_allowed_skills"],
+            "llm_validation": summary.get("llm_validation"),
         })[:16],
         "checks": checks,
     }

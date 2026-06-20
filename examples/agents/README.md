@@ -151,8 +151,9 @@ Profile examples live under
 
 Eval fixtures live under [`evals/`](evals/). The eval runner is deterministic:
 it replays profile/triage cases, checks recommendation shape, HITL routing,
-allowlist behavior, and remediation blocking, then emits a pass-rate report.
-It does not call a live model and does not use an LLM-as-judge.
+allowlist behavior, LLM adapter schema acceptance/rejection, and remediation
+blocking, then emits a pass-rate report. It does not call a live model and
+does not use an LLM-as-judge.
 
 See each example file's module-level docstring for framework-specific
 prerequisites.
