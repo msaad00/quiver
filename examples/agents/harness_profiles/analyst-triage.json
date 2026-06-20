@@ -1,0 +1,39 @@
+{
+  "profile_id": "analyst-triage",
+  "description": "Analyst triage with optional external model metadata for ranking and analyst-note drafting only.",
+  "allowed_skills": [
+    "ingest-cloudtrail-ocsf",
+    "source-snowflake-query",
+    "detect-lateral-movement",
+    "discover-control-evidence",
+    "convert-ocsf-to-sarif"
+  ],
+  "caller_context": {
+    "user_id": "analyst-triage-agent",
+    "email": "analyst@example.com",
+    "session_id": "analyst-triage-demo",
+    "roles": "security_analyst",
+    "allowed_skills": [
+      "detect-lateral-movement",
+      "discover-control-evidence",
+      "convert-ocsf-to-sarif"
+    ]
+  },
+  "cloud_identity_hints": {
+    "aws": "aws sso login --profile prod-readonly",
+    "snowflake": "snowflake-cli auth login --authenticator externalbrowser"
+  },
+  "llm": {
+    "mode": "external_llm_optional",
+    "provider": "openai",
+    "model": "gpt-4.1-mini"
+  },
+  "approval_policy": {
+    "remediation_requires_approval_context": true,
+    "approval_source": "operator_idp_or_ticketing_system"
+  },
+  "runtime": {
+    "langgraph_runtime_optional": true,
+    "dry_run_default": true
+  }
+}

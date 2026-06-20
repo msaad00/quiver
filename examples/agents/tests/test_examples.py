@@ -156,6 +156,7 @@ class TestLangGraphSocWorkflow:
     """Regression coverage for the expanded SOC workflow graph."""
 
     SCRIPT = EXAMPLES / "langgraph_security_graph.py"
+    PROFILES = EXAMPLES / "harness_profiles"
     EXPECTED_AGENT_IDS = [
         "evidence-agent",
         "risk-map-agent",
@@ -319,6 +320,54 @@ class TestLangGraphSocWorkflow:
         triage_agent = next(agent for agent in summary["agents"] if agent["agent_id"] == "triage-agent")
         assert "approval" in triage_agent["forbidden_outputs"]
         assert "write_intent" in triage_agent["forbidden_outputs"]
+
+    def test_profile_loads_caller_context_and_allowed_skills(self):
+        summary, _ = self._run(extra_env={
+            "DEMO_HARNESS_PROFILE": str(self.PROFILES / "readonly-soc.json"),
+        })
+        assert summary["profile"]["profile_id"] == "readonly-soc"
+        assert summary["caller_context"]["email"] == "soc-readonly@example.com"
+        assert summary["audit"]["profile_id"] == "readonly-soc"
+        assert summary["effective_allowed_skills"] == [
+            "ingest-cloudtrail-ocsf",
+            "source-snowflake-query",
+            "detect-lateral-movement",
+            "cspm-aws-cis-benchmark",
+            "discover-control-evidence",
+            "convert-ocsf-to-sarif",
+        ]
+        assert summary["remediation"]["status"] == "skipped"
+
+    def test_profile_llm_metadata_is_bounded(self):
+        summary, _ = self._run(extra_env={
+            "DEMO_HARNESS_PROFILE": str(self.PROFILES / "analyst-triage.json"),
+        })
+        assert summary["profile"]["profile_id"] == "analyst-triage"
+        assert summary["harness"]["mode"] == "external_llm_optional"
+        assert summary["harness"]["provider"] == "openai"
+        assert summary["harness"]["model"] == "gpt-4.1-mini"
+        assert summary["agent_recommendations"][0]["generated_by"] == "openai:gpt-4.1-mini"
+        assert summary["review"]["status"] == "blocked"
+
+    def test_remediation_profile_does_not_grant_approval(self):
+        summary, _ = self._run(extra_env={
+            "DEMO_HARNESS_PROFILE": str(self.PROFILES / "dry-run-remediation.json"),
+        })
+        assert summary["profile"]["profile_id"] == "dry-run-remediation"
+        assert "iam-departures-aws" in summary["effective_allowed_skills"]
+        assert summary["review"]["status"] == "blocked"
+        assert summary["remediation"]["status"] == "skipped"
+        assert "planned_steps" not in summary["remediation"]
+
+    def test_remediation_profile_still_requires_explicit_hitl(self):
+        summary, _ = self._run(
+            approved=True,
+            extra_env={"DEMO_HARNESS_PROFILE": str(self.PROFILES / "dry-run-remediation.json")},
+        )
+        assert summary["profile"]["profile_id"] == "dry-run-remediation"
+        assert summary["review"]["status"] == "approved"
+        assert summary["remediation"]["status"] == "dry_run"
+        assert summary["remediation"]["dry_run"] is True
 
     def test_integrity_and_workflow_idempotency_are_stable(self):
         first, _ = self._run()

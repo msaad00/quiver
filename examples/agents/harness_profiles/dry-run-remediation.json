@@ -1,0 +1,41 @@
+{
+  "profile_id": "dry-run-remediation",
+  "description": "HITL-gated remediation planning profile. The remediation skill is visible, but no path applies changes.",
+  "allowed_skills": [
+    "ingest-cloudtrail-ocsf",
+    "detect-lateral-movement",
+    "discover-control-evidence",
+    "convert-ocsf-to-sarif",
+    "iam-departures-aws"
+  ],
+  "caller_context": {
+    "user_id": "remediation-planner-agent",
+    "email": "security-ops@example.com",
+    "session_id": "dry-run-remediation-demo",
+    "roles": "security_engineer",
+    "allowed_skills": [
+      "detect-lateral-movement",
+      "discover-control-evidence",
+      "iam-departures-aws"
+    ]
+  },
+  "cloud_identity_hints": {
+    "aws": "AWS_PROFILE=prod-breakglass-dryrun",
+    "ticketing": "approval_context must come from the operator ticketing or IDP workflow"
+  },
+  "llm": {
+    "mode": "deterministic_offline",
+    "provider": "deterministic-local",
+    "model": "policy-bounded-triage-v1"
+  },
+  "approval_policy": {
+    "remediation_requires_approval_context": true,
+    "approval_source": "operator_idp_or_ticketing_system",
+    "min_approvers": 1
+  },
+  "runtime": {
+    "langgraph_runtime_optional": true,
+    "dry_run_default": true,
+    "apply_supported": false
+  }
+}

@@ -30,16 +30,18 @@ import json
 import os
 import sys
 from datetime import UTC, datetime
+from pathlib import Path
 from typing import Any, Literal, TypedDict
 
-ALLOWED_SKILLS_READ_ONLY = ",".join([
+ALLOWED_SKILLS_READ_ONLY_LIST = [
     "ingest-cloudtrail-ocsf",
     "source-snowflake-query",
     "detect-lateral-movement",
     "cspm-aws-cis-benchmark",
     "discover-control-evidence",
     "convert-ocsf-to-sarif",
-])
+]
+ALLOWED_SKILLS_READ_ONLY = ",".join(ALLOWED_SKILLS_READ_ONLY_LIST)
 ALLOWED_SKILLS_REMEDIATION = "iam-departures-aws"
 
 WorkflowStage = Literal[
@@ -68,6 +70,18 @@ class CallerContext(TypedDict):
     email: str
     session_id: str
     roles: str
+    allowed_skills: list[str]
+
+
+class HarnessProfile(TypedDict, total=False):
+    profile_id: str
+    description: str
+    allowed_skills: list[str]
+    caller_context: CallerContext
+    cloud_identity_hints: dict[str, str]
+    llm: dict[str, str]
+    approval_policy: dict[str, Any]
+    runtime: dict[str, Any]
 
 
 class ApprovalContext(TypedDict):
@@ -198,6 +212,8 @@ class EvalRecord(TypedDict):
 
 class GraphState(TypedDict, total=False):
     caller_context: CallerContext
+    harness_profile: HarnessProfile
+    effective_allowed_skills: list[str]
     raw_events: list[dict[str, Any]]
     ocsf_events: list[dict[str, Any]]
     findings: list[Finding]
@@ -230,6 +246,63 @@ def _emit_node(stage: WorkflowStage, **payload: Any) -> None:
 def _stable_hash(payload: Any) -> str:
     encoded = json.dumps(payload, sort_keys=True, separators=(",", ":")).encode()
     return hashlib.sha256(encoded).hexdigest()
+
+
+def _default_harness_profile() -> HarnessProfile:
+    return {
+        "profile_id": "inline-default",
+        "description": "Dependency-light local demo profile.",
+        "allowed_skills": ALLOWED_SKILLS_READ_ONLY_LIST,
+        "caller_context": {
+            "user_id": "graph-demo-operator",
+            "email": "graph-demo@example.com",
+            "session_id": "graph-demo-1",
+            "roles": "security_engineer",
+            "allowed_skills": ALLOWED_SKILLS_READ_ONLY_LIST,
+        },
+        "cloud_identity_hints": {
+            "aws": "AWS_PROFILE=prod-readonly",
+            "snowflake": "snowflake-cli auth login --authenticator externalbrowser",
+        },
+        "llm": {
+            "mode": "deterministic_offline",
+            "provider": "deterministic-local",
+            "model": "policy-bounded-triage-v1",
+        },
+        "approval_policy": {
+            "remediation_requires_approval_context": True,
+            "approval_source": "operator_idp_or_ticketing_system",
+        },
+        "runtime": {
+            "langgraph_runtime_optional": True,
+            "dry_run_default": True,
+        },
+    }
+
+
+def load_harness_profile(path_text: str | None = None) -> HarnessProfile:
+    """Load operator profile metadata without reading credentials or secrets."""
+    selected = path_text or os.environ.get("CLOUD_SECURITY_HARNESS_PROFILE") or os.environ.get("DEMO_HARNESS_PROFILE")
+    if not selected:
+        return _default_harness_profile()
+    payload = json.loads(Path(selected).read_text(encoding="utf-8"))
+    default = _default_harness_profile()
+    profile: HarnessProfile = {**default, **payload}
+    profile["caller_context"] = {
+        **default["caller_context"],
+        **payload.get("caller_context", {}),
+    }
+    profile["llm"] = {
+        **default["llm"],
+        **payload.get("llm", {}),
+    }
+    return profile
+
+
+def _effective_allowed_skills(profile: HarnessProfile) -> list[str]:
+    requested = profile.get("allowed_skills") or ALLOWED_SKILLS_READ_ONLY_LIST
+    safe_surface = {*ALLOWED_SKILLS_READ_ONLY_LIST, ALLOWED_SKILLS_REMEDIATION}
+    return [skill for skill in requested if skill in safe_surface]
 
 
 def _agent_manifest() -> list[AgentDefinition]:
@@ -329,15 +402,17 @@ def _record_agent_run(
     })
 
 
-def _agent_harness_config() -> AgentHarnessConfig:
+def _agent_harness_config(state: GraphState) -> AgentHarnessConfig:
     """Describe the LLM/agent harness without requiring a live model."""
+    profile_llm = (state.get("harness_profile") or {}).get("llm", {})
     mode: LlmMode = (
         "external_llm_optional"
         if os.environ.get("DEMO_EXTERNAL_LLM_ALLOWED") == "yes"
+        or profile_llm.get("mode") == "external_llm_optional"
         else "deterministic_offline"
     )
-    provider = os.environ.get("DEMO_LLM_PROVIDER", "deterministic-local")
-    model = os.environ.get("DEMO_LLM_MODEL", "policy-bounded-triage-v1")
+    provider = os.environ.get("DEMO_LLM_PROVIDER") or profile_llm.get("provider", "deterministic-local")
+    model = os.environ.get("DEMO_LLM_MODEL") or profile_llm.get("model", "policy-bounded-triage-v1")
     allowed_outputs = [
         "rank_findings",
         "summarize_evidence",
@@ -414,6 +489,9 @@ def ingest_node(state: GraphState) -> GraphState:
     """Collect raw evidence from an approved source surface."""
     _append_trace(state, "ingest")
     state.setdefault("agent_manifest", _agent_manifest())
+    profile = state.setdefault("harness_profile", _default_harness_profile())
+    effective_skills = _effective_allowed_skills(profile)
+    state["effective_allowed_skills"] = effective_skills
     raw_events = state.get("raw_events") or [{
         "source": "cloudtrail",
         "event_name": "CreateAccessKey",
@@ -421,7 +499,7 @@ def ingest_node(state: GraphState) -> GraphState:
         "resource_uid": "arn:aws:iam::111122223333:user/build-bot",
     }]
     state["raw_events"] = raw_events
-    _emit_node("ingest", allowlist=ALLOWED_SKILLS_READ_ONLY, records=len(raw_events))
+    _emit_node("ingest", allowlist=",".join(effective_skills), profile=profile["profile_id"], records=len(raw_events))
     return state
 
 
@@ -572,7 +650,7 @@ def map_node(state: GraphState) -> GraphState:
 def llm_triage_node(state: GraphState) -> GraphState:
     """Bounded agent layer: rank and summarize only, never decide facts."""
     _append_trace(state, "llm_triage")
-    harness_config = _agent_harness_config()
+    harness_config = _agent_harness_config(state)
     confidence_by_uid = {
         score["finding_uid"]: score["score"]
         for score in state.get("confidence_scores") or []
@@ -860,6 +938,13 @@ def audit_eval_writeback_node(state: GraphState) -> GraphState:
     )
     summary_payload = {
         "caller_context": state.get("caller_context"),
+        "harness_profile": {
+            "profile_id": (state.get("harness_profile") or {}).get("profile_id"),
+            "allowed_skills": (state.get("harness_profile") or {}).get("allowed_skills"),
+            "cloud_identity_hints": (state.get("harness_profile") or {}).get("cloud_identity_hints"),
+            "approval_policy": (state.get("harness_profile") or {}).get("approval_policy"),
+        },
+        "effective_allowed_skills": state.get("effective_allowed_skills"),
         "trace": state.get("trace"),
         "findings": state.get("findings"),
         "harness_config": state.get("harness_config"),
@@ -887,6 +972,7 @@ def audit_eval_writeback_node(state: GraphState) -> GraphState:
     audit_record = {
         "event": "agentic_soc_workflow",
         "correlation_id": state.get("caller_context", {}).get("session_id", "graph-demo-1"),
+        "profile_id": (state.get("harness_profile") or {}).get("profile_id"),
         "chain_hash": state_hash,
         "evidence_hash": integrity.get("evidence_hash"),
         "state_hash": state_hash,
@@ -1029,6 +1115,8 @@ def summarize(final: GraphState) -> dict[str, Any]:
     """Strip state to a stable operator-facing summary."""
     return {
         "caller_context": final.get("caller_context"),
+        "profile": final.get("harness_profile"),
+        "effective_allowed_skills": final.get("effective_allowed_skills"),
         "trace": final.get("trace"),
         "findings_count": len(final.get("findings") or []),
         "confidence_scores": final.get("confidence_scores"),
@@ -1050,13 +1138,10 @@ def summarize(final: GraphState) -> dict[str, Any]:
 
 
 def main() -> int:
+    profile = load_harness_profile()
     initial: GraphState = {
-        "caller_context": {
-            "user_id": "graph-demo-operator",
-            "email": "graph-demo@example.com",
-            "session_id": "graph-demo-1",
-            "roles": "security_engineer",
-        },
+        "harness_profile": profile,
+        "caller_context": profile["caller_context"],
         "raw_events": [{"source": "demo"}],
     }
     if os.environ.get("DEMO_LANGGRAPH_RUNTIME") == "yes":
