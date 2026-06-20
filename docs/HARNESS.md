@@ -91,6 +91,9 @@ LLM provider/model metadata, and approval-policy documentation. They do not
 store cloud secrets and they do not grant approval. A remediation profile can
 make a dry-run skill visible, but the graph still needs `_approval_context`
 from the operator's IDP or ticketing workflow before routing to remediation.
+Closed JSON Schema contracts live under
+[`examples/agents/schemas/`](../examples/agents/schemas/) for both harness
+profiles and LLM adapter recommendation payloads.
 
 ## Customization knobs
 

@@ -149,6 +149,10 @@ Profile examples live under
 | `analyst-triage.json` | optional external-model metadata for bounded drafting |
 | `dry-run-remediation.json` | exposes remediation planning, but still requires `DEMO_APPROVE=yes` / approval context |
 
+Contract schemas live under [`schemas/`](schemas/). They define the closed
+shape for harness profiles and the LLM adapter recommendation payload accepted
+by the reference graph.
+
 Eval fixtures live under [`evals/`](evals/). The eval runner is deterministic:
 it replays profile/triage cases, checks recommendation shape, HITL routing,
 allowlist behavior, LLM adapter schema acceptance/rejection, and remediation

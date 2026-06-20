@@ -1,0 +1,151 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cloud-ai-security-skills.local/examples/agents/schemas/harness_profile.schema.json",
+  "title": "LangGraph SOC harness profile",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "profile_id",
+    "description",
+    "allowed_skills",
+    "caller_context",
+    "cloud_identity_hints",
+    "llm",
+    "approval_policy",
+    "runtime"
+  ],
+  "properties": {
+    "profile_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]{1,63}$"
+    },
+    "description": {
+      "type": "string",
+      "minLength": 1
+    },
+    "allowed_skills": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "caller_context": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "user_id",
+        "email",
+        "session_id",
+        "roles",
+        "allowed_skills"
+      ],
+      "properties": {
+        "user_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "email": {
+          "type": "string",
+          "minLength": 3
+        },
+        "session_id": {
+          "type": "string",
+          "minLength": 1
+        },
+        "roles": {
+          "type": "string",
+          "minLength": 1
+        },
+        "allowed_skills": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    },
+    "cloud_identity_hints": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "string",
+        "minLength": 1
+      }
+    },
+    "llm": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "mode",
+        "provider",
+        "model"
+      ],
+      "properties": {
+        "mode": {
+          "type": "string",
+          "enum": [
+            "deterministic_offline",
+            "external_llm_optional"
+          ]
+        },
+        "provider": {
+          "type": "string",
+          "minLength": 1
+        },
+        "model": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "approval_policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "remediation_requires_approval_context",
+        "approval_source"
+      ],
+      "properties": {
+        "remediation_requires_approval_context": {
+          "type": "boolean",
+          "const": true
+        },
+        "approval_source": {
+          "type": "string",
+          "minLength": 1
+        },
+        "min_approvers": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "runtime": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "langgraph_runtime_optional",
+        "dry_run_default"
+      ],
+      "properties": {
+        "langgraph_runtime_optional": {
+          "type": "boolean",
+          "const": true
+        },
+        "dry_run_default": {
+          "type": "boolean",
+          "const": true
+        },
+        "apply_supported": {
+          "type": "boolean",
+          "const": false
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cloud-ai-security-skills.local/examples/agents/schemas/llm_adapter_recommendations.schema.json",
+  "title": "LangGraph SOC LLM adapter recommendations",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "recommendations"
+  ],
+  "properties": {
+    "recommendations": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "finding_uid",
+          "priority",
+          "recommended_action",
+          "rationale"
+        ],
+        "properties": {
+          "finding_uid": {
+            "type": "string",
+            "minLength": 1
+          },
+          "priority": {
+            "type": "string",
+            "enum": [
+              "critical",
+              "high",
+              "medium",
+              "low"
+            ]
+          },
+          "recommended_action": {
+            "type": "string",
+            "enum": [
+              "request_approval",
+              "investigate",
+              "close"
+            ]
+          },
+          "rationale": {
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    }
+  }
+}
