@@ -54,6 +54,7 @@ WorkflowStage = Literal[
     "remediate",
     "writeback",
 ]
+ApiErrorClassification = Literal["retryable", "terminal"]
 
 
 class CallerContext(TypedDict):
@@ -120,7 +121,30 @@ class RemediationResult(TypedDict, total=False):
     reason: str
     dry_run: bool
     planned_steps: list[str]
+    idempotency_key: str
+    retry_decision: dict[str, Any]
     approval: ApprovalContext
+
+
+class IntegrityRecord(TypedDict, total=False):
+    evidence_hash: str
+    approved_payload_hash: str | None
+    state_hash: str
+
+
+class IdempotencyRecord(TypedDict, total=False):
+    workflow_key: str
+    remediation_key: str | None
+    duplicate_write_suppressed: bool
+
+
+class ApiErrorRecord(TypedDict):
+    stage: WorkflowStage
+    status_code: int
+    classification: ApiErrorClassification
+    code: str
+    message: str
+    retry_after_seconds: int | None
 
 
 class EvalRecord(TypedDict):
@@ -142,6 +166,10 @@ class GraphState(TypedDict, total=False):
     framework_maps: list[FrameworkMap]
     review_decision: ReviewDecision
     remediation_result: RemediationResult
+    integrity: IntegrityRecord
+    idempotency: IdempotencyRecord
+    api_errors: list[ApiErrorRecord]
+    seen_idempotency_keys: list[str]
     audit_record: dict[str, Any]
     eval_record: EvalRecord
     trace: list[WorkflowStage]
@@ -155,6 +183,34 @@ def _emit_node(stage: WorkflowStage, **payload: Any) -> None:
 def _stable_hash(payload: Any) -> str:
     encoded = json.dumps(payload, sort_keys=True, separators=(",", ":")).encode()
     return hashlib.sha256(encoded).hexdigest()
+
+
+def _classify_api_error(status_code: int) -> ApiErrorClassification:
+    if status_code in {408, 409, 425, 429, 500, 502, 503, 504}:
+        return "retryable"
+    return "terminal"
+
+
+def _simulated_api_error(stage: WorkflowStage) -> ApiErrorRecord | None:
+    """Optional test hook for proving error classification without cloud calls."""
+    if os.environ.get("DEMO_API_ERROR_STAGE", "remediate") != stage:
+        return None
+    status_text = os.environ.get("DEMO_API_ERROR_STATUS")
+    if not status_text:
+        return None
+    try:
+        status_code = int(status_text)
+    except ValueError:
+        status_code = 500
+    classification = _classify_api_error(status_code)
+    return {
+        "stage": stage,
+        "status_code": status_code,
+        "classification": classification,
+        "code": os.environ.get("DEMO_API_ERROR_CODE", f"HTTP_{status_code}"),
+        "message": f"simulated upstream API status {status_code}",
+        "retry_after_seconds": 30 if classification == "retryable" else None,
+    }
 
 
 def _append_trace(state: GraphState, stage: WorkflowStage) -> None:
@@ -189,6 +245,20 @@ def normalize_node(state: GraphState) -> GraphState:
             "resource": {"uid": event.get("resource_uid", f"resource-{index}")},
         })
     state["ocsf_events"] = normalized
+    evidence_hash = _stable_hash(normalized)
+    workflow_key = _stable_hash({
+        "caller": state.get("caller_context", {}).get("session_id", "graph-demo-1"),
+        "evidence_hash": evidence_hash,
+    })[:16]
+    state["integrity"] = {
+        "evidence_hash": evidence_hash,
+        "approved_payload_hash": None,
+    }
+    state["idempotency"] = {
+        "workflow_key": f"wf-{workflow_key}",
+        "remediation_key": None,
+        "duplicate_write_suppressed": False,
+    }
     _emit_node("normalize", schema="OCSF 1.8", records=len(normalized))
     return state
 
@@ -319,15 +389,84 @@ def dry_run_remediation_node(state: GraphState) -> GraphState:
         }
         _emit_node("remediate", status="skipped", reason="hitl_not_approved")
         return state
+
+    finding_uids = sorted(finding["uid"] for finding in state.get("findings") or [])
+    approved_payload = {
+        "approval_ticket": approval["ticket_id"],
+        "dry_run": True,
+        "finding_uids": finding_uids,
+        "skill": ALLOWED_SKILLS_REMEDIATION,
+    }
+    approved_payload_hash = _stable_hash(approved_payload)
+    remediation_key = f"rem-{approved_payload_hash[:16]}"
+    integrity = dict(state.get("integrity") or {})
+    integrity["approved_payload_hash"] = approved_payload_hash
+    state["integrity"] = integrity
+    idempotency = dict(state.get("idempotency") or {})
+    idempotency["remediation_key"] = remediation_key
+    state["idempotency"] = idempotency
+
+    seen_keys = set(state.get("seen_idempotency_keys") or [])
+    seen_keys.update(
+        key.strip()
+        for key in os.environ.get("DEMO_SEEN_IDEMPOTENCY_KEYS", "").split(",")
+        if key.strip()
+    )
+    if remediation_key in seen_keys:
+        idempotency["duplicate_write_suppressed"] = True
+        state["idempotency"] = idempotency
+        state["remediation_result"] = {
+            "status": "skipped",
+            "skill": ALLOWED_SKILLS_REMEDIATION,
+            "reason": "duplicate idempotency key; write intent suppressed",
+            "idempotency_key": remediation_key,
+            "approval": approval,
+        }
+        _emit_node("remediate", status="skipped", reason="duplicate_idempotency_key", idempotency_key=remediation_key)
+        return state
+
+    api_error = _simulated_api_error("remediate")
+    if api_error:
+        state.setdefault("api_errors", []).append(api_error)
+        retry_decision = {
+            "classification": api_error["classification"],
+            "idempotency_key": remediation_key,
+            "max_attempts": 3 if api_error["classification"] == "retryable" else 0,
+            "retry_after_seconds": api_error["retry_after_seconds"],
+        }
+        state["remediation_result"] = {
+            "status": "skipped",
+            "skill": ALLOWED_SKILLS_REMEDIATION,
+            "reason": f"{api_error['classification']}_api_error",
+            "idempotency_key": remediation_key,
+            "retry_decision": retry_decision,
+            "approval": approval,
+        }
+        _emit_node(
+            "remediate",
+            status="skipped",
+            reason=f"{api_error['classification']}_api_error",
+            idempotency_key=remediation_key,
+            status_code=api_error["status_code"],
+        )
+        return state
+
     result: RemediationResult = {
         "status": "dry_run",
         "skill": ALLOWED_SKILLS_REMEDIATION,
         "dry_run": True,
         "planned_steps": ["disable_access_key", "tag_principal_for_review", "write_evidence_bundle"],
+        "idempotency_key": remediation_key,
         "approval": approval,
     }
     state["remediation_result"] = result
-    _emit_node("remediate", status="dry_run", allowlist=ALLOWED_SKILLS_REMEDIATION, dry_run=True)
+    _emit_node(
+        "remediate",
+        status="dry_run",
+        allowlist=ALLOWED_SKILLS_REMEDIATION,
+        dry_run=True,
+        idempotency_key=remediation_key,
+    )
     return state
 
 
@@ -338,13 +477,33 @@ def audit_eval_writeback_node(state: GraphState) -> GraphState:
         "caller_context": state.get("caller_context"),
         "trace": state.get("trace"),
         "findings": state.get("findings"),
+        "integrity": {
+            key: value
+            for key, value in (state.get("integrity") or {}).items()
+            if key != "state_hash"
+        },
+        "idempotency": state.get("idempotency"),
+        "api_errors": state.get("api_errors") or [],
         "review_decision": state.get("review_decision"),
         "remediation_result": state.get("remediation_result"),
     }
+    state_hash = _stable_hash(summary_payload)
+    integrity = dict(state.get("integrity") or {})
+    integrity["state_hash"] = state_hash
+    state["integrity"] = integrity
+    idempotency = state.get("idempotency") or {}
+    api_errors = state.get("api_errors") or []
     audit_record = {
         "event": "agentic_soc_workflow",
         "correlation_id": state.get("caller_context", {}).get("session_id", "graph-demo-1"),
-        "chain_hash": _stable_hash(summary_payload),
+        "chain_hash": state_hash,
+        "evidence_hash": integrity.get("evidence_hash"),
+        "state_hash": state_hash,
+        "idempotency_key": idempotency.get("remediation_key") or idempotency.get("workflow_key"),
+        "api_error_count": len(api_errors),
+        "retryable_api_error_count": sum(
+            1 for error in api_errors if error["classification"] == "retryable"
+        ),
         "remediation_status": state.get("remediation_result", {}).get("status"),
     }
     eval_status: Literal["pass", "blocked"] = (
@@ -354,7 +513,14 @@ def audit_eval_writeback_node(state: GraphState) -> GraphState:
         "dataset_version": "agentic-soc-demo-v1",
         "model_policy": "llm_may_rank_summarize_draft_only",
         "prompt_hash": _stable_hash({"policy": "no_llm_authoritative_security_facts"})[:16],
-        "cases": ["hitl_gate", "dry_run_required", "mapping_trace_present"],
+        "cases": [
+            "hitl_gate",
+            "dry_run_required",
+            "mapping_trace_present",
+            "integrity_hash_present",
+            "idempotency_key_stable",
+            "api_error_classification",
+        ],
         "status": eval_status,
     }
     state["audit_record"] = audit_record
@@ -442,6 +608,9 @@ def summarize(final: GraphState) -> dict[str, Any]:
         "framework_maps": final.get("framework_maps"),
         "review": final.get("review_decision"),
         "remediation": final.get("remediation_result"),
+        "integrity": final.get("integrity"),
+        "idempotency": final.get("idempotency"),
+        "api_errors": final.get("api_errors") or [],
         "audit": final.get("audit_record"),
         "eval": final.get("eval_record"),
     }
