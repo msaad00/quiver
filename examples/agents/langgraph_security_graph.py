@@ -21,6 +21,8 @@ Run:
     python examples/agents/langgraph_security_graph.py
     DEMO_APPROVE=yes python examples/agents/langgraph_security_graph.py
     DEMO_LANGGRAPH_RUNTIME=yes python examples/agents/langgraph_security_graph.py
+    DEMO_CHECKPOINT_PATH=/tmp/langgraph-checkpoint.json python examples/agents/langgraph_security_graph.py
+    DEMO_REPLAY_CHECKPOINT=/tmp/langgraph-checkpoint.json python examples/agents/langgraph_security_graph.py
 """
 
 from __future__ import annotations
@@ -70,6 +72,7 @@ LlmMode = Literal["deterministic_offline", "external_llm_optional"]
 ReviewRoute = Literal["remediate", "writeback"]
 RemediationRoute = Literal["retry_queue", "escalate", "writeback"]
 AgentKind = Literal["deterministic_skill", "llm_optional", "human_gate", "governance"]
+CHECKPOINT_SCHEMA_VERSION = "langgraph-soc-checkpoint-v1"
 
 
 class CallerContext(TypedDict):
@@ -1135,17 +1138,77 @@ def summarize(final: GraphState) -> dict[str, Any]:
     }
 
 
-def main() -> int:
-    profile = load_harness_profile()
-    initial: GraphState = {
-        "harness_profile": profile,
-        "caller_context": profile["caller_context"],
-        "raw_events": [{"source": "demo"}],
+def _checkpoint_payload(final: GraphState) -> dict[str, Any]:
+    """Build a replayable state artifact with stable hashes."""
+    summary = summarize(final)
+    state = dict(final)
+    payload = {
+        "event": "langgraph_soc_checkpoint",
+        "schema_version": CHECKPOINT_SCHEMA_VERSION,
+        "profile_id": (final.get("harness_profile") or {}).get("profile_id"),
+        "trace": final.get("trace"),
+        "state_hash": (final.get("integrity") or {}).get("state_hash"),
+        "summary_hash": _stable_hash(summary),
+        "state": state,
     }
-    if os.environ.get("DEMO_LANGGRAPH_RUNTIME") == "yes":
-        final = run_langgraph(initial)
+    payload["checkpoint_hash"] = _stable_hash(payload)
+    return payload
+
+
+def write_checkpoint(final: GraphState, checkpoint_path: Path) -> dict[str, Any]:
+    """Persist a replay artifact for offline audit and regression checks."""
+    payload = _checkpoint_payload(final)
+    checkpoint_path.parent.mkdir(parents=True, exist_ok=True)
+    checkpoint_path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    return {
+        "path": str(checkpoint_path),
+        "checkpoint_hash": payload["checkpoint_hash"],
+        "state_hash": payload["state_hash"],
+        "summary_hash": payload["summary_hash"],
+    }
+
+
+def load_checkpoint(checkpoint_path: Path) -> GraphState:
+    """Load and verify a checkpoint artifact without re-running graph nodes."""
+    payload = json.loads(checkpoint_path.read_text(encoding="utf-8"))
+    expected_hash = payload.get("checkpoint_hash")
+    unsigned_payload = dict(payload)
+    unsigned_payload.pop("checkpoint_hash", None)
+    if payload.get("event") != "langgraph_soc_checkpoint":
+        raise ValueError("checkpoint event must be langgraph_soc_checkpoint")
+    if payload.get("schema_version") != CHECKPOINT_SCHEMA_VERSION:
+        raise ValueError(f"unsupported checkpoint schema: {payload.get('schema_version')}")
+    if _stable_hash(unsigned_payload) != expected_hash:
+        raise ValueError("checkpoint_hash mismatch")
+    state = payload.get("state")
+    if not isinstance(state, dict):
+        raise ValueError("checkpoint state must be an object")
+    summary_hash = _stable_hash(summarize(state))
+    if summary_hash != payload.get("summary_hash"):
+        raise ValueError("checkpoint summary_hash mismatch")
+    state_hash = (state.get("integrity") or {}).get("state_hash")
+    if state_hash != payload.get("state_hash"):
+        raise ValueError("checkpoint state_hash mismatch")
+    return state
+
+
+def main() -> int:
+    replay_path = os.environ.get("DEMO_REPLAY_CHECKPOINT")
+    if replay_path:
+        final = load_checkpoint(Path(replay_path))
     else:
-        final = run_graph(initial)
+        profile = load_harness_profile()
+        initial: GraphState = {
+            "harness_profile": profile,
+            "caller_context": profile["caller_context"],
+            "raw_events": [{"source": "demo"}],
+        }
+        if os.environ.get("DEMO_LANGGRAPH_RUNTIME") == "yes":
+            final = run_langgraph(initial)
+        else:
+            final = run_graph(initial)
+        if checkpoint_path := os.environ.get("DEMO_CHECKPOINT_PATH"):
+            write_checkpoint(final, Path(checkpoint_path))
     print(json.dumps(summarize(final), indent=2))
     return 0
 

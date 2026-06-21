@@ -72,6 +72,21 @@ The example exposes a concrete `agents` manifest and `agent_runs` ledger:
 `audit-writer`. Each run carries an authority label plus input/output hashes
 so replay can detect drift without trusting prompt text.
 
+The same example can persist a checkpoint artifact after writeback:
+
+```bash
+DEMO_CHECKPOINT_PATH=artifacts/langgraph-checkpoint.json \
+python examples/agents/langgraph_security_graph.py
+
+DEMO_REPLAY_CHECKPOINT=artifacts/langgraph-checkpoint.json \
+python examples/agents/langgraph_security_graph.py
+```
+
+The artifact stores `schema_version=langgraph-soc-checkpoint-v1`, final graph
+state, `state_hash`, `summary_hash`, and `checkpoint_hash`. Replay verifies
+those hashes before returning the operator-facing summary and does not re-run
+graph nodes or tool calls.
+
 Eval fixtures live under
 [`examples/agents/evals/`](../examples/agents/evals/). The offline gate
 replays golden profile and triage cases through the same graph, checks bounded

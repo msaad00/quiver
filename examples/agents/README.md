@@ -134,6 +134,13 @@ DEMO_APPROVE=yes \
 DEMO_API_ERROR_STATUS=429 \
 python examples/agents/langgraph_security_graph.py
 
+# Checkpoint artifact: persist the final graph state with stable hashes,
+# then replay the same summary offline without re-running graph nodes.
+DEMO_CHECKPOINT_PATH=artifacts/langgraph-checkpoint.json \
+python examples/agents/langgraph_security_graph.py
+DEMO_REPLAY_CHECKPOINT=artifacts/langgraph-checkpoint.json \
+python examples/agents/langgraph_security_graph.py
+
 # Offline eval gate: replay golden profile, triage, integrity,
 # idempotency, and API-error cases and fail on drift.
 python examples/agents/eval_langgraph_harness.py --check
@@ -160,6 +167,9 @@ Adapter plumbing lives in [`harness_adapters.py`](harness_adapters.py): the
 graph selects deterministic fallback, JSON fixture, or optional LangChain chat
 fixture adapters, then applies one closed schema gate before any recommendation
 enters graph state.
+Checkpoint artifacts use `langgraph-soc-checkpoint-v1`, include the final
+state, `state_hash`, `summary_hash`, and `checkpoint_hash`, and replay only
+after those hashes verify.
 
 Profile examples live under
 [`harness_profiles/`](harness_profiles/):

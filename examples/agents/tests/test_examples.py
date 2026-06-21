@@ -672,6 +672,66 @@ class TestLangGraphSocWorkflow:
         assert "retry_queue" in summary["trace"]
         assert summary["audit"]["route"]["after_remediation"] == "retry_queue"
 
+    def test_checkpoint_artifact_replays_same_summary(self, tmp_path: Path):
+        checkpoint = tmp_path / "langgraph-checkpoint.json"
+        env = {**os.environ, "DEMO_CHECKPOINT_PATH": str(checkpoint)}
+        result = subprocess.run(
+            [sys.executable, str(self.SCRIPT)],
+            capture_output=True,
+            text=True,
+            timeout=30,
+            check=False,
+            env=env,
+        )
+        assert result.returncode == 0, result.stderr
+        original_summary = json.loads(result.stdout)
+        payload = json.loads(checkpoint.read_text(encoding="utf-8"))
+        assert payload["event"] == "langgraph_soc_checkpoint"
+        assert payload["schema_version"] == "langgraph-soc-checkpoint-v1"
+        assert payload["state_hash"] == original_summary["integrity"]["state_hash"]
+        assert payload["checkpoint_hash"]
+        assert payload["summary_hash"]
+
+        replay_env = {**os.environ, "DEMO_REPLAY_CHECKPOINT": str(checkpoint)}
+        replay = subprocess.run(
+            [sys.executable, str(self.SCRIPT)],
+            capture_output=True,
+            text=True,
+            timeout=30,
+            check=False,
+            env=replay_env,
+        )
+        assert replay.returncode == 0, replay.stderr
+        assert json.loads(replay.stdout) == original_summary
+        assert replay.stderr == ""
+
+    def test_checkpoint_replay_rejects_tampered_state(self, tmp_path: Path):
+        checkpoint = tmp_path / "langgraph-checkpoint.json"
+        env = {**os.environ, "DEMO_CHECKPOINT_PATH": str(checkpoint)}
+        result = subprocess.run(
+            [sys.executable, str(self.SCRIPT)],
+            capture_output=True,
+            text=True,
+            timeout=30,
+            check=False,
+            env=env,
+        )
+        assert result.returncode == 0, result.stderr
+        payload = json.loads(checkpoint.read_text(encoding="utf-8"))
+        payload["state"]["trace"].append("tampered")
+        checkpoint.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+
+        replay = subprocess.run(
+            [sys.executable, str(self.SCRIPT)],
+            capture_output=True,
+            text=True,
+            timeout=30,
+            check=False,
+            env={**os.environ, "DEMO_REPLAY_CHECKPOINT": str(checkpoint)},
+        )
+        assert replay.returncode != 0
+        assert "checkpoint_hash mismatch" in replay.stderr
+
     def test_stategraph_builder_is_present_without_importing_dependency(self):
         text = self.SCRIPT.read_text(encoding="utf-8")
         assert "StateGraph(GraphState)" in text
