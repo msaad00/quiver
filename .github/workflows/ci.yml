@@ -19,7 +19,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: actions/setup-python@v6
         with:
           python-version: "3.11"
@@ -33,7 +33,7 @@ jobs:
     timeout-minutes: 10
     needs: lockfile
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: ./.github/actions/setup-python-deps
         with:
           python-version: "3.11"
@@ -46,7 +46,7 @@ jobs:
     timeout-minutes: 10
     needs: lockfile          # parallelised with `lint` and `type-check`; tier-3 jobs still gate on all three
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: ./.github/actions/setup-python-deps
         with:
           python-version: "3.11"
@@ -90,7 +90,7 @@ jobs:
     timeout-minutes: 10
     needs: lockfile          # parallelised with `lint` and `skill-contract`
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: ./.github/actions/setup-python-deps
         with:
           python-version: "3.11"
@@ -102,7 +102,7 @@ jobs:
     timeout-minutes: 10
     needs: lockfile
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: ./.github/actions/setup-python-deps
         with:
           python-version: "3.11"
@@ -122,7 +122,7 @@ jobs:
     timeout-minutes: 10
     needs: [lint, skill-contract, type-check]
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: ./.github/actions/setup-python-deps
         with:
           python-version: "3.11"
@@ -144,7 +144,7 @@ jobs:
     timeout-minutes: 30
     needs: [lint, skill-contract, type-check, safe-skill-bar]
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: ./.github/actions/setup-python-deps
         with:
           python-version: "3.11"
@@ -157,7 +157,7 @@ jobs:
     timeout-minutes: 20
     needs: [lint, skill-contract, type-check, safe-skill-bar]
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: ./.github/actions/setup-python-deps
         with:
           python-version: "3.11"
@@ -185,7 +185,7 @@ jobs:
     timeout-minutes: 20
     needs: [lint, skill-contract, type-check, safe-skill-bar]
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: ./.github/actions/setup-python-deps
         with:
           python-version: "3.11"
@@ -201,7 +201,7 @@ jobs:
     timeout-minutes: 20
     needs: [lint, skill-contract, type-check, safe-skill-bar]
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: ./.github/actions/setup-python-deps
         with:
           python-version: "3.11"
@@ -247,7 +247,7 @@ jobs:
     needs: [lint, skill-contract, type-check, safe-skill-bar]
     name: test-ai-infra
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: ./.github/actions/setup-python-deps
         with:
           python-version: "3.11"
@@ -276,7 +276,7 @@ jobs:
     timeout-minutes: 30
     needs: [lint, skill-contract, type-check, safe-skill-bar]
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: ./.github/actions/setup-python-deps
         with:
           python-version: "3.11"
@@ -288,7 +288,7 @@ jobs:
     timeout-minutes: 20
     needs: [lint, skill-contract, type-check, safe-skill-bar]
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: ./.github/actions/setup-python-deps
         with:
           python-version: "3.11"
@@ -312,7 +312,7 @@ jobs:
       contents: read
       id-token: write
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: ./.github/actions/setup-python-deps
         with:
           python-version: "3.11"
@@ -343,7 +343,7 @@ jobs:
     timeout-minutes: 10
     needs: [lint, skill-contract, type-check, safe-skill-bar]
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: ./.github/actions/setup-python-deps
         with:
           python-version: "3.11"
@@ -392,7 +392,7 @@ jobs:
     needs: [lint, skill-contract, type-check, safe-skill-bar]
     continue-on-error: true
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: ./.github/actions/setup-python-deps
         with:
           python-version: "3.11"
