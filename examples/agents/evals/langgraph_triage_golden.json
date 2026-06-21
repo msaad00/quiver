@@ -1,6 +1,6 @@
 {
   "dataset_version": "langgraph-agent-harness-golden-v1",
-  "description": "Offline regression cases for bounded LangGraph agent recommendations, profile loading, HITL routing, and remediation guardrails.",
+  "description": "Offline regression cases for bounded LangGraph agent recommendations, profile loading, HITL routing, remediation guardrails, integrity, idempotency, and API error routing.",
   "cases": [
     {
       "case_id": "readonly_soc_blocks_remediation",
@@ -69,6 +69,123 @@
         "remediation_status": "skipped",
         "route_after_review": "writeback",
         "effective_allowed_includes": ["iam-departures-aws"],
+        "planned_steps_absent": true
+      }
+    },
+    {
+      "case_id": "approved_dry_run_records_integrity_idempotency",
+      "profile": "examples/agents/harness_profiles/dry-run-remediation.json",
+      "env": {
+        "DEMO_APPROVE": "yes",
+        "DEMO_APPROVER": "reviewer@example.com",
+        "DEMO_TICKET": "SEC-LANGGRAPH-DRYRUN"
+      },
+      "raw_events": [
+        {
+          "source": "cloudtrail",
+          "event_name": "CreateAccessKey",
+          "actor_uid": "AIDAEXAMPLE",
+          "resource_uid": "arn:aws:iam::111122223333:user/build-bot"
+        }
+      ],
+      "expected": {
+        "profile_id": "dry-run-remediation",
+        "harness_mode": "deterministic_offline",
+        "recommendation_action": "request_approval",
+        "recommendation_priority": "high",
+        "review_status": "approved",
+        "remediation_status": "dry_run",
+        "remediation_dry_run": true,
+        "route_after_review": "remediate",
+        "route_after_remediation": "writeback",
+        "eval_status": "pass",
+        "effective_allowed_includes": ["iam-departures-aws"],
+        "integrity_keys_present": ["evidence_hash", "approved_payload_hash", "state_hash"],
+        "idempotency_keys_present": ["workflow_key", "remediation_key"],
+        "idempotency_duplicate_write_suppressed": false,
+        "remediation_key_matches_idempotency": true,
+        "audit_key_matches_remediation": true,
+        "planned_steps_absent": false
+      }
+    },
+    {
+      "case_id": "retryable_api_error_reuses_idempotency_key",
+      "profile": "examples/agents/harness_profiles/dry-run-remediation.json",
+      "env": {
+        "DEMO_APPROVE": "yes",
+        "DEMO_APPROVER": "reviewer@example.com",
+        "DEMO_TICKET": "SEC-LANGGRAPH-RETRY",
+        "DEMO_API_ERROR_STATUS": "429"
+      },
+      "raw_events": [
+        {
+          "source": "cloudtrail",
+          "event_name": "CreateAccessKey",
+          "actor_uid": "AIDAEXAMPLE",
+          "resource_uid": "arn:aws:iam::111122223333:user/build-bot"
+        }
+      ],
+      "expected": {
+        "profile_id": "dry-run-remediation",
+        "harness_mode": "deterministic_offline",
+        "recommendation_action": "request_approval",
+        "recommendation_priority": "high",
+        "review_status": "approved",
+        "remediation_status": "skipped",
+        "route_after_review": "remediate",
+        "route_after_remediation": "retry_queue",
+        "eval_status": "blocked",
+        "audit_api_error_count": 1,
+        "audit_retryable_api_error_count": 1,
+        "api_error_classification": "retryable",
+        "api_error_status_code": 429,
+        "retry_status": "scheduled",
+        "retry_policy": "bounded_retry_same_idempotency_key",
+        "retry_key_matches_remediation": true,
+        "integrity_keys_present": ["approved_payload_hash", "state_hash"],
+        "idempotency_keys_present": ["remediation_key"],
+        "remediation_key_matches_idempotency": true,
+        "audit_key_matches_remediation": true,
+        "planned_steps_absent": true
+      }
+    },
+    {
+      "case_id": "terminal_api_error_escalates_to_human_queue",
+      "profile": "examples/agents/harness_profiles/dry-run-remediation.json",
+      "env": {
+        "DEMO_APPROVE": "yes",
+        "DEMO_APPROVER": "reviewer@example.com",
+        "DEMO_TICKET": "SEC-LANGGRAPH-ESCALATE",
+        "DEMO_API_ERROR_STATUS": "403"
+      },
+      "raw_events": [
+        {
+          "source": "cloudtrail",
+          "event_name": "CreateAccessKey",
+          "actor_uid": "AIDAEXAMPLE",
+          "resource_uid": "arn:aws:iam::111122223333:user/build-bot"
+        }
+      ],
+      "expected": {
+        "profile_id": "dry-run-remediation",
+        "harness_mode": "deterministic_offline",
+        "recommendation_action": "request_approval",
+        "recommendation_priority": "high",
+        "review_status": "approved",
+        "remediation_status": "skipped",
+        "route_after_review": "remediate",
+        "route_after_remediation": "escalate",
+        "eval_status": "blocked",
+        "audit_api_error_count": 1,
+        "audit_retryable_api_error_count": 0,
+        "api_error_classification": "terminal",
+        "api_error_status_code": 403,
+        "escalation_status": "queued",
+        "escalation_reason": "terminal_api_error",
+        "integrity_keys_present": ["approved_payload_hash", "state_hash"],
+        "idempotency_keys_present": ["remediation_key"],
+        "remediation_key_matches_idempotency": true,
+        "audit_key_matches_remediation": true,
         "planned_steps_absent": true
       }
     },

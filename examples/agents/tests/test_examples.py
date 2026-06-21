@@ -722,14 +722,17 @@ class TestLangGraphHarnessEvals:
         report = json.loads(result.stdout)
         assert report["event"] == "langgraph_agent_harness_eval"
         assert report["dataset_version"] == "langgraph-agent-harness-golden-v1"
-        assert report["cases_total"] == 5
-        assert report["passed"] == 5
+        assert report["cases_total"] == 8
+        assert report["passed"] == 8
         assert report["failed"] == 0
         assert report["pass_rate"] == 1.0
         assert {case["case_id"] for case in report["results"]} == {
             "readonly_soc_blocks_remediation",
             "analyst_triage_records_model_metadata",
             "remediation_profile_does_not_approve_itself",
+            "approved_dry_run_records_integrity_idempotency",
+            "retryable_api_error_reuses_idempotency_key",
+            "terminal_api_error_escalates_to_human_queue",
             "llm_adapter_accepts_bounded_triage",
             "llm_adapter_rejects_forbidden_security_facts",
         }
@@ -737,7 +740,7 @@ class TestLangGraphHarnessEvals:
     def test_golden_dataset_is_valid_json(self):
         payload = json.loads(self.DATASET.read_text(encoding="utf-8"))
         assert payload["dataset_version"] == "langgraph-agent-harness-golden-v1"
-        assert len(payload["cases"]) == 5
+        assert len(payload["cases"]) == 8
 
     def test_eval_report_can_be_written_and_appended(self, tmp_path):
         report_path = tmp_path / "langgraph-harness-eval.json"

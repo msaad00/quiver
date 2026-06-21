@@ -125,7 +125,8 @@ DEMO_APPROVE=yes \
 DEMO_API_ERROR_STATUS=429 \
 python examples/agents/langgraph_security_graph.py
 
-# Offline eval gate: replay golden profile/triage cases and fail on drift.
+# Offline eval gate: replay golden profile, triage, integrity,
+# idempotency, and API-error cases and fail on drift.
 python examples/agents/eval_langgraph_harness.py --check
 
 # Eval artifact store: keep the latest JSON report and append pass-rate history.

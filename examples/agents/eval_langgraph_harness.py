@@ -181,6 +181,118 @@ def run_case(case: dict[str, Any]) -> dict[str, Any]:
             expected["llm_adapter_rejected"],
         ))
 
+    for key in expected.get("integrity_keys_present", []):
+        checks.append(_check(
+            f"integrity_key_present:{key}",
+            bool((summary.get("integrity") or {}).get(key)),
+            True,
+        ))
+
+    for key in expected.get("idempotency_keys_present", []):
+        checks.append(_check(
+            f"idempotency_key_present:{key}",
+            bool((summary.get("idempotency") or {}).get(key)),
+            True,
+        ))
+
+    if "idempotency_duplicate_write_suppressed" in expected:
+        checks.append(_check(
+            "idempotency_duplicate_write_suppressed",
+            (summary.get("idempotency") or {}).get("duplicate_write_suppressed"),
+            expected["idempotency_duplicate_write_suppressed"],
+        ))
+
+    if "remediation_dry_run" in expected:
+        checks.append(_check(
+            "remediation_dry_run",
+            summary["remediation"].get("dry_run"),
+            expected["remediation_dry_run"],
+        ))
+
+    if expected.get("remediation_key_matches_idempotency"):
+        checks.append(_check(
+            "remediation_key_matches_idempotency",
+            summary["remediation"].get("idempotency_key"),
+            (summary.get("idempotency") or {}).get("remediation_key"),
+        ))
+
+    if expected.get("audit_key_matches_remediation"):
+        checks.append(_check(
+            "audit_key_matches_remediation",
+            summary["audit"].get("idempotency_key"),
+            summary["remediation"].get("idempotency_key"),
+        ))
+
+    if "route_after_remediation" in expected:
+        checks.append(_check(
+            "route_after_remediation",
+            summary["audit"]["route"]["after_remediation"],
+            expected["route_after_remediation"],
+        ))
+
+    if "eval_status" in expected:
+        checks.append(_check(
+            "eval_status",
+            summary["eval"]["status"],
+            expected["eval_status"],
+        ))
+
+    if "audit_api_error_count" in expected:
+        checks.append(_check(
+            "audit_api_error_count",
+            summary["audit"]["api_error_count"],
+            expected["audit_api_error_count"],
+        ))
+        checks.append(_check(
+            "audit_retryable_api_error_count",
+            summary["audit"]["retryable_api_error_count"],
+            expected.get("audit_retryable_api_error_count", 0),
+        ))
+
+    if "api_error_classification" in expected:
+        api_error = (summary.get("api_errors") or [{}])[0]
+        checks.append(_check(
+            "api_error_classification",
+            api_error.get("classification"),
+            expected["api_error_classification"],
+        ))
+        checks.append(_check(
+            "api_error_status_code",
+            api_error.get("status_code"),
+            expected["api_error_status_code"],
+        ))
+
+    if "retry_status" in expected:
+        checks.append(_check(
+            "retry_status",
+            (summary.get("retry") or {}).get("status"),
+            expected["retry_status"],
+        ))
+        checks.append(_check(
+            "retry_policy",
+            (summary.get("retry") or {}).get("policy"),
+            expected["retry_policy"],
+        ))
+
+    if expected.get("retry_key_matches_remediation"):
+        checks.append(_check(
+            "retry_key_matches_remediation",
+            (summary.get("retry") or {}).get("idempotency_key"),
+            summary["remediation"].get("idempotency_key"),
+        ))
+
+    if "escalation_status" in expected:
+        checks.append(_check(
+            "escalation_status",
+            (summary.get("escalation") or {}).get("status"),
+            expected["escalation_status"],
+        ))
+        checks.append(_check(
+            "escalation_reason",
+            (summary.get("escalation") or {}).get("reason"),
+            expected["escalation_reason"],
+        ))
+
     for skill in expected.get("effective_allowed_includes", []):
         checks.append(_check(
             f"effective_allowed_includes:{skill}",
@@ -214,6 +326,11 @@ def run_case(case: dict[str, Any]) -> dict[str, Any]:
             "route": summary["audit"]["route"],
             "effective_allowed_skills": summary["effective_allowed_skills"],
             "llm_validation": summary.get("llm_validation"),
+            "integrity": summary.get("integrity"),
+            "idempotency": summary.get("idempotency"),
+            "api_errors": summary.get("api_errors"),
+            "retry": summary.get("retry"),
+            "escalation": summary.get("escalation"),
         })[:16],
         "checks": checks,
     }

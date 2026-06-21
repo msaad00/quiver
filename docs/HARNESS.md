@@ -73,8 +73,10 @@ Eval fixtures live under
 [`examples/agents/evals/`](../examples/agents/evals/). The offline gate
 replays golden profile and triage cases through the same graph, checks bounded
 recommendation shape, HITL routing, allowlist intersection, and remediation
-blocking, and covers both accepted and rejected LLM adapter output, then emits
-a pass-rate report:
+blocking, and covers both accepted and rejected LLM adapter output. It also
+checks integrity hashes, remediation idempotency keys, retryable API errors,
+terminal API errors, retry queue routing, and human escalation routing, then
+emits a pass-rate report:
 
 ```bash
 python examples/agents/eval_langgraph_harness.py --check
