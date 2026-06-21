@@ -119,6 +119,15 @@ DEMO_LLM_MODEL=triage-fixture-v1 \
 DEMO_LLM_ADAPTER_FIXTURE=/path/to/recommendations.json \
 python examples/agents/langgraph_security_graph.py
 
+# Optional LangChain adapter fixture: parses a LangChain AIMessage payload,
+# then applies the same bounded recommendation schema gate.
+uv sync --group dev --group langgraph
+DEMO_EXTERNAL_LLM_ALLOWED=yes \
+DEMO_LLM_PROVIDER=langchain \
+DEMO_LLM_MODEL=chat-model-fixture-v1 \
+DEMO_LANGCHAIN_ADAPTER_FIXTURE=/path/to/langchain-message.json \
+python examples/agents/langgraph_security_graph.py
+
 # Retryable API error path: no write intent is created without approval;
 # approved retries reuse the same remediation idempotency key.
 DEMO_APPROVE=yes \
@@ -147,6 +156,10 @@ without letting that model set policy, mappings, approvals, or audit facts. Use
 replaced by deterministic fallback. The eval runner can write a point-in-time
 JSON report and append timestamped JSONL rows so CI or operators can track
 pass-rate drift across harness, profile, and adapter changes.
+Adapter plumbing lives in [`harness_adapters.py`](harness_adapters.py): the
+graph selects deterministic fallback, JSON fixture, or optional LangChain chat
+fixture adapters, then applies one closed schema gate before any recommendation
+enters graph state.
 
 Profile examples live under
 [`harness_profiles/`](harness_profiles/):

@@ -437,6 +437,36 @@ class TestLangGraphSocWorkflow:
         assert summary["audit"]["llm_adapter_accepted"] == 1
         assert summary["audit"]["llm_adapter_rejected"] == 0
 
+    def test_langchain_adapter_accepts_bounded_chat_message(self, tmp_path: Path):
+        pytest.importorskip("langchain_core.messages")
+        baseline, _ = self._run()
+        finding_uid = baseline["framework_maps"][0]["finding_uid"]
+        fixture = tmp_path / "langchain-message-output.json"
+        fixture.write_text(json.dumps({
+            "recommendations": [
+                {
+                    "finding_uid": finding_uid,
+                    "priority": "critical",
+                    "recommended_action": "request_approval",
+                    "rationale": "LangChain fixture ranks this for immediate analyst review.",
+                },
+            ],
+        }), encoding="utf-8")
+
+        summary, _ = self._run(extra_env={
+            "DEMO_EXTERNAL_LLM_ALLOWED": "yes",
+            "DEMO_LLM_PROVIDER": "langchain",
+            "DEMO_LLM_MODEL": "chat-model-fixture-v1",
+            "DEMO_LANGCHAIN_ADAPTER_FIXTURE": str(fixture),
+        })
+
+        recommendation = summary["agent_recommendations"][0]
+        assert recommendation["priority"] == "critical"
+        assert recommendation["generated_by"] == "langchain:chat-model-fixture-v1"
+        assert summary["llm_validation"][0]["adapter"] == "langchain_chat_adapter"
+        assert summary["llm_validation"][0]["status"] == "accepted"
+        assert summary["audit"]["llm_adapter_accepted"] == 1
+
     def test_llm_adapter_rejects_forbidden_security_facts(self, tmp_path: Path):
         baseline, _ = self._run()
         finding_uid = baseline["framework_maps"][0]["finding_uid"]
