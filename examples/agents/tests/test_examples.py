@@ -738,3 +738,36 @@ class TestLangGraphHarnessEvals:
         payload = json.loads(self.DATASET.read_text(encoding="utf-8"))
         assert payload["dataset_version"] == "langgraph-agent-harness-golden-v1"
         assert len(payload["cases"]) == 5
+
+    def test_eval_report_can_be_written_and_appended(self, tmp_path):
+        report_path = tmp_path / "langgraph-harness-eval.json"
+        history_path = tmp_path / "langgraph-harness-eval-history.jsonl"
+        result = subprocess.run(
+            [
+                sys.executable,
+                str(self.SCRIPT),
+                "--check",
+                "--output",
+                str(report_path),
+                "--append-jsonl",
+                str(history_path),
+            ],
+            capture_output=True,
+            text=True,
+            timeout=30,
+            check=False,
+        )
+        assert result.returncode == 0, result.stderr
+        stdout_report = json.loads(result.stdout)
+        file_report = json.loads(report_path.read_text(encoding="utf-8"))
+        history_rows = [
+            json.loads(line)
+            for line in history_path.read_text(encoding="utf-8").splitlines()
+        ]
+        assert file_report == stdout_report
+        assert len(history_rows) == 1
+        assert history_rows[0]["event"] == "langgraph_agent_harness_eval"
+        assert history_rows[0]["dataset_hash"] == stdout_report["dataset_hash"]
+        assert history_rows[0]["pass_rate"] == 1.0
+        assert history_rows[0]["report_hash"]
+        assert history_rows[0]["recorded_at"].endswith("Z")
