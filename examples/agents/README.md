@@ -86,6 +86,18 @@ auditable `agent_runs` ledger, and uses conditional edges for HITL, retry,
 terminal-error escalation, duplicate suppression, and writeback.
 
 ```bash
+# Generate an operator-owned profile and dotenv file. The generator writes
+# metadata only: no cloud credentials, approval tokens, or secrets.
+python examples/agents/configure_langgraph_harness.py \
+  --role analyst-triage \
+  --profile-id acme-soc-triage \
+  --email analyst@example.com \
+  --external-llm \
+  --llm-provider openai \
+  --llm-model gpt-4.1-mini \
+  --output-profile artifacts/acme-soc-triage.json \
+  --output-env artifacts/acme-soc-triage.env
+
 # Blocked path: no approval context, no remediation action.
 python examples/agents/langgraph_security_graph.py
 
@@ -183,6 +195,14 @@ Profile examples live under
 Contract schemas live under [`schemas/`](schemas/). They define the closed
 shape for harness profiles and the LLM adapter recommendation payload accepted
 by the reference graph.
+
+Use [`configure_langgraph_harness.py`](configure_langgraph_harness.py) when
+customizing the harness for a buyer or internal environment. It asks for role,
+operator identity, cloud identity hints, allowed example skills, and
+provider/model metadata, then writes a schema-shaped profile plus a dotenv file.
+The generated runtime keeps `dry_run_default=true`, `apply_supported=false`,
+and `remediation_requires_approval_context=true`; setting a remediation-capable
+role exposes dry-run planning only, not approval.
 
 Eval fixtures live under [`evals/`](evals/). The eval runner is deterministic:
 it replays profile/triage cases, checks recommendation shape, HITL routing,

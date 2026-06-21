@@ -794,6 +794,180 @@ class TestLangGraphContractSchemas:
                 assert any("additional property cvss" in error for error in errors)
 
 
+class TestLangGraphHarnessSetup:
+    """Setup generator coverage for operator-owned harness profiles."""
+
+    SCRIPT = EXAMPLES / "configure_langgraph_harness.py"
+    GRAPH = EXAMPLES / "langgraph_security_graph.py"
+    PROFILE_SCHEMA = SCHEMAS / "harness_profile.schema.json"
+
+    def _clean_graph_env(self, profile: Path, *, approved: bool = False) -> dict[str, str]:
+        env = {**os.environ, "DEMO_HARNESS_PROFILE": str(profile)}
+        for key in [
+            "CLOUD_SECURITY_HARNESS_PROFILE",
+            "DEMO_EXTERNAL_LLM_ALLOWED",
+            "DEMO_LLM_PROVIDER",
+            "DEMO_LLM_MODEL",
+            "DEMO_LLM_ADAPTER_FIXTURE",
+            "DEMO_LANGCHAIN_ADAPTER_FIXTURE",
+            "DEMO_API_ERROR_STATUS",
+            "DEMO_API_ERROR_CODE",
+        ]:
+            env.pop(key, None)
+        if approved:
+            env["DEMO_APPROVE"] = "yes"
+            env["DEMO_APPROVER"] = "reviewer@example.com"
+            env["DEMO_TICKET"] = "SEC-SETUP-1"
+        else:
+            env.pop("DEMO_APPROVE", None)
+        return env
+
+    def test_setup_generator_writes_schema_valid_profile_and_dotenv(self, tmp_path: Path):
+        profile_path = tmp_path / "acme-soc-triage.json"
+        env_path = tmp_path / "acme-soc-triage.env"
+        result = subprocess.run(
+            [
+                sys.executable,
+                str(self.SCRIPT),
+                "--role",
+                "analyst-triage",
+                "--profile-id",
+                "acme-soc-triage",
+                "--email",
+                "analyst@example.com",
+                "--external-llm",
+                "--llm-provider",
+                "openai",
+                "--llm-model",
+                "gpt-4.1-mini",
+                "--cloud-hint",
+                "aws=AWS_PROFILE=prod-readonly",
+                "--output-profile",
+                str(profile_path),
+                "--output-env",
+                str(env_path),
+            ],
+            capture_output=True,
+            text=True,
+            timeout=30,
+            check=False,
+        )
+        assert result.returncode == 0, result.stderr
+        setup_summary = json.loads(result.stdout)
+        assert setup_summary["secrets_written"] is False
+        assert setup_summary["approval_required"] is True
+
+        profile = json.loads(profile_path.read_text(encoding="utf-8"))
+        schema = json.loads(self.PROFILE_SCHEMA.read_text(encoding="utf-8"))
+        assert _schema_errors(schema, profile) == []
+        assert profile["llm"] == {
+            "mode": "external_llm_optional",
+            "provider": "openai",
+            "model": "gpt-4.1-mini",
+        }
+        assert "iam-departures-aws" not in profile["allowed_skills"]
+
+        dotenv = env_path.read_text(encoding="utf-8")
+        assert f"DEMO_HARNESS_PROFILE={profile_path}" in dotenv
+        assert "DEMO_EXTERNAL_LLM_ALLOWED=yes" in dotenv
+        assert "DEMO_APPROVE is intentionally omitted" in dotenv
+
+        graph = subprocess.run(
+            [sys.executable, str(self.GRAPH)],
+            capture_output=True,
+            text=True,
+            timeout=30,
+            check=False,
+            env=self._clean_graph_env(profile_path),
+        )
+        assert graph.returncode == 0, graph.stderr
+        summary = json.loads(graph.stdout)
+        assert summary["profile"]["profile_id"] == "acme-soc-triage"
+        assert summary["harness"]["mode"] == "external_llm_optional"
+        assert summary["harness"]["provider"] == "openai"
+        assert summary["review"]["status"] == "blocked"
+
+    def test_setup_generator_dry_run_profile_still_requires_approval(self, tmp_path: Path):
+        profile_path = tmp_path / "acme-remediation-dryrun.json"
+        env_path = tmp_path / "acme-remediation-dryrun.env"
+        result = subprocess.run(
+            [
+                sys.executable,
+                str(self.SCRIPT),
+                "--role",
+                "dry-run-remediation",
+                "--profile-id",
+                "acme-remediation-dryrun",
+                "--email",
+                "security@example.com",
+                "--output-profile",
+                str(profile_path),
+                "--output-env",
+                str(env_path),
+            ],
+            capture_output=True,
+            text=True,
+            timeout=30,
+            check=False,
+        )
+        assert result.returncode == 0, result.stderr
+        profile = json.loads(profile_path.read_text(encoding="utf-8"))
+        assert "iam-departures-aws" in profile["allowed_skills"]
+        assert profile["runtime"]["dry_run_default"] is True
+        assert profile["runtime"]["apply_supported"] is False
+        assert profile["approval_policy"]["remediation_requires_approval_context"] is True
+
+        blocked = subprocess.run(
+            [sys.executable, str(self.GRAPH)],
+            capture_output=True,
+            text=True,
+            timeout=30,
+            check=False,
+            env=self._clean_graph_env(profile_path),
+        )
+        assert blocked.returncode == 0, blocked.stderr
+        blocked_summary = json.loads(blocked.stdout)
+        assert blocked_summary["remediation"]["status"] == "skipped"
+
+        approved = subprocess.run(
+            [sys.executable, str(self.GRAPH)],
+            capture_output=True,
+            text=True,
+            timeout=30,
+            check=False,
+            env=self._clean_graph_env(profile_path, approved=True),
+        )
+        assert approved.returncode == 0, approved.stderr
+        approved_summary = json.loads(approved.stdout)
+        assert approved_summary["remediation"]["status"] == "dry_run"
+        assert approved_summary["remediation"]["dry_run"] is True
+        assert approved_summary["audit"]["route"]["after_review"] == "remediate"
+
+    def test_setup_generator_rejects_unknown_example_skill(self, tmp_path: Path):
+        result = subprocess.run(
+            [
+                sys.executable,
+                str(self.SCRIPT),
+                "--profile-id",
+                "bad-skill-profile",
+                "--email",
+                "analyst@example.com",
+                "--allowed-skill",
+                "remediate-everything-now",
+                "--output-profile",
+                str(tmp_path / "bad.json"),
+                "--output-env",
+                str(tmp_path / "bad.env"),
+            ],
+            capture_output=True,
+            text=True,
+            timeout=30,
+            check=False,
+        )
+        assert result.returncode != 0
+        assert "unknown example skill" in result.stderr
+
+
 class TestLangGraphHarnessEvals:
     """Regression coverage for profile/triage eval tracking."""
 
