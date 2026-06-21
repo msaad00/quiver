@@ -46,6 +46,12 @@ ingest -> normalize -> enrich -> correlate -> confidence -> map
 
 Diagram source:
 [`docs/diagrams/langgraph-agent-harness.mmd`](diagrams/langgraph-agent-harness.mmd).
+It is generated from the code-backed `pipeline_contract()`:
+
+```bash
+python examples/agents/render_langgraph_pipeline_diagram.py \
+  --output docs/diagrams/langgraph-agent-harness.mmd
+```
 
 The LLM/agent harness records provider/model/mode in state and audit output.
 Its allowed outputs are intentionally narrow: rank findings, summarize
