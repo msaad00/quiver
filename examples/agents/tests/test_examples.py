@@ -22,6 +22,7 @@ import pytest
 REPO_ROOT = Path(__file__).resolve().parents[3]
 EXAMPLES = REPO_ROOT / "examples" / "agents"
 SCHEMAS = EXAMPLES / "schemas"
+DIAGRAMS = REPO_ROOT / "docs" / "diagrams"
 
 SCRIPTS = [
     EXAMPLES / "anthropic_sdk_security_agent.py",
@@ -1006,6 +1007,27 @@ class TestLangGraphHarnessSetup:
         )
         assert result.returncode != 0
         assert "unknown example skill" in result.stderr
+
+
+class TestLangGraphPipelineDiagram:
+    """Regression coverage for the code-backed LangGraph Mermaid diagram."""
+
+    SCRIPT = EXAMPLES / "render_langgraph_pipeline_diagram.py"
+    DIAGRAM = DIAGRAMS / "langgraph-agent-harness.mmd"
+
+    def test_pipeline_diagram_matches_renderer_output(self):
+        result = subprocess.run(
+            [sys.executable, str(self.SCRIPT)],
+            capture_output=True,
+            text=True,
+            timeout=30,
+            check=False,
+        )
+        assert result.returncode == 0, result.stderr
+        assert result.stdout == self.DIAGRAM.read_text(encoding="utf-8")
+        assert "Source of truth: pipeline_contract()" in result.stdout
+        assert "REVIEW -- approved --> REM" in result.stdout
+        assert "REM -- retryable API error --> RETRY" in result.stdout
 
 
 class TestLangGraphHarnessEvals:

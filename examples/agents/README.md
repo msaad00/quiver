@@ -161,6 +161,11 @@ python examples/agents/eval_langgraph_harness.py --check
 python examples/agents/eval_langgraph_harness.py --check \
   --output artifacts/langgraph-harness-eval.json \
   --append-jsonl artifacts/langgraph-harness-eval-history.jsonl
+
+# Diagram artifact: render docs/diagrams/langgraph-agent-harness.mmd
+# from the code-backed pipeline_contract().
+python examples/agents/render_langgraph_pipeline_diagram.py \
+  --output docs/diagrams/langgraph-agent-harness.mmd
 ```
 
 The LangGraph summary includes `integrity.evidence_hash`,
