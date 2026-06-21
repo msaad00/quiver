@@ -338,6 +338,46 @@ class TestLangGraphSocWorkflow:
         assert framework_map["epss_percentile"] == 0.91
         assert framework_map["kev_listed"] is False
 
+    def test_pipeline_contract_exposes_nodes_edges_and_guardrails(self):
+        summary, _ = self._run()
+        contract = summary["pipeline_contract"]
+        assert contract["schema_version"] == "langgraph-soc-pipeline-contract-v1"
+        node_names = [node["node"] for node in contract["nodes"]]
+        assert node_names == [
+            "ingest",
+            "normalize",
+            "enrich",
+            "correlate",
+            "confidence",
+            "map",
+            "llm_triage",
+            "review",
+            "remediate",
+            "retry_queue",
+            "escalate",
+            "writeback",
+        ]
+        assert {node["agent_id"] for node in contract["nodes"]} == set(self.EXPECTED_AGENT_IDS)
+        assert all(node["guardrails"] for node in contract["nodes"])
+
+        edge_pairs = {
+            (edge["source"], edge["target"], edge["condition"])
+            for edge in contract["edges"]
+        }
+        assert ("review", "remediate", "route_after_review == remediate") in edge_pairs
+        assert ("review", "writeback", "route_after_review == writeback") in edge_pairs
+        assert ("remediate", "retry_queue", "route_after_remediation == retry_queue") in edge_pairs
+        assert ("remediate", "escalate", "route_after_remediation == escalate") in edge_pairs
+        assert ("remediate", "writeback", "route_after_remediation == writeback") in edge_pairs
+
+        remediation_node = next(node for node in contract["nodes"] if node["node"] == "remediate")
+        assert remediation_node["skills"] == ["iam-departures-aws"]
+        assert "dry_run_default" in remediation_node["guardrails"]
+        triage_node = next(node for node in contract["nodes"] if node["node"] == "llm_triage")
+        assert triage_node["skills"] == []
+        assert "closed_adapter_schema" in triage_node["guardrails"]
+        assert "LLM adapters can rank, summarize, draft, or request review only" in contract["invariants"]
+
     def test_no_approval_blocks_remediation_but_writes_audit_and_eval(self):
         summary, result = self._run()
         assert summary["review"]["status"] == "blocked"

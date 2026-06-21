@@ -156,6 +156,21 @@ class AgentDefinition(TypedDict):
     forbidden_outputs: list[str]
 
 
+class PipelineNodeContract(TypedDict):
+    node: WorkflowStage
+    agent_id: str
+    skills: list[str]
+    inputs: list[str]
+    outputs: list[str]
+    guardrails: list[str]
+
+
+class PipelineEdgeContract(TypedDict):
+    source: WorkflowStage
+    target: WorkflowStage
+    condition: str
+
+
 class AgentRunRecord(TypedDict):
     run_id: str
     agent_id: str
@@ -391,6 +406,142 @@ def _agent_manifest() -> list[AgentDefinition]:
             "forbidden_outputs": ["overwrite_history", "remove_agent_run"],
         },
     ]
+
+
+def _pipeline_node_contracts() -> list[PipelineNodeContract]:
+    return [
+        {
+            "node": "ingest",
+            "agent_id": "evidence-agent",
+            "skills": ["ingest-cloudtrail-ocsf", "source-snowflake-query"],
+            "inputs": ["harness_profile", "caller_context", "raw_events"],
+            "outputs": ["effective_allowed_skills", "raw_events"],
+            "guardrails": ["allowlist_intersection", "no_credentials_in_profile"],
+        },
+        {
+            "node": "normalize",
+            "agent_id": "evidence-agent",
+            "skills": ["ingest-cloudtrail-ocsf"],
+            "inputs": ["raw_events"],
+            "outputs": ["ocsf_events", "integrity.evidence_hash", "idempotency.workflow_key"],
+            "guardrails": ["ocsf_1_8_shape", "stable_event_uid", "state_hash_input"],
+        },
+        {
+            "node": "enrich",
+            "agent_id": "evidence-agent",
+            "skills": ["detect-lateral-movement"],
+            "inputs": ["ocsf_events"],
+            "outputs": ["findings", "enrichments"],
+            "guardrails": ["deterministic_finding_uid", "no_llm_security_facts"],
+        },
+        {
+            "node": "correlate",
+            "agent_id": "evidence-agent",
+            "skills": ["discover-control-evidence"],
+            "inputs": ["raw_events", "ocsf_events", "findings"],
+            "outputs": ["correlations", "agent_runs"],
+            "guardrails": ["identity_resource_join", "agent_run_hashes"],
+        },
+        {
+            "node": "confidence",
+            "agent_id": "risk-map-agent",
+            "skills": ["detect-lateral-movement"],
+            "inputs": ["findings", "enrichments"],
+            "outputs": ["confidence_scores"],
+            "guardrails": ["deterministic_reason_codes", "no_model_belief_score"],
+        },
+        {
+            "node": "map",
+            "agent_id": "risk-map-agent",
+            "skills": ["cspm-aws-cis-benchmark"],
+            "inputs": ["findings", "enrichments"],
+            "outputs": ["framework_maps"],
+            "guardrails": ["mitre_cvss_epss_kev_from_rules", "no_llm_mapping_mutation"],
+        },
+        {
+            "node": "llm_triage",
+            "agent_id": "triage-agent",
+            "skills": [],
+            "inputs": ["framework_maps", "confidence_scores", "harness_profile.llm"],
+            "outputs": ["agent_recommendations", "llm_validation", "agent_runs"],
+            "guardrails": ["closed_adapter_schema", "rank_summarize_draft_only", "fallback_closed"],
+        },
+        {
+            "node": "review",
+            "agent_id": "review-gate",
+            "skills": [],
+            "inputs": ["agent_recommendations", "approval_context"],
+            "outputs": ["review_decision"],
+            "guardrails": ["human_gate_required", "no_model_attested_approval"],
+        },
+        {
+            "node": "remediate",
+            "agent_id": "remediation-planner",
+            "skills": [ALLOWED_SKILLS_REMEDIATION],
+            "inputs": ["review_decision", "framework_maps", "confidence_scores", "idempotency"],
+            "outputs": ["remediation_result", "api_errors", "idempotency.remediation_key"],
+            "guardrails": ["dry_run_default", "approval_context_required", "stable_idempotency_key"],
+        },
+        {
+            "node": "retry_queue",
+            "agent_id": "retry-coordinator",
+            "skills": [],
+            "inputs": ["api_errors", "remediation_result"],
+            "outputs": ["retry_record", "agent_runs"],
+            "guardrails": ["bounded_retries", "reuse_idempotency_key", "retryable_errors_only"],
+        },
+        {
+            "node": "escalate",
+            "agent_id": "escalation-agent",
+            "skills": [],
+            "inputs": ["api_errors", "remediation_result"],
+            "outputs": ["escalation_record", "agent_runs"],
+            "guardrails": ["terminal_errors_to_human_queue", "no_auto_apply"],
+        },
+        {
+            "node": "writeback",
+            "agent_id": "audit-writer",
+            "skills": ["convert-ocsf-to-sarif"],
+            "inputs": ["trace", "agent_runs", "integrity", "idempotency", "api_errors"],
+            "outputs": ["audit_record", "eval_record", "integrity.state_hash"],
+            "guardrails": ["append_only_audit", "state_hash", "eval_writeback"],
+        },
+    ]
+
+
+def _pipeline_edge_contracts() -> list[PipelineEdgeContract]:
+    return [
+        {"source": "ingest", "target": "normalize", "condition": "always"},
+        {"source": "normalize", "target": "enrich", "condition": "always"},
+        {"source": "enrich", "target": "correlate", "condition": "always"},
+        {"source": "correlate", "target": "confidence", "condition": "always"},
+        {"source": "confidence", "target": "map", "condition": "always"},
+        {"source": "map", "target": "llm_triage", "condition": "always"},
+        {"source": "llm_triage", "target": "review", "condition": "always"},
+        {"source": "review", "target": "remediate", "condition": "route_after_review == remediate"},
+        {"source": "review", "target": "writeback", "condition": "route_after_review == writeback"},
+        {"source": "remediate", "target": "retry_queue", "condition": "route_after_remediation == retry_queue"},
+        {"source": "remediate", "target": "escalate", "condition": "route_after_remediation == escalate"},
+        {"source": "remediate", "target": "writeback", "condition": "route_after_remediation == writeback"},
+        {"source": "retry_queue", "target": "writeback", "condition": "always"},
+        {"source": "escalate", "target": "writeback", "condition": "always"},
+    ]
+
+
+def pipeline_contract() -> dict[str, Any]:
+    return {
+        "schema_version": "langgraph-soc-pipeline-contract-v1",
+        "description": "Code-backed LangGraph SOC workflow contract for nodes, edges, skills, and guardrails.",
+        "nodes": _pipeline_node_contracts(),
+        "edges": _pipeline_edge_contracts(),
+        "invariants": [
+            "skills own facts; LangGraph owns routing and state",
+            "LLM adapters can rank, summarize, draft, or request review only",
+            "remediation is dry-run-only and requires human approval context",
+            "API errors route to retry_queue only when classified retryable",
+            "audit/eval writeback records state_hash and idempotency keys",
+        ],
+    }
 
 
 def _agent_by_id(agent_id: str) -> AgentDefinition:
@@ -1122,6 +1273,7 @@ def summarize(final: GraphState) -> dict[str, Any]:
         "confidence_scores": final.get("confidence_scores"),
         "framework_maps": final.get("framework_maps"),
         "harness": final.get("harness_config"),
+        "pipeline_contract": pipeline_contract(),
         "agents": final.get("agent_manifest"),
         "agent_runs": final.get("agent_runs"),
         "agent_recommendations": final.get("agent_recommendations"),

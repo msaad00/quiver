@@ -71,6 +71,10 @@ The example exposes a concrete `agents` manifest and `agent_runs` ledger:
 `remediation-planner`, `retry-coordinator`, `escalation-agent`, and
 `audit-writer`. Each run carries an authority label plus input/output hashes
 so replay can detect drift without trusting prompt text.
+The operator-facing summary also emits `pipeline_contract`, a code-backed list
+of nodes, edges, route conditions, skills, input/output state keys, and
+guardrails for approval, dry-run remediation, retries, idempotency, and audit
+writeback.
 
 The same example can persist a checkpoint artifact after writeback:
 

@@ -167,7 +167,8 @@ The LangGraph summary includes `integrity.evidence_hash`,
 `integrity.state_hash`, stable workflow/remediation idempotency keys, and
 retryable-vs-terminal API error classification. It also includes the
 `profile`, `effective_allowed_skills`, `harness` provider/model/mode, `agents`
-manifest, `agent_runs` ledger, and bounded `agent_recommendations` so
+manifest, `pipeline_contract`, `agent_runs` ledger, and bounded
+`agent_recommendations` so
 operators can see which role and model would have drafted the analyst note
 without letting that model set policy, mappings, approvals, or audit facts. Use
 `DEMO_API_ERROR_STATUS=429` for retryable errors or `403` for terminal errors.
@@ -175,6 +176,9 @@ without letting that model set policy, mappings, approvals, or audit facts. Use
 replaced by deterministic fallback. The eval runner can write a point-in-time
 JSON report and append timestamped JSONL rows so CI or operators can track
 pass-rate drift across harness, profile, and adapter changes.
+`pipeline_contract` is code-backed topology metadata: node ownership, skills,
+input/output state keys, conditional edges, and guardrails for dry-run,
+approval, retries, idempotency, and audit writeback.
 Adapter plumbing lives in [`harness_adapters.py`](harness_adapters.py): the
 graph selects deterministic fallback, JSON fixture, or optional LangChain chat
 fixture adapters, then applies one closed schema gate before any recommendation
