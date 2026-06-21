@@ -127,6 +127,11 @@ python examples/agents/langgraph_security_graph.py
 
 # Offline eval gate: replay golden profile/triage cases and fail on drift.
 python examples/agents/eval_langgraph_harness.py --check
+
+# Eval artifact store: keep the latest JSON report and append pass-rate history.
+python examples/agents/eval_langgraph_harness.py --check \
+  --output artifacts/langgraph-harness-eval.json \
+  --append-jsonl artifacts/langgraph-harness-eval-history.jsonl
 ```
 
 The LangGraph summary includes `integrity.evidence_hash`,
@@ -138,7 +143,9 @@ operators can see which role and model would have drafted the analyst note
 without letting that model set policy, mappings, approvals, or audit facts. Use
 `DEMO_API_ERROR_STATUS=429` for retryable errors or `403` for terminal errors.
 `llm_validation` records whether an adapter output was accepted, rejected, or
-replaced by deterministic fallback.
+replaced by deterministic fallback. The eval runner can write a point-in-time
+JSON report and append timestamped JSONL rows so CI or operators can track
+pass-rate drift across harness, profile, and adapter changes.
 
 Profile examples live under
 [`harness_profiles/`](harness_profiles/):

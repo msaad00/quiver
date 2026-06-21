@@ -78,11 +78,17 @@ a pass-rate report:
 
 ```bash
 python examples/agents/eval_langgraph_harness.py --check
+
+python examples/agents/eval_langgraph_harness.py --check \
+  --output artifacts/langgraph-harness-eval.json \
+  --append-jsonl artifacts/langgraph-harness-eval-history.jsonl
 ```
 
 This is regression tracking for orchestrator behavior, not an LLM-as-judge.
 It does not call a live model; live model quality checks can be layered on top
-later with the same dataset/version/report contract.
+later with the same dataset/version/report contract. The JSON report captures
+the latest run, while the JSONL history gives CI, release checks, or customer
+forks an append-only pass-rate trail for harness drift.
 
 Operator profiles live under
 [`examples/agents/harness_profiles/`](../examples/agents/harness_profiles/).

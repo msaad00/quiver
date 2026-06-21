@@ -16,6 +16,7 @@ import hashlib
 import json
 import os
 import tempfile
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -236,15 +237,56 @@ def run_dataset(dataset_path: Path) -> dict[str, Any]:
     }
 
 
+def _encoded_report(report: dict[str, Any]) -> str:
+    return json.dumps(report, indent=2, sort_keys=True) + "\n"
+
+
+def _write_json(path: Path, payload: str) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(payload, encoding="utf-8")
+
+
+def _append_history(path: Path, report: dict[str, Any]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    recorded_at = (
+        datetime.now(UTC)
+        .replace(microsecond=0)
+        .isoformat()
+        .replace("+00:00", "Z")
+    )
+    record = {
+        "recorded_at": recorded_at,
+        "report_hash": _stable_hash(report)[:16],
+        **report,
+    }
+    with path.open("a", encoding="utf-8") as handle:
+        handle.write(json.dumps(record, sort_keys=True, separators=(",", ":")) + "\n")
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--dataset", type=Path, default=DEFAULT_DATASET)
     parser.add_argument("--min-pass-rate", type=float, default=1.0)
     parser.add_argument("--check", action="store_true", help="exit nonzero when pass rate is below threshold")
+    parser.add_argument(
+        "--output",
+        type=Path,
+        help="write the JSON eval report to this path",
+    )
+    parser.add_argument(
+        "--append-jsonl",
+        type=Path,
+        help="append a timestamped eval report row to this JSONL history",
+    )
     args = parser.parse_args()
 
     report = run_dataset(args.dataset)
-    print(json.dumps(report, indent=2, sort_keys=True))
+    encoded = _encoded_report(report)
+    print(encoded, end="")
+    if args.output:
+        _write_json(args.output, encoded)
+    if args.append_jsonl:
+        _append_history(args.append_jsonl, report)
     if args.check and report["pass_rate"] < args.min_pass_rate:
         return 1
     return 0
