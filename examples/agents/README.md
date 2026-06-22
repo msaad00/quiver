@@ -171,9 +171,9 @@ python examples/agents/render_langgraph_pipeline_diagram.py \
 The LangGraph summary includes `integrity.evidence_hash`,
 `integrity.state_hash`, stable workflow/remediation idempotency keys, and
 retryable-vs-terminal API error classification. It also includes the
-`profile`, `effective_allowed_skills`, `harness` provider/model/mode, `agents`
-manifest, `pipeline_contract`, `agent_runs` ledger, and bounded
-`agent_recommendations` so
+`profile`, `effective_allowed_skills`, `harness` provider/model/mode/token
+budget, `agents` manifest, `pipeline_contract`, `agent_runs` ledger, compact
+LLM evidence cards, token budget usage, and bounded `agent_recommendations` so
 operators can see which role and model would have drafted the analyst note
 without letting that model set policy, mappings, approvals, or audit facts. Use
 `DEMO_API_ERROR_STATUS=429` for retryable errors or `403` for terminal errors.
@@ -189,6 +189,10 @@ Adapter plumbing lives in [`harness_adapters.py`](harness_adapters.py): the
 graph selects deterministic fallback, JSON fixture, or optional LangChain chat
 fixture adapters, then applies one closed schema gate before any recommendation
 enters graph state.
+The graph sends compact finding cards to the optional adapter, not raw events
+or full OCSF payloads. Each triage run records estimated raw and compact input
+tokens, output tokens, compression ratio, cache key, model tier, and fallback
+reason when a budget is exceeded.
 Checkpoint artifacts use `langgraph-soc-checkpoint-v1`, include the final
 state, `state_hash`, `summary_hash`, and `checkpoint_hash`, match a closed
 schema envelope, and replay only after those hashes verify.
@@ -212,8 +216,8 @@ customizing the harness for a buyer or internal environment. It asks for role,
 operator identity, cloud identity hints, allowed example skills, and
 provider/model metadata, then writes a schema-shaped profile plus a dotenv file.
 The generated runtime keeps `dry_run_default=true`, `apply_supported=false`,
-and `remediation_requires_approval_context=true`; setting a remediation-capable
-role exposes dry-run planning only, not approval.
+`remediation_requires_approval_context=true`, and a token budget policy;
+setting a remediation-capable role exposes dry-run planning only, not approval.
 
 Eval fixtures live under [`evals/`](evals/). The eval runner is deterministic:
 it replays profile/triage cases, checks recommendation shape, HITL routing,

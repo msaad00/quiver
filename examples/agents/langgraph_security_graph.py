@@ -29,6 +29,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import math
 import os
 import sys
 from datetime import UTC, datetime
@@ -145,6 +146,7 @@ class AgentHarnessConfig(TypedDict):
     model: str
     allowed_outputs: list[str]
     prompt_hash: str
+    token_budget: dict[str, Any]
 
 
 class AgentDefinition(TypedDict):
@@ -171,13 +173,14 @@ class PipelineEdgeContract(TypedDict):
     condition: str
 
 
-class AgentRunRecord(TypedDict):
+class AgentRunRecord(TypedDict, total=False):
     run_id: str
     agent_id: str
     stage: WorkflowStage
     authority: str
     input_hash: str
     output_hash: str
+    token_budget: dict[str, Any]
 
 
 class AgentRecommendation(TypedDict):
@@ -267,6 +270,8 @@ class GraphState(TypedDict, total=False):
     idempotency: IdempotencyRecord
     api_errors: list[ApiErrorRecord]
     seen_idempotency_keys: list[str]
+    llm_evidence_cards: list[dict[str, Any]]
+    token_budget_usage: dict[str, Any]
     audit_record: dict[str, Any]
     eval_record: EvalRecord
     trace: list[WorkflowStage]
@@ -280,6 +285,20 @@ def _emit_node(stage: WorkflowStage, **payload: Any) -> None:
 def _stable_hash(payload: Any) -> str:
     encoded = json.dumps(payload, sort_keys=True, separators=(",", ":")).encode()
     return hashlib.sha256(encoded).hexdigest()
+
+
+DEFAULT_TOKEN_BUDGET = {
+    "policy_version": "langgraph-token-budget-v1",
+    "task_class": "triage_summary",
+    "model_tier": "tiny",
+    "max_input_tokens": 1200,
+    "max_output_tokens": 256,
+    "max_total_tokens": 1600,
+    "max_findings_per_call": 5,
+    "max_evidence_chars": 1800,
+    "compression_required": True,
+    "fallback_on_budget_exceeded": True,
+}
 
 
 def _default_harness_profile() -> HarnessProfile:
@@ -303,6 +322,7 @@ def _default_harness_profile() -> HarnessProfile:
             "provider": "deterministic-local",
             "model": "policy-bounded-triage-v1",
         },
+        "token_budget": DEFAULT_TOKEN_BUDGET,
         "approval_policy": {
             "remediation_requires_approval_context": True,
             "approval_source": "operator_idp_or_ticketing_system",
@@ -329,6 +349,10 @@ def load_harness_profile(path_text: str | None = None) -> HarnessProfile:
     profile["llm"] = {
         **default["llm"],
         **payload.get("llm", {}),
+    }
+    profile["token_budget"] = {
+        **default["token_budget"],
+        **payload.get("token_budget", {}),
     }
     return profile
 
@@ -462,9 +486,15 @@ def _pipeline_node_contracts() -> list[PipelineNodeContract]:
             "node": "llm_triage",
             "agent_id": "triage-agent",
             "skills": [],
-            "inputs": ["framework_maps", "confidence_scores", "harness_profile.llm"],
-            "outputs": ["agent_recommendations", "llm_validation", "agent_runs"],
-            "guardrails": ["closed_adapter_schema", "rank_summarize_draft_only", "fallback_closed"],
+            "inputs": ["framework_maps", "confidence_scores", "harness_profile.llm", "token_budget"],
+            "outputs": ["agent_recommendations", "llm_validation", "agent_runs", "token_budget_usage"],
+            "guardrails": [
+                "closed_adapter_schema",
+                "rank_summarize_draft_only",
+                "compact_evidence_only",
+                "token_budget_enforced",
+                "fallback_closed",
+            ],
         },
         {
             "node": "review",
@@ -558,24 +588,126 @@ def _record_agent_run(
     stage: WorkflowStage,
     inputs: Any,
     outputs: Any,
+    token_budget: dict[str, Any] | None = None,
 ) -> None:
     state.setdefault("agent_manifest", _agent_manifest())
     agent = _agent_by_id(agent_id)
     runs = state.setdefault("agent_runs", [])
-    runs.append({
+    record: AgentRunRecord = {
         "run_id": f"run-{len(runs) + 1:02d}-{agent_id}",
         "agent_id": agent_id,
         "stage": stage,
         "authority": agent["authority"],
         "input_hash": _stable_hash(inputs)[:16],
         "output_hash": _stable_hash(outputs)[:16],
-    })
+    }
+    if token_budget is not None:
+        record["token_budget"] = token_budget
+    runs.append(record)
 
 
 def _agent_harness_config(state: GraphState) -> AgentHarnessConfig:
     """Describe the LLM/agent harness without requiring a live model."""
-    profile_llm = (state.get("harness_profile") or {}).get("llm", {})
-    return build_harness_config(profile_llm=profile_llm, environ=os.environ)
+    profile = state.get("harness_profile") or {}
+    profile_llm = profile.get("llm", {})
+    return build_harness_config(
+        profile_llm=profile_llm,
+        profile_token_budget=profile.get("token_budget", DEFAULT_TOKEN_BUDGET),
+        environ=os.environ,
+    )
+
+
+def _estimate_tokens(payload: Any) -> int:
+    """Cheap deterministic estimate: compact JSON chars divided by four."""
+    encoded = json.dumps(payload, sort_keys=True, separators=(",", ":"))
+    return max(1, math.ceil(len(encoded) / 4))
+
+
+def _compact_json_chars(payload: Any) -> int:
+    return len(json.dumps(payload, sort_keys=True, separators=(",", ":")))
+
+
+def _compact_evidence_cards(state: GraphState, budget: dict[str, Any]) -> list[dict[str, Any]]:
+    confidence_by_uid = {
+        score["finding_uid"]: score
+        for score in state.get("confidence_scores") or []
+    }
+    findings_by_uid = {
+        finding["uid"]: finding
+        for finding in state.get("findings") or []
+    }
+    cards = []
+    max_cards = int(budget["max_findings_per_call"])
+    max_card_chars = max(160, int(budget["max_evidence_chars"]) // max_cards)
+    for mapped in (state.get("framework_maps") or [])[:max_cards]:
+        finding_uid = mapped["finding_uid"]
+        finding = findings_by_uid.get(finding_uid, {})
+        confidence = confidence_by_uid.get(finding_uid, {})
+        cards.append({
+            "finding_uid": finding_uid,
+            "title": str(finding.get("title", "security finding"))[:max_card_chars],
+            "severity": finding.get("severity", mapped["cvss"]["severity"]),
+            "confidence": confidence.get("score", 0.0),
+            "reason_codes": [str(reason)[:80] for reason in confidence.get("reason_codes", [])[:6]],
+            "mitre_attack": mapped["mitre_attack"],
+            "mitre_atlas": mapped["mitre_atlas"],
+            "cvss": {
+                "base_score": mapped["cvss"]["base_score"],
+                "severity": mapped["cvss"]["severity"],
+            },
+            "epss_percentile": mapped["epss_percentile"],
+            "kev_listed": mapped["kev_listed"],
+            "evidence_refs": [
+                f"finding_uid:{finding_uid}",
+                f"resource_uid:{finding.get('resource_uid', 'unknown')}",
+            ],
+        })
+    return cards
+
+
+def _token_budget_usage(
+    *,
+    state: GraphState,
+    harness_config: AgentHarnessConfig,
+    evidence_cards: list[dict[str, Any]],
+    recommendations: list[AgentRecommendation] | None = None,
+) -> dict[str, Any]:
+    budget = harness_config["token_budget"]
+    raw_payload = {
+        "raw_events": state.get("raw_events") or [],
+        "ocsf_events": state.get("ocsf_events") or [],
+        "framework_maps": state.get("framework_maps") or [],
+        "confidence_scores": state.get("confidence_scores") or [],
+    }
+    raw_tokens = _estimate_tokens(raw_payload)
+    compact_tokens = _estimate_tokens(evidence_cards)
+    output_tokens = _estimate_tokens(recommendations or [])
+    compact_chars = _compact_json_chars(evidence_cards)
+    over_budget = (
+        compact_tokens > budget["max_input_tokens"]
+        or output_tokens > budget["max_output_tokens"]
+        or compact_tokens + output_tokens > budget["max_total_tokens"]
+        or compact_chars > budget["max_evidence_chars"]
+    )
+    return {
+        "policy_version": budget["policy_version"],
+        "task_class": budget["task_class"],
+        "model_tier": budget["model_tier"],
+        "model": harness_config["model"],
+        "raw_input_tokens_estimate": raw_tokens,
+        "compact_input_tokens_estimate": compact_tokens,
+        "output_tokens_estimate": output_tokens,
+        "max_input_tokens": budget["max_input_tokens"],
+        "max_output_tokens": budget["max_output_tokens"],
+        "max_total_tokens": budget["max_total_tokens"],
+        "compact_evidence_chars": compact_chars,
+        "max_evidence_chars": budget["max_evidence_chars"],
+        "compression_required": budget["compression_required"],
+        "compression_ratio": round(raw_tokens / compact_tokens, 2) if compact_tokens else 1.0,
+        "cache_key": f"triage-{_stable_hash({'model': harness_config['model'], 'evidence': evidence_cards})[:16]}",
+        "status": "fallback" if over_budget and budget["fallback_on_budget_exceeded"] else "within_budget",
+        "fallback_reason": "token_budget_exceeded" if over_budget else None,
+    }
 
 
 def _classify_api_error(status_code: int) -> ApiErrorClassification:
@@ -791,12 +923,20 @@ def llm_triage_node(state: GraphState) -> GraphState:
     """Bounded agent layer: rank and summarize only, never decide facts."""
     _append_trace(state, "llm_triage")
     harness_config = _agent_harness_config(state)
+    evidence_cards = _compact_evidence_cards(state, harness_config["token_budget"])
+    initial_budget_usage = _token_budget_usage(
+        state=state,
+        harness_config=harness_config,
+        evidence_cards=evidence_cards,
+    )
     adapter = select_triage_adapter(harness_config=harness_config, environ=os.environ)
-    adapter_recommendations = {
-        recommendation.get("finding_uid"): recommendation
-        for recommendation in adapter.recommendations()
-        if isinstance(recommendation, dict)
-    }
+    adapter_recommendations = {}
+    if initial_budget_usage["status"] != "fallback":
+        adapter_recommendations = {
+            recommendation.get("finding_uid"): recommendation
+            for recommendation in adapter.recommendations()
+            if isinstance(recommendation, dict)
+        }
     confidence_by_uid = {
         score["finding_uid"]: score["score"]
         for score in state.get("confidence_scores") or []
@@ -819,9 +959,25 @@ def llm_triage_node(state: GraphState) -> GraphState:
             harness_config=harness_config,
             adapter_id=adapter.adapter_id,
         )
+        if initial_budget_usage["status"] == "fallback":
+            validation = {
+                "finding_uid": finding_uid,
+                "adapter": "deterministic_fallback",
+                "status": "fallback",
+                "reason": initial_budget_usage["fallback_reason"],
+                "output_hash": fallback["output_hash"],
+            }
         recommendations.append(recommendation)
         validation_records.append(validation)
+    budget_usage = _token_budget_usage(
+        state=state,
+        harness_config=harness_config,
+        evidence_cards=evidence_cards,
+        recommendations=recommendations,
+    )
     state["harness_config"] = harness_config
+    state["llm_evidence_cards"] = evidence_cards
+    state["token_budget_usage"] = budget_usage
     state["agent_recommendations"] = recommendations
     state["llm_validation"] = validation_records
     _record_agent_run(
@@ -829,14 +985,14 @@ def llm_triage_node(state: GraphState) -> GraphState:
         agent_id="triage-agent",
         stage="llm_triage",
         inputs={
-            "confidence_scores": state.get("confidence_scores"),
-            "framework_maps": state.get("framework_maps"),
+            "compact_evidence_cards": evidence_cards,
             "harness_config": harness_config,
         },
         outputs={
             "agent_recommendations": recommendations,
             "llm_validation": validation_records,
         },
+        token_budget=budget_usage,
     )
     _emit_node(
         "llm_triage",
@@ -846,6 +1002,8 @@ def llm_triage_node(state: GraphState) -> GraphState:
         recommendations=len(recommendations),
         accepted=sum(1 for record in validation_records if record["status"] == "accepted"),
         rejected=sum(1 for record in validation_records if record["status"] == "rejected"),
+        token_status=budget_usage["status"],
+        input_tokens=budget_usage["compact_input_tokens_estimate"],
         authority="rank_summarize_draft_only",
     )
     return state
@@ -1094,6 +1252,7 @@ def audit_eval_writeback_node(state: GraphState) -> GraphState:
         "trace": state.get("trace"),
         "findings": state.get("findings"),
         "harness_config": state.get("harness_config"),
+        "token_budget_usage": state.get("token_budget_usage"),
         "agent_manifest": state.get("agent_manifest"),
         "agent_runs": state.get("agent_runs"),
         "agent_recommendations": state.get("agent_recommendations"),
@@ -1129,6 +1288,8 @@ def audit_eval_writeback_node(state: GraphState) -> GraphState:
         "agent_run_count": len(state.get("agent_runs") or []),
         "llm_adapter_accepted": sum(1 for record in llm_validation if record["status"] == "accepted"),
         "llm_adapter_rejected": sum(1 for record in llm_validation if record["status"] == "rejected"),
+        "llm_token_budget_status": (state.get("token_budget_usage") or {}).get("status"),
+        "llm_compact_input_tokens": (state.get("token_budget_usage") or {}).get("compact_input_tokens_estimate"),
         "retryable_api_error_count": sum(
             1 for error in api_errors if error["classification"] == "retryable"
         ),
@@ -1154,6 +1315,7 @@ def audit_eval_writeback_node(state: GraphState) -> GraphState:
             "api_error_classification",
             "llm_harness_bounded",
             "llm_adapter_schema_gate",
+            "llm_token_budget_gate",
             "multi_agent_ledger",
             "conditional_edges",
         ],
@@ -1278,6 +1440,8 @@ def summarize(final: GraphState) -> dict[str, Any]:
         "agent_runs": final.get("agent_runs"),
         "agent_recommendations": final.get("agent_recommendations"),
         "llm_validation": final.get("llm_validation"),
+        "llm_evidence_cards": final.get("llm_evidence_cards"),
+        "token_budget_usage": final.get("token_budget_usage"),
         "review": final.get("review_decision"),
         "remediation": final.get("remediation_result"),
         "retry": final.get("retry_record"),

@@ -148,6 +148,29 @@ def run_case(case: dict[str, Any]) -> dict[str, Any]:
         _check("route_after_review", summary["audit"]["route"]["after_review"], expected["route_after_review"]),
         _check("planned_steps_absent", "planned_steps" not in summary["remediation"], expected["planned_steps_absent"]),
     ]
+    token_usage = summary.get("token_budget_usage") or {}
+    token_budget = (summary.get("harness") or {}).get("token_budget") or {}
+    checks.extend([
+        _check("token_budget_status_present", token_usage.get("status") in {"within_budget", "fallback"}, True),
+        _check(
+            "token_budget_input_within_limit_or_fallback",
+            token_usage.get("compact_input_tokens_estimate", 0) <= token_budget.get("max_input_tokens", 0)
+            or token_usage.get("status") == "fallback",
+            True,
+        ),
+        _check(
+            "token_budget_evidence_within_limit_or_fallback",
+            token_usage.get("compact_evidence_chars", 0) <= token_budget.get("max_evidence_chars", 0)
+            or token_usage.get("status") == "fallback",
+            True,
+        ),
+        _check("token_budget_model_tier_bounded", token_budget.get("model_tier") in {"tiny", "small"}, True),
+        _check(
+            "llm_evidence_cards_compact",
+            all("raw_events" not in card and "ocsf_events" not in card for card in summary.get("llm_evidence_cards") or []),
+            True,
+        ),
+    ])
 
     if "recommendation_generated_by" in expected:
         checks.append(_check(
@@ -331,6 +354,7 @@ def run_case(case: dict[str, Any]) -> dict[str, Any]:
             "api_errors": summary.get("api_errors"),
             "retry": summary.get("retry"),
             "escalation": summary.get("escalation"),
+            "token_budget_usage": summary.get("token_budget_usage"),
         })[:16],
         "checks": checks,
     }

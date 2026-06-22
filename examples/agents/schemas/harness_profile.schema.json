@@ -103,6 +103,68 @@
         }
       }
     },
+    "token_budget": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "policy_version",
+        "task_class",
+        "model_tier",
+        "max_input_tokens",
+        "max_output_tokens",
+        "max_total_tokens",
+        "max_findings_per_call",
+        "max_evidence_chars",
+        "compression_required",
+        "fallback_on_budget_exceeded"
+      ],
+      "properties": {
+        "policy_version": {
+          "type": "string",
+          "const": "langgraph-token-budget-v1"
+        },
+        "task_class": {
+          "type": "string",
+          "const": "triage_summary"
+        },
+        "model_tier": {
+          "type": "string",
+          "enum": [
+            "tiny",
+            "small",
+            "large"
+          ]
+        },
+        "max_input_tokens": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "max_output_tokens": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "max_total_tokens": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "max_findings_per_call": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "max_evidence_chars": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "compression_required": {
+          "type": "boolean",
+          "const": true
+        },
+        "fallback_on_budget_exceeded": {
+          "type": "boolean",
+          "const": true
+        }
+      }
+    },
     "approval_policy": {
       "type": "object",
       "additionalProperties": false,

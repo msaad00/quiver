@@ -19,7 +19,7 @@ flowchart LR
     end
 
     subgraph LLM["Optional model node: bounded triage only"]
-        TRIAGE["llm triage<br/>agent: triage-agent<br/>skills: none<br/>guards: closed_adapter_schema · rank_summarize_draft_only +1"]:::agent
+        TRIAGE["llm triage<br/>agent: triage-agent<br/>skills: none<br/>guards: closed_adapter_schema · rank_summarize_draft_only +3"]:::agent
     end
 
     subgraph GOV["Governance nodes: approval, dry-run, retry, escalation, audit"]

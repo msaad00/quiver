@@ -25,6 +25,7 @@ from typing import Any, Literal
 from langgraph_security_graph import (
     ALLOWED_SKILLS_READ_ONLY_LIST,
     ALLOWED_SKILLS_REMEDIATION,
+    DEFAULT_TOKEN_BUDGET,
 )
 
 HarnessRole = Literal["readonly-soc", "analyst-triage", "dry-run-remediation"]
@@ -107,6 +108,10 @@ def build_profile(args: argparse.Namespace) -> dict[str, Any]:
             "mode": llm_mode,
             "provider": args.llm_provider,
             "model": args.llm_model,
+        },
+        "token_budget": {
+            **DEFAULT_TOKEN_BUDGET,
+            "model_tier": "small" if args.external_llm else "tiny",
         },
         "approval_policy": {
             "remediation_requires_approval_context": True,

@@ -49,10 +49,12 @@ def stable_hash(payload: Any) -> str:
 def build_harness_config(
     *,
     profile_llm: Mapping[str, str] | None,
+    profile_token_budget: Mapping[str, Any] | None = None,
     environ: Mapping[str, str] = os.environ,
 ) -> dict[str, Any]:
     """Describe the LLM/agent harness without requiring a live model."""
     profile_llm = profile_llm or {}
+    token_budget = dict(profile_token_budget or {})
     mode: LlmMode = (
         "external_llm_optional"
         if environ.get("DEMO_EXTERNAL_LLM_ALLOWED") == "yes"
@@ -61,6 +63,10 @@ def build_harness_config(
     )
     provider = environ.get("DEMO_LLM_PROVIDER") or profile_llm.get("provider", "deterministic-local")
     model = environ.get("DEMO_LLM_MODEL") or profile_llm.get("model", "policy-bounded-triage-v1")
+    if environ.get("DEMO_TOKEN_MAX_INPUT_TOKENS"):
+        token_budget["max_input_tokens"] = int(environ["DEMO_TOKEN_MAX_INPUT_TOKENS"])
+    if environ.get("DEMO_TOKEN_MAX_TOTAL_TOKENS"):
+        token_budget["max_total_tokens"] = int(environ["DEMO_TOKEN_MAX_TOTAL_TOKENS"])
     allowed_outputs = [
         "rank_findings",
         "summarize_evidence",
@@ -71,6 +77,7 @@ def build_harness_config(
         "mode": mode,
         "provider": provider,
         "model": model,
+        "token_budget": token_budget,
         "allowed_outputs": allowed_outputs,
         "prompt_hash": stable_hash({
             "system": "llm may rank, summarize, and draft only",
