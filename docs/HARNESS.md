@@ -118,7 +118,8 @@ This is regression tracking for orchestrator behavior, not an LLM-as-judge.
 It does not call a live model; live model quality checks can be layered on top
 later with the same dataset/version/report contract. The JSON report captures
 the latest run, while the JSONL history gives CI, release checks, or customer
-forks an append-only pass-rate trail for harness drift.
+forks an append-only pass-rate trail for harness drift. Both output forms
+share a closed eval-report schema.
 
 Operator profiles live under
 [`examples/agents/harness_profiles/`](../examples/agents/harness_profiles/).
@@ -131,7 +132,8 @@ Closed JSON Schema contracts live under
 [`examples/agents/schemas/`](../examples/agents/schemas/) for harness
 profiles, LLM adapter recommendation payloads, and the emitted
 `pipeline_contract` topology. Checkpoint artifacts have a closed schema
-envelope for replay persistence.
+envelope for replay persistence, and eval reports use a shared schema for
+both JSON output and JSONL history rows.
 
 ## Customization knobs
 

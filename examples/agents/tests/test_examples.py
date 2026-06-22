@@ -34,6 +34,7 @@ JSON_TYPE_MAP = {
     "array": list,
     "boolean": bool,
     "integer": int,
+    "number": (int, float),
     "object": dict,
     "string": str,
 }
@@ -45,7 +46,7 @@ def _schema_errors(schema: dict, value, path: str = "$") -> list[str]:
     if schema_type:
         expected_type = JSON_TYPE_MAP[schema_type]
         if not isinstance(value, expected_type) or (
-            schema_type == "integer" and isinstance(value, bool)
+            schema_type in {"integer", "number"} and isinstance(value, bool)
         ):
             return [f"{path}: expected {schema_type}"]
 
@@ -796,6 +797,7 @@ class TestLangGraphContractSchemas:
     ADAPTER_SCHEMA = SCHEMAS / "llm_adapter_recommendations.schema.json"
     PIPELINE_SCHEMA = SCHEMAS / "pipeline_contract.schema.json"
     CHECKPOINT_SCHEMA = SCHEMAS / "checkpoint.schema.json"
+    EVAL_REPORT_SCHEMA = SCHEMAS / "eval_report.schema.json"
     GRAPH = EXAMPLES / "langgraph_security_graph.py"
     PROFILES = EXAMPLES / "harness_profiles"
     DATASET = EXAMPLES / "evals" / "langgraph_triage_golden.json"
@@ -806,6 +808,7 @@ class TestLangGraphContractSchemas:
             self.ADAPTER_SCHEMA,
             self.PIPELINE_SCHEMA,
             self.CHECKPOINT_SCHEMA,
+            self.EVAL_REPORT_SCHEMA,
         ]:
             schema = json.loads(schema_path.read_text(encoding="utf-8"))
             assert schema["$schema"] == "https://json-schema.org/draft/2020-12/schema"
@@ -1091,6 +1094,7 @@ class TestLangGraphHarnessEvals:
 
     SCRIPT = EXAMPLES / "eval_langgraph_harness.py"
     DATASET = EXAMPLES / "evals" / "langgraph_triage_golden.json"
+    SCHEMA = SCHEMAS / "eval_report.schema.json"
 
     def test_golden_eval_report_passes(self):
         result = subprocess.run(
@@ -1102,6 +1106,8 @@ class TestLangGraphHarnessEvals:
         )
         assert result.returncode == 0, result.stderr
         report = json.loads(result.stdout)
+        schema = json.loads(self.SCHEMA.read_text(encoding="utf-8"))
+        assert _schema_errors(schema, report) == []
         assert report["event"] == "langgraph_agent_harness_eval"
         assert report["dataset_version"] == "langgraph-agent-harness-golden-v1"
         assert report["cases_total"] == 8
@@ -1150,7 +1156,10 @@ class TestLangGraphHarnessEvals:
             for line in history_path.read_text(encoding="utf-8").splitlines()
         ]
         assert file_report == stdout_report
+        schema = json.loads(self.SCHEMA.read_text(encoding="utf-8"))
+        assert _schema_errors(schema, stdout_report) == []
         assert len(history_rows) == 1
+        assert _schema_errors(schema, history_rows[0]) == []
         assert history_rows[0]["event"] == "langgraph_agent_harness_eval"
         assert history_rows[0]["dataset_hash"] == stdout_report["dataset_hash"]
         assert history_rows[0]["pass_rate"] == 1.0

@@ -180,7 +180,8 @@ without letting that model set policy, mappings, approvals, or audit facts. Use
 `llm_validation` records whether an adapter output was accepted, rejected, or
 replaced by deterministic fallback. The eval runner can write a point-in-time
 JSON report and append timestamped JSONL rows so CI or operators can track
-pass-rate drift across harness, profile, and adapter changes.
+pass-rate drift across harness, profile, and adapter changes. Both report
+forms share a closed schema contract under [`schemas/`](schemas/).
 `pipeline_contract` is code-backed topology metadata: node ownership, skills,
 input/output state keys, conditional edges, and guardrails for dry-run,
 approval, retries, idempotency, and audit writeback.
@@ -204,7 +205,7 @@ Profile examples live under
 Contract schemas live under [`schemas/`](schemas/). They define the closed
 shape for harness profiles, the LLM adapter recommendation payload accepted by
 the reference graph, the emitted `pipeline_contract` topology, and checkpoint
-artifact envelopes.
+artifact and eval-report envelopes.
 
 Use [`configure_langgraph_harness.py`](configure_langgraph_harness.py) when
 customizing the harness for a buyer or internal environment. It asks for role,
