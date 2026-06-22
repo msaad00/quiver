@@ -1,0 +1,143 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cloud-ai-security-skills.local/examples/agents/schemas/pipeline_contract.schema.json",
+  "title": "LangGraph SOC pipeline contract",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "description",
+    "nodes",
+    "edges",
+    "invariants"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "langgraph-soc-pipeline-contract-v1"
+    },
+    "description": {
+      "type": "string",
+      "minLength": 1
+    },
+    "nodes": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "node",
+          "agent_id",
+          "skills",
+          "inputs",
+          "outputs",
+          "guardrails"
+        ],
+        "properties": {
+          "node": {
+            "type": "string",
+            "enum": [
+              "ingest",
+              "normalize",
+              "enrich",
+              "correlate",
+              "confidence",
+              "map",
+              "llm_triage",
+              "review",
+              "remediate",
+              "retry_queue",
+              "escalate",
+              "writeback"
+            ]
+          },
+          "agent_id": {
+            "type": "string",
+            "minLength": 1
+          },
+          "skills": {
+            "type": "array",
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "inputs": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "outputs": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "guardrails": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        }
+      }
+    },
+    "edges": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "source",
+          "target",
+          "condition"
+        ],
+        "properties": {
+          "source": {
+            "type": "string",
+            "minLength": 1
+          },
+          "target": {
+            "type": "string",
+            "minLength": 1
+          },
+          "condition": {
+            "type": "string",
+            "enum": [
+              "always",
+              "route_after_review == remediate",
+              "route_after_review == writeback",
+              "route_after_remediation == retry_queue",
+              "route_after_remediation == escalate",
+              "route_after_remediation == writeback"
+            ]
+          }
+        }
+      }
+    },
+    "invariants": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1
+      }
+    }
+  }
+}

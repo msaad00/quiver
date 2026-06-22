@@ -788,11 +788,13 @@ class TestLangGraphContractSchemas:
 
     PROFILE_SCHEMA = SCHEMAS / "harness_profile.schema.json"
     ADAPTER_SCHEMA = SCHEMAS / "llm_adapter_recommendations.schema.json"
+    PIPELINE_SCHEMA = SCHEMAS / "pipeline_contract.schema.json"
+    GRAPH = EXAMPLES / "langgraph_security_graph.py"
     PROFILES = EXAMPLES / "harness_profiles"
     DATASET = EXAMPLES / "evals" / "langgraph_triage_golden.json"
 
     def test_schema_files_are_closed_json_schema_documents(self):
-        for schema_path in [self.PROFILE_SCHEMA, self.ADAPTER_SCHEMA]:
+        for schema_path in [self.PROFILE_SCHEMA, self.ADAPTER_SCHEMA, self.PIPELINE_SCHEMA]:
             schema = json.loads(schema_path.read_text(encoding="utf-8"))
             assert schema["$schema"] == "https://json-schema.org/draft/2020-12/schema"
             assert schema["type"] == "object"
@@ -833,6 +835,48 @@ class TestLangGraphContractSchemas:
                 assert errors
                 assert any("additional property approval" in error for error in errors)
                 assert any("additional property cvss" in error for error in errors)
+
+    def test_emitted_pipeline_contract_matches_schema_and_known_topology(self):
+        result = subprocess.run(
+            [sys.executable, str(self.GRAPH)],
+            capture_output=True,
+            text=True,
+            timeout=30,
+            check=False,
+        )
+        assert result.returncode == 0, result.stderr
+        contract = json.loads(result.stdout)["pipeline_contract"]
+        schema = json.loads(self.PIPELINE_SCHEMA.read_text(encoding="utf-8"))
+        assert _schema_errors(schema, contract) == []
+
+        node_names = {node["node"] for node in contract["nodes"]}
+        assert node_names == {
+            "ingest",
+            "normalize",
+            "enrich",
+            "correlate",
+            "confidence",
+            "map",
+            "llm_triage",
+            "review",
+            "remediate",
+            "retry_queue",
+            "escalate",
+            "writeback",
+        }
+        for edge in contract["edges"]:
+            assert edge["source"] in node_names
+            assert edge["target"] in node_names
+        assert len(contract["edges"]) == 14
+
+        remediation_node = next(
+            node for node in contract["nodes"] if node["node"] == "remediate"
+        )
+        assert remediation_node["skills"] == ["iam-departures-aws"]
+        triage_node = next(
+            node for node in contract["nodes"] if node["node"] == "llm_triage"
+        )
+        assert triage_node["skills"] == []
 
 
 class TestLangGraphHarnessSetup:

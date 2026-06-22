@@ -202,8 +202,8 @@ Profile examples live under
 | `dry-run-remediation.json` | exposes remediation planning, but still requires `DEMO_APPROVE=yes` / approval context |
 
 Contract schemas live under [`schemas/`](schemas/). They define the closed
-shape for harness profiles and the LLM adapter recommendation payload accepted
-by the reference graph.
+shape for harness profiles, the LLM adapter recommendation payload accepted by
+the reference graph, and the emitted `pipeline_contract` topology.
 
 Use [`configure_langgraph_harness.py`](configure_langgraph_harness.py) when
 customizing the harness for a buyer or internal environment. It asks for role,
