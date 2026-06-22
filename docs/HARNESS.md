@@ -44,6 +44,27 @@ ingest -> normalize -> enrich -> correlate -> confidence -> map
    blocked  -> writeback
 ```
 
+The importable wrapper is
+[`examples/agents/harness_runtime.py`](../examples/agents/harness_runtime.py).
+Use it when another runner wants the harness as code instead of shelling out
+to the demo script:
+
+```bash
+PYTHONPATH=examples/agents python - <<'PY'
+from harness_runtime import HarnessRunConfig, run_harness_summary
+
+summary = run_harness_summary(HarnessRunConfig(
+    profile_path="examples/agents/harness_profiles/readonly-soc.json",
+    raw_events=({"source": "cloudtrail", "event_name": "CreateAccessKey"},),
+))
+print(summary["harness_runtime"]["validation_status"])
+PY
+```
+
+`HARNESS.md` is therefore the readable operator contract; the graph nodes,
+adapter gates, runtime wrapper, schemas, checkpoint replay, and eval runner are
+the executable harness.
+
 Diagram source:
 [`docs/diagrams/langgraph-agent-harness.mmd`](diagrams/langgraph-agent-harness.mmd).
 It is generated from the code-backed `pipeline_contract()`:
@@ -231,8 +252,8 @@ To stop redundancy creep, we draw the line clearly.
 | **TLS termination** | speak HTTP behind a WAF | operator's API gateway / WAF |
 | **Multi-tenancy** | one process = one tenant | operator routes per-tenant via separate processes / containers |
 | **Secret management** | read env vars | operator's KMS / Vault / sealed-secrets |
-| **Workflow orchestration** | spec in `examples/workflows/` | operator's SOAR / Step Function / LangGraph |
-| **State persistence (dedupe, checkpoint)** | — | runners own state, skills are stateless |
+| **Workflow orchestration** | reference harness in `examples/agents/` plus specs in `examples/workflows/` | operator's production SOAR / Step Function / LangGraph |
+| **State persistence (dedupe, checkpoint)** | reference checkpoint artifacts only | runners own production state, skills are stateless |
 | **Rate limiting incoming traffic** | — | operator's API gateway |
 | **Authorization to remediate** | enforce HITL gate | operator's IDP attests `_approval_context` |
 
@@ -245,7 +266,9 @@ something the SDK / IDP / WAF / agent already does:
   database table to hold them, that work belongs upstream of the
   wrapper.
 - **Never speak SAML / OIDC as a client.** The cloud CLI does that.
-- **Never run a workflow engine.** Workflows are markdown specs.
+- **Never ship a hosted workflow engine by default.** Reference harnesses can
+  show LangGraph/SOAR composition, but production orchestration remains
+  operator-owned.
 - **Never proxy traffic to the cloud.** The skill calls the cloud SDK
   directly; latency, retries, and TLS are the SDK's concern.
 - **Never persist user state between calls.** Skills are pure

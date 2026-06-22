@@ -236,6 +236,71 @@ class TestHitlGateReachable:
         assert '"dry_run"' in result.stdout
 
 
+class TestLangGraphHarnessRuntime:
+    """Importable wrapper coverage for embedding the LangGraph harness."""
+
+    def _runtime_module(self):
+        if str(EXAMPLES) not in sys.path:
+            sys.path.insert(0, str(EXAMPLES))
+        import harness_runtime
+
+        return harness_runtime
+
+    def test_runtime_wrapper_runs_without_shelling_out(self, monkeypatch: pytest.MonkeyPatch):
+        monkeypatch.delenv("DEMO_APPROVE", raising=False)
+        runtime = self._runtime_module()
+
+        summary = runtime.run_harness_summary()
+
+        assert summary["harness_runtime"]["schema_version"] == "langgraph-soc-harness-runtime-v1"
+        assert summary["harness_runtime"]["execution_mode"] == "deterministic_runner"
+        assert summary["harness_runtime"]["validation_status"] == "pass"
+        assert summary["trace"][0] == "ingest"
+        assert summary["trace"][-1] == "writeback"
+        assert summary["review"]["status"] == "blocked"
+        assert summary["remediation"]["status"] == "skipped"
+
+    def test_runtime_wrapper_accepts_profile_caller_and_events(self, monkeypatch: pytest.MonkeyPatch):
+        monkeypatch.delenv("DEMO_APPROVE", raising=False)
+        runtime = self._runtime_module()
+        config = runtime.HarnessRunConfig(
+            profile_path=EXAMPLES / "harness_profiles" / "readonly-soc.json",
+            caller_context={
+                "session_id": "wrapper-test-session",
+                "email": "wrapper@example.com",
+            },
+            raw_events=(
+                {
+                    "source": "cloudtrail",
+                    "event_name": "CreateAccessKey",
+                    "actor_uid": "AIDAWRAPPER",
+                    "resource_uid": "arn:aws:iam::111122223333:user/wrapper",
+                },
+            ),
+        )
+
+        result = runtime.run_harness(config)
+
+        assert result.validation_errors == ()
+        assert result.runtime["profile_id"] == "readonly-soc"
+        assert result.summary["caller_context"]["session_id"] == "wrapper-test-session"
+        assert result.summary["audit"]["correlation_id"] == "wrapper-test-session"
+        assert result.summary["findings_count"] == 1
+
+    def test_runtime_wrapper_replays_checkpoint(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
+        monkeypatch.delenv("DEMO_APPROVE", raising=False)
+        runtime = self._runtime_module()
+        checkpoint_path = tmp_path / "langgraph-checkpoint.json"
+
+        first = runtime.run_harness(runtime.HarnessRunConfig(checkpoint_path=checkpoint_path))
+        replayed = runtime.run_harness(runtime.HarnessRunConfig(replay_checkpoint_path=checkpoint_path))
+
+        assert first.checkpoint["path"] == str(checkpoint_path)
+        assert replayed.runtime["execution_mode"] == "checkpoint_replay"
+        assert replayed.runtime["replayed"] is True
+        assert replayed.summary["integrity"]["state_hash"] == first.summary["integrity"]["state_hash"]
+
+
 class TestLangGraphSocWorkflow:
     """Regression coverage for the expanded SOC workflow graph."""
 

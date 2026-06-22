@@ -185,6 +185,23 @@ forms share a closed schema contract under [`schemas/`](schemas/).
 `pipeline_contract` is code-backed topology metadata: node ownership, skills,
 input/output state keys, conditional edges, and guardrails for dry-run,
 approval, retries, idempotency, and audit writeback.
+Importable harness wrapper:
+
+```bash
+PYTHONPATH=examples/agents python - <<'PY'
+from harness_runtime import HarnessRunConfig, run_harness
+
+result = run_harness(HarnessRunConfig(
+    profile_path="examples/agents/harness_profiles/readonly-soc.json",
+    raw_events=({"source": "cloudtrail", "event_name": "CreateAccessKey"},),
+))
+assert result.runtime["validation_status"] == "pass"
+PY
+```
+
+Use this wrapper from CI, MCP, SOAR, or a customer-owned LangGraph app when
+the workflow should run as code. `docs/HARNESS.md` remains the readable
+operator contract, not the implementation body.
 Adapter plumbing lives in [`harness_adapters.py`](harness_adapters.py): the
 graph selects deterministic fallback, JSON fixture, or optional LangChain chat
 fixture adapters, then applies one closed schema gate before any recommendation
