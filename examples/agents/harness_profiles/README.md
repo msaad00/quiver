@@ -35,6 +35,9 @@ Profiles control:
   human; credentials stay in the provider CLI/SDK chain.
 - `llm`: provider/model metadata for bounded triage; model output can only
   rank, summarize, draft, or request human review.
+- `token_budget`: model tier and hard estimated token caps; the harness sends
+  compact evidence cards only and falls back deterministically when a request
+  would exceed budget.
 - `approval_policy`: documentation of the HITL source; profiles never grant
   approval by themselves.
 

@@ -318,6 +318,16 @@ class TestLangGraphSocWorkflow:
             "draft_analyst_note",
             "request_human_review",
         ]
+        assert summary["harness"]["token_budget"]["policy_version"] == "langgraph-token-budget-v1"
+        assert summary["harness"]["token_budget"]["model_tier"] == "tiny"
+        assert summary["token_budget_usage"]["status"] == "within_budget"
+        assert summary["token_budget_usage"]["compact_input_tokens_estimate"] <= summary["harness"]["token_budget"]["max_input_tokens"]
+        assert summary["token_budget_usage"]["compact_evidence_chars"] <= summary["harness"]["token_budget"]["max_evidence_chars"]
+        assert summary["audit"]["llm_token_budget_status"] == "within_budget"
+        assert summary["audit"]["llm_compact_input_tokens"] == summary["token_budget_usage"]["compact_input_tokens_estimate"]
+        assert summary["llm_evidence_cards"]
+        assert all("raw_events" not in card for card in summary["llm_evidence_cards"])
+        assert all("ocsf_events" not in card for card in summary["llm_evidence_cards"])
         assert [agent["agent_id"] for agent in summary["agents"]] == self.EXPECTED_AGENT_IDS
         assert [run["agent_id"] for run in summary["agent_runs"]] == [
             "evidence-agent",
@@ -379,6 +389,8 @@ class TestLangGraphSocWorkflow:
         triage_node = next(node for node in contract["nodes"] if node["node"] == "llm_triage")
         assert triage_node["skills"] == []
         assert "closed_adapter_schema" in triage_node["guardrails"]
+        assert "token_budget_enforced" in triage_node["guardrails"]
+        assert "compact_evidence_only" in triage_node["guardrails"]
         assert "LLM adapters can rank, summarize, draft, or request review only" in contract["invariants"]
 
     def test_no_approval_blocks_remediation_but_writes_audit_and_eval(self):
@@ -439,6 +451,7 @@ class TestLangGraphSocWorkflow:
         assert summary["harness"]["mode"] == "external_llm_optional"
         assert summary["harness"]["provider"] == "openai"
         assert summary["harness"]["model"] == "gpt-4.1-mini"
+        assert summary["harness"]["token_budget"]["model_tier"] == "tiny"
         assert "call_write_tools" not in summary["harness"]["allowed_outputs"]
         assert summary["agent_recommendations"][0]["generated_by"] == "openai:gpt-4.1-mini"
         assert summary["remediation"]["status"] == "skipped"
@@ -447,6 +460,22 @@ class TestLangGraphSocWorkflow:
         assert "write_intent" in triage_agent["forbidden_outputs"]
         assert summary["llm_validation"][0]["status"] == "fallback"
         assert summary["llm_validation"][0]["reason"] == "no_adapter_output"
+
+    def test_token_budget_overage_uses_deterministic_fallback(self):
+        summary, _ = self._run(extra_env={
+            "DEMO_EXTERNAL_LLM_ALLOWED": "yes",
+            "DEMO_LLM_PROVIDER": "fixture",
+            "DEMO_LLM_MODEL": "oversized-context-fixture",
+            "DEMO_TOKEN_MAX_INPUT_TOKENS": "1",
+        })
+        assert summary["token_budget_usage"]["status"] == "fallback"
+        assert summary["token_budget_usage"]["fallback_reason"] == "token_budget_exceeded"
+        assert summary["llm_validation"][0]["status"] == "fallback"
+        assert summary["llm_validation"][0]["reason"] == "token_budget_exceeded"
+        triage_run = next(run for run in summary["agent_runs"] if run["agent_id"] == "triage-agent")
+        assert triage_run["token_budget"]["status"] == "fallback"
+        assert triage_run["token_budget"]["cache_key"].startswith("triage-")
+        assert summary["audit"]["llm_token_budget_status"] == "fallback"
 
     def test_llm_adapter_accepts_bounded_triage_output(self, tmp_path: Path):
         baseline, _ = self._run()
@@ -825,6 +854,9 @@ class TestLangGraphContractSchemas:
             )
             assert profile["approval_policy"]["remediation_requires_approval_context"] is True
             assert profile["runtime"]["dry_run_default"] is True
+            if "token_budget" in profile:
+                assert profile["token_budget"]["compression_required"] is True
+                assert profile["token_budget"]["fallback_on_budget_exceeded"] is True
 
     def test_llm_adapter_eval_fixtures_match_expected_schema_outcome(self):
         schema = json.loads(self.ADAPTER_SCHEMA.read_text(encoding="utf-8"))
@@ -965,6 +997,9 @@ class TestLangGraphHarnessSetup:
             "provider": "openai",
             "model": "gpt-4.1-mini",
         }
+        assert profile["token_budget"]["policy_version"] == "langgraph-token-budget-v1"
+        assert profile["token_budget"]["model_tier"] == "small"
+        assert profile["token_budget"]["compression_required"] is True
         assert "iam-departures-aws" not in profile["allowed_skills"]
 
         dotenv = env_path.read_text(encoding="utf-8")
@@ -985,6 +1020,7 @@ class TestLangGraphHarnessSetup:
         assert summary["profile"]["profile_id"] == "acme-soc-triage"
         assert summary["harness"]["mode"] == "external_llm_optional"
         assert summary["harness"]["provider"] == "openai"
+        assert summary["harness"]["token_budget"]["model_tier"] == "small"
         assert summary["review"]["status"] == "blocked"
 
     def test_setup_generator_dry_run_profile_still_requires_approval(self, tmp_path: Path):
@@ -1016,6 +1052,7 @@ class TestLangGraphHarnessSetup:
         assert profile["runtime"]["dry_run_default"] is True
         assert profile["runtime"]["apply_supported"] is False
         assert profile["approval_policy"]["remediation_requires_approval_context"] is True
+        assert profile["token_budget"]["model_tier"] == "tiny"
 
         blocked = subprocess.run(
             [sys.executable, str(self.GRAPH)],

@@ -29,6 +29,18 @@
     "provider": "deterministic-local",
     "model": "policy-bounded-triage-v1"
   },
+  "token_budget": {
+    "policy_version": "langgraph-token-budget-v1",
+    "task_class": "triage_summary",
+    "model_tier": "tiny",
+    "max_input_tokens": 1200,
+    "max_output_tokens": 256,
+    "max_total_tokens": 1600,
+    "max_findings_per_call": 5,
+    "max_evidence_chars": 1800,
+    "compression_required": true,
+    "fallback_on_budget_exceeded": true
+  },
   "approval_policy": {
     "remediation_requires_approval_context": true,
     "approval_source": "not_enabled_for_this_profile"
