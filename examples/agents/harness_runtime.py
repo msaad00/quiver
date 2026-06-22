@@ -90,6 +90,11 @@ def validate_harness_summary(summary: Mapping[str, Any]) -> tuple[str, ...]:
 
     token_usage = summary.get("token_budget_usage") or {}
     token_budget = harness.get("token_budget") or {}
+    model_policy = harness.get("model_policy") or {}
+    if model_policy.get("selected_model_tier") != token_budget.get("model_tier"):
+        errors.append("model policy selected tier must match token budget tier")
+    if model_policy.get("selection_source") not in {"profile_model_policy", "env_override"}:
+        errors.append("model policy selection source must be recorded")
     if token_usage.get("status") not in {"within_budget", "fallback"}:
         errors.append("token budget status must be within_budget or fallback")
     if (

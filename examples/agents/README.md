@@ -116,8 +116,9 @@ uv sync --group dev --group langgraph
 DEMO_LANGGRAPH_RUNTIME=yes \
 python examples/agents/langgraph_security_graph.py
 
-# Optional LLM/agent harness metadata: provider/model are recorded in audit,
-# but LLM output is still limited to rank/summarize/draft/request-review.
+# Optional LLM/agent harness override: provider/model are recorded in audit,
+# but profile model_policy remains the normal configuration path and LLM
+# output is still limited to rank/summarize/draft/request-review.
 DEMO_EXTERNAL_LLM_ALLOWED=yes \
 DEMO_LLM_PROVIDER=openai \
 DEMO_LLM_MODEL=gpt-4.1-mini \
@@ -171,9 +172,10 @@ python examples/agents/render_langgraph_pipeline_diagram.py \
 The LangGraph summary includes `integrity.evidence_hash`,
 `integrity.state_hash`, stable workflow/remediation idempotency keys, and
 retryable-vs-terminal API error classification. It also includes the
-`profile`, `effective_allowed_skills`, `harness` provider/model/mode/token
-budget, `agents` manifest, `pipeline_contract`, `agent_runs` ledger, compact
-LLM evidence cards, token budget usage, and bounded `agent_recommendations` so
+`profile`, `effective_allowed_skills`, `harness` provider/model/mode/model
+policy/token budget, `agents` manifest, `pipeline_contract`, `agent_runs`
+ledger, compact LLM evidence cards, token budget usage, and bounded
+`agent_recommendations` so
 operators can see which role and model would have drafted the analyst note
 without letting that model set policy, mappings, approvals, or audit facts. Use
 `DEMO_API_ERROR_STATUS=429` for retryable errors or `403` for terminal errors.
@@ -231,10 +233,13 @@ artifact and eval-report envelopes.
 Use [`configure_langgraph_harness.py`](configure_langgraph_harness.py) when
 customizing the harness for a buyer or internal environment. It asks for role,
 operator identity, cloud identity hints, allowed example skills, and
-provider/model metadata, then writes a schema-shaped profile plus a dotenv file.
+provider/model policy metadata, then writes a schema-shaped profile plus a
+dotenv file that points at the profile without duplicating provider/model
+override env vars.
 The generated runtime keeps `dry_run_default=true`, `apply_supported=false`,
-`remediation_requires_approval_context=true`, and a token budget policy;
-setting a remediation-capable role exposes dry-run planning only, not approval.
+`remediation_requires_approval_context=true`, a model policy, and a token
+budget policy; setting a remediation-capable role exposes dry-run planning
+only, not approval.
 
 Eval fixtures live under [`evals/`](evals/). The eval runner is deterministic:
 it replays profile/triage cases, checks recommendation shape, HITL routing,

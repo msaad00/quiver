@@ -23,8 +23,9 @@ python examples/agents/configure_langgraph_harness.py \
 ```
 
 The generated dotenv file points `CLOUD_SECURITY_HARNESS_PROFILE` and
-`DEMO_HARNESS_PROFILE` at the profile. It intentionally omits `DEMO_APPROVE`;
-approval still has to come from an explicit human approval context at runtime.
+`DEMO_HARNESS_PROFILE` at the profile. It does not duplicate provider/model as
+env overrides, and it intentionally omits `DEMO_APPROVE`; approval still has
+to come from an explicit human approval context at runtime.
 
 Profiles control:
 
@@ -35,6 +36,8 @@ Profiles control:
   human; credentials stay in the provider CLI/SDK chain.
 - `llm`: provider/model metadata for bounded triage; model output can only
   rank, summarize, draft, or request human review.
+- `model_policy`: task-to-tier routing for model selection; profiles choose
+  the configured provider/model tier before env overrides are applied.
 - `token_budget`: model tier and hard estimated token caps; the harness sends
   compact evidence cards only and falls back deterministically when a request
   would exceed budget.

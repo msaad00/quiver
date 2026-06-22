@@ -92,6 +92,7 @@ class HarnessProfile(TypedDict, total=False):
     cloud_identity_hints: dict[str, str]
     llm: dict[str, str]
     approval_policy: dict[str, Any]
+    model_policy: dict[str, Any]
     runtime: dict[str, Any]
 
 
@@ -147,6 +148,7 @@ class AgentHarnessConfig(TypedDict):
     allowed_outputs: list[str]
     prompt_hash: str
     token_budget: dict[str, Any]
+    model_policy: dict[str, Any]
 
 
 class AgentDefinition(TypedDict):
@@ -301,6 +303,33 @@ DEFAULT_TOKEN_BUDGET = {
 }
 
 
+DEFAULT_MODEL_POLICY = {
+    "policy_version": "langgraph-model-policy-v1",
+    "task_class": "triage_summary",
+    "selection_strategy": "smallest_sufficient",
+    "default_model_tier": "tiny",
+    "allowed_model_tiers": ["tiny", "small"],
+    "models": {
+        "tiny": {
+            "provider": "deterministic-local",
+            "model": "policy-bounded-triage-v1",
+        },
+        "small": {
+            "provider": "openai",
+            "model": "gpt-4.1-mini",
+        },
+        "large": {
+            "provider": "external-approved",
+            "model": "operator-approved-large-model",
+        },
+    },
+    "fallback": {
+        "provider": "deterministic-local",
+        "model": "policy-bounded-triage-v1",
+    },
+}
+
+
 def _default_harness_profile() -> HarnessProfile:
     return {
         "profile_id": "inline-default",
@@ -323,6 +352,7 @@ def _default_harness_profile() -> HarnessProfile:
             "model": "policy-bounded-triage-v1",
         },
         "token_budget": DEFAULT_TOKEN_BUDGET,
+        "model_policy": DEFAULT_MODEL_POLICY,
         "approval_policy": {
             "remediation_requires_approval_context": True,
             "approval_source": "operator_idp_or_ticketing_system",
@@ -353,6 +383,18 @@ def load_harness_profile(path_text: str | None = None) -> HarnessProfile:
     profile["token_budget"] = {
         **default["token_budget"],
         **payload.get("token_budget", {}),
+    }
+    profile["model_policy"] = {
+        **default["model_policy"],
+        **payload.get("model_policy", {}),
+    }
+    profile["model_policy"]["models"] = {
+        **default["model_policy"]["models"],
+        **payload.get("model_policy", {}).get("models", {}),
+    }
+    profile["model_policy"]["fallback"] = {
+        **default["model_policy"]["fallback"],
+        **payload.get("model_policy", {}).get("fallback", {}),
     }
     return profile
 
@@ -613,6 +655,7 @@ def _agent_harness_config(state: GraphState) -> AgentHarnessConfig:
     return build_harness_config(
         profile_llm=profile_llm,
         profile_token_budget=profile.get("token_budget", DEFAULT_TOKEN_BUDGET),
+        profile_model_policy=profile.get("model_policy", DEFAULT_MODEL_POLICY),
         environ=os.environ,
     )
 

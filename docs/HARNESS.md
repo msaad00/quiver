@@ -74,14 +74,16 @@ python examples/agents/render_langgraph_pipeline_diagram.py \
   --output docs/diagrams/langgraph-agent-harness.mmd
 ```
 
-The LLM/agent harness records provider/model/mode and token-budget policy in
-state and audit output. Its allowed outputs are intentionally narrow: rank
-findings, summarize evidence, draft analyst notes, and request human review.
-It cannot set CVSS, MITRE, EPSS, KEV, tenant scope, idempotency keys, HITL
-approval, dry-run state, or audit-chain facts. The compiled LangGraph path
-uses conditional edges for HITL, retryable API errors, terminal API errors,
-duplicate write suppression, and audit/eval writeback; the offline runner
-mirrors those routes for tests.
+The LLM/agent harness records provider/model/mode, model-policy selection, and
+token-budget policy in state and audit output. `model_policy` selects the
+configured provider/model tier for the triage task; `token_budget` caps input,
+output, finding count, and compact evidence size. Its allowed outputs
+are intentionally narrow: rank findings, summarize evidence, draft analyst
+notes, and request human review. It cannot set CVSS, MITRE, EPSS, KEV, tenant
+scope, idempotency keys, HITL approval, dry-run state, or audit-chain facts.
+The compiled LangGraph path uses conditional edges for HITL, retryable API
+errors, terminal API errors, duplicate write suppression, and audit/eval
+writeback; the offline runner mirrors those routes for tests.
 
 Model-backed triage plugs in through a bounded adapter contract in
 [`examples/agents/harness_adapters.py`](../examples/agents/harness_adapters.py).
@@ -151,12 +153,13 @@ share a closed eval-report schema.
 Operator profiles live under
 [`examples/agents/harness_profiles/`](../examples/agents/harness_profiles/).
 They are JSON metadata only: allowed skills, caller context, identity hints,
-LLM provider/model metadata, and approval-policy documentation. They do not
-store cloud secrets and they do not grant approval. A remediation profile can
-make a dry-run skill visible, but the graph still needs `_approval_context`
-from the operator's IDP or ticketing workflow before routing to remediation.
-Profiles can also declare `token_budget` limits so small triage tasks stay on
-tiny/small model tiers and oversized context falls back deterministically.
+LLM provider/model metadata, model-policy selection, token-budget limits, and
+approval-policy documentation. They do not store cloud secrets and they do not
+grant approval. A remediation profile can make a dry-run skill visible, but
+the graph still needs `_approval_context` from the operator's IDP or ticketing
+workflow before routing to remediation. Profiles can declare `model_policy`
+and `token_budget` together so small triage tasks stay on tiny/small model
+tiers and oversized context falls back deterministically.
 Closed JSON Schema contracts live under
 [`examples/agents/schemas/`](../examples/agents/schemas/) for harness
 profiles, LLM adapter recommendation payloads, and the emitted

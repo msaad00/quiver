@@ -150,6 +150,7 @@ def run_case(case: dict[str, Any]) -> dict[str, Any]:
     ]
     token_usage = summary.get("token_budget_usage") or {}
     token_budget = (summary.get("harness") or {}).get("token_budget") or {}
+    model_policy = (summary.get("harness") or {}).get("model_policy") or {}
     checks.extend([
         _check("token_budget_status_present", token_usage.get("status") in {"within_budget", "fallback"}, True),
         _check(
@@ -165,6 +166,16 @@ def run_case(case: dict[str, Any]) -> dict[str, Any]:
             True,
         ),
         _check("token_budget_model_tier_bounded", token_budget.get("model_tier") in {"tiny", "small"}, True),
+        _check(
+            "model_policy_selected_tier_matches_budget",
+            model_policy.get("selected_model_tier") == token_budget.get("model_tier"),
+            True,
+        ),
+        _check(
+            "model_policy_selection_source_recorded",
+            model_policy.get("selection_source") in {"profile_model_policy", "env_override"},
+            True,
+        ),
         _check(
             "llm_evidence_cards_compact",
             all("raw_events" not in card and "ocsf_events" not in card for card in summary.get("llm_evidence_cards") or []),

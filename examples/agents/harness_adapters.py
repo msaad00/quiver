@@ -50,19 +50,42 @@ def build_harness_config(
     *,
     profile_llm: Mapping[str, str] | None,
     profile_token_budget: Mapping[str, Any] | None = None,
+    profile_model_policy: Mapping[str, Any] | None = None,
     environ: Mapping[str, str] = os.environ,
 ) -> dict[str, Any]:
     """Describe the LLM/agent harness without requiring a live model."""
     profile_llm = profile_llm or {}
     token_budget = dict(profile_token_budget or {})
+    model_policy = dict(profile_model_policy or {})
+    model_tier = str(token_budget.get("model_tier") or model_policy.get("default_model_tier") or "tiny")
+    allowed_tiers = set(model_policy.get("allowed_model_tiers") or [model_tier])
+    if model_tier not in allowed_tiers:
+        model_tier = str(model_policy.get("default_model_tier") or "tiny")
+        token_budget["model_tier"] = model_tier
+    model_by_tier = dict((model_policy.get("models") or {}).get(model_tier) or {})
+    fallback_model = dict(model_policy.get("fallback") or {})
     mode: LlmMode = (
         "external_llm_optional"
         if environ.get("DEMO_EXTERNAL_LLM_ALLOWED") == "yes"
         or profile_llm.get("mode") == "external_llm_optional"
+        or model_by_tier.get("provider") not in {None, "deterministic-local"}
         else "deterministic_offline"
     )
-    provider = environ.get("DEMO_LLM_PROVIDER") or profile_llm.get("provider", "deterministic-local")
-    model = environ.get("DEMO_LLM_MODEL") or profile_llm.get("model", "policy-bounded-triage-v1")
+    env_override = bool(environ.get("DEMO_LLM_PROVIDER") or environ.get("DEMO_LLM_MODEL"))
+    provider = (
+        environ.get("DEMO_LLM_PROVIDER")
+        or model_by_tier.get("provider")
+        or profile_llm.get("provider")
+        or fallback_model.get("provider")
+        or "deterministic-local"
+    )
+    model = (
+        environ.get("DEMO_LLM_MODEL")
+        or model_by_tier.get("model")
+        or profile_llm.get("model")
+        or fallback_model.get("model")
+        or "policy-bounded-triage-v1"
+    )
     if environ.get("DEMO_TOKEN_MAX_INPUT_TOKENS"):
         token_budget["max_input_tokens"] = int(environ["DEMO_TOKEN_MAX_INPUT_TOKENS"])
     if environ.get("DEMO_TOKEN_MAX_TOTAL_TOKENS"):
@@ -78,6 +101,14 @@ def build_harness_config(
         "provider": provider,
         "model": model,
         "token_budget": token_budget,
+        "model_policy": {
+            "policy_version": model_policy.get("policy_version", "langgraph-model-policy-v1"),
+            "task_class": model_policy.get("task_class", token_budget.get("task_class", "triage_summary")),
+            "selection_strategy": model_policy.get("selection_strategy", "smallest_sufficient"),
+            "selected_model_tier": model_tier,
+            "allowed_model_tiers": sorted(allowed_tiers),
+            "selection_source": "env_override" if env_override else "profile_model_policy",
+        },
         "allowed_outputs": allowed_outputs,
         "prompt_hash": stable_hash({
             "system": "llm may rank, summarize, and draft only",
@@ -89,6 +120,7 @@ def build_harness_config(
                 "write_audit",
             ],
             "allowed_outputs": allowed_outputs,
+            "model_policy": model_policy.get("policy_version", "langgraph-model-policy-v1"),
         })[:16],
     }
 

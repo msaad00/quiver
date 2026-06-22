@@ -385,6 +385,9 @@ class TestLangGraphSocWorkflow:
         ]
         assert summary["harness"]["token_budget"]["policy_version"] == "langgraph-token-budget-v1"
         assert summary["harness"]["token_budget"]["model_tier"] == "tiny"
+        assert summary["harness"]["model_policy"]["policy_version"] == "langgraph-model-policy-v1"
+        assert summary["harness"]["model_policy"]["selected_model_tier"] == "tiny"
+        assert summary["harness"]["model_policy"]["selection_source"] == "profile_model_policy"
         assert summary["token_budget_usage"]["status"] == "within_budget"
         assert summary["token_budget_usage"]["compact_input_tokens_estimate"] <= summary["harness"]["token_budget"]["max_input_tokens"]
         assert summary["token_budget_usage"]["compact_evidence_chars"] <= summary["harness"]["token_budget"]["max_evidence_chars"]
@@ -517,6 +520,8 @@ class TestLangGraphSocWorkflow:
         assert summary["harness"]["provider"] == "openai"
         assert summary["harness"]["model"] == "gpt-4.1-mini"
         assert summary["harness"]["token_budget"]["model_tier"] == "tiny"
+        assert summary["harness"]["model_policy"]["selected_model_tier"] == "tiny"
+        assert summary["harness"]["model_policy"]["selection_source"] == "env_override"
         assert "call_write_tools" not in summary["harness"]["allowed_outputs"]
         assert summary["agent_recommendations"][0]["generated_by"] == "openai:gpt-4.1-mini"
         assert summary["remediation"]["status"] == "skipped"
@@ -662,6 +667,8 @@ class TestLangGraphSocWorkflow:
         assert summary["harness"]["mode"] == "external_llm_optional"
         assert summary["harness"]["provider"] == "openai"
         assert summary["harness"]["model"] == "gpt-4.1-mini"
+        assert summary["harness"]["model_policy"]["selected_model_tier"] == "small"
+        assert summary["harness"]["model_policy"]["selection_source"] == "profile_model_policy"
         assert summary["agent_recommendations"][0]["generated_by"] == "openai:gpt-4.1-mini"
         assert summary["review"]["status"] == "blocked"
 
@@ -922,6 +929,9 @@ class TestLangGraphContractSchemas:
             if "token_budget" in profile:
                 assert profile["token_budget"]["compression_required"] is True
                 assert profile["token_budget"]["fallback_on_budget_exceeded"] is True
+            assert profile["model_policy"]["policy_version"] == "langgraph-model-policy-v1"
+            assert profile["model_policy"]["selection_strategy"] == "smallest_sufficient"
+            assert profile["token_budget"]["model_tier"] in profile["model_policy"]["allowed_model_tiers"]
 
     def test_llm_adapter_eval_fixtures_match_expected_schema_outcome(self):
         schema = json.loads(self.ADAPTER_SCHEMA.read_text(encoding="utf-8"))
@@ -1065,11 +1075,20 @@ class TestLangGraphHarnessSetup:
         assert profile["token_budget"]["policy_version"] == "langgraph-token-budget-v1"
         assert profile["token_budget"]["model_tier"] == "small"
         assert profile["token_budget"]["compression_required"] is True
+        assert profile["model_policy"]["policy_version"] == "langgraph-model-policy-v1"
+        assert profile["model_policy"]["default_model_tier"] == "small"
+        assert profile["model_policy"]["models"]["small"] == {
+            "provider": "openai",
+            "model": "gpt-4.1-mini",
+        }
         assert "iam-departures-aws" not in profile["allowed_skills"]
 
         dotenv = env_path.read_text(encoding="utf-8")
         assert f"DEMO_HARNESS_PROFILE={profile_path}" in dotenv
         assert "DEMO_EXTERNAL_LLM_ALLOWED=yes" in dotenv
+        assert "DEMO_LLM_PROVIDER=" not in dotenv
+        assert "DEMO_LLM_MODEL=" not in dotenv
+        assert "# profile_model=openai:gpt-4.1-mini" in dotenv
         assert "DEMO_APPROVE is intentionally omitted" in dotenv
 
         graph = subprocess.run(
@@ -1086,6 +1105,8 @@ class TestLangGraphHarnessSetup:
         assert summary["harness"]["mode"] == "external_llm_optional"
         assert summary["harness"]["provider"] == "openai"
         assert summary["harness"]["token_budget"]["model_tier"] == "small"
+        assert summary["harness"]["model_policy"]["selected_model_tier"] == "small"
+        assert summary["harness"]["model_policy"]["selection_source"] == "profile_model_policy"
         assert summary["review"]["status"] == "blocked"
 
     def test_setup_generator_dry_run_profile_still_requires_approval(self, tmp_path: Path):
@@ -1118,6 +1139,7 @@ class TestLangGraphHarnessSetup:
         assert profile["runtime"]["apply_supported"] is False
         assert profile["approval_policy"]["remediation_requires_approval_context"] is True
         assert profile["token_budget"]["model_tier"] == "tiny"
+        assert profile["model_policy"]["allowed_model_tiers"] == ["tiny"]
 
         blocked = subprocess.run(
             [sys.executable, str(self.GRAPH)],

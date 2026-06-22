@@ -11,6 +11,7 @@
     "caller_context",
     "cloud_identity_hints",
     "llm",
+    "model_policy",
     "approval_policy",
     "runtime"
   ],
@@ -165,6 +166,77 @@
         }
       }
     },
+    "model_policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "policy_version",
+        "task_class",
+        "selection_strategy",
+        "default_model_tier",
+        "allowed_model_tiers",
+        "models",
+        "fallback"
+      ],
+      "properties": {
+        "policy_version": {
+          "type": "string",
+          "const": "langgraph-model-policy-v1"
+        },
+        "task_class": {
+          "type": "string",
+          "const": "triage_summary"
+        },
+        "selection_strategy": {
+          "type": "string",
+          "const": "smallest_sufficient"
+        },
+        "default_model_tier": {
+          "type": "string",
+          "enum": [
+            "tiny",
+            "small",
+            "large"
+          ]
+        },
+        "allowed_model_tiers": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "enum": [
+              "tiny",
+              "small",
+              "large"
+            ]
+          }
+        },
+        "models": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "tiny",
+            "small",
+            "large"
+          ],
+          "properties": {
+            "tiny": {
+              "$ref": "#/$defs/model_target"
+            },
+            "small": {
+              "$ref": "#/$defs/model_target"
+            },
+            "large": {
+              "$ref": "#/$defs/model_target"
+            }
+          }
+        },
+        "fallback": {
+          "$ref": "#/$defs/model_target"
+        }
+      }
+    },
     "approval_policy": {
       "type": "object",
       "additionalProperties": false,
@@ -206,6 +278,26 @@
         "apply_supported": {
           "type": "boolean",
           "const": false
+        }
+      }
+    }
+  },
+  "$defs": {
+    "model_target": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "provider",
+        "model"
+      ],
+      "properties": {
+        "provider": {
+          "type": "string",
+          "minLength": 1
+        },
+        "model": {
+          "type": "string",
+          "minLength": 1
         }
       }
     }

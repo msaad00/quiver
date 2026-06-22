@@ -41,6 +41,33 @@
     "compression_required": true,
     "fallback_on_budget_exceeded": true
   },
+  "model_policy": {
+    "policy_version": "langgraph-model-policy-v1",
+    "task_class": "triage_summary",
+    "selection_strategy": "smallest_sufficient",
+    "default_model_tier": "tiny",
+    "allowed_model_tiers": [
+      "tiny"
+    ],
+    "models": {
+      "tiny": {
+        "provider": "deterministic-local",
+        "model": "policy-bounded-triage-v1"
+      },
+      "small": {
+        "provider": "openai",
+        "model": "gpt-4.1-mini"
+      },
+      "large": {
+        "provider": "external-approved",
+        "model": "operator-approved-large-model"
+      }
+    },
+    "fallback": {
+      "provider": "deterministic-local",
+      "model": "policy-bounded-triage-v1"
+    }
+  },
   "approval_policy": {
     "remediation_requires_approval_context": true,
     "approval_source": "not_enabled_for_this_profile"
