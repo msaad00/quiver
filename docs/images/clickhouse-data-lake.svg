@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1600" height="980" viewBox="0 0 1600 980" role="img" aria-labelledby="title desc">
   <title id="title">ClickHouse security data lake closed-loop architecture</title>
-  <desc id="desc">Clean lane diagram showing signals, OCSF normalization, append-only ClickHouse storage, read-only replay, skill outputs, and HITL audit closure.</desc>
+  <desc id="desc">Clean lane diagram showing covered signals, OCSF normalization, append-only ClickHouse writes, governed ClickHouse tables, read-only replay, operator artifacts, HITL review, audit write-back, materialized views, and the customer-owned trust boundary.</desc>
 
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
@@ -165,7 +165,7 @@
         <rect x="0" y="48" width="190" height="34" rx="9" fill="#0f2a3b" stroke="#38bdf8"/>
         <text x="95" y="70" text-anchor="middle" class="badge">dry-run default</text>
         <rect x="0" y="96" width="190" height="34" rx="9" fill="#0f2a3b" stroke="#38bdf8"/>
-        <text x="95" y="118" text-anchor="middle" class="badge">validated table name</text>
+        <text x="95" y="118" text-anchor="middle" class="badge">identifier validated</text>
       </g>
     </g>
 
@@ -250,7 +250,7 @@
     <g filter="url(#softShadow)">
       <rect x="1052" y="858" width="454" height="72" rx="18" fill="#111827" stroke="#475569"/>
       <text x="1084" y="887" class="cardTitle">Customer-owned boundary</text>
-      <text x="1084" y="906" class="tiny">Endpoint, credentials, TLS, retention, tenancy,</text>
+      <text x="1084" y="906" class="tiny">Cluster, database, roles, TLS, retention, tenancy,</text>
       <text x="1084" y="922" class="tiny">and dashboard access stay under operator control.</text>
     </g>
 
