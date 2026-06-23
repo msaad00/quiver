@@ -157,10 +157,36 @@ def validate_harness_summary(summary: Mapping[str, Any]) -> tuple[str, ...]:
     if remediation.get("status") == "dry_run" and review.get("status") != "approved":
         errors.append("dry-run remediation requires approved review state")
 
+    mcp_call_plan = list(summary.get("mcp_call_plan") or [])
+    if not mcp_call_plan:
+        errors.append("summary must include MCP call plan")
+    planned_mcp_calls = [call for call in mcp_call_plan if call.get("status") == "planned"]
+    for call in planned_mcp_calls:
+        request = call.get("request") or {}
+        params = request.get("params") or {}
+        arguments = params.get("arguments") or {}
+        if request.get("method") != "tools/call":
+            errors.append("planned MCP call must use tools/call")
+        if params.get("name") != call.get("skill"):
+            errors.append("planned MCP call name must match skill")
+        caller_context = arguments.get("_caller_context") or {}
+        caller_allowed = set(caller_context.get("allowed_skills") or [])
+        if call.get("skill") not in caller_allowed:
+            errors.append("planned MCP call skill must be in caller allowed_skills")
+        if call.get("write_capable") and not arguments.get("_approval_context"):
+            errors.append("planned write-capable MCP call must attach approval context")
+        if call.get("write_capable") and "--apply" in set(arguments.get("args") or []):
+            errors.append("planned write-capable MCP call must not include --apply")
+    for call in mcp_call_plan:
+        if str(call.get("status", "")).startswith("blocked_") and call.get("request") is not None:
+            errors.append("blocked MCP calls must not carry executable requests")
+
     integrity = summary.get("integrity") or {}
     audit = summary.get("audit") or {}
     if integrity.get("state_hash") != audit.get("state_hash"):
         errors.append("audit state_hash must match integrity state_hash")
+    if audit.get("mcp_planned_call_count") != len(planned_mcp_calls):
+        errors.append("audit MCP planned call count must match call plan")
 
     contract = summary.get("pipeline_contract") or {}
     triage_nodes = [

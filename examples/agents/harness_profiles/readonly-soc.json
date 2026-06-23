@@ -82,6 +82,13 @@
   },
   "runtime": {
     "langgraph_runtime_optional": true,
-    "dry_run_default": true
+    "dry_run_default": true,
+    "security_data_source": {
+      "mode": "security_lake_replay",
+      "backend": "snowflake",
+      "source_skill": "source-snowflake-query",
+      "records_format": "ocsf",
+      "query": "SELECT payload FROM security.events_sink WHERE class_uid = 6003 LIMIT 100"
+    }
   }
 }

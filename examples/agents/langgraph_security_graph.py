@@ -42,10 +42,13 @@ from harness_adapters import (
     select_triage_adapter,
     validate_adapter_recommendation,
 )
+from harness_mcp_bridge import build_mcp_call_plan
 
 ALLOWED_SKILLS_READ_ONLY_LIST = [
     "ingest-cloudtrail-ocsf",
     "source-snowflake-query",
+    "source-clickhouse-query",
+    "source-databricks-query",
     "detect-lateral-movement",
     "cspm-aws-cis-benchmark",
     "discover-control-evidence",
@@ -298,6 +301,8 @@ class GraphState(TypedDict, total=False):
     seen_idempotency_keys: list[str]
     llm_evidence_cards: list[dict[str, Any]]
     token_budget_usage: dict[str, Any]
+    data_source_decision: dict[str, Any]
+    mcp_call_plan: list[dict[str, Any]]
     audit_record: dict[str, Any]
     eval_record: EvalRecord
     trace: list[WorkflowStage]
@@ -497,6 +502,13 @@ def _default_harness_profile() -> HarnessProfile:
         "runtime": {
             "langgraph_runtime_optional": True,
             "dry_run_default": True,
+            "security_data_source": {
+                "mode": "raw_ingest",
+                "backend": "inline_events",
+                "source_skill": "ingest-cloudtrail-ocsf",
+                "records_format": "raw_vendor",
+                "query": "",
+            },
         },
     }
 
@@ -576,6 +588,14 @@ def load_harness_profile(path_text: str | None = None) -> HarnessProfile:
         **default["model_policy"]["fallback"],
         **payload.get("model_policy", {}).get("fallback", {}),
     }
+    profile["runtime"] = {
+        **default["runtime"],
+        **payload.get("runtime", {}),
+    }
+    profile["runtime"]["security_data_source"] = {
+        **default["runtime"]["security_data_source"],
+        **payload.get("runtime", {}).get("security_data_source", {}),
+    }
     profile["agent_roster"] = _merge_agent_roster(payload.get("agent_roster"))
     return profile
 
@@ -584,6 +604,28 @@ def _effective_allowed_skills(profile: HarnessProfile) -> list[str]:
     requested = profile.get("allowed_skills") or ALLOWED_SKILLS_READ_ONLY_LIST
     safe_surface = {*ALLOWED_SKILLS_READ_ONLY_LIST, ALLOWED_SKILLS_REMEDIATION}
     return [skill for skill in requested if skill in safe_surface]
+
+
+def _data_source_decision(profile: HarnessProfile) -> dict[str, Any]:
+    source = (profile.get("runtime") or {}).get("security_data_source") or {}
+    mode = source.get("mode") or "raw_ingest"
+    backend = source.get("backend") or "inline_events"
+    source_skill = source.get("source_skill") or (
+        "ingest-cloudtrail-ocsf" if mode == "raw_ingest" else "source-snowflake-query"
+    )
+    return {
+        "schema_version": "langgraph-security-data-source-v1",
+        "mode": mode,
+        "backend": backend,
+        "source_skill": source_skill,
+        "records_format": source.get("records_format") or (
+            "raw_vendor" if mode == "raw_ingest" else "ocsf"
+        ),
+        "query": source.get("query") or "",
+        "raw_ingest_required": mode == "raw_ingest",
+        "security_lake_replay": mode == "security_lake_replay",
+        "decision_source": "harness_profile.runtime.security_data_source",
+    }
 
 
 def _agent_manifest(state: GraphState | None = None) -> list[AgentDefinition]:
@@ -599,7 +641,12 @@ def _pipeline_node_contracts(state: GraphState | None = None) -> list[PipelineNo
         {
             "node": "ingest",
             "agent_id": "evidence-agent",
-            "skills": ["ingest-cloudtrail-ocsf", "source-snowflake-query"],
+            "skills": [
+                "ingest-cloudtrail-ocsf",
+                "source-snowflake-query",
+                "source-clickhouse-query",
+                "source-databricks-query",
+            ],
             "inputs": ["harness_profile", "caller_context", "raw_events"],
             "outputs": ["effective_allowed_skills", "raw_events"],
             "guardrails": ["allowlist_intersection", "no_credentials_in_profile"],
@@ -1054,6 +1101,7 @@ def ingest_node(state: GraphState) -> GraphState:
     state["agent_manifest"] = _agent_manifest(state)
     effective_skills = _effective_allowed_skills(profile)
     state["effective_allowed_skills"] = effective_skills
+    state["data_source_decision"] = _data_source_decision(profile)
     raw_events = state.get("raw_events") or [{
         "source": "cloudtrail",
         "event_name": "CreateAccessKey",
@@ -1061,7 +1109,14 @@ def ingest_node(state: GraphState) -> GraphState:
         "resource_uid": "arn:aws:iam::111122223333:user/build-bot",
     }]
     state["raw_events"] = raw_events
-    _emit_node("ingest", allowlist=",".join(effective_skills), profile=profile["profile_id"], records=len(raw_events))
+    _emit_node(
+        "ingest",
+        allowlist=",".join(effective_skills),
+        profile=profile["profile_id"],
+        records=len(raw_events),
+        data_source_mode=state["data_source_decision"]["mode"],
+        source_skill=state["data_source_decision"]["source_skill"],
+    )
     return state
 
 
@@ -1555,6 +1610,10 @@ def audit_eval_writeback_node(state: GraphState) -> GraphState:
         outputs={"writeback": "audit_eval_pending"},
     )
     state["agent_policy"] = effective_agent_policy(state)
+    state["mcp_call_plan"] = build_mcp_call_plan(
+        state=state,
+        pipeline_contract=pipeline_contract(state),
+    )
     summary_payload = {
         "caller_context": state.get("caller_context"),
         "harness_profile": {
@@ -1564,6 +1623,7 @@ def audit_eval_writeback_node(state: GraphState) -> GraphState:
             "approval_policy": (state.get("harness_profile") or {}).get("approval_policy"),
         },
         "effective_allowed_skills": state.get("effective_allowed_skills"),
+        "data_source_decision": state.get("data_source_decision"),
         "trace": state.get("trace"),
         "findings": state.get("findings"),
         "harness_config": state.get("harness_config"),
@@ -1573,6 +1633,7 @@ def audit_eval_writeback_node(state: GraphState) -> GraphState:
         "agent_runs": state.get("agent_runs"),
         "agent_recommendations": state.get("agent_recommendations"),
         "llm_validation": state.get("llm_validation"),
+        "mcp_call_plan": state.get("mcp_call_plan"),
         "integrity": {
             key: value
             for key, value in (state.get("integrity") or {}).items()
@@ -1603,6 +1664,14 @@ def audit_eval_writeback_node(state: GraphState) -> GraphState:
         "api_error_count": len(api_errors),
         "agent_run_count": len(state.get("agent_runs") or []),
         "agent_policy_hash": (state.get("agent_policy") or {}).get("policy_hash"),
+        "mcp_planned_call_count": sum(
+            1 for call in state.get("mcp_call_plan") or []
+            if call.get("status") == "planned"
+        ),
+        "mcp_blocked_call_count": sum(
+            1 for call in state.get("mcp_call_plan") or []
+            if str(call.get("status", "")).startswith("blocked_")
+        ),
         "llm_adapter_accepted": sum(1 for record in llm_validation if record["status"] == "accepted"),
         "llm_adapter_rejected": sum(1 for record in llm_validation if record["status"] == "rejected"),
         "llm_token_budget_status": (state.get("token_budget_usage") or {}).get("status"),
@@ -1634,6 +1703,7 @@ def audit_eval_writeback_node(state: GraphState) -> GraphState:
             "llm_adapter_schema_gate",
             "llm_token_budget_gate",
             "multi_agent_ledger",
+            "mcp_call_plan",
             "conditional_edges",
         ],
         "status": eval_status,
@@ -1750,6 +1820,7 @@ def summarize(final: GraphState) -> dict[str, Any]:
         ),
         "profile": final.get("harness_profile"),
         "effective_allowed_skills": final.get("effective_allowed_skills"),
+        "data_source": final.get("data_source_decision"),
         "trace": final.get("trace"),
         "findings_count": len(final.get("findings") or []),
         "confidence_scores": final.get("confidence_scores"),
@@ -1761,6 +1832,7 @@ def summarize(final: GraphState) -> dict[str, Any]:
         "agent_runs": final.get("agent_runs"),
         "agent_recommendations": final.get("agent_recommendations"),
         "llm_validation": final.get("llm_validation"),
+        "mcp_call_plan": final.get("mcp_call_plan"),
         "llm_evidence_cards": final.get("llm_evidence_cards"),
         "token_budget_usage": final.get("token_budget_usage"),
         "review": final.get("review_decision"),

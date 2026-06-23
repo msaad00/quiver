@@ -10,7 +10,7 @@ flowchart LR
     classDef audit fill:#1f2937,stroke:#94a3b8,color:#f8fafc
 
     subgraph FACTS["Deterministic skill nodes: evidence and security facts"]
-        ING["ingest<br/>agent: evidence-agent<br/>skills: ingest-cloudtrail-ocsf · source-snowflake-query<br/>guards: allowlist_intersection · no_credentials_in_profile"]:::fact
+        ING["ingest<br/>agent: evidence-agent<br/>skills: ingest-cloudtrail-ocsf · source-snowflake-query +2<br/>guards: allowlist_intersection · no_credentials_in_profile"]:::fact
         NORM["normalize<br/>agent: evidence-agent<br/>skills: ingest-cloudtrail-ocsf<br/>guards: ocsf_1_8_shape · stable_event_uid +1"]:::fact
         ENR["enrich<br/>agent: evidence-agent<br/>skills: detect-lateral-movement<br/>guards: deterministic_finding_uid · no_llm_security_facts"]:::fact
         COR["correlate<br/>agent: evidence-agent<br/>skills: discover-control-evidence<br/>guards: identity_resource_join · agent_run_hashes"]:::fact

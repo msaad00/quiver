@@ -216,6 +216,16 @@ def _check_profiles() -> DriftCheck:
             failures.append(f"{profile_path.name}: dry_run_default must stay true")
         if profile["runtime"].get("apply_supported", False) is not False:
             failures.append(f"{profile_path.name}: apply_supported must stay false")
+        data_source = profile["runtime"].get("security_data_source") or {}
+        if data_source.get("mode") not in {"raw_ingest", "security_lake_replay"}:
+            failures.append(f"{profile_path.name}: security_data_source mode is invalid")
+        if data_source.get("mode") == "raw_ingest" and data_source.get("source_skill") != "ingest-cloudtrail-ocsf":
+            failures.append(f"{profile_path.name}: raw_ingest must use ingest-cloudtrail-ocsf")
+        if data_source.get("mode") == "security_lake_replay":
+            if not str(data_source.get("source_skill", "")).startswith("source-"):
+                failures.append(f"{profile_path.name}: lake replay must use a source-* query skill")
+            if data_source.get("backend") not in {"snowflake", "clickhouse", "databricks"}:
+                failures.append(f"{profile_path.name}: lake replay backend must be a shipped warehouse source")
         if profile["approval_policy"].get("remediation_requires_approval_context") is not True:
             failures.append(f"{profile_path.name}: remediation must require approval context")
         if profile["token_budget"].get("fallback_on_budget_exceeded") is not True:

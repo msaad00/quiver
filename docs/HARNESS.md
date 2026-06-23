@@ -109,6 +109,17 @@ dry-run only. Embedded callers should pass `approval_context` directly to
 `HarnessRunConfig`; the older `DEMO_APPROVE` environment variables remain a
 compatibility path for the original example script.
 
+Each profile also declares `runtime.security_data_source`, so the harness does
+not guess whether a tenant/account needs raw ingest or security-lake replay.
+Use `mode=raw_ingest` with `source_skill=ingest-cloudtrail-ocsf` when evidence
+arrives as raw vendor events. Use `mode=security_lake_replay` with
+`source-snowflake-query`, `source-clickhouse-query`, or
+`source-databricks-query` when OCSF or raw rows already live in the customer
+lake. `records_format=ocsf` tells the MCP call planner to skip the raw
+normalizer; `records_format=raw_vendor` keeps the source query followed by the
+ingest/normalize skill. Queries stay read-only and credentials remain outside
+the profile.
+
 `HARNESS.md` is therefore the readable operator contract; the graph nodes,
 adapter gates, runtime wrapper, schemas, checkpoint replay, and eval runner are
 the executable harness.

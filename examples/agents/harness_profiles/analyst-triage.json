@@ -14,6 +14,7 @@
     "session_id": "analyst-triage-demo",
     "roles": "security_analyst",
     "allowed_skills": [
+      "ingest-cloudtrail-ocsf",
       "detect-lateral-movement",
       "discover-control-evidence",
       "convert-ocsf-to-sarif"
@@ -82,6 +83,13 @@
   },
   "runtime": {
     "langgraph_runtime_optional": true,
-    "dry_run_default": true
+    "dry_run_default": true,
+    "security_data_source": {
+      "mode": "raw_ingest",
+      "backend": "inline_events",
+      "source_skill": "ingest-cloudtrail-ocsf",
+      "records_format": "raw_vendor",
+      "query": ""
+    }
   }
 }

@@ -735,7 +735,17 @@ class TestLangGraphSocWorkflow:
         assert summary["remediation"]["status"] == "dry_run"
         assert summary["remediation"]["dry_run"] is True
         assert summary["remediation"]["skill"] == "iam-departures-aws"
+        assert summary["data_source"]["mode"] == "raw_ingest"
+        assert summary["data_source"]["source_skill"] == "ingest-cloudtrail-ocsf"
         assert summary["remediation"]["idempotency_key"].startswith("rem-")
+        planned_remediation_call = next(
+            call for call in summary["mcp_call_plan"]
+            if call["skill"] == "iam-departures-aws"
+        )
+        assert planned_remediation_call["status"] == "planned"
+        assert planned_remediation_call["request"]["method"] == "tools/call"
+        assert planned_remediation_call["request"]["params"]["arguments"]["_approval_context"]["ticket_id"] == "SEC-LANGGRAPH-1"
+        assert "--apply" not in planned_remediation_call["request"]["params"]["arguments"]["args"]
         assert summary["idempotency"]["remediation_key"] == summary["remediation"]["idempotency_key"]
         assert summary["integrity"]["approved_payload_hash"]
         assert summary["audit"]["idempotency_key"] == summary["remediation"]["idempotency_key"]
@@ -901,6 +911,9 @@ class TestLangGraphSocWorkflow:
         assert summary["profile"]["profile_id"] == "readonly-soc"
         assert summary["caller_context"]["email"] == "soc-readonly@example.com"
         assert summary["audit"]["profile_id"] == "readonly-soc"
+        assert summary["data_source"]["mode"] == "security_lake_replay"
+        assert summary["data_source"]["backend"] == "snowflake"
+        assert summary["data_source"]["source_skill"] == "source-snowflake-query"
         assert summary["effective_allowed_skills"] == [
             "ingest-cloudtrail-ocsf",
             "source-snowflake-query",
@@ -909,6 +922,23 @@ class TestLangGraphSocWorkflow:
             "discover-control-evidence",
             "convert-ocsf-to-sarif",
         ]
+        ingest_source_calls = [
+            call for call in summary["mcp_call_plan"]
+            if call["node"] == "ingest" and call["skill"].startswith("source-")
+        ]
+        assert [
+            (call["skill"], call["status"]) for call in ingest_source_calls
+        ] == [
+            ("source-snowflake-query", "planned"),
+            ("source-clickhouse-query", "not_required"),
+            ("source-databricks-query", "not_required"),
+        ]
+        normalize_ingest = next(
+            call for call in summary["mcp_call_plan"]
+            if call["node"] == "normalize" and call["skill"] == "ingest-cloudtrail-ocsf"
+        )
+        assert normalize_ingest["status"] == "not_required"
+        assert "already OCSF" in normalize_ingest["reason"]
         assert summary["remediation"]["status"] == "skipped"
 
     def test_profile_llm_metadata_is_bounded(self):
@@ -1197,6 +1227,14 @@ class TestLangGraphContractSchemas:
             )
             assert profile["approval_policy"]["remediation_requires_approval_context"] is True
             assert profile["runtime"]["dry_run_default"] is True
+            data_source = profile["runtime"].get("security_data_source") or {}
+            assert data_source.get("mode") in {"raw_ingest", "security_lake_replay"}
+            if data_source.get("mode") == "raw_ingest":
+                assert data_source.get("source_skill") == "ingest-cloudtrail-ocsf"
+                assert data_source.get("records_format") == "raw_vendor"
+            if data_source.get("mode") == "security_lake_replay":
+                assert data_source.get("source_skill", "").startswith("source-")
+                assert data_source.get("backend") in {"snowflake", "clickhouse", "databricks"}
             if "token_budget" in profile:
                 assert profile["token_budget"]["compression_required"] is True
                 assert profile["token_budget"]["fallback_on_budget_exceeded"] is True
@@ -1351,6 +1389,12 @@ class TestLangGraphHarnessSetup:
                 "gpt-4.1-mini",
                 "--cloud-hint",
                 "aws=AWS_PROFILE=prod-readonly",
+                "--data-source-mode",
+                "security-lake-replay",
+                "--lake-backend",
+                "clickhouse",
+                "--lake-query",
+                "SELECT payload FROM security.events_sink LIMIT 50",
                 "--output-profile",
                 str(profile_path),
                 "--output-env",
@@ -1382,6 +1426,13 @@ class TestLangGraphHarnessSetup:
         assert profile["model_policy"]["models"]["small"] == {
             "provider": "openai",
             "model": "gpt-4.1-mini",
+        }
+        assert profile["runtime"]["security_data_source"] == {
+            "mode": "security_lake_replay",
+            "backend": "clickhouse",
+            "source_skill": "source-clickhouse-query",
+            "records_format": "ocsf",
+            "query": "SELECT payload FROM security.events_sink LIMIT 50",
         }
         roster = {agent["agent_id"]: agent for agent in profile["agent_roster"]}
         assert roster["triage-agent"] == {
@@ -1416,6 +1467,17 @@ class TestLangGraphHarnessSetup:
         assert summary["harness"]["token_budget"]["model_tier"] == "small"
         assert summary["harness"]["model_policy"]["selected_model_tier"] == "small"
         assert summary["harness"]["model_policy"]["selection_source"] == "profile_model_policy"
+        assert summary["data_source"]["mode"] == "security_lake_replay"
+        assert summary["data_source"]["backend"] == "clickhouse"
+        clickhouse_source_call = next(
+            call for call in summary["mcp_call_plan"]
+            if call["node"] == "ingest" and call["skill"] == "source-clickhouse-query"
+        )
+        assert clickhouse_source_call["status"] == "planned"
+        assert clickhouse_source_call["request"]["params"]["arguments"]["args"] == [
+            "--query",
+            "SELECT payload FROM security.events_sink LIMIT 50",
+        ]
         triage_agent = next(agent for agent in summary["agents"] if agent["agent_id"] == "triage-agent")
         assert triage_agent["model_tier"] == "small"
         assert triage_agent["skill_scope"] == []
@@ -1449,6 +1511,8 @@ class TestLangGraphHarnessSetup:
         assert "iam-departures-aws" in profile["allowed_skills"]
         assert profile["runtime"]["dry_run_default"] is True
         assert profile["runtime"]["apply_supported"] is False
+        assert profile["runtime"]["security_data_source"]["mode"] == "raw_ingest"
+        assert profile["runtime"]["security_data_source"]["source_skill"] == "ingest-cloudtrail-ocsf"
         assert profile["approval_policy"]["remediation_requires_approval_context"] is True
         assert profile["token_budget"]["model_tier"] == "tiny"
         assert profile["model_policy"]["allowed_model_tiers"] == ["tiny"]

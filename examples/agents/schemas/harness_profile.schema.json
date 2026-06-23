@@ -286,6 +286,52 @@
         "apply_supported": {
           "type": "boolean",
           "const": false
+        },
+        "security_data_source": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "mode",
+            "backend",
+            "source_skill"
+          ],
+          "properties": {
+            "mode": {
+              "type": "string",
+              "enum": [
+                "raw_ingest",
+                "security_lake_replay"
+              ]
+            },
+            "backend": {
+              "type": "string",
+              "enum": [
+                "inline_events",
+                "snowflake",
+                "clickhouse",
+                "databricks"
+              ]
+            },
+            "source_skill": {
+              "type": "string",
+              "enum": [
+                "ingest-cloudtrail-ocsf",
+                "source-snowflake-query",
+                "source-clickhouse-query",
+                "source-databricks-query"
+              ]
+            },
+            "records_format": {
+              "type": "string",
+              "enum": [
+                "raw_vendor",
+                "ocsf"
+              ]
+            },
+            "query": {
+              "type": "string"
+            }
+          }
         }
       }
     }

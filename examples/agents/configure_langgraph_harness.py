@@ -30,6 +30,11 @@ from langgraph_security_graph import (
 )
 
 HarnessRole = Literal["readonly-soc", "analyst-triage", "dry-run-remediation"]
+LAKE_SOURCE_SKILLS = {
+    "snowflake": "source-snowflake-query",
+    "clickhouse": "source-clickhouse-query",
+    "databricks": "source-databricks-query",
+}
 
 ROLE_DEFAULTS: dict[HarnessRole, dict[str, Any]] = {
     "readonly-soc": {
@@ -108,6 +113,27 @@ def _profile_allowed_skills(role: HarnessRole, extra_skills: list[str]) -> list[
     return allowed
 
 
+def _security_data_source(args: argparse.Namespace) -> dict[str, str]:
+    if args.data_source_mode == "raw-ingest":
+        return {
+            "mode": "raw_ingest",
+            "backend": "inline_events",
+            "source_skill": "ingest-cloudtrail-ocsf",
+            "records_format": "raw_vendor",
+            "query": "",
+        }
+    source_skill = LAKE_SOURCE_SKILLS[args.lake_backend]
+    query = args.lake_query or "SELECT payload FROM security.events_sink LIMIT 100"
+    _assert_no_secret_material({"lake_query": query}, path="runtime.security_data_source")
+    return {
+        "mode": "security_lake_replay",
+        "backend": args.lake_backend,
+        "source_skill": source_skill,
+        "records_format": args.lake_records_format,
+        "query": query,
+    }
+
+
 def build_profile(args: argparse.Namespace) -> dict[str, Any]:
     role: HarnessRole = args.role
     if not PROFILE_ID_RE.match(args.profile_id):
@@ -174,6 +200,7 @@ def build_profile(args: argparse.Namespace) -> dict[str, Any]:
             "langgraph_runtime_optional": True,
             "dry_run_default": True,
             "apply_supported": False,
+            "security_data_source": _security_data_source(args),
         },
     }
     _assert_no_secret_material(profile, path="profile")
@@ -212,6 +239,25 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--roles")
     parser.add_argument("--cloud-hint", action="append", default=[], help="provider=credential-hint")
     parser.add_argument("--allowed-skill", action="append", default=[], help="additional known example skill")
+    parser.add_argument(
+        "--data-source-mode",
+        choices=["raw-ingest", "security-lake-replay"],
+        default="raw-ingest",
+        help="Whether this harness should ingest raw events or replay an existing security data lake",
+    )
+    parser.add_argument(
+        "--lake-backend",
+        choices=sorted(LAKE_SOURCE_SKILLS),
+        default="snowflake",
+        help="Security lake backend when --data-source-mode=security-lake-replay",
+    )
+    parser.add_argument(
+        "--lake-records-format",
+        choices=["raw_vendor", "ocsf"],
+        default="ocsf",
+        help="Shape returned by the lake replay query",
+    )
+    parser.add_argument("--lake-query", help="Read-only SELECT/WITH/SHOW/DESCRIBE query for lake replay")
     parser.add_argument("--external-llm", action="store_true")
     parser.add_argument("--llm-provider", default="deterministic-local")
     parser.add_argument("--llm-model", default="policy-bounded-triage-v1")

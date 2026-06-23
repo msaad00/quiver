@@ -98,6 +98,17 @@ python examples/agents/configure_langgraph_harness.py \
   --output-profile artifacts/acme-soc-triage.json \
   --output-env artifacts/acme-soc-triage.env
 
+# Existing security lake: replay read-only rows instead of raw ingest.
+python examples/agents/configure_langgraph_harness.py \
+  --role readonly-soc \
+  --profile-id acme-clickhouse-replay \
+  --email analyst@example.com \
+  --data-source-mode security-lake-replay \
+  --lake-backend clickhouse \
+  --lake-query "SELECT payload FROM security.events_sink LIMIT 100" \
+  --output-profile artifacts/acme-clickhouse-replay.json \
+  --output-env artifacts/acme-clickhouse-replay.env
+
 # Blocked path: no approval context, no remediation action.
 python examples/agents/langgraph_security_graph.py
 
@@ -204,8 +215,9 @@ python examples/agents/check_langgraph_harness_drift.py
 The LangGraph summary includes `integrity.evidence_hash`,
 `integrity.state_hash`, stable workflow/remediation idempotency keys, and
 retryable-vs-terminal API error classification. It also includes the
-`profile`, `effective_allowed_skills`, `harness` provider/model/mode/model
-policy/token budget, `agents` manifest, `pipeline_contract`, `agent_runs`
+`profile`, `effective_allowed_skills`, `data_source`, `harness`
+provider/model/mode/model policy/token budget, `agents` manifest,
+`pipeline_contract`, `mcp_call_plan`, `agent_runs`
 ledger, `agent_policy` effective grants report, compact LLM evidence cards,
 token budget usage, and bounded
 `agent_recommendations` so

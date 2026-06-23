@@ -14,8 +14,10 @@
     "session_id": "dry-run-remediation-demo",
     "roles": "security_engineer",
     "allowed_skills": [
+      "ingest-cloudtrail-ocsf",
       "detect-lateral-movement",
       "discover-control-evidence",
+      "convert-ocsf-to-sarif",
       "iam-departures-aws"
     ]
   },
@@ -91,6 +93,13 @@
   "runtime": {
     "langgraph_runtime_optional": true,
     "dry_run_default": true,
-    "apply_supported": false
+    "apply_supported": false,
+    "security_data_source": {
+      "mode": "raw_ingest",
+      "backend": "inline_events",
+      "source_skill": "ingest-cloudtrail-ocsf",
+      "records_format": "raw_vendor",
+      "query": ""
+    }
   }
 }
