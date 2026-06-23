@@ -1,4 +1,4 @@
-![Agentic security skills for cloud and AI — 131 shipped skill bundles. OCSF 1.8 on the wire. 143 CIS + NIST AI RMF benchmark checks. Framework coverage across MITRE ATT&CK, MITRE ATLAS, OWASP Top 10, and OWASP LLM Top 10. MCP-audited tool calls. HITL dual-audited remediation. Runs against AWS, GCP, Azure, Kubernetes, Okta, Microsoft Entra, Google Workspace, GitHub, Slack, Workday, Salesforce, SAP, Snowflake, Databricks, ClickHouse, and MCP proxy. Access surfaces: CLI, CI, MCP, and persistent cloud runners.](docs/images/hero-banner.svg)
+![Agentic security skills for cloud and AI — 131 shipped skill bundles. OCSF 1.8 on the wire. 143 CIS + NIST AI RMF benchmark checks. Framework coverage across MITRE ATT&CK, MITRE ATLAS, OWASP Top 10, and OWASP LLM Top 10. MCP-audited tool calls. HITL dual-audited remediation. Runs against AWS, GCP, Azure, Kubernetes, Okta, Microsoft Entra, Google Workspace, GitHub, Slack, Workday, Salesforce, SAP, Snowflake, Databricks, ClickHouse, and MCP proxy. Access surfaces: CLI, CI, MCP, webhook, library, and persistent cloud runners.](docs/images/hero-banner.svg)
 
 <p align="center">
   <a href="https://github.com/msaad00/cloud-ai-security-skills/actions/workflows/ci.yml?query=branch%3Amain"><img alt="CI" src="https://github.com/msaad00/cloud-ai-security-skills/actions/workflows/ci.yml/badge.svg?branch=main"></a>
@@ -29,7 +29,7 @@
 ## Why pick this
 
 - **Plug-and-play in 60 seconds** — repo-shipped `.mcp.json` works in Claude Code out of the box; copy-paste configs for Claude Desktop, Cursor, Windsurf, Codex, Cortex, Zed in [`docs/AGENT_QUICKSTART.md`](docs/AGENT_QUICKSTART.md).
-- **Every skill is a single-concern bundle** — `SKILL.md + src/ + tests/` you can run as a stdin/stdout one-liner, an MCP tool, a CI step, a webhook, or a library call. Same bundle, no per-surface drift.
+- **Every skill is a single-concern bundle** — `SKILL.md + src/ + tests/` you can run as a stdin/stdout one-liner, an MCP tool, a CI step, a webhook, a library call, or a persistent runner. Same bundle, no per-surface drift.
 - **Built for agents, not just humans** — OCSF 1.8 on the wire, HMAC-chained audit, HITL gates and allowlist intersection enforced by the wrapper — so an LLM can't bypass the trust contract.
 - **Designed for closed-loop security work** — normalize, detect, evaluate, review, dry-run, remediate, and write audit/evidence rows back into the operator-owned lake.
 
@@ -58,7 +58,7 @@ python skills/ingestion/ingest-cloudtrail-ocsf/src/ingest.py \
 #     For Claude Desktop, Cursor, Windsurf, Codex, Cortex, Zed: see docs/integrations/.
 ```
 
-Five surfaces, one bundle: **CLI · CI · MCP · webhook receiver · persistent runners**. Same `SKILL.md + src/ + tests/`, no per-surface drift.
+Six surfaces, one bundle: **CLI · CI · MCP · webhook receiver · library · persistent runners**. Same `SKILL.md + src/ + tests/`, no per-surface drift.
 
 ## What this repo gives you
 
@@ -81,13 +81,20 @@ Five surfaces, one bundle: **CLI · CI · MCP · webhook receiver · persistent 
 
 **Which vendor signals normalize to OCSF today?** [`docs/INGEST_COVERAGE.md`](docs/INGEST_COVERAGE.md) — the canonical vendor × source × OCSF class matrix, **22 mappings shipped** (AWS · GCP · Azure · Entra · K8s · Okta · Workspace · MCP · **GitHub · Slack · Workday · Salesforce · SAP**) plus the 3 documented roadmap rows (native ClickHouse audit, AWS web-app exfil pipeline, Workspace beyond-login).
 
-**Why use these skills (vs ad-hoc Python your agent writes at runtime, vs LLM-written skills you commit, vs your team writing 90 from scratch)?** [`docs/WHY.md`](docs/WHY.md) — three different alternatives, three different answers. This repo is built for LLMs and agents to invoke (MCP, Agent SDK, library, CLI, webhook, runners — every surface). What you can't prompt-generate: the trust contract (HITL gates, three-layer sandbox, HMAC-chained audit, allowlist intersection, OCSF wire lock), the calibration values (real-corpus thresholds), the cross-cutting maintenance (OCSF version bumps, MITRE catalog updates, vendor schema drift). Cost framing: ~12 engineer-weeks of harness + ~240 hours of detector content to reach v0.10.0 parity, then the maintenance tax per release.
+**Why use these skills instead of ad-hoc agent code?** [`docs/WHY.md`](docs/WHY.md) compares runtime Python, committed LLM-written skills, and building the catalog from scratch. The short version:
+
+| Need | What this repo already gives you |
+|---|---|
+| Agent-callable execution | MCP, CLI, CI, webhook, library, and runners over the same skill bundle, with Agent SDK and LangGraph examples on top |
+| Trust contract | HITL gates, three-layer sandbox, HMAC-chained audit, allowlist intersection, OCSF wire lock |
+| Maintained security content | real-corpus thresholds, OCSF version bumps, MITRE catalog updates, vendor schema drift handling |
+| Cost baseline | ~12 engineer-weeks of harness plus ~240 hours of detector content to reach v0.10.0 parity, before ongoing maintenance |
 
 **Independent security grades.** [`docs/SECURITY_GRADES.md`](docs/SECURITY_GRADES.md) — auto-generated, regenerated weekly by `scripts/regen_security_grades.py`: Bandit (code findings), pip-audit (CVEs), agent-bom (skill trust + provenance), 13 in-repo trust-contract validators. Composite grade visible at the top of the doc.
 
 ## Architecture
 
-External signals enter through two intake layers, pass through two analyze layers, exit through two act layers, and persist through one output layer. MCP, CLI, CI, webhook, and runners all invoke the same skill bundle — the surface is transport, not behavior.
+External signals enter through two intake layers, pass through two analyze layers, exit through two act layers, and persist through one output layer. MCP, CLI, CI, webhook, library calls, and runners all invoke the same skill bundle — the surface is transport, not behavior.
 
 ![Clean architecture layers diagram — signals feed intake, analyze, act, and persist stages across the seven shipped skill layers.](docs/images/architecture-layers.svg)
 
