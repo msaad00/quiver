@@ -101,6 +101,18 @@ python examples/agents/run_langgraph_harness.py \
   --replay-checkpoint artifacts/langgraph-checkpoint.json
 ```
 
+Execute or re-evaluate the emitted MCP plan as a separate artifact:
+
+```bash
+python examples/agents/run_langgraph_harness.py \
+  --profile examples/agents/harness_profiles/readonly-soc.json \
+  --output artifacts/harness-summary.json
+
+python examples/agents/execute_langgraph_mcp_plan.py \
+  --summary artifacts/harness-summary.json \
+  --output artifacts/harness-mcp-execution.json
+```
+
 The runner calls the same importable wrapper used by CI or SOAR integrations,
 keeps validation on by default, and accepts `--langgraph-runtime` when the
 optional LangGraph dependency is installed. `--approve` only supplies demo
@@ -127,7 +139,11 @@ builds exact MCP `tools/call` JSON-RPC payloads, but the harness emits a
 separate `mcp_execution` ledger showing those planned calls were skipped by
 policy. Operator-owned integrations can opt a generated profile into
 `mode=operator_stdio` for read-only call execution through their own MCP
-transport; write-capable execution remains disabled in the example schema.
+transport. The standalone `execute_langgraph_mcp_plan.py` utility consumes an
+existing harness summary and emits a second execution report, so live transport
+attempts do not mutate the graph's state hash. It uses a credential-scrubbed
+subprocess environment for the bundled stdio helper; write-capable execution
+remains disabled in the example schema.
 
 `HARNESS.md` is therefore the readable operator contract; the graph nodes,
 adapter gates, runtime wrapper, schemas, checkpoint replay, and eval runner are

@@ -511,6 +511,148 @@ class TestLangGraphHarnessRunner:
         assert "--raw-events must be a JSON object" in result.stderr
 
 
+class TestLangGraphMcpPlanExecutor:
+    """Coverage for executing MCP call plans as a separate harness artifact."""
+
+    SCRIPT = EXAMPLES / "execute_langgraph_mcp_plan.py"
+
+    @staticmethod
+    def _summary(mode: str = "plan_only") -> dict:
+        return {
+            "profile": {
+                "runtime": {
+                    "mcp_execution": {
+                        "mode": mode,
+                        "transport": "mcp_stdio_jsonrpc",
+                        "execute_planned_calls": mode == "operator_stdio",
+                        "allow_write_calls": False,
+                        "max_calls": 5,
+                    }
+                }
+            },
+            "effective_allowed_skills": ["source-snowflake-query"],
+            "mcp_call_plan": [
+                {
+                    "node": "ingest",
+                    "skill": "source-snowflake-query",
+                    "status": "planned",
+                    "write_capable": False,
+                    "request": {
+                        "jsonrpc": "2.0",
+                        "id": "wf:ingest:source-snowflake-query",
+                        "method": "tools/call",
+                        "params": {
+                            "name": "source-snowflake-query",
+                            "arguments": {
+                                "args": ["--query", "SELECT payload FROM security.events_sink LIMIT 1"],
+                                "input": "",
+                                "_caller_context": {
+                                    "allowed_skills": ["source-snowflake-query"],
+                                },
+                            },
+                        },
+                    },
+                }
+            ],
+        }
+
+    def test_executor_replays_plan_only_summary_without_transport(self, tmp_path: Path):
+        summary_path = tmp_path / "summary.json"
+        summary_path.write_text(json.dumps(self._summary(), sort_keys=True), encoding="utf-8")
+        result = subprocess.run(
+            [sys.executable, str(self.SCRIPT), "--summary", str(summary_path)],
+            capture_output=True,
+            text=True,
+            timeout=30,
+            check=False,
+        )
+        assert result.returncode == 0, result.stderr
+        report = json.loads(result.stdout)
+        assert report["mode"] == "plan_only"
+        assert report["executed_call_count"] == 0
+        assert report["status_counts"] == {"skipped_plan_only": 1}
+
+    def test_executor_runs_operator_stdio_with_local_fake_server(self, tmp_path: Path):
+        summary_path = tmp_path / "summary.json"
+        summary_path.write_text(json.dumps(self._summary("operator_stdio"), sort_keys=True), encoding="utf-8")
+        fake_server = tmp_path / "fake_mcp_server.py"
+        fake_server.write_text(
+            """
+import json
+import sys
+
+
+def read_message():
+    headers = {}
+    while True:
+        line = sys.stdin.buffer.readline()
+        if not line:
+            return None
+        if line in (b"\\r\\n", b"\\n"):
+            break
+        key, value = line.decode("utf-8").split(":", 1)
+        headers[key.strip().lower()] = value.strip()
+    payload = sys.stdin.buffer.read(int(headers["content-length"]))
+    return json.loads(payload.decode("utf-8"))
+
+
+def write_message(message):
+    payload = json.dumps(message).encode("utf-8")
+    sys.stdout.buffer.write(f"Content-Length: {len(payload)}\\r\\n\\r\\n".encode("utf-8"))
+    sys.stdout.buffer.write(payload)
+    sys.stdout.buffer.flush()
+
+
+while True:
+    request = read_message()
+    if request is None:
+        break
+    write_message({
+        "jsonrpc": "2.0",
+        "id": request.get("id"),
+        "result": {"ok": True, "tool": request.get("params", {}).get("name")},
+    })
+""",
+            encoding="utf-8",
+        )
+        result = subprocess.run(
+            [
+                sys.executable,
+                str(self.SCRIPT),
+                "--summary",
+                str(summary_path),
+                "--allow-operator-stdio",
+                "--mcp-server-command",
+                sys.executable,
+                "--mcp-server-arg",
+                str(fake_server),
+            ],
+            capture_output=True,
+            text=True,
+            timeout=30,
+            check=False,
+        )
+        assert result.returncode == 0, result.stderr
+        report = json.loads(result.stdout)
+        assert report["mode"] == "operator_stdio"
+        assert report["executed_call_count"] == 1
+        assert report["write_executed_count"] == 0
+        assert report["status_counts"] == {"executed": 1}
+
+    def test_safe_mcp_env_does_not_forward_api_keys(self, monkeypatch: pytest.MonkeyPatch):
+        sys.path.insert(0, str(EXAMPLES))
+        try:
+            from harness_mcp_transport import safe_mcp_env
+        finally:
+            sys.path.pop(0)
+        monkeypatch.setenv("OPENAI_API_KEY", "redacted-test-value")
+        monkeypatch.setenv("CLOUD_SECURITY_MCP_TIMEOUT_SECONDS", "5")
+        env = safe_mcp_env(allowed_skills=["source-snowflake-query"])
+        assert "OPENAI_API_KEY" not in env
+        assert env["CLOUD_SECURITY_MCP_TIMEOUT_SECONDS"] == "5"
+        assert env["CLOUD_SECURITY_MCP_ALLOWED_SKILLS"] == "source-snowflake-query"
+
+
 class TestLangGraphSocWorkflow:
     """Regression coverage for the expanded SOC workflow graph."""
 

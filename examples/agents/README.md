@@ -155,6 +155,14 @@ python examples/agents/configure_langgraph_harness.py \
   --output-profile artifacts/acme-readonly-stdio.json \
   --output-env artifacts/acme-readonly-stdio.env
 
+python examples/agents/run_langgraph_harness.py \
+  --profile artifacts/acme-readonly-stdio.json \
+  --output artifacts/acme-readonly-stdio-summary.json
+
+python examples/agents/execute_langgraph_mcp_plan.py \
+  --summary artifacts/acme-readonly-stdio-summary.json \
+  --output artifacts/acme-readonly-stdio-mcp-execution.json
+
 # Approved path: remediation reaches dry-run only and writes audit/eval output.
 DEMO_HARNESS_PROFILE=examples/agents/harness_profiles/dry-run-remediation.json \
 DEMO_APPROVE=yes \

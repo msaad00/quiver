@@ -44,6 +44,7 @@ EXPECTED_SCHEMAS = [
 REQUIRED_DOC_TOKENS = [
     "inspect_langgraph_harness.py",
     "run_langgraph_harness.py",
+    "execute_langgraph_mcp_plan.py",
     "eval_langgraph_harness.py --check",
     "render_langgraph_pipeline_diagram.py",
     "check_langgraph_harness_drift.py",
@@ -328,6 +329,7 @@ def _check_no_harness_secret_literals() -> DriftCheck:
         EXAMPLES / "configure_langgraph_harness.py",
         EXAMPLES / "inspect_langgraph_harness.py",
         EXAMPLES / "run_langgraph_harness.py",
+        EXAMPLES / "execute_langgraph_mcp_plan.py",
         *sorted(PROFILES.glob("*.json")),
     ]
     findings: list[str] = []
