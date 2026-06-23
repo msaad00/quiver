@@ -113,6 +113,20 @@ python examples/agents/inspect_langgraph_harness.py \
   --approval-context-present \
   --require-remediation-ready
 
+# Operator-facing harness runner: profile + optional evidence fixture
+# through the importable runtime wrapper, with validation enabled by default.
+python examples/agents/run_langgraph_harness.py \
+  --profile examples/agents/harness_profiles/readonly-soc.json \
+  --raw-events /path/to/events.jsonl \
+  --caller-context '{"email":"analyst@example.com","session_id":"SEC-123"}'
+
+# HITL-gated dry-run planning through the same runner.
+python examples/agents/run_langgraph_harness.py \
+  --profile examples/agents/harness_profiles/dry-run-remediation.json \
+  --approve \
+  --approver reviewer@example.com \
+  --ticket SEC-LANGGRAPH-1
+
 # Approved path: remediation reaches dry-run only and writes audit/eval output.
 DEMO_HARNESS_PROFILE=examples/agents/harness_profiles/dry-run-remediation.json \
 DEMO_APPROVE=yes \
@@ -223,6 +237,10 @@ PY
 Use this wrapper from CI, MCP, SOAR, or a customer-owned LangGraph app when
 the workflow should run as code. `docs/HARNESS.md` remains the readable
 operator contract, not the implementation body.
+`run_langgraph_harness.py` is the CLI over that wrapper: it accepts profile
+paths, raw-event fixtures, caller-context overrides, LangGraph runtime
+selection, checkpoint write/replay, JSON output, and explicit demo approval
+metadata without duplicating graph logic.
 Adapter plumbing lives in [`harness_adapters.py`](harness_adapters.py): the
 graph selects deterministic fallback, JSON fixture, or optional LangChain chat
 fixture adapters, then applies one closed schema gate before any recommendation

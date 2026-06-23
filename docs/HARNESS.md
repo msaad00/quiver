@@ -78,6 +78,31 @@ without replaying evidence, calling a model, reading credentials, or executing
 remediation. `--require-remediation-ready` fails closed unless the remediation
 skill is granted and an approval context is represented.
 
+Run the executable harness wrapper:
+
+```bash
+python examples/agents/run_langgraph_harness.py \
+  --profile examples/agents/harness_profiles/readonly-soc.json \
+  --raw-events artifacts/events.jsonl \
+  --caller-context '{"email":"analyst@example.com","session_id":"SEC-123"}'
+
+python examples/agents/run_langgraph_harness.py \
+  --profile examples/agents/harness_profiles/dry-run-remediation.json \
+  --approve \
+  --approver reviewer@example.com \
+  --ticket SEC-123 \
+  --checkpoint artifacts/langgraph-checkpoint.json
+
+python examples/agents/run_langgraph_harness.py \
+  --replay-checkpoint artifacts/langgraph-checkpoint.json
+```
+
+The runner calls the same importable wrapper used by CI or SOAR integrations,
+keeps validation on by default, and accepts `--langgraph-runtime` when the
+optional LangGraph dependency is installed. `--approve` only supplies demo
+HITL metadata; remediation still requires the profile allowlist and remains
+dry-run only.
+
 `HARNESS.md` is therefore the readable operator contract; the graph nodes,
 adapter gates, runtime wrapper, schemas, checkpoint replay, and eval runner are
 the executable harness.

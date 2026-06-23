@@ -28,6 +28,7 @@ SCRIPTS = [
     EXAMPLES / "anthropic_sdk_security_agent.py",
     EXAMPLES / "openai_sdk_security_agent.py",
     EXAMPLES / "langgraph_security_graph.py",
+    EXAMPLES / "run_langgraph_harness.py",
 ]
 
 JSON_TYPE_MAP = {
@@ -303,6 +304,141 @@ class TestLangGraphHarnessRuntime:
         assert replayed.runtime["execution_mode"] == "checkpoint_replay"
         assert replayed.runtime["replayed"] is True
         assert replayed.summary["integrity"]["state_hash"] == first.summary["integrity"]["state_hash"]
+
+
+class TestLangGraphHarnessRunner:
+    """CLI coverage for the operator-facing harness runner."""
+
+    SCRIPT = EXAMPLES / "run_langgraph_harness.py"
+
+    def _run(
+        self,
+        *args: str,
+        env: dict[str, str] | None = None,
+    ) -> tuple[dict, subprocess.CompletedProcess[str]]:
+        result = subprocess.run(
+            [sys.executable, str(self.SCRIPT), *args],
+            capture_output=True,
+            text=True,
+            timeout=30,
+            check=False,
+            env={**os.environ, **(env or {})},
+        )
+        assert result.returncode == 0, result.stderr
+        return json.loads(result.stdout), result
+
+    def test_runner_executes_readonly_profile(self):
+        summary, result = self._run(
+            "--profile",
+            str(EXAMPLES / "harness_profiles" / "readonly-soc.json"),
+            "--clear-approval-env",
+        )
+
+        assert summary["harness_runtime"]["schema_version"] == "langgraph-soc-harness-runtime-v1"
+        assert summary["harness_runtime"]["execution_mode"] == "deterministic_runner"
+        assert summary["harness_runtime"]["validation_status"] == "pass"
+        assert summary["profile"]["profile_id"] == "readonly-soc"
+        assert summary["review"]["status"] == "blocked"
+        assert summary["remediation"]["status"] == "skipped"
+        assert '"node": "ingest"' in result.stderr
+
+    def test_runner_accepts_raw_events_and_caller_context(self, tmp_path: Path):
+        raw_events = tmp_path / "events.jsonl"
+        raw_events.write_text(
+            "\n".join([
+                json.dumps({
+                    "source": "cloudtrail",
+                    "event_name": "CreateAccessKey",
+                    "actor_uid": "AIDARUNNER",
+                    "resource_uid": "arn:aws:iam::111122223333:user/runner",
+                }),
+            ]) + "\n",
+            encoding="utf-8",
+        )
+        caller_context = {
+            "email": "runner@example.com",
+            "session_id": "runner-session",
+        }
+
+        summary, _ = self._run(
+            "--profile",
+            str(EXAMPLES / "harness_profiles" / "readonly-soc.json"),
+            "--raw-events",
+            str(raw_events),
+            "--caller-context",
+            json.dumps(caller_context),
+            "--clear-approval-env",
+        )
+
+        assert summary["caller_context"]["email"] == "runner@example.com"
+        assert summary["audit"]["correlation_id"] == "runner-session"
+        assert summary["findings_count"] == 1
+
+    def test_runner_approval_reaches_dry_run_only(self):
+        summary, _ = self._run(
+            "--profile",
+            str(EXAMPLES / "harness_profiles" / "dry-run-remediation.json"),
+            "--approve",
+            "--approver",
+            "reviewer@example.com",
+            "--ticket",
+            "SEC-RUNNER-1",
+        )
+
+        assert summary["review"]["status"] == "approved"
+        assert summary["review"]["approval"]["ticket_id"] == "SEC-RUNNER-1"
+        assert summary["remediation"]["status"] == "dry_run"
+        assert summary["remediation"]["dry_run"] is True
+
+    def test_runner_writes_output_and_replays_checkpoint(self, tmp_path: Path):
+        checkpoint = tmp_path / "checkpoint.json"
+        output = tmp_path / "summary.json"
+        result = subprocess.run(
+            [
+                sys.executable,
+                str(self.SCRIPT),
+                "--checkpoint",
+                str(checkpoint),
+                "--output",
+                str(output),
+                "--clear-approval-env",
+            ],
+            capture_output=True,
+            text=True,
+            timeout=30,
+            check=False,
+        )
+        assert result.returncode == 0, result.stderr
+        original = json.loads(output.read_text(encoding="utf-8"))
+        assert checkpoint.exists()
+
+        replayed, _ = self._run("--replay-checkpoint", str(checkpoint))
+
+        assert replayed["harness_runtime"]["execution_mode"] == "checkpoint_replay"
+        assert replayed["harness_runtime"]["replayed"] is True
+        assert replayed["integrity"]["state_hash"] == original["integrity"]["state_hash"]
+
+    def test_runner_fails_closed_on_invalid_raw_event_shape(self, tmp_path: Path):
+        raw_events = tmp_path / "bad-events.json"
+        raw_events.write_text(json.dumps(["not-an-object"]), encoding="utf-8")
+
+        result = subprocess.run(
+            [
+                sys.executable,
+                str(self.SCRIPT),
+                "--raw-events",
+                str(raw_events),
+                "--clear-approval-env",
+            ],
+            capture_output=True,
+            text=True,
+            timeout=30,
+            check=False,
+        )
+
+        assert result.returncode == 1
+        assert "langgraph harness run failed" in result.stderr
+        assert "--raw-events must be a JSON object" in result.stderr
 
 
 class TestLangGraphSocWorkflow:
