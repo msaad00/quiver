@@ -50,6 +50,28 @@ ROLE_DEFAULTS: dict[HarnessRole, dict[str, Any]] = {
 }
 
 PROFILE_ID_RE = re.compile(r"^[a-z0-9][a-z0-9-]{1,63}$")
+SECRET_FIELD_RE = re.compile(
+    r"(?i)(password|passwd|pwd|pat|personal[_-]?access[_-]?token|api[_-]?key|"
+    r"secret|private[_-]?key|access[_-]?key|session[_-]?token|bearer)"
+)
+SECRET_VALUE_RE = re.compile(
+    r"(?i)(ghp_[A-Za-z0-9_]{20,}|github_pat_[A-Za-z0-9_]+|"
+    r"sk-[A-Za-z0-9_-]{20,}|AKIA[A-Z0-9]{16}|-----BEGIN [A-Z ]*PRIVATE KEY-----)"
+)
+
+
+def _assert_no_secret_material(payload: Any, *, path: str) -> None:
+    if isinstance(payload, dict):
+        for key, value in payload.items():
+            key_text = str(key)
+            if SECRET_FIELD_RE.search(key_text):
+                raise ValueError(f"{path}.{key_text} must not contain passwords, PATs, tokens, or secrets")
+            _assert_no_secret_material(value, path=f"{path}.{key_text}")
+    elif isinstance(payload, list):
+        for index, value in enumerate(payload):
+            _assert_no_secret_material(value, path=f"{path}[{index}]")
+    elif isinstance(payload, str) and (SECRET_FIELD_RE.search(payload) or SECRET_VALUE_RE.search(payload)):
+        raise ValueError(f"{path} must not contain password, PAT, token, or secret material")
 
 
 def _parse_cloud_hint(values: list[str]) -> dict[str, str]:
@@ -62,6 +84,7 @@ def _parse_cloud_hint(values: list[str]) -> dict[str, str]:
         hint = hint.strip()
         if not provider or not hint:
             raise ValueError("cloud hints require a provider and hint")
+        _assert_no_secret_material({provider: hint}, path="cloud_identity_hints")
         hints[provider] = hint
     if hints:
         return hints
@@ -108,7 +131,7 @@ def build_profile(args: argparse.Namespace) -> dict[str, Any]:
             "skill_scope": [ALLOWED_SKILLS_REMEDIATION] if ROLE_DEFAULTS[role]["include_remediation"] else [],
         },
     ]
-    return {
+    profile = {
         "profile_id": args.profile_id,
         "description": args.description or ROLE_DEFAULTS[role]["description"],
         "allowed_skills": allowed_skills,
@@ -153,6 +176,8 @@ def build_profile(args: argparse.Namespace) -> dict[str, Any]:
             "apply_supported": False,
         },
     }
+    _assert_no_secret_material(profile, path="profile")
+    return profile
 
 
 def write_dotenv(

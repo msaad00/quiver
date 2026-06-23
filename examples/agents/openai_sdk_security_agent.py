@@ -13,7 +13,7 @@ demonstrates the wiring without pinning the SDK as a repo dep.
 Prerequisites:
 
     uv sync --group dev --extra aws
-    export OPENAI_API_KEY=sk-...   # only if you want to actually run
+    Configure OpenAI SDK credentials outside this repo if you run live SDK calls.
 
 Run:
 

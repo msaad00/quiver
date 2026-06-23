@@ -23,6 +23,7 @@ from __future__ import annotations
 import argparse
 import json
 import os
+import re
 import sys
 from contextlib import contextmanager
 from datetime import UTC, datetime
@@ -30,6 +31,29 @@ from pathlib import Path
 from typing import Any, Iterator, Mapping
 
 from harness_runtime import HarnessRunConfig, run_harness_summary
+
+SECRET_FIELD_RE = re.compile(
+    r"(?i)(password|passwd|pwd|pat|personal[_-]?access[_-]?token|api[_-]?key|"
+    r"secret|private[_-]?key|access[_-]?key|session[_-]?token|bearer)"
+)
+SECRET_VALUE_RE = re.compile(
+    r"(?i)(ghp_[A-Za-z0-9_]{20,}|github_pat_[A-Za-z0-9_]+|"
+    r"sk-[A-Za-z0-9_-]{20,}|AKIA[A-Z0-9]{16}|-----BEGIN [A-Z ]*PRIVATE KEY-----)"
+)
+
+
+def _assert_no_secret_material(payload: Any, *, path: str) -> None:
+    if isinstance(payload, dict):
+        for key, value in payload.items():
+            key_text = str(key)
+            if SECRET_FIELD_RE.search(key_text):
+                raise ValueError(f"{path}.{key_text} must not contain passwords, PATs, tokens, or secrets")
+            _assert_no_secret_material(value, path=f"{path}.{key_text}")
+    elif isinstance(payload, list):
+        for index, value in enumerate(payload):
+            _assert_no_secret_material(value, path=f"{path}[{index}]")
+    elif isinstance(payload, str) and (SECRET_FIELD_RE.search(payload) or SECRET_VALUE_RE.search(payload)):
+        raise ValueError(f"{path} must not contain password, PAT, token, or secret material")
 
 
 def _load_json_or_jsonl(path: Path) -> Any:
@@ -66,6 +90,7 @@ def _load_raw_events(path: Path | None) -> tuple[Mapping[str, Any], ...] | None:
 def _approval_context_from_args(args: argparse.Namespace) -> dict[str, Any] | None:
     explicit = _load_mapping_argument(args.approval_context, label="--approval-context")
     if explicit:
+        _assert_no_secret_material(explicit, path="approval_context")
         return explicit
     if not args.approve:
         return None

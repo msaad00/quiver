@@ -13,7 +13,7 @@ The example is runnable offline: the CSPM scan calls `moto` fixtures
 Prerequisites:
 
     uv sync --group dev --extra aws
-    export ANTHROPIC_API_KEY=sk-...  # only if you want to actually run
+    Configure Anthropic SDK credentials outside this repo if you run live SDK calls.
 
 Run:
 

@@ -460,6 +460,34 @@ class TestLangGraphHarnessRunner:
         assert replayed["harness_runtime"]["replayed"] is True
         assert replayed["integrity"]["state_hash"] == original["integrity"]["state_hash"]
 
+    def test_runner_rejects_secret_material_in_approval_context(self, tmp_path: Path):
+        approval_context = tmp_path / "approval.json"
+        synthetic_pat = "ghp_" + ("a" * 36)
+        approval_context.write_text(json.dumps({
+            "approver_id": "reviewer@example.com",
+            "ticket_id": "SEC-RUNNER-SECRET-1",
+            "approval_timestamp": "2026-06-23T00:00:00+00:00",
+            "notes": synthetic_pat,
+        }), encoding="utf-8")
+
+        result = subprocess.run(
+            [
+                sys.executable,
+                str(self.SCRIPT),
+                "--profile",
+                str(EXAMPLES / "harness_profiles" / "dry-run-remediation.json"),
+                "--approval-context",
+                str(approval_context),
+            ],
+            capture_output=True,
+            text=True,
+            timeout=30,
+            check=False,
+        )
+
+        assert result.returncode == 1
+        assert "must not contain password, PAT, token, or secret material" in result.stderr
+
     def test_runner_fails_closed_on_invalid_raw_event_shape(self, tmp_path: Path):
         raw_events = tmp_path / "bad-events.json"
         raw_events.write_text(json.dumps(["not-an-object"]), encoding="utf-8")
@@ -1453,6 +1481,38 @@ class TestLangGraphHarnessSetup:
         assert approved_summary["remediation"]["status"] == "dry_run"
         assert approved_summary["remediation"]["dry_run"] is True
         assert approved_summary["audit"]["route"]["after_review"] == "remediate"
+
+    def test_setup_generator_rejects_secret_material_in_cloud_hints(self, tmp_path: Path):
+        profile_path = tmp_path / "bad-profile.json"
+        env_path = tmp_path / "bad.env"
+        credential_hint = "SNOWFLAKE_" + "PASSWORD=not-for-profile"
+        result = subprocess.run(
+            [
+                sys.executable,
+                str(self.SCRIPT),
+                "--role",
+                "readonly-soc",
+                "--profile-id",
+                "bad-secret-profile",
+                "--email",
+                "analyst@example.com",
+                "--cloud-hint",
+                f"snowflake={credential_hint}",
+                "--output-profile",
+                str(profile_path),
+                "--output-env",
+                str(env_path),
+            ],
+            capture_output=True,
+            text=True,
+            timeout=30,
+            check=False,
+        )
+
+        assert result.returncode == 2
+        assert "must not contain password, PAT, token, or secret material" in result.stderr
+        assert not profile_path.exists()
+        assert not env_path.exists()
 
     def test_setup_generator_rejects_unknown_example_skill(self, tmp_path: Path):
         result = subprocess.run(
