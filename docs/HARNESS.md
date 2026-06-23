@@ -61,6 +61,23 @@ print(summary["harness_runtime"]["validation_status"])
 PY
 ```
 
+Inspect a profile before running the graph:
+
+```bash
+python examples/agents/inspect_langgraph_harness.py \
+  --profile examples/agents/harness_profiles/readonly-soc.json
+
+python examples/agents/inspect_langgraph_harness.py \
+  --profile examples/agents/harness_profiles/dry-run-remediation.json \
+  --approval-context-present \
+  --require-remediation-ready
+```
+
+The preflight inspector emits the same `agent_policy` effective-grants report
+without replaying evidence, calling a model, reading credentials, or executing
+remediation. `--require-remediation-ready` fails closed unless the remediation
+skill is granted and an approval context is represented.
+
 `HARNESS.md` is therefore the readable operator contract; the graph nodes,
 adapter gates, runtime wrapper, schemas, checkpoint replay, and eval runner are
 the executable harness.

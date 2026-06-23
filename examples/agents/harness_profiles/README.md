@@ -22,6 +22,13 @@ python examples/agents/configure_langgraph_harness.py \
   --output-env artifacts/acme-remediation-dryrun.env
 ```
 
+Inspect a profile before running the graph:
+
+```bash
+python examples/agents/inspect_langgraph_harness.py \
+  --profile examples/agents/harness_profiles/readonly-soc.json
+```
+
 The generated dotenv file points `CLOUD_SECURITY_HARNESS_PROFILE` and
 `DEMO_HARNESS_PROFILE` at the profile. It does not duplicate provider/model as
 env overrides, and it intentionally omits `DEMO_APPROVE`; approval still has

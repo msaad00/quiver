@@ -1301,6 +1301,88 @@ class TestLangGraphHarnessSetup:
         assert "unknown example skill" in result.stderr
 
 
+class TestLangGraphHarnessPreflight:
+    """Preflight inspector coverage for profile grants before graph execution."""
+
+    SCRIPT = EXAMPLES / "inspect_langgraph_harness.py"
+    PROFILES = EXAMPLES / "harness_profiles"
+
+    def test_readonly_profile_reports_denied_remediation_without_cloud_calls(self):
+        result = subprocess.run(
+            [
+                sys.executable,
+                str(self.SCRIPT),
+                "--profile",
+                str(self.PROFILES / "readonly-soc.json"),
+            ],
+            capture_output=True,
+            text=True,
+            timeout=30,
+            check=False,
+        )
+        assert result.returncode == 0, result.stderr
+        report = json.loads(result.stdout)
+        assert report["schema_version"] == "langgraph-harness-preflight-v1"
+        assert report["secrets_loaded"] is False
+        assert report["cloud_calls_made"] is False
+        assert report["remediation_preflight"]["would_plan_dry_run"] is False
+        assert report["remediation_preflight"]["skill_granted"] is False
+
+        entries = {
+            entry["agent_id"]: entry
+            for entry in report["agent_policy"]["entries"]
+        }
+        assert entries["triage-agent"]["decision"] == "no_direct_tools"
+        assert entries["remediation-planner"]["denied_skill_scope"] == ["iam-departures-aws"]
+        assert entries["remediation-planner"]["decision"] == "blocked_by_allowlist"
+
+    def test_dry_run_profile_can_require_remediation_ready(self, tmp_path: Path):
+        output = tmp_path / "preflight.json"
+        result = subprocess.run(
+            [
+                sys.executable,
+                str(self.SCRIPT),
+                "--profile",
+                str(self.PROFILES / "dry-run-remediation.json"),
+                "--approval-context-present",
+                "--require-remediation-ready",
+                "--output",
+                str(output),
+            ],
+            capture_output=True,
+            text=True,
+            timeout=30,
+            check=False,
+        )
+        assert result.returncode == 0, result.stderr
+        assert result.stdout == ""
+        report = json.loads(output.read_text(encoding="utf-8"))
+        assert report["approval_context_present"] is True
+        assert report["remediation_preflight"]["skill_granted"] is True
+        assert report["remediation_preflight"]["would_plan_dry_run"] is True
+        assert report["remediation_preflight"]["apply_supported"] is False
+
+    def test_require_remediation_ready_fails_closed_for_readonly_profile(self):
+        result = subprocess.run(
+            [
+                sys.executable,
+                str(self.SCRIPT),
+                "--profile",
+                str(self.PROFILES / "readonly-soc.json"),
+                "--approval-context-present",
+                "--require-remediation-ready",
+            ],
+            capture_output=True,
+            text=True,
+            timeout=30,
+            check=False,
+        )
+        assert result.returncode == 3
+        assert "remediation preflight is not ready" in result.stderr
+        report = json.loads(result.stdout)
+        assert report["remediation_preflight"]["skill_granted"] is False
+
+
 class TestLangGraphPipelineDiagram:
     """Regression coverage for the code-backed LangGraph Mermaid diagram."""
 

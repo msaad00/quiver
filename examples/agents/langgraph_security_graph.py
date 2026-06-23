@@ -811,6 +811,63 @@ def effective_agent_policy(state: GraphState) -> dict[str, Any]:
     }
 
 
+def preview_agent_policy(
+    profile: HarnessProfile,
+    *,
+    approval_context_present: bool = False,
+) -> dict[str, Any]:
+    """Build a metadata-only policy preview without running graph nodes."""
+    state: GraphState = {
+        "harness_profile": profile,
+        "caller_context": profile["caller_context"],
+        "raw_events": [],
+    }
+    state["effective_allowed_skills"] = _effective_allowed_skills(profile)
+    state["agent_manifest"] = _agent_manifest(state)
+    state["harness_config"] = _agent_harness_config(state)
+    if approval_context_present:
+        state["review_decision"] = {
+            "status": "approved",
+            "reason": "preflight approval context supplied",
+            "approval": {
+                "approver_id": "preflight",
+                "ticket_id": "PREFLIGHT",
+                "approval_timestamp": "1970-01-01T00:00:00+00:00",
+            },
+        }
+    else:
+        state["review_decision"] = {
+            "status": "blocked",
+            "reason": "preflight only; approval context not supplied",
+            "approval": None,
+        }
+    agent_policy = effective_agent_policy(state)
+    remediation_entry = next(
+        entry for entry in agent_policy["entries"]
+        if entry["agent_id"] == "remediation-planner"
+    )
+    remediation_skill_granted = ALLOWED_SKILLS_REMEDIATION in remediation_entry["effective_skill_grants"]
+    return {
+        "schema_version": "langgraph-harness-preflight-v1",
+        "profile_id": profile["profile_id"],
+        "secrets_loaded": False,
+        "cloud_calls_made": False,
+        "approval_context_present": approval_context_present,
+        "harness": state["harness_config"],
+        "effective_allowed_skills": state["effective_allowed_skills"],
+        "agent_policy": agent_policy,
+        "remediation_preflight": {
+            "skill": ALLOWED_SKILLS_REMEDIATION,
+            "skill_granted": remediation_skill_granted,
+            "approval_satisfied": remediation_entry["approval_satisfied"],
+            "decision": remediation_entry["decision"],
+            "write_policy": remediation_entry["write_policy"],
+            "would_plan_dry_run": remediation_skill_granted and approval_context_present,
+            "apply_supported": False,
+        },
+    }
+
+
 def _record_agent_run(
     state: GraphState,
     *,

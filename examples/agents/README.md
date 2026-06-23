@@ -105,6 +105,14 @@ python examples/agents/langgraph_security_graph.py
 DEMO_HARNESS_PROFILE=examples/agents/harness_profiles/readonly-soc.json \
 python examples/agents/langgraph_security_graph.py
 
+# Preflight profile grants before graph execution.
+python examples/agents/inspect_langgraph_harness.py \
+  --profile examples/agents/harness_profiles/readonly-soc.json
+python examples/agents/inspect_langgraph_harness.py \
+  --profile examples/agents/harness_profiles/dry-run-remediation.json \
+  --approval-context-present \
+  --require-remediation-ready
+
 # Approved path: remediation reaches dry-run only and writes audit/eval output.
 DEMO_HARNESS_PROFILE=examples/agents/harness_profiles/dry-run-remediation.json \
 DEMO_APPROVE=yes \
@@ -196,6 +204,8 @@ agent tool-write scope or bypassing HITL.
 `agent_policy` is the compiled view of those choices: per-agent requested
 skills, effective grants, denied skills, model tier, write policy, approval
 state, and decision.
+`inspect_langgraph_harness.py` emits that policy without running graph nodes,
+calling a model, reading credentials, or executing remediation.
 Importable harness wrapper:
 
 ```bash
