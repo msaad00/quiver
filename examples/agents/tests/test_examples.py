@@ -1642,6 +1642,31 @@ class TestLangGraphPipelineDiagram:
         assert "REM -- retryable API error --> RETRY" in result.stdout
 
 
+class TestLangGraphHarnessDriftCheck:
+    """Regression coverage for the operator-facing harness drift checker."""
+
+    SCRIPT = EXAMPLES / "check_langgraph_harness_drift.py"
+
+    def test_harness_drift_check_passes(self):
+        result = subprocess.run(
+            [sys.executable, str(self.SCRIPT)],
+            capture_output=True,
+            text=True,
+            timeout=30,
+            check=False,
+        )
+        assert result.returncode == 0, result.stderr
+        report = json.loads(result.stdout)
+        assert report["event"] == "langgraph_harness_drift_check"
+        assert report["schema_version"] == "langgraph-harness-drift-check-v1"
+        assert report["status"] == "pass"
+        assert report["failed"] == 0
+        check_names = {check["name"] for check in report["checks"]}
+        assert "pipeline_diagram_generated" in check_names
+        assert "preflight_policy_safe" in check_names
+        assert "harness_docs_have_no_secret_literals" in check_names
+
+
 class TestLangGraphHarnessEvals:
     """Regression coverage for profile/triage eval tracking."""
 

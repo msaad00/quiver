@@ -112,6 +112,8 @@ jobs:
         run: pytest examples/agents/tests/test_examples.py -q
       - name: Run LangGraph harness eval gate
         run: python examples/agents/eval_langgraph_harness.py --check
+      - name: Check LangGraph harness drift
+        run: python examples/agents/check_langgraph_harness_drift.py
       - name: Install optional LangGraph runtime
         run: python -m pip install "langgraph>=1.2,<2"
       - name: Run examples with real LangGraph runtime available

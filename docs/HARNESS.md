@@ -122,6 +122,19 @@ python examples/agents/render_langgraph_pipeline_diagram.py \
   --output docs/diagrams/langgraph-agent-harness.mmd
 ```
 
+Drift check:
+
+```bash
+python examples/agents/check_langgraph_harness_drift.py
+```
+
+The drift checker regenerates the diagram from `pipeline_contract()` in memory,
+validates closed schemas and stock profiles, verifies metadata-only preflight
+policy, runs the importable wrapper validation path, checks harness docs/CI
+references, and scans the harness docs/profiles for PAT/API-key/password
+literals. It remains offline: no cloud credentials, model calls, approval
+tokens, cloud APIs, or remediation execution.
+
 The LLM/agent harness records provider/model/mode, model-policy selection, and
 token-budget policy in state and audit output. `model_policy` selects the
 configured provider/model tier for the triage task; `token_budget` caps input,

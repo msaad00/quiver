@@ -195,6 +195,10 @@ python examples/agents/eval_langgraph_harness.py --check \
 # from the code-backed pipeline_contract().
 python examples/agents/render_langgraph_pipeline_diagram.py \
   --output docs/diagrams/langgraph-agent-harness.mmd
+
+# Drift doctor: verify schemas, profiles, generated diagram, docs/CI
+# references, preflight safety, and wrapper validation stay aligned.
+python examples/agents/check_langgraph_harness_drift.py
 ```
 
 The LangGraph summary includes `integrity.evidence_hash`,
@@ -273,6 +277,10 @@ Contract schemas live under [`schemas/`](schemas/). They define the closed
 shape for harness profiles, the LLM adapter recommendation payload accepted by
 the reference graph, the emitted `pipeline_contract` topology, and checkpoint
 artifact and eval-report envelopes.
+Use [`check_langgraph_harness_drift.py`](check_langgraph_harness_drift.py) to
+fail closed when the generated diagram, profiles, schemas, docs, CI command
+references, metadata-only preflight, or wrapper validation drift away from the
+code-backed harness.
 
 Use [`configure_langgraph_harness.py`](configure_langgraph_harness.py) when
 customizing the harness for a buyer or internal environment. It asks for role,
