@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1600" height="2650" viewBox="0 0 1600 2650" role="img" aria-labelledby="cm-title cm-desc">
   <title id="cm-title">cloud-ai-security-skills — detection and posture coverage matrix</title>
-  <desc id="cm-desc">Coverage matrix visualizing the gap between shipped detection and posture skills and their paired remediation, with ATT&amp;CK or ATLAS technique IDs where the detector emits them and framework notes where it does not. Rows list every shipped detection (71) plus every CSPM benchmark family (4 native CIS scopes). Columns are: skill name, mapping or note, detector or check shipped status, paired remediation status, and the tracking issue or notes. Green cells mean a closed loop is shipped; amber cells mean a remediation skill is on the roadmap; red cells mean no remediation exists or is planned. Thirteen of seventy-one detection rows are closed loops today; lateral-movement is intentionally detection-only because the response is per-arm fan-out via existing remediation skills, and the access-key, login-profile, GCP service-account-key, GCP service-account-token-minting, discovery-burst, cross-account-copy, logging-impairment, AWS and GCP model-artifact-download, MCP credential-leak, system-prompt-extraction, tool-output-policy-bypass, tool-output-exfiltration-instructions, Workspace OAuth grant, Workspace admin-role grant, Workday mass-termination anomaly, Salesforce bulk export, Salesforce API anomaly, SAP privileged-user access, and SAP mass-change slices are still detection-first. The matrix is the single source of truth for closed-loop coverage and updates whenever a remediation skill ships.</desc>
+  <desc id="cm-desc">Coverage matrix visualizing the gap between shipped detection and posture skills and their paired remediation, with ATT&amp;CK or ATLAS technique IDs where the detector emits them and framework notes where it does not. Rows list every shipped detection (71) plus every CSPM benchmark family (4 native CIS scopes). Summary cards call out the current 13 of 71 closed-loop ratio, that writes remain HITL gated and dry-run first, and that red remediation cells mean detection-first coverage rather than autonomous remediation. Columns are: skill name, mapping or note, detector or check shipped status, paired remediation status, and the tracking issue or notes. Green cells mean a closed loop is shipped; amber cells mean a remediation skill is on the roadmap; red cells mean no remediation exists or is planned. Thirteen of seventy-one detection rows are closed loops today; lateral-movement is intentionally detection-only because the response is per-arm fan-out via existing remediation skills, and the access-key, login-profile, GCP service-account-key, GCP service-account-token-minting, discovery-burst, cross-account-copy, logging-impairment, AWS and GCP model-artifact-download, MCP credential-leak, system-prompt-extraction, tool-output-policy-bypass, tool-output-exfiltration-instructions, Workspace OAuth grant, Workspace admin-role grant, Workday mass-termination anomaly, Salesforce bulk export, Salesforce API anomaly, SAP privileged-user access, and SAP mass-change slices are still detection-first. The matrix is the single source of truth for closed-loop coverage and updates whenever a remediation skill ships.</desc>
 
   <defs>
     <linearGradient id="bg2" x1="0" y1="0" x2="1" y2="1">
@@ -19,6 +19,21 @@
   <text x="48" y="62" fill="#f1f5f9" font-family="Inter, system-ui, sans-serif" font-size="30" font-weight="900">Closed-loop coverage matrix</text>
   <text x="48" y="94" fill="#94a3b8" font-family="Inter, system-ui, sans-serif" font-size="16">Every shipped detection and posture check, mapped to whether a paired remediation exists, is planned, or is missing.</text>
   <text x="48" y="116" fill="#94a3b8" font-family="Inter, system-ui, sans-serif" font-size="16">Green rows are closed loops. MITRE IDs are shown where emitted; OWASP/MCP notes appear where the detector is intentionally non-MITRE.</text>
+
+  <!-- Summary cards: keep the main truth visible before the long table. -->
+  <g font-family="Inter, system-ui, sans-serif">
+    <rect x="1010" y="42" width="154" height="70" rx="14" fill="#052e2b" stroke="#22c55e"/>
+    <text x="1030" y="72" fill="#5eead4" font-size="24" font-weight="900">13 / 71</text>
+    <text x="1030" y="94" fill="#bbf7d0" font-size="12" font-weight="800">closed-loop detections</text>
+
+    <rect x="1182" y="42" width="164" height="70" rx="14" fill="#2a1708" stroke="#f59e0b"/>
+    <text x="1202" y="72" fill="#fbbf24" font-size="19" font-weight="900">HITL gated</text>
+    <text x="1202" y="94" fill="#fed7aa" font-size="12" font-weight="800">dry-run before writes</text>
+
+    <rect x="1364" y="42" width="188" height="70" rx="14" fill="#2a0b1e" stroke="#ef4444"/>
+    <text x="1384" y="72" fill="#f87171" font-size="19" font-weight="900">Red = detect-first</text>
+    <text x="1384" y="94" fill="#fecaca" font-size="12" font-weight="800">no autonomous action implied</text>
+  </g>
 
   <!-- Legend -->
   <g transform="translate(48,144)" font-family="Inter, system-ui, sans-serif" font-size="14">
