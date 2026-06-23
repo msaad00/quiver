@@ -1,5 +1,6 @@
 %% Optional agentic SOC orchestrator over cloud-ai-security-skills.
-%% LangGraph/LangChain own workflow state; repo skills own facts and gates.
+%% LangGraph/LangChain own workflow state and model choice; repo skills own
+%% facts, scores, policy, integrity, idempotency, audit, and write gates.
 
 flowchart LR
     classDef orch fill:#0b1830,stroke:#60a5fa,color:#dbeafe
@@ -7,22 +8,34 @@ flowchart LR
     classDef guard fill:#2a1207,stroke:#d97706,color:#fed7aa
     classDef audit fill:#4c0519,stroke:#fb7185,color:#fff1f2
 
-    AGENT["SOC agent"]:::orch
+    AGENT["SOC operator<br/>role · tenant · allowlist"]:::orch
     GRAPH["LangGraph / LangChain DAG<br/>nodes · edges · conditions"]:::orch
-    LLM["LLM options<br/>OpenAI · local · customer model"]:::orch
-    TOOL["Tool boundary<br/>MCP · CLI · CI · runner · library"]:::orch
+    LLM["model router<br/>small task model · local · customer LLM"]:::orch
+    TOOL["tool boundary<br/>MCP · CLI · CI · runner · library"]:::orch
+    PROFILE["harness profile<br/>budget · data source · approvals"]:::orch
 
-    ING["ingest"]:::skill
-    NORM["normalize"]:::skill
+    SRC["source choice<br/>raw ingest or lake replay"]:::skill
+    NORM["normalize<br/>stable IDs · integrity hash"]:::skill
     ENRICH["enrich<br/>OSV · NVD · EPSS · KEV"]:::skill
     CORR["correlate<br/>identity · tools · lineage"]:::skill
-    MAP["map<br/>MITRE · CVSS · controls · confidence"]:::skill
-    REVIEW["analyst review<br/>HITL gate"]:::audit
-    WRITE["dry-run remediation<br/>audit/evidence writeback"]:::audit
+    CONF["confidence<br/>reason codes · no model facts"]:::skill
+    MAP["map<br/>MITRE · CVSS · controls"]:::skill
+    TRIAGE["LLM triage<br/>rank · summarize · draft only"]:::orch
+    REVIEW["analyst review<br/>HITL gate"]:::guard
+    REM["dry-run remediation<br/>idempotency key reused"]:::audit
+    RETRY["retry branch<br/>retryable API errors"]:::guard
+    ESC["escalate<br/>terminal errors to human"]:::guard
+    WRITE["audit and eval writeback<br/>state hash · pass rate"]:::audit
 
-    RAILS["non-bypassable rails<br/>sandbox · RLIMIT · allowlist intersection · HMAC audit · dry-run first"]:::guard
+    RAILS["non-bypassable rails<br/>sandbox · RLIMIT · allowlist intersection · token budgets · integrity hashes · dry-run first · HMAC audit"]:::guard
 
-    AGENT --> GRAPH --> LLM --> TOOL
-    TOOL --> ING --> NORM --> ENRICH --> CORR --> MAP --> REVIEW --> WRITE
+    AGENT --> GRAPH --> LLM --> TOOL --> PROFILE
+    PROFILE --> SRC --> NORM --> ENRICH --> CORR --> CONF --> MAP --> TRIAGE --> REVIEW
+    REVIEW -- approved --> REM
+    REVIEW -- blocked --> WRITE
+    REM -- retryable API error --> RETRY --> WRITE
+    REM -- terminal API error --> ESC --> WRITE
+    REM -- dry-run OK --> WRITE
     RAILS -. enforced around every tool call .-> TOOL
-    RAILS -. blocks unsafe writes .-> REVIEW
+    RAILS -. bounds model authority .-> TRIAGE
+    RAILS -. blocks unsafe writes .-> REM

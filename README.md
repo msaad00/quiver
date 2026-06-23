@@ -16,11 +16,22 @@
 
 ---
 
+## Start here
+
+| Need | First read | Proof artifact |
+|---|---|---|
+| Run a local pipeline | [`docs/QUICKSTART.md`](docs/QUICKSTART.md) | `findings.sarif` from fixture data |
+| Pick a skill | [`docs/SKILL_INDEX.md`](docs/SKILL_INDEX.md) | skill bundle with `SKILL.md`, `src/`, `tests/` |
+| Wire an agent | [`docs/AGENT_QUICKSTART.md`](docs/AGENT_QUICKSTART.md) | MCP tool calls through `.mcp.json` |
+| Govern an agentic SOC workflow | [`docs/HARNESS.md`](docs/HARNESS.md) | LangGraph profile, audit ledger, eval report |
+| Build a warehouse lake | [`docs/CLICKHOUSE_DATA_LAKE.md`](docs/CLICKHOUSE_DATA_LAKE.md) or [`docs/SNOWFLAKE_DATA_LAKE.md`](docs/SNOWFLAKE_DATA_LAKE.md) | append-only lake tables plus replay query adapter |
+
 ## Why pick this
 
 - **Plug-and-play in 60 seconds** — repo-shipped `.mcp.json` works in Claude Code out of the box; copy-paste configs for Claude Desktop, Cursor, Windsurf, Codex, Cortex, Zed in [`docs/AGENT_QUICKSTART.md`](docs/AGENT_QUICKSTART.md).
 - **Every skill is a single-concern bundle** — `SKILL.md + src/ + tests/` you can run as a stdin/stdout one-liner, an MCP tool, a CI step, a webhook, or a library call. Same bundle, no per-surface drift.
 - **Built for agents, not just humans** — OCSF 1.8 on the wire, HMAC-chained audit, HITL gates and allowlist intersection enforced by the wrapper — so an LLM can't bypass the trust contract.
+- **Designed for closed-loop security work** — normalize, detect, evaluate, review, dry-run, remediate, and write audit/evidence rows back into the operator-owned lake.
 
 ---
 
@@ -94,6 +105,8 @@ More visuals (Mermaid sources under [`docs/diagrams/`](docs/diagrams/), GitHub r
 
 Deeper reads: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) · [`docs/HARNESS.md`](docs/HARNESS.md) · [`docs/SKILL_CONTRACT.md`](docs/SKILL_CONTRACT.md) · [`docs/SKILL_COMPOSITION.md`](docs/SKILL_COMPOSITION.md)
 
+The design invariant is deliberately simple: deterministic skills own evidence, schemas, mappings, confidence, policy, write intent, and audit. Optional orchestrators own workflow state, node ordering, model selection, retries, escalation, and checkpoints.
+
 ## Agentic SOC orchestration
 
 The repo is strongest when the skills stay deterministic and LangGraph /
@@ -122,6 +135,11 @@ The optional LLM adapter path is schema-gated: model output can rank and draft
 triage rationale, but attempts to set approvals, CVSS/MITRE/EPSS/KEV facts,
 tenant scope, idempotency keys, or write intent are rejected and fall back to
 deterministic triage.
+Token use is governed by the same harness profile: small-model routing for
+bounded tasks, prompt compaction before triage, per-node budgets, and eval
+write-back for pass-rate and cost drift. Integrity hashes, idempotency keys,
+and retryable-vs-terminal API error routing stay in deterministic state, not in
+model output.
 
 ![Optional agentic SOC orchestrator: LangGraph or LangChain controls the workflow DAG and LLM/model choice, while cloud-ai-security-skills owns deterministic ingest, normalize, enrich, correlate, map, review, audit, eval artifacts, sandbox/RLIMIT, allowlist, dry-run, HITL, and HMAC audit rails.](docs/images/agentic-soc-orchestrator.svg)
 
@@ -131,6 +149,14 @@ deterministic triage.
 | Workflow state and branching | LangGraph / LangChain / SOAR | nodes, edges, retries, escalation, checkpointing |
 | LLM output | Orchestrator | rank, summarize, explain, and draft; never authoritative for policy or audit |
 | Write approval | HITL gate + remediation skill | dry-run first, bounded blast radius, audited operator context |
+
+| Agentic concern | Where it is enforced |
+|---|---|
+| Data source choice | harness profile: raw ingest, security lake replay, or fixture |
+| Token and model budget | model router + profile limits, with compaction before LLM triage |
+| Integrity and idempotency | normalized state hashes and remediation idempotency keys |
+| API failures | deterministic retryable vs terminal routing before writeback |
+| No hallucinated facts | schema-gated LLM adapter; mappings and scores come from code |
 
 ## ClickHouse-powered security data lake (hero use case)
 

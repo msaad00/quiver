@@ -1,27 +1,175 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="760" viewBox="0 0 1600 760" role="img" aria-labelledby="title desc">
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="820" viewBox="0 0 1600 820" role="img" aria-labelledby="title desc">
   <title id="title">Optional agentic SOC orchestrator over cloud-ai-security-skills</title>
-  <desc id="desc">Architecture diagram showing LangGraph or LangChain as an optional orchestration layer over deterministic cloud-ai-security-skills APIs, MCP tools, security gates, audit records, and evaluation artifacts.</desc>
+  <desc id="desc">Architecture diagram showing LangGraph or LangChain as an optional orchestration layer over deterministic cloud-ai-security-skills APIs and MCP tools. The workflow covers data source selection, ingest or lake replay, normalize, enrich, correlate, confidence, MITRE CVSS EPSS KEV mapping, bounded LLM triage, analyst review, dry-run remediation, retry or escalation, audit, and eval write-back with non-bypassable trust rails.</desc>
   <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#06101f"/><stop offset="0.55" stop-color="#0d172a"/><stop offset="1" stop-color="#111827"/></linearGradient>
-    <pattern id="grid" width="44" height="44" patternUnits="userSpaceOnUse"><path d="M44 0H0V44" fill="none" stroke="#20314f" stroke-opacity="0.22" stroke-width="1"/></pattern>
-    <filter id="softShadow" x="-14%" y="-14%" width="128%" height="128%"><feDropShadow dx="0" dy="10" stdDeviation="10" flood-color="#020617" flood-opacity="0.30"/></filter>
-    <marker id="arrowCyan" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="10" markerHeight="10" orient="auto"><path d="M0 0L10 5L0 10Z" fill="#22d3ee"/></marker>
-    <marker id="arrowGreen" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="10" markerHeight="10" orient="auto"><path d="M0 0L10 5L0 10Z" fill="#34d399"/></marker>
-    <marker id="arrowRose" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="10" markerHeight="10" orient="auto"><path d="M0 0L10 5L0 10Z" fill="#fb7185"/></marker>
-    <style>.font{font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}.h1{font-size:34px;font-weight:850;fill:#f8fafc}.sub{font-size:15px;fill:#cbd5e1}.eyebrow{font-size:11px;font-weight:850;letter-spacing:.08em;text-transform:uppercase}.cardTitle{font-size:17px;font-weight:850;fill:#f8fafc}.body{font-size:12px;fill:#cbd5e1}.tiny{font-size:11px;fill:#94a3b8}.badge{font-size:12px;font-weight:850;fill:#f8fafc}</style>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#06101f"/>
+      <stop offset="0.55" stop-color="#0d172a"/>
+      <stop offset="1" stop-color="#111827"/>
+    </linearGradient>
+    <pattern id="grid" width="44" height="44" patternUnits="userSpaceOnUse">
+      <path d="M44 0H0V44" fill="none" stroke="#20314f" stroke-opacity="0.22" stroke-width="1"/>
+    </pattern>
+    <filter id="softShadow" x="-14%" y="-14%" width="128%" height="128%">
+      <feDropShadow dx="0" dy="10" stdDeviation="10" flood-color="#020617" flood-opacity="0.30"/>
+    </filter>
+    <marker id="arrowBlue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="10" markerHeight="10" orient="auto">
+      <path d="M0 0L10 5L0 10Z" fill="#60a5fa"/>
+    </marker>
+    <marker id="arrowGreen" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="10" markerHeight="10" orient="auto">
+      <path d="M0 0L10 5L0 10Z" fill="#34d399"/>
+    </marker>
+    <marker id="arrowAmber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="10" markerHeight="10" orient="auto">
+      <path d="M0 0L10 5L0 10Z" fill="#f59e0b"/>
+    </marker>
+    <marker id="arrowRose" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="10" markerHeight="10" orient="auto">
+      <path d="M0 0L10 5L0 10Z" fill="#fb7185"/>
+    </marker>
+    <style>
+      .font{font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}
+      .h1{font-size:34px;font-weight:850;fill:#f8fafc}
+      .sub{font-size:15px;fill:#cbd5e1}
+      .eyebrow{font-size:11px;font-weight:850;letter-spacing:.08em;text-transform:uppercase}
+      .cardTitle{font-size:16px;font-weight:850;fill:#f8fafc}
+      .body{font-size:12px;fill:#cbd5e1}
+      .tiny{font-size:11px;fill:#94a3b8}
+      .badge{font-size:12px;font-weight:850;fill:#f8fafc}
+    </style>
   </defs>
-  <rect width="1600" height="760" fill="url(#bg)"/><rect width="1600" height="760" fill="url(#grid)"/>
+
+  <rect width="1600" height="820" fill="url(#bg)"/>
+  <rect width="1600" height="820" fill="url(#grid)"/>
+
   <g class="font">
-    <text x="64" y="64" class="h1">Agentic SOC Orchestrator</text><text x="64" y="94" class="sub">LangGraph or LangChain can run the playbook; deterministic skills own the evidence, policy checks, scoring, audit, and write gates.</text>
-    <rect x="64" y="132" width="1472" height="148" rx="22" fill="#0b1830" stroke="#2563eb"/><text x="94" y="168" class="eyebrow" fill="#93c5fd">Optional orchestration layer</text>
-    <g filter="url(#softShadow)"><rect x="94" y="194" width="196" height="56" rx="14" fill="#111827" stroke="#475569"/><text x="124" y="228" class="cardTitle">SOC agent</text><rect x="334" y="194" width="246" height="56" rx="14" fill="#0f2a3b" stroke="#22d3ee"/><text x="364" y="220" class="cardTitle">LangGraph DAG</text><text x="364" y="240" class="tiny">nodes · edges · conditions</text><rect x="624" y="194" width="230" height="56" rx="14" fill="#172033" stroke="#475569"/><text x="654" y="220" class="cardTitle">LLM options</text><text x="654" y="240" class="tiny">OpenAI · local · customer model</text><rect x="898" y="194" width="260" height="56" rx="14" fill="#172033" stroke="#475569"/><text x="928" y="220" class="cardTitle">Tool boundary</text><text x="928" y="240" class="tiny">MCP · CLI · CI · runner · library</text><rect x="1202" y="194" width="290" height="56" rx="14" fill="#172033" stroke="#475569"/><text x="1232" y="220" class="cardTitle">Policy context</text><text x="1232" y="240" class="tiny">caller allowlist · tenant · budget</text></g>
-    <path d="M290 222H326" stroke="#22d3ee" stroke-width="3" marker-end="url(#arrowCyan)" fill="none"/><path d="M580 222H616" stroke="#22d3ee" stroke-width="3" marker-end="url(#arrowCyan)" fill="none"/><path d="M854 222H890" stroke="#22d3ee" stroke-width="3" marker-end="url(#arrowCyan)" fill="none"/><path d="M1158 222H1194" stroke="#22d3ee" stroke-width="3" marker-end="url(#arrowCyan)" fill="none"/>
-    <rect x="64" y="318" width="1472" height="230" rx="22" fill="#052e2b" stroke="#0f766e"/><text x="94" y="354" class="eyebrow" fill="#5eead4">Deterministic skill pipeline</text>
-    <g filter="url(#softShadow)"><rect x="94" y="386" width="154" height="90" rx="14" fill="#0f172a" stroke="#34d399"/><text x="118" y="416" class="cardTitle">Ingest</text><text x="118" y="440" class="body">raw logs</text><text x="118" y="460" class="tiny">OCSF/native in</text><rect x="288" y="386" width="154" height="90" rx="14" fill="#0f172a" stroke="#34d399"/><text x="312" y="416" class="cardTitle">Normalize</text><text x="312" y="440" class="body">stable IDs</text><text x="312" y="460" class="tiny">schema contract</text><rect x="482" y="386" width="154" height="90" rx="14" fill="#0f172a" stroke="#34d399"/><text x="506" y="416" class="cardTitle">Enrich</text><text x="506" y="440" class="body">OSV · NVD</text><text x="506" y="460" class="tiny">EPSS · KEV</text><rect x="676" y="386" width="154" height="90" rx="14" fill="#0f172a" stroke="#34d399"/><text x="700" y="416" class="cardTitle">Correlate</text><text x="700" y="440" class="body">identity · tools</text><text x="700" y="460" class="tiny">lineage windows</text><rect x="870" y="386" width="154" height="90" rx="14" fill="#0f172a" stroke="#34d399"/><text x="894" y="416" class="cardTitle">Map</text><text x="894" y="440" class="body">MITRE · CVSS</text><text x="894" y="460" class="tiny">controls · confidence</text><rect x="1064" y="386" width="154" height="90" rx="14" fill="#0f172a" stroke="#34d399"/><text x="1088" y="416" class="cardTitle">Review</text><text x="1088" y="440" class="body">HITL gate</text><text x="1088" y="460" class="tiny">reason codes</text><rect x="1258" y="386" width="154" height="90" rx="14" fill="#0f172a" stroke="#34d399"/><text x="1282" y="416" class="cardTitle">Write back</text><text x="1282" y="440" class="body">audit · evidence</text><text x="1282" y="460" class="tiny">eval artifacts</text></g>
-    <path d="M248 431H280" stroke="#34d399" stroke-width="3" marker-end="url(#arrowGreen)" fill="none"/><path d="M442 431H474" stroke="#34d399" stroke-width="3" marker-end="url(#arrowGreen)" fill="none"/><path d="M636 431H668" stroke="#34d399" stroke-width="3" marker-end="url(#arrowGreen)" fill="none"/><path d="M830 431H862" stroke="#34d399" stroke-width="3" marker-end="url(#arrowGreen)" fill="none"/><path d="M1024 431H1056" stroke="#34d399" stroke-width="3" marker-end="url(#arrowGreen)" fill="none"/><path d="M1218 431H1250" stroke="#34d399" stroke-width="3" marker-end="url(#arrowGreen)" fill="none"/>
-    <rect x="64" y="586" width="1472" height="106" rx="22" fill="#2a1207" stroke="#d97706"/><text x="94" y="622" class="eyebrow" fill="#fed7aa">Trust rails that the orchestrator cannot bypass</text>
-    <rect x="94" y="642" width="190" height="32" rx="16" fill="#111827" stroke="#475569"/><text x="189" y="663" text-anchor="middle" class="badge">sandbox + RLIMIT</text><rect x="320" y="642" width="200" height="32" rx="16" fill="#111827" stroke="#475569"/><text x="420" y="663" text-anchor="middle" class="badge">allowlist intersection</text><rect x="556" y="642" width="190" height="32" rx="16" fill="#111827" stroke="#475569"/><text x="651" y="663" text-anchor="middle" class="badge">dry-run first</text><rect x="782" y="642" width="190" height="32" rx="16" fill="#111827" stroke="#475569"/><text x="877" y="663" text-anchor="middle" class="badge">HMAC audit chain</text><rect x="1008" y="642" width="190" height="32" rx="16" fill="#111827" stroke="#475569"/><text x="1103" y="663" text-anchor="middle" class="badge">analyst approval</text><rect x="1234" y="642" width="258" height="32" rx="16" fill="#111827" stroke="#475569"/><text x="1363" y="663" text-anchor="middle" class="badge">evaluation outputs</text>
-    <path d="M457 250V300C457 310 463 318 475 318H1335C1350 318 1358 330 1358 346V378" stroke="#22d3ee" stroke-width="2.5" marker-end="url(#arrowCyan)" fill="none" stroke-dasharray="8 7"/><path d="M1335 476V574" stroke="#34d399" stroke-width="2.5" marker-end="url(#arrowGreen)" fill="none" stroke-dasharray="8 7"/><path d="M1141 476V574" stroke="#fb7185" stroke-width="2.5" marker-end="url(#arrowRose)" fill="none" stroke-dasharray="8 7"/>
-    <text x="94" y="724" class="tiny" fill="#94a3b8">Invariant: LLM output can rank, summarize, and draft; repo skills own facts, schemas, policy verdicts, confidence, remediation gates, audit records, and replayable evidence.</text>
+    <text x="64" y="64" class="h1">Agentic SOC Orchestrator</text>
+    <text x="64" y="94" class="sub">LangGraph or LangChain owns workflow state and model choice; cloud-ai-security-skills owns facts, policy, confidence, audit, and write gates.</text>
+
+    <rect x="64" y="130" width="1472" height="144" rx="22" fill="#0b1830" stroke="#2563eb"/>
+    <text x="94" y="166" class="eyebrow" fill="#93c5fd">Optional workflow and agent layer</text>
+    <g filter="url(#softShadow)">
+      <rect x="94" y="192" width="196" height="54" rx="14" fill="#111827" stroke="#475569"/>
+      <text x="124" y="215" class="cardTitle">SOC operator</text>
+      <text x="124" y="235" class="tiny">role, tenant, allowlist</text>
+
+      <rect x="334" y="192" width="238" height="54" rx="14" fill="#0f2a3b" stroke="#22d3ee"/>
+      <text x="364" y="215" class="cardTitle">LangGraph DAG</text>
+      <text x="364" y="235" class="tiny">nodes, edges, conditions</text>
+
+      <rect x="616" y="192" width="254" height="54" rx="14" fill="#172033" stroke="#475569"/>
+      <text x="646" y="215" class="cardTitle">Model router</text>
+      <text x="646" y="235" class="tiny">small task model, local, customer LLM</text>
+
+      <rect x="914" y="192" width="260" height="54" rx="14" fill="#172033" stroke="#475569"/>
+      <text x="944" y="215" class="cardTitle">Tool boundary</text>
+      <text x="944" y="235" class="tiny">MCP, CLI, CI, runner, library</text>
+
+      <rect x="1218" y="192" width="288" height="54" rx="14" fill="#172033" stroke="#475569"/>
+      <text x="1248" y="215" class="cardTitle">Harness profile</text>
+      <text x="1248" y="235" class="tiny">budget, data source, approvals</text>
+    </g>
+    <path d="M290 219H326" stroke="#60a5fa" stroke-width="3" marker-end="url(#arrowBlue)" fill="none"/>
+    <path d="M572 219H608" stroke="#60a5fa" stroke-width="3" marker-end="url(#arrowBlue)" fill="none"/>
+    <path d="M870 219H906" stroke="#60a5fa" stroke-width="3" marker-end="url(#arrowBlue)" fill="none"/>
+    <path d="M1174 219H1210" stroke="#60a5fa" stroke-width="3" marker-end="url(#arrowBlue)" fill="none"/>
+
+    <rect x="64" y="306" width="1472" height="282" rx="22" fill="#052e2b" stroke="#0f766e"/>
+    <text x="94" y="342" class="eyebrow" fill="#5eead4">End-to-end pipeline over deterministic repo skills</text>
+
+    <g filter="url(#softShadow)">
+      <rect x="94" y="374" width="150" height="88" rx="14" fill="#0f172a" stroke="#34d399"/>
+      <text x="118" y="402" class="cardTitle">Source</text>
+      <text x="118" y="426" class="body">raw ingest</text>
+      <text x="118" y="446" class="tiny">or lake replay</text>
+
+      <rect x="286" y="374" width="150" height="88" rx="14" fill="#0f172a" stroke="#34d399"/>
+      <text x="310" y="402" class="cardTitle">Normalize</text>
+      <text x="310" y="426" class="body">OCSF/native</text>
+      <text x="310" y="446" class="tiny">stable IDs, hashes</text>
+
+      <rect x="478" y="374" width="150" height="88" rx="14" fill="#0f172a" stroke="#34d399"/>
+      <text x="502" y="402" class="cardTitle">Enrich</text>
+      <text x="502" y="426" class="body">OSV, NVD</text>
+      <text x="502" y="446" class="tiny">EPSS, KEV</text>
+
+      <rect x="670" y="374" width="150" height="88" rx="14" fill="#0f172a" stroke="#34d399"/>
+      <text x="694" y="402" class="cardTitle">Correlate</text>
+      <text x="694" y="426" class="body">identity, tools</text>
+      <text x="694" y="446" class="tiny">lineage windows</text>
+
+      <rect x="862" y="374" width="150" height="88" rx="14" fill="#0f172a" stroke="#34d399"/>
+      <text x="886" y="402" class="cardTitle">Confidence</text>
+      <text x="886" y="426" class="body">reason codes</text>
+      <text x="886" y="446" class="tiny">no model facts</text>
+
+      <rect x="1054" y="374" width="150" height="88" rx="14" fill="#0f172a" stroke="#34d399"/>
+      <text x="1078" y="402" class="cardTitle">Map</text>
+      <text x="1078" y="426" class="body">MITRE, CVSS</text>
+      <text x="1078" y="446" class="tiny">EPSS, KEV, controls</text>
+
+      <rect x="1246" y="374" width="150" height="88" rx="14" fill="#0b1830" stroke="#60a5fa"/>
+      <text x="1270" y="402" class="cardTitle">LLM triage</text>
+      <text x="1270" y="426" class="body">rank, summarize</text>
+      <text x="1270" y="446" class="tiny">schema gated</text>
+    </g>
+
+    <path d="M244 418H278" stroke="#34d399" stroke-width="3" marker-end="url(#arrowGreen)" fill="none"/>
+    <path d="M436 418H470" stroke="#34d399" stroke-width="3" marker-end="url(#arrowGreen)" fill="none"/>
+    <path d="M628 418H662" stroke="#34d399" stroke-width="3" marker-end="url(#arrowGreen)" fill="none"/>
+    <path d="M820 418H854" stroke="#34d399" stroke-width="3" marker-end="url(#arrowGreen)" fill="none"/>
+    <path d="M1012 418H1046" stroke="#34d399" stroke-width="3" marker-end="url(#arrowGreen)" fill="none"/>
+    <path d="M1204 418H1238" stroke="#60a5fa" stroke-width="3" marker-end="url(#arrowBlue)" fill="none"/>
+
+    <g filter="url(#softShadow)">
+      <rect x="286" y="498" width="166" height="56" rx="14" fill="#3b2403" stroke="#f59e0b"/>
+      <text x="316" y="521" class="cardTitle">Review</text>
+      <text x="316" y="541" class="tiny" fill="#fef3c7">HITL approval required</text>
+
+      <rect x="500" y="498" width="178" height="56" rx="14" fill="#4c0519" stroke="#fb7185"/>
+      <text x="530" y="521" class="cardTitle">Dry-run action</text>
+      <text x="530" y="541" class="tiny" fill="#fecdd3">idempotency key reused</text>
+
+      <rect x="726" y="498" width="178" height="56" rx="14" fill="#3b2403" stroke="#f59e0b"/>
+      <text x="756" y="521" class="cardTitle">Retry branch</text>
+      <text x="756" y="541" class="tiny" fill="#fef3c7">bounded retry only</text>
+
+      <rect x="952" y="498" width="178" height="56" rx="14" fill="#3b2403" stroke="#f59e0b"/>
+      <text x="982" y="521" class="cardTitle">Escalate</text>
+      <text x="982" y="541" class="tiny" fill="#fef3c7">terminal errors to human</text>
+
+      <rect x="1178" y="498" width="218" height="56" rx="14" fill="#111827" stroke="#94a3b8"/>
+      <text x="1208" y="521" class="cardTitle">Audit and eval</text>
+      <text x="1208" y="541" class="tiny">state hash, pass rate, writeback</text>
+    </g>
+    <path d="M1321 462V484C1321 492 1313 498 1303 498H452" stroke="#60a5fa" stroke-width="2.8" marker-end="url(#arrowBlue)" fill="none"/>
+    <path d="M452 526H492" stroke="#fb7185" stroke-width="3" marker-end="url(#arrowRose)" fill="none"/>
+    <path d="M678 526H718" stroke="#f59e0b" stroke-width="3" marker-end="url(#arrowAmber)" fill="none"/>
+    <path d="M589 554V572H1041V556" stroke="#f59e0b" stroke-width="2.6" marker-end="url(#arrowAmber)" fill="none" stroke-dasharray="7 7"/>
+    <path d="M815 498V480H1287V496" stroke="#f59e0b" stroke-width="2.6" marker-end="url(#arrowAmber)" fill="none"/>
+    <path d="M1130 526H1170" stroke="#f59e0b" stroke-width="3" marker-end="url(#arrowAmber)" fill="none" stroke-dasharray="7 7"/>
+
+    <rect x="64" y="626" width="1472" height="126" rx="22" fill="#2a1207" stroke="#d97706"/>
+    <text x="94" y="662" class="eyebrow" fill="#fed7aa">Trust rails the workflow cannot bypass</text>
+    <g>
+      <rect x="94" y="684" width="174" height="34" rx="17" fill="#111827" stroke="#475569"/>
+      <text x="181" y="706" text-anchor="middle" class="badge">sandbox + RLIMIT</text>
+      <rect x="298" y="684" width="198" height="34" rx="17" fill="#111827" stroke="#475569"/>
+      <text x="397" y="706" text-anchor="middle" class="badge">allowlist intersection</text>
+      <rect x="526" y="684" width="180" height="34" rx="17" fill="#111827" stroke="#475569"/>
+      <text x="616" y="706" text-anchor="middle" class="badge">token budgets</text>
+      <rect x="736" y="684" width="188" height="34" rx="17" fill="#111827" stroke="#475569"/>
+      <text x="830" y="706" text-anchor="middle" class="badge">integrity hashes</text>
+      <rect x="954" y="684" width="176" height="34" rx="17" fill="#111827" stroke="#475569"/>
+      <text x="1042" y="706" text-anchor="middle" class="badge">dry-run first</text>
+      <rect x="1160" y="684" width="170" height="34" rx="17" fill="#111827" stroke="#475569"/>
+      <text x="1245" y="706" text-anchor="middle" class="badge">HMAC audit</text>
+      <rect x="1360" y="684" width="146" height="34" rx="17" fill="#111827" stroke="#475569"/>
+      <text x="1433" y="706" text-anchor="middle" class="badge">HITL gates</text>
+    </g>
+
+    <path d="M453 246V294C453 302 460 306 474 306H1321V366" stroke="#60a5fa" stroke-width="2.5" marker-end="url(#arrowBlue)" fill="none" stroke-dasharray="8 7"/>
+    <path d="M743 246V286C743 298 753 306 770 306H1321" stroke="#60a5fa" stroke-width="2.5" fill="none" stroke-dasharray="8 7"/>
+    <path d="M1287 554V618" stroke="#34d399" stroke-width="2.5" marker-end="url(#arrowGreen)" fill="none" stroke-dasharray="8 7"/>
+
+    <text x="94" y="786" class="tiny" fill="#94a3b8">Invariant: LLM output can rank, summarize, and draft. Repo skills own facts, schemas, confidence, mappings, idempotency, approval state, API-error routing, audit records, and replayable evidence.</text>
   </g>
 </svg>

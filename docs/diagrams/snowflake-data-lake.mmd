@@ -13,8 +13,8 @@ flowchart LR
     classDef policy fill:#111827,stroke:#475569,color:#cbd5e1
 
     SIG["Covered signals<br/>cloud · identity · SaaS · Kubernetes · MCP"]:::signal
-    ING["Normalize<br/>22 ingest skills<br/>OCSF 1.8 JSONL"]:::write
-    SINK["Write<br/>sink-snowflake-jsonl<br/>append-only · dry-run default"]:::write
+    ING["Normalize<br/>22 ingest skills<br/>OCSF 1.8 JSONL · stable IDs"]:::write
+    SINK["Write<br/>sink-snowflake-jsonl<br/>append-only · dry-run default · identifier validated"]:::write
 
     subgraph SNOW["Snowflake account — security_db.ops"]
       direction TB
@@ -29,7 +29,7 @@ flowchart LR
     ART["Operator artifacts<br/>findings · SARIF · attack-flow · dashboards"]:::output
     HITL["HITL response<br/>approved window"]:::audit
     AUDIT["Audit write-back<br/>remediation and MCP records"]:::audit
-    BOUNDARY["Customer-owned boundary<br/>account · warehouse · grants · retention · row policy"]:::policy
+    BOUNDARY["Customer-owned boundary<br/>account · warehouse · grants · retention · row policy · credentials"]:::policy
 
     SIG --> ING --> SINK --> TABLES
     TABLES --> RLS --> DT
