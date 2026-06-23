@@ -116,9 +116,9 @@ Then comes the **maintenance tax**:
 - **Every vendor schema change** (Snowflake adds a column, Okta retires
   an event type, Entra renames a field) is a contract change. We see
   it once across the OSS commons; a fork sees it per-team.
-- **The five-surface harness** (CLI + CI + MCP + webhook + cloud-runner)
+- **The six-surface harness** (CLI + CI + MCP + webhook + library + cloud-runner)
   has to evolve together. Slip one surface and the contract drifts.
-  Same `SKILL.md` runs all five here; a fork that picks two has to
+  Same `SKILL.md` runs all six here; a fork that picks two has to
   port back when it needs the third.
 
 The OSS commons is the real argument against a fork: shared maintenance

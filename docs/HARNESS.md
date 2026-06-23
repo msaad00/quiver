@@ -14,9 +14,9 @@ Read next:
 
 Visuals: [`diagrams/agent-topology.mmd`](diagrams/agent-topology.mmd) renders the full surface set; [`diagrams/mcp-trust-boundary.mmd`](diagrams/mcp-trust-boundary.mmd) traces the wrapper lifecycle; [`diagrams/pipeline-blast-radius.mmd`](diagrams/pipeline-blast-radius.mmd) colour-codes each layer by capability.
 
-## Five surfaces, one bundle
+## Six surfaces, one bundle
 
-The same `SKILL.md + src/ + tests/` runs unchanged behind all five
+The same `SKILL.md + src/ + tests/` runs unchanged behind all six
 surfaces. None of them forks the skill model:
 
 | Surface | Where | Use when |
@@ -30,7 +30,7 @@ surfaces. None of them forks the skill model:
 
 ## Optional agentic SOC harness
 
-LangGraph / LangChain / SOAR sit above the five skill surfaces. They may own
+LangGraph / LangChain / SOAR sit above the six skill surfaces. They may own
 workflow state, model choice, routing, retries, checkpointing, escalation, and
 analyst-note drafting, but they do not own security facts or write authority.
 
