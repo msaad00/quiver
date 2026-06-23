@@ -120,6 +120,15 @@ normalizer; `records_format=raw_vendor` keeps the source query followed by the
 ingest/normalize skill. Queries stay read-only and credentials remain outside
 the profile.
 
+Profiles also declare `runtime.mcp_execution`. The shipped profiles use
+`mode=plan_only`, `transport=mcp_stdio_jsonrpc`,
+`execute_planned_calls=false`, and `allow_write_calls=false`. The graph still
+builds exact MCP `tools/call` JSON-RPC payloads, but the harness emits a
+separate `mcp_execution` ledger showing those planned calls were skipped by
+policy. Operator-owned integrations can opt a generated profile into
+`mode=operator_stdio` for read-only call execution through their own MCP
+transport; write-capable execution remains disabled in the example schema.
+
 `HARNESS.md` is therefore the readable operator contract; the graph nodes,
 adapter gates, runtime wrapper, schemas, checkpoint replay, and eval runner are
 the executable harness.
@@ -143,8 +152,10 @@ The drift checker regenerates the diagram from `pipeline_contract()` in memory,
 validates closed schemas and stock profiles, verifies metadata-only preflight
 policy, runs the importable wrapper validation path, checks harness docs/CI
 references, and scans the harness docs/profiles for PAT/API-key/password
-literals. It remains offline: no cloud credentials, model calls, approval
-tokens, cloud APIs, or remediation execution.
+literals. It also verifies that stock profiles declare MCP execution policy and
+do not enable write-capable execution. It remains offline: no cloud
+credentials, model calls, approval tokens, cloud APIs, or remediation
+execution.
 
 The LLM/agent harness records provider/model/mode, model-policy selection, and
 token-budget policy in state and audit output. `model_policy` selects the

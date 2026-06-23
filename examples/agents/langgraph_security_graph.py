@@ -42,7 +42,7 @@ from harness_adapters import (
     select_triage_adapter,
     validate_adapter_recommendation,
 )
-from harness_mcp_bridge import build_mcp_call_plan
+from harness_mcp_bridge import build_mcp_call_plan, execute_mcp_call_plan
 
 ALLOWED_SKILLS_READ_ONLY_LIST = [
     "ingest-cloudtrail-ocsf",
@@ -303,6 +303,7 @@ class GraphState(TypedDict, total=False):
     token_budget_usage: dict[str, Any]
     data_source_decision: dict[str, Any]
     mcp_call_plan: list[dict[str, Any]]
+    mcp_execution: dict[str, Any]
     audit_record: dict[str, Any]
     eval_record: EvalRecord
     trace: list[WorkflowStage]
@@ -509,6 +510,13 @@ def _default_harness_profile() -> HarnessProfile:
                 "records_format": "raw_vendor",
                 "query": "",
             },
+            "mcp_execution": {
+                "mode": "plan_only",
+                "transport": "mcp_stdio_jsonrpc",
+                "execute_planned_calls": False,
+                "allow_write_calls": False,
+                "max_calls": 0,
+            },
         },
     }
 
@@ -595,6 +603,10 @@ def load_harness_profile(path_text: str | None = None) -> HarnessProfile:
     profile["runtime"]["security_data_source"] = {
         **default["runtime"]["security_data_source"],
         **payload.get("runtime", {}).get("security_data_source", {}),
+    }
+    profile["runtime"]["mcp_execution"] = {
+        **default["runtime"]["mcp_execution"],
+        **payload.get("runtime", {}).get("mcp_execution", {}),
     }
     profile["agent_roster"] = _merge_agent_roster(payload.get("agent_roster"))
     return profile
@@ -1614,6 +1626,10 @@ def audit_eval_writeback_node(state: GraphState) -> GraphState:
         state=state,
         pipeline_contract=pipeline_contract(state),
     )
+    state["mcp_execution"] = execute_mcp_call_plan(
+        call_plan=state["mcp_call_plan"],
+        profile=state.get("harness_profile"),
+    )
     summary_payload = {
         "caller_context": state.get("caller_context"),
         "harness_profile": {
@@ -1634,6 +1650,7 @@ def audit_eval_writeback_node(state: GraphState) -> GraphState:
         "agent_recommendations": state.get("agent_recommendations"),
         "llm_validation": state.get("llm_validation"),
         "mcp_call_plan": state.get("mcp_call_plan"),
+        "mcp_execution": state.get("mcp_execution"),
         "integrity": {
             key: value
             for key, value in (state.get("integrity") or {}).items()
@@ -1672,6 +1689,8 @@ def audit_eval_writeback_node(state: GraphState) -> GraphState:
             1 for call in state.get("mcp_call_plan") or []
             if str(call.get("status", "")).startswith("blocked_")
         ),
+        "mcp_executed_call_count": (state.get("mcp_execution") or {}).get("executed_call_count", 0),
+        "mcp_write_executed_count": (state.get("mcp_execution") or {}).get("write_executed_count", 0),
         "llm_adapter_accepted": sum(1 for record in llm_validation if record["status"] == "accepted"),
         "llm_adapter_rejected": sum(1 for record in llm_validation if record["status"] == "rejected"),
         "llm_token_budget_status": (state.get("token_budget_usage") or {}).get("status"),
@@ -1704,6 +1723,7 @@ def audit_eval_writeback_node(state: GraphState) -> GraphState:
             "llm_token_budget_gate",
             "multi_agent_ledger",
             "mcp_call_plan",
+            "mcp_execution_policy",
             "conditional_edges",
         ],
         "status": eval_status,
@@ -1833,6 +1853,7 @@ def summarize(final: GraphState) -> dict[str, Any]:
         "agent_recommendations": final.get("agent_recommendations"),
         "llm_validation": final.get("llm_validation"),
         "mcp_call_plan": final.get("mcp_call_plan"),
+        "mcp_execution": final.get("mcp_execution"),
         "llm_evidence_cards": final.get("llm_evidence_cards"),
         "token_budget_usage": final.get("token_budget_usage"),
         "review": final.get("review_decision"),

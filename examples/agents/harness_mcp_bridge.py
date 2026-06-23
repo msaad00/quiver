@@ -9,6 +9,7 @@ the graph would send, while staying offline for tests and docs.
 from __future__ import annotations
 
 import json
+from collections.abc import Callable
 from typing import Any, Mapping
 
 CALLER_CONTEXT_KEYS = frozenset({
@@ -46,6 +47,8 @@ SOURCE_SKILLS = {
     "source-clickhouse-query",
     "source-databricks-query",
 }
+EXECUTION_MODES = {"plan_only", "operator_stdio"}
+MCP_EXECUTION_SCHEMA_VERSION = "langgraph-mcp-execution-v1"
 
 
 def _stable_json(value: Any) -> str:
@@ -274,3 +277,153 @@ def build_mcp_call_plan(
                 "request": request,
             })
     return plan
+
+
+def _execution_config(profile: Mapping[str, Any] | None) -> dict[str, Any]:
+    runtime = (profile or {}).get("runtime") or {}
+    configured = runtime.get("mcp_execution") or {}
+    mode = configured.get("mode") or "plan_only"
+    if mode not in EXECUTION_MODES:
+        mode = "plan_only"
+    return {
+        "mode": mode,
+        "transport": configured.get("transport") or "mcp_stdio_jsonrpc",
+        "execute_planned_calls": bool(configured.get("execute_planned_calls", False)),
+        "allow_write_calls": bool(configured.get("allow_write_calls", False)),
+        "max_calls": int(configured.get("max_calls", 0)),
+    }
+
+
+def _jsonrpc_error_classification(error: Mapping[str, Any]) -> str:
+    code = int(error.get("code") or 0)
+    message = str(error.get("message") or "").lower()
+    retryable_markers = ("timeout", "rate limit", "temporarily unavailable", "try again", "503", "429")
+    if code in {-32000, -32001, -32002} or any(marker in message for marker in retryable_markers):
+        return "retryable"
+    return "terminal"
+
+
+def execute_mcp_call_plan(
+    *,
+    call_plan: list[dict[str, Any]],
+    profile: Mapping[str, Any] | None,
+    transport: Callable[[dict[str, Any]], Mapping[str, Any]] | None = None,
+) -> dict[str, Any]:
+    """Evaluate or execute a planned MCP call set under operator-owned policy.
+
+    The default shipped profile is `plan_only`, so this function produces an
+    execution ledger without opening an MCP subprocess. Downstream harnesses can
+    pass a transport callable that owns stdio/session lifecycle and returns a
+    JSON-RPC response. Write-capable calls are never executed unless the
+    operator config explicitly opts into that capability.
+    """
+    config = _execution_config(profile)
+    results: list[dict[str, Any]] = []
+    executed_count = 0
+    planned_calls = [call for call in call_plan if call.get("status") == "planned"]
+    for call in call_plan:
+        request = call.get("request")
+        base = {
+            "node": call.get("node"),
+            "skill": call.get("skill"),
+            "request_id": (request or {}).get("id") if isinstance(request, dict) else None,
+            "write_capable": bool(call.get("write_capable")),
+        }
+        if call.get("status") != "planned":
+            results.append({
+                **base,
+                "status": "not_executed",
+                "reason": f"call plan status is {call.get('status')}",
+            })
+            continue
+        if config["mode"] == "plan_only":
+            results.append({
+                **base,
+                "status": "skipped_plan_only",
+                "reason": "profile runtime.mcp_execution.mode is plan_only",
+            })
+            continue
+        if not config["execute_planned_calls"]:
+            results.append({
+                **base,
+                "status": "blocked_execution_disabled",
+                "reason": "execute_planned_calls is false",
+            })
+            continue
+        if config["max_calls"] and executed_count >= config["max_calls"]:
+            results.append({
+                **base,
+                "status": "blocked_max_calls",
+                "reason": "max_calls reached",
+            })
+            continue
+        if call.get("write_capable") and not config["allow_write_calls"]:
+            results.append({
+                **base,
+                "status": "blocked_write_execution",
+                "reason": "write-capable MCP execution is disabled",
+            })
+            continue
+        if transport is None:
+            results.append({
+                **base,
+                "status": "blocked_no_transport",
+                "reason": "no operator-owned MCP transport supplied",
+            })
+            continue
+        if not isinstance(request, dict) or request.get("method") != "tools/call":
+            results.append({
+                **base,
+                "status": "blocked_invalid_request",
+                "reason": "planned request is not a tools/call JSON-RPC object",
+            })
+            continue
+
+        try:
+            response = dict(transport(request))
+        except Exception as exc:  # pragma: no cover - covered by direct unit path
+            results.append({
+                **base,
+                "status": "transport_error",
+                "reason": exc.__class__.__name__,
+                "classification": "retryable",
+            })
+            continue
+        executed_count += 1
+        error = response.get("error")
+        if isinstance(error, dict):
+            results.append({
+                **base,
+                "status": "api_error",
+                "reason": str(error.get("message") or "jsonrpc_error"),
+                "classification": _jsonrpc_error_classification(error),
+                "response_id": response.get("id"),
+            })
+        else:
+            results.append({
+                **base,
+                "status": "executed",
+                "reason": "operator transport returned JSON-RPC result",
+                "response_id": response.get("id"),
+            })
+
+    status_counts: dict[str, int] = {}
+    for result in results:
+        status = str(result.get("status") or "unknown")
+        status_counts[status] = status_counts.get(status, 0) + 1
+    return {
+        "schema_version": MCP_EXECUTION_SCHEMA_VERSION,
+        "mode": config["mode"],
+        "transport": config["transport"],
+        "execute_planned_calls": config["execute_planned_calls"],
+        "allow_write_calls": config["allow_write_calls"],
+        "max_calls": config["max_calls"],
+        "planned_call_count": len(planned_calls),
+        "executed_call_count": status_counts.get("executed", 0) + status_counts.get("api_error", 0),
+        "write_executed_count": sum(
+            1 for result in results
+            if result.get("write_capable") and result.get("status") in {"executed", "api_error"}
+        ),
+        "status_counts": status_counts,
+        "results": results,
+    }

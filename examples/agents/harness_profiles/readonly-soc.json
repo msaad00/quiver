@@ -89,6 +89,13 @@
       "source_skill": "source-snowflake-query",
       "records_format": "ocsf",
       "query": "SELECT payload FROM security.events_sink WHERE class_uid = 6003 LIMIT 100"
+    },
+    "mcp_execution": {
+      "mode": "plan_only",
+      "transport": "mcp_stdio_jsonrpc",
+      "execute_planned_calls": false,
+      "allow_write_calls": false,
+      "max_calls": 0
     }
   }
 }

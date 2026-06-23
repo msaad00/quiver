@@ -188,6 +188,24 @@ def validate_harness_summary(summary: Mapping[str, Any]) -> tuple[str, ...]:
     if audit.get("mcp_planned_call_count") != len(planned_mcp_calls):
         errors.append("audit MCP planned call count must match call plan")
 
+    mcp_execution = summary.get("mcp_execution") or {}
+    if mcp_execution.get("schema_version") != "langgraph-mcp-execution-v1":
+        errors.append("summary must include MCP execution report")
+    if mcp_execution.get("planned_call_count") != len(planned_mcp_calls):
+        errors.append("MCP execution planned count must match call plan")
+    if mcp_execution.get("write_executed_count", 0) > 0:
+        errors.append("example harness must not execute write-capable MCP calls")
+    if mcp_execution.get("mode") == "plan_only":
+        if mcp_execution.get("executed_call_count") != 0:
+            errors.append("plan_only MCP execution must not execute calls")
+        status_counts = mcp_execution.get("status_counts") or {}
+        if status_counts.get("skipped_plan_only", 0) != len(planned_mcp_calls):
+            errors.append("plan_only MCP execution must skip every planned call")
+    if audit.get("mcp_executed_call_count") != mcp_execution.get("executed_call_count"):
+        errors.append("audit MCP executed count must match execution report")
+    if audit.get("mcp_write_executed_count") != mcp_execution.get("write_executed_count"):
+        errors.append("audit MCP write executed count must match execution report")
+
     contract = summary.get("pipeline_contract") or {}
     triage_nodes = [
         node

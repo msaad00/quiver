@@ -226,6 +226,15 @@ def _check_profiles() -> DriftCheck:
                 failures.append(f"{profile_path.name}: lake replay must use a source-* query skill")
             if data_source.get("backend") not in {"snowflake", "clickhouse", "databricks"}:
                 failures.append(f"{profile_path.name}: lake replay backend must be a shipped warehouse source")
+        mcp_execution = profile["runtime"].get("mcp_execution") or {}
+        if mcp_execution.get("transport") != "mcp_stdio_jsonrpc":
+            failures.append(f"{profile_path.name}: MCP execution transport must be stdio JSON-RPC")
+        if mcp_execution.get("mode") == "plan_only" and mcp_execution.get("execute_planned_calls") is not False:
+            failures.append(f"{profile_path.name}: plan_only must not execute planned MCP calls")
+        if mcp_execution.get("allow_write_calls") is not False:
+            failures.append(f"{profile_path.name}: write-capable MCP execution must stay disabled")
+        if mcp_execution.get("max_calls", 0) < 0:
+            failures.append(f"{profile_path.name}: MCP max_calls must be non-negative")
         if profile["approval_policy"].get("remediation_requires_approval_context") is not True:
             failures.append(f"{profile_path.name}: remediation must require approval context")
         if profile["token_budget"].get("fallback_on_budget_exceeded") is not True:

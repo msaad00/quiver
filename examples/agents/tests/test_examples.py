@@ -746,6 +746,12 @@ class TestLangGraphSocWorkflow:
         assert planned_remediation_call["request"]["method"] == "tools/call"
         assert planned_remediation_call["request"]["params"]["arguments"]["_approval_context"]["ticket_id"] == "SEC-LANGGRAPH-1"
         assert "--apply" not in planned_remediation_call["request"]["params"]["arguments"]["args"]
+        assert summary["mcp_execution"]["schema_version"] == "langgraph-mcp-execution-v1"
+        assert summary["mcp_execution"]["mode"] == "plan_only"
+        assert summary["mcp_execution"]["planned_call_count"] == summary["audit"]["mcp_planned_call_count"]
+        assert summary["mcp_execution"]["executed_call_count"] == 0
+        assert summary["mcp_execution"]["write_executed_count"] == 0
+        assert summary["mcp_execution"]["status_counts"]["skipped_plan_only"] == summary["audit"]["mcp_planned_call_count"]
         assert summary["idempotency"]["remediation_key"] == summary["remediation"]["idempotency_key"]
         assert summary["integrity"]["approved_payload_hash"]
         assert summary["audit"]["idempotency_key"] == summary["remediation"]["idempotency_key"]
@@ -792,6 +798,64 @@ class TestLangGraphSocWorkflow:
         assert "write_intent" in triage_agent["forbidden_outputs"]
         assert summary["llm_validation"][0]["status"] == "fallback"
         assert summary["llm_validation"][0]["reason"] == "no_adapter_output"
+
+    def test_mcp_execution_bridge_executes_readonly_and_blocks_writes(self):
+        sys.path.insert(0, str(EXAMPLES))
+        try:
+            from harness_mcp_bridge import execute_mcp_call_plan
+        finally:
+            sys.path.pop(0)
+
+        call_plan = [
+            {
+                "node": "ingest",
+                "skill": "source-snowflake-query",
+                "status": "planned",
+                "write_capable": False,
+                "request": {
+                    "jsonrpc": "2.0",
+                    "id": "wf:ingest:source-snowflake-query",
+                    "method": "tools/call",
+                    "params": {"name": "source-snowflake-query", "arguments": {}},
+                },
+            },
+            {
+                "node": "remediate",
+                "skill": "iam-departures-aws",
+                "status": "planned",
+                "write_capable": True,
+                "request": {
+                    "jsonrpc": "2.0",
+                    "id": "wf:remediate:iam-departures-aws",
+                    "method": "tools/call",
+                    "params": {"name": "iam-departures-aws", "arguments": {}},
+                },
+            },
+        ]
+        profile = {
+            "runtime": {
+                "mcp_execution": {
+                    "mode": "operator_stdio",
+                    "transport": "mcp_stdio_jsonrpc",
+                    "execute_planned_calls": True,
+                    "allow_write_calls": False,
+                    "max_calls": 10,
+                }
+            }
+        }
+
+        def fake_transport(request: dict) -> dict:
+            return {"jsonrpc": "2.0", "id": request["id"], "result": {"ok": True}}
+
+        report = execute_mcp_call_plan(
+            call_plan=call_plan,
+            profile=profile,
+            transport=fake_transport,
+        )
+        assert report["executed_call_count"] == 1
+        assert report["write_executed_count"] == 0
+        assert report["status_counts"] == {"executed": 1, "blocked_write_execution": 1}
+        assert report["results"][1]["skill"] == "iam-departures-aws"
 
     def test_token_budget_overage_uses_deterministic_fallback(self):
         summary, _ = self._run(extra_env={
@@ -1235,6 +1299,11 @@ class TestLangGraphContractSchemas:
             if data_source.get("mode") == "security_lake_replay":
                 assert data_source.get("source_skill", "").startswith("source-")
                 assert data_source.get("backend") in {"snowflake", "clickhouse", "databricks"}
+            mcp_execution = profile["runtime"].get("mcp_execution") or {}
+            assert mcp_execution["transport"] == "mcp_stdio_jsonrpc"
+            assert mcp_execution["allow_write_calls"] is False
+            if mcp_execution["mode"] == "plan_only":
+                assert mcp_execution["execute_planned_calls"] is False
             if "token_budget" in profile:
                 assert profile["token_budget"]["compression_required"] is True
                 assert profile["token_budget"]["fallback_on_budget_exceeded"] is True
@@ -1434,6 +1503,13 @@ class TestLangGraphHarnessSetup:
             "records_format": "ocsf",
             "query": "SELECT payload FROM security.events_sink LIMIT 50",
         }
+        assert profile["runtime"]["mcp_execution"] == {
+            "mode": "plan_only",
+            "transport": "mcp_stdio_jsonrpc",
+            "execute_planned_calls": False,
+            "allow_write_calls": False,
+            "max_calls": 0,
+        }
         roster = {agent["agent_id"]: agent for agent in profile["agent_roster"]}
         assert roster["triage-agent"] == {
             "agent_id": "triage-agent",
@@ -1478,10 +1554,51 @@ class TestLangGraphHarnessSetup:
             "--query",
             "SELECT payload FROM security.events_sink LIMIT 50",
         ]
+        assert summary["mcp_execution"]["mode"] == "plan_only"
+        assert summary["mcp_execution"]["executed_call_count"] == 0
         triage_agent = next(agent for agent in summary["agents"] if agent["agent_id"] == "triage-agent")
         assert triage_agent["model_tier"] == "small"
         assert triage_agent["skill_scope"] == []
         assert summary["review"]["status"] == "blocked"
+
+    def test_setup_generator_can_mark_readonly_mcp_stdio_execution(self, tmp_path: Path):
+        profile_path = tmp_path / "acme-readonly-stdio.json"
+        env_path = tmp_path / "acme-readonly-stdio.env"
+        result = subprocess.run(
+            [
+                sys.executable,
+                str(self.SCRIPT),
+                "--role",
+                "readonly-soc",
+                "--profile-id",
+                "acme-readonly-stdio",
+                "--email",
+                "analyst@example.com",
+                "--mcp-execution-mode",
+                "operator_stdio",
+                "--mcp-max-calls",
+                "2",
+                "--output-profile",
+                str(profile_path),
+                "--output-env",
+                str(env_path),
+            ],
+            capture_output=True,
+            text=True,
+            timeout=30,
+            check=False,
+        )
+        assert result.returncode == 0, result.stderr
+        profile = json.loads(profile_path.read_text(encoding="utf-8"))
+        assert profile["runtime"]["mcp_execution"] == {
+            "mode": "operator_stdio",
+            "transport": "mcp_stdio_jsonrpc",
+            "execute_planned_calls": True,
+            "allow_write_calls": False,
+            "max_calls": 2,
+        }
+        schema = json.loads(self.PROFILE_SCHEMA.read_text(encoding="utf-8"))
+        assert _schema_errors(schema, profile) == []
 
     def test_setup_generator_dry_run_profile_still_requires_approval(self, tmp_path: Path):
         profile_path = tmp_path / "acme-remediation-dryrun.json"

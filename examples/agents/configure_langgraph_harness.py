@@ -134,10 +134,22 @@ def _security_data_source(args: argparse.Namespace) -> dict[str, str]:
     }
 
 
+def _mcp_execution(args: argparse.Namespace) -> dict[str, Any]:
+    return {
+        "mode": args.mcp_execution_mode,
+        "transport": "mcp_stdio_jsonrpc",
+        "execute_planned_calls": args.mcp_execution_mode == "operator_stdio",
+        "allow_write_calls": False,
+        "max_calls": args.mcp_max_calls,
+    }
+
+
 def build_profile(args: argparse.Namespace) -> dict[str, Any]:
     role: HarnessRole = args.role
     if not PROFILE_ID_RE.match(args.profile_id):
         raise ValueError("profile_id must match ^[a-z0-9][a-z0-9-]{1,63}$")
+    if args.mcp_max_calls < 0:
+        raise ValueError("--mcp-max-calls must be 0 or greater")
     allowed_skills = _profile_allowed_skills(role, args.allowed_skill)
     llm_mode = "external_llm_optional" if args.external_llm else "deterministic_offline"
     session_id = args.session_id or f"{args.profile_id}-session"
@@ -201,6 +213,7 @@ def build_profile(args: argparse.Namespace) -> dict[str, Any]:
             "dry_run_default": True,
             "apply_supported": False,
             "security_data_source": _security_data_source(args),
+            "mcp_execution": _mcp_execution(args),
         },
     }
     _assert_no_secret_material(profile, path="profile")
@@ -258,6 +271,18 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         help="Shape returned by the lake replay query",
     )
     parser.add_argument("--lake-query", help="Read-only SELECT/WITH/SHOW/DESCRIBE query for lake replay")
+    parser.add_argument(
+        "--mcp-execution-mode",
+        choices=["plan_only", "operator_stdio"],
+        default="plan_only",
+        help="Plan MCP calls only, or mark planned read-only calls eligible for an operator-owned stdio transport",
+    )
+    parser.add_argument(
+        "--mcp-max-calls",
+        type=int,
+        default=0,
+        help="Maximum planned MCP calls an operator-owned transport may execute; 0 means no harness cap",
+    )
     parser.add_argument("--external-llm", action="store_true")
     parser.add_argument("--llm-provider", default="deterministic-local")
     parser.add_argument("--llm-model", default="policy-bounded-triage-v1")

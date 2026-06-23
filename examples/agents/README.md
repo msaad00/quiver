@@ -143,6 +143,18 @@ python examples/agents/run_langgraph_harness.py \
   --profile examples/agents/harness_profiles/dry-run-remediation.json \
   --approval-context /path/to/approval-context.json
 
+# MCP execution is explicit. Shipped profiles emit mcp_call_plan plus
+# mcp_execution=plan_only; generated profiles can mark read-only calls eligible
+# for an operator-owned stdio transport without enabling write execution.
+python examples/agents/configure_langgraph_harness.py \
+  --role readonly-soc \
+  --profile-id acme-readonly-stdio \
+  --email analyst@example.com \
+  --mcp-execution-mode operator_stdio \
+  --mcp-max-calls 3 \
+  --output-profile artifacts/acme-readonly-stdio.json \
+  --output-env artifacts/acme-readonly-stdio.env
+
 # Approved path: remediation reaches dry-run only and writes audit/eval output.
 DEMO_HARNESS_PROFILE=examples/agents/harness_profiles/dry-run-remediation.json \
 DEMO_APPROVE=yes \

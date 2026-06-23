@@ -90,6 +90,13 @@
       "source_skill": "ingest-cloudtrail-ocsf",
       "records_format": "raw_vendor",
       "query": ""
+    },
+    "mcp_execution": {
+      "mode": "plan_only",
+      "transport": "mcp_stdio_jsonrpc",
+      "execute_planned_calls": false,
+      "allow_write_calls": false,
+      "max_calls": 0
     }
   }
 }

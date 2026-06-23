@@ -53,11 +53,18 @@ Profiles control:
   fixed and re-applies no-write/HITL guardrails.
 - `approval_policy`: documentation of the HITL source; profiles never grant
   approval by themselves.
+- `runtime.security_data_source`: whether the run ingests raw events or
+  replays an existing Snowflake/ClickHouse/Databricks security lake.
+- `runtime.mcp_execution`: whether planned MCP calls are only recorded
+  (`plan_only`, the shipped default) or eligible for an operator-owned stdio
+  transport. Example profiles keep `allow_write_calls=false`.
 
 At runtime the harness emits `agent_policy`, which intersects the roster skill
 scope with `allowed_skills`. Approval alone is not enough to reach dry-run
 remediation; the remediation skill must also be present in the effective
-allowlist.
+allowlist. It also emits `mcp_call_plan` and `mcp_execution` separately, so
+operators can distinguish intended MCP calls from calls actually executed by a
+live transport.
 
 Included profiles:
 

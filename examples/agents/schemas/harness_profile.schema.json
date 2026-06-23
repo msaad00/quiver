@@ -332,6 +332,40 @@
               "type": "string"
             }
           }
+        },
+        "mcp_execution": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "mode",
+            "transport",
+            "execute_planned_calls",
+            "allow_write_calls"
+          ],
+          "properties": {
+            "mode": {
+              "type": "string",
+              "enum": [
+                "plan_only",
+                "operator_stdio"
+              ]
+            },
+            "transport": {
+              "type": "string",
+              "const": "mcp_stdio_jsonrpc"
+            },
+            "execute_planned_calls": {
+              "type": "boolean"
+            },
+            "allow_write_calls": {
+              "type": "boolean",
+              "const": false
+            },
+            "max_calls": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
         }
       }
     }
