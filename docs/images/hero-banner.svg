@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1280" height="540" viewBox="0 0 1280 540" role="img" aria-labelledby="title desc">
   <title id="title">agentic security skills for cloud and AI — production-grade security skills for cloud and AI systems</title>
-  <desc id="desc">Hero banner for the agentic security skills for cloud and AI repository (cloud-ai-security-skills). Left panel shows the wordmark, tagline, and capability pills for 131 shipped skill bundles, OCSF 1.8, 143 CIS + NIST AI RMF benchmark checks, MITRE ATT&amp;CK, MITRE ATLAS, OWASP Top 10, OWASP LLM Top 10 framework coverage, MCP-audited tool calls, and HITL dual-audited remediation. Right panel shows the current shipped layer counts: 22 ingest, 5 discover, 71 detect, 12 evaluate, 12 remediate, 2 view, 3 output, and 4 source adapters. A footer strip shows vendor coverage across AWS, GCP, Azure, Kubernetes, Okta, Entra, Google Workspace, Slack, Workday, Salesforce, SAP, Snowflake, Databricks, ClickHouse, and MCP plus access surfaces for CLI, CI, MCP, and runners.</desc>
+  <desc id="desc">Hero banner for the agentic security skills for cloud and AI repository (cloud-ai-security-skills). Left panel shows the wordmark, tagline, and capability pills for 131 shipped skill bundles, OCSF 1.8, 143 CIS + NIST AI RMF benchmark checks, MITRE ATT&amp;CK, MITRE ATLAS, OWASP Top 10, OWASP LLM Top 10 framework coverage, MCP-audited tool calls, and HITL dual-audited remediation. Right panel shows the current shipped layer counts: 22 ingest, 5 discover, 71 detect, 12 evaluate, 12 remediate, 2 view, 3 output, and 4 source adapters. A footer strip shows vendor coverage across AWS, GCP, Azure, Kubernetes, Okta, Entra, Google Workspace, Slack, Workday, Salesforce, SAP, Snowflake, Databricks, ClickHouse, and MCP plus access surfaces for CLI, CI, MCP, webhook, library, and runners.</desc>
 
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
@@ -58,7 +58,7 @@
     <g transform="translate(80,192)">
       <rect x="0" y="0" width="620" height="68" rx="14" fill="#0a1326" stroke="#1e293b"/>
       <text x="20" y="22" fill="#e5eefb" font-size="14" font-weight="700">Production-grade security skills for cloud and AI systems.</text>
-      <text x="20" y="42" fill="#94a3b8" font-size="12">One bundle, four surfaces — CLI, CI, MCP, and runners share one skill contract.</text>
+      <text x="20" y="42" fill="#94a3b8" font-size="12">One bundle, six surfaces — CLI, CI, MCP, webhook, library, and runners share one contract.</text>
       <text x="20" y="60" fill="#94a3b8" font-size="12">OCSF for interop; native for state, evidence, and audit.</text>
     </g>
 
@@ -202,19 +202,23 @@
     </g>
 
     <!-- Access surfaces — label inside its own pill -->
-    <g transform="translate(752,500)">
+    <g transform="translate(650,500)">
       <rect x="0" y="0" width="148" height="28" rx="14" fill="#0a1326" stroke="#1e293b"/>
       <text x="14" y="19" fill="#64748b" font-size="10" font-weight="800" letter-spacing="1.6">ACCESS SURFACES</text>
     </g>
-    <g transform="translate(912,500)">
-      <rect x="0" y="0" width="68" height="28" rx="9" fill="#0b1628" stroke="#334155"/>
-      <text x="34" y="19" text-anchor="middle" fill="#cbd5e1" font-size="12" font-weight="700">CLI</text>
-      <rect x="76" y="0" width="68" height="28" rx="9" fill="#0b1628" stroke="#334155"/>
-      <text x="110" y="19" text-anchor="middle" fill="#cbd5e1" font-size="12" font-weight="700">CI</text>
-      <rect x="152" y="0" width="68" height="28" rx="9" fill="#0b1628" stroke="#334155"/>
-      <text x="186" y="19" text-anchor="middle" fill="#cbd5e1" font-size="12" font-weight="700">MCP</text>
-      <rect x="228" y="0" width="80" height="28" rx="9" fill="#0b1628" stroke="#334155"/>
-      <text x="268" y="19" text-anchor="middle" fill="#cbd5e1" font-size="12" font-weight="700">runners</text>
+    <g transform="translate(812,500)">
+      <rect x="0" y="0" width="42" height="28" rx="9" fill="#0b1628" stroke="#334155"/>
+      <text x="21" y="19" text-anchor="middle" fill="#cbd5e1" font-size="12" font-weight="700">CLI</text>
+      <rect x="50" y="0" width="38" height="28" rx="9" fill="#0b1628" stroke="#334155"/>
+      <text x="69" y="19" text-anchor="middle" fill="#cbd5e1" font-size="12" font-weight="700">CI</text>
+      <rect x="96" y="0" width="50" height="28" rx="9" fill="#0b1628" stroke="#334155"/>
+      <text x="121" y="19" text-anchor="middle" fill="#cbd5e1" font-size="12" font-weight="700">MCP</text>
+      <rect x="154" y="0" width="78" height="28" rx="9" fill="#0b1628" stroke="#334155"/>
+      <text x="193" y="19" text-anchor="middle" fill="#cbd5e1" font-size="12" font-weight="700">webhook</text>
+      <rect x="240" y="0" width="64" height="28" rx="9" fill="#0b1628" stroke="#334155"/>
+      <text x="272" y="19" text-anchor="middle" fill="#cbd5e1" font-size="12" font-weight="700">library</text>
+      <rect x="312" y="0" width="72" height="28" rx="9" fill="#0b1628" stroke="#334155"/>
+      <text x="348" y="19" text-anchor="middle" fill="#cbd5e1" font-size="12" font-weight="700">runners</text>
     </g>
   </g>
 </svg>

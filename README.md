@@ -263,7 +263,7 @@ Full discussion: [`docs/ARCHITECTURE.md §3 + §6`](docs/ARCHITECTURE.md). Pinne
 ## Install · runtime · trust contract
 
 - [`docs/INSTALL.md`](docs/INSTALL.md) — download, verify, install, run
-- [`docs/HARNESS.md`](docs/HARNESS.md) — five surfaces · customization knobs · scope boundary · Anthropic alignment
+- [`docs/HARNESS.md`](docs/HARNESS.md) — six surfaces · customization knobs · scope boundary · Anthropic alignment
 - [`docs/SUPPLY_CHAIN.md`](docs/SUPPLY_CHAIN.md) — SBOM, signing, provenance
 - [`docs/CREDENTIAL_PROVENANCE.md`](docs/CREDENTIAL_PROVENANCE.md) — workload identity first
 - [`docs/RELEASE_CHECKLIST.md`](docs/RELEASE_CHECKLIST.md) — release gates

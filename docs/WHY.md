@@ -204,7 +204,7 @@ Every file declares origin, licence, capture window, MITRE ATT&CK pattern,
 and consuming detector. A CI gate refuses unlisted files and non-permissive
 licences. See [`captured/README.md`](../skills/detection-engineering/captured/README.md).
 
-### 8. One bundle, five surfaces — zero per-surface drift
+### 8. One bundle, six surfaces — zero per-surface drift
 Same `SKILL.md` + `src/` + `tests/` runs unchanged under:
 
 | Surface | How it invokes |
@@ -212,8 +212,9 @@ Same `SKILL.md` + `src/` + `tests/` runs unchanged under:
 | CLI | `python skills/[layer]/[name]/src/[entry].py` |
 | CI | GitHub Actions runs the same entrypoint |
 | MCP | Stdio wrapper (Claude Code / Desktop / Cursor / Codex / Cortex / Windsurf / Zed) or SSE/HTTP listener |
-| Webhook | FastAPI receiver routes signed requests to the same `src/` |
-| Runner | S3-SQS / GCS-PubSub / Blob-EventGrid event-driven; same `src/` |
+| Webhook | Receiver routes signed POST payloads through the same registry |
+| Library | Python apps call the shared skill runner in-process |
+| Persistent runners | Queue / object / event loops reuse the same skill entrypoint |
 
 DIY = write the rule three times.
 
@@ -287,7 +288,7 @@ Reproducible, auditable, MCP-callable.
 | HMAC-chained audit + verifier + key-rotation | ~60 h |
 | HITL wrapper + allowlist intersection + min_approvers | ~80 h |
 | Three sandbox layers + RLIMIT enforcement | ~40 h |
-| Five-surface harness (MCP stdio + SSE + CLI + CI + webhook + runner) | ~80 h |
+| Six-surface harness (CLI + CI + MCP + webhook + library + runner) | ~80 h |
 | Per-detector precision/recall scorer + corpus | ~50 h |
 | Captured-fixture corpus + licence-clean provenance gate | ~30 h |
 | Framework-mapping drift gates (MITRE / ATLAS / OWASP / NIST / CIS / OCSF) | ~30 h |
