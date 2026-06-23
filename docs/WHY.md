@@ -3,13 +3,13 @@
 **This repo is built for LLMs and agents to use.** MCP wrapper, Agent SDK
 hook, Python library shim, CLI pipes, webhook receiver, cloud runners — every
 surface exists so a Claude agent / Cursor session / GitHub Actions step / cron
-job can call one of these 90 skills the same way it would call any other tool.
+job can call one of these 131 skills the same way it would call any other tool.
 
 So the question isn't *"LLM versus this repo."* It's:
 
-> *Your agent needs skills to invoke. Should it use these 90 — or should it
+> *Your agent needs skills to invoke. Should it use these 131 — or should it
 > generate ad-hoc Python on the fly, or have you commit LLM-written skills,
-> or have your team write the same 90 from scratch?*
+> or have your team write the same catalog from scratch?*
 
 All four options keep the LLM in the loop. The difference is **what runs
 inside the trust boundary the agent crosses** when it fires a tool — and
@@ -41,7 +41,7 @@ The skills are LLM-portable. The trust contract is the moat.
 
 ## Three flavours of "skip this repo" — three different answers
 
-There are three serious versions of *"why use these 90, why not roll our own?"*
+There are three serious versions of *"why use these skills, why not roll our own?"*
 The argument is different for each.
 
 ### A. *"My agent will just write the Python at runtime."*
@@ -76,7 +76,7 @@ parts that matter:
   Management 3005? The right answer depends on the OCSF 1.8 catalog
   semantics — read the spec wrong and your downstream detector misses
   the event. We've made that choice once, snapshot-tested it; LLM-
-  generated skills make it 90 times, inconsistently.
+  generated skills make it once per skill, inconsistently.
 - **Vendor-schema fidelity is research.** The Entra Directory Audit
   schema, the Okta System Log event-type taxonomy, the Snowflake
   `query_history` columns that come and go between Snowflake releases —
@@ -95,16 +95,18 @@ parts that matter:
   in production — or you don't. v0.10.0's
   [`scoring/`](../skills/detection-engineering/scoring/) is the loop.
 
-### C. *"My team will write all 90 skills from scratch."*
+### C. *"My team will write all 131 skills from scratch."*
 
 This works — at cost. The repo's
-[cost-framing table](#the-cost-framing--roll-your-own-to-parity) below
+[cost-framing table](#the-cost-framing--historical-v010-baseline) below
 estimates **~500 engineer-hours / ~12 weeks** to reach feature parity
-with v0.10.0 before the first detector is written. That's the harness
-cost. Detector content is on top of that — six hours per detector × 39
-detectors = another **~240 hours**, plus the calibration work, plus the
-captured-fixture corpus, plus the framework-mapping research. Realistic
-all-in: a small team for a quarter to land what the repo ships today.
+with the v0.10.0-era harness before the first detector is written. That's
+the historical lower-bound harness cost, before the current 131-skill
+catalog. Detector content is on top of that — the v0.10 baseline alone was
+six hours per detector × 39 detectors = another **~240 hours**, plus the
+calibration work, captured-fixture corpus, and framework-mapping research.
+Realistic all-in: a small team for a quarter before it reaches the older
+baseline, then more work to catch the current catalog.
 
 Then comes the **maintenance tax**:
 
@@ -279,7 +281,7 @@ fixture, a snapshot test, and an entry in
 [`docs/INGEST_COVERAGE.md`](INGEST_COVERAGE.md). No LLM in the loop.
 Reproducible, auditable, MCP-callable.
 
-## The cost framing — roll your own to parity
+## The cost framing — historical v0.10 baseline
 
 | Component | Engineering cost (estimate) |
 |---|---|
@@ -293,9 +295,11 @@ Reproducible, auditable, MCP-callable.
 | Captured-fixture corpus + licence-clean provenance gate | ~30 h |
 | Framework-mapping drift gates (MITRE / ATLAS / OWASP / NIST / CIS / OCSF) | ~30 h |
 
-**Subtotal: ~500 hours = ~12 engineer-weeks** to reach feature parity —
-before the first detector is written. The repo represents three quarters
-of engineering already done, and the calibration loop (precision/recall,
+**Subtotal: ~500 hours = ~12 engineer-weeks** to reach the historical
+v0.10.0 baseline before the first detector is written. The current shipped
+surface is larger: 131 skills across ingest, source, discover, detect,
+evaluate, remediate, view, and output. The repo represents substantial
+engineering already done, and the calibration loop (precision/recall,
 captured corpus, audit chain) is the part nobody else hands you.
 
 ## Where this repo is honestly the wrong tool
