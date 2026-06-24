@@ -410,7 +410,7 @@ This section is the heart of the design. Without it, each agent (Claude Code, Co
 2. **Tool spec generation** — each skill becomes one MCP tool. Tool name = `SKILL.md` `name` field. Tool description = the full frontmatter `description` (which already leads with "Use when…" and closes with "Do NOT use…" per the Anthropic pattern).
 3. **Input schema** — current implementation exposes a conservative `input: string` (stdin payload) and `args: string[]` (fixed CLI args passed to the skill entrypoint). This keeps the wrapper thin and avoids inventing a second API surface. Tighter CLI-derived schemas are a follow-up.
 4. **Invocation** — the server shells out to `python3 <skill-path>/src/<entry>.py`, streams the tool's `input` to the skill's stdin, captures stdout, and wraps non-zero exits as MCP tool errors with stderr attached.
-5. **Transport** — stdio (local) ships now. HTTP/SSE stays a follow-up for hosted deployments.
+5. **Transport** — stdio (local) is the default. The opt-in SSE / streamable HTTP listener ships under [`mcp-server/src/transports/sse.py`](../mcp-server/src/transports/sse.py), keeps the same dispatch and audit contract, and is documented in [`MCP_TRANSPORT.md`](MCP_TRANSPORT.md).
 
 ### Why MCP and not a bespoke API
 
@@ -513,7 +513,7 @@ This is the architectural roadmap. Vendor-story PRs (#29–#39) continue in para
 |---|---|---|---|
 | **ARCHITECTURE.md** | This document | **P0** | Locks the design so every subsequent PR lands correctly |
 | **PR #39 reshape** | `git mv` skills into `ingest-*`, `evaluate-*`, `remediate-*`, etc. Add empty `sinks/` `runners/` `mcp-server/` `query/` dirs with READMEs. | **P0** | Without this, later PRs land in the wrong place and we pay for it twice |
-| **PR U — mcp-server** | Auto-discover every skill, expose via MCP stdio + HTTP/SSE, test against Claude Code + Cortex Code CLI | **P0** | The single highest-leverage PR: unlocks every agent for every future skill |
+| **PR U — mcp-server** | Auto-discover every skill, expose via MCP stdio plus opt-in SSE / streamable HTTP, test against Claude Code + Cortex Code CLI | **P0** | The single highest-leverage PR: unlocks every agent for every future skill |
 | **PR T — sink-snowflake-ocsf** | Schema DDL, COPY INTO loader, idempotent MERGE, Cortex query pack, Cortex Analyst semantic model | **P0** | Proves the persistent mode works end-to-end, directly enables Cortex Code CLI users |
 | **PR X — enrich-pii-redact-ocsf** | Field-level redaction with rule config, **gates every sink run in regulated mode** | **P0** | Regulatory prerequisite — no sink runs in a regulated environment without it |
 | **PR V — first runner** | `runner-s3-to-snowflake` with checkpoint state, idempotency tests | P1 | Proves streaming mode works. Unlocks continuous pipeline |

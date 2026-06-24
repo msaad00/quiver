@@ -1,6 +1,6 @@
 # MCP Server
 
-Thin stdio MCP wrapper for `cloud-ai-security-skills`.
+Thin MCP wrapper for `cloud-ai-security-skills`.
 
 This server does not replace the existing skills model. It auto-discovers
 `skills/*/*/SKILL.md`, resolves each supported skill to its existing Python
@@ -92,3 +92,10 @@ python3 mcp-server/src/server.py
 ```
 
 Project-scoped Claude Code config lives in the repo root at [`.mcp.json`](../.mcp.json).
+
+Transports:
+
+- `stdio` is the default local MCP transport.
+- `sse` / streamable HTTP is opt-in for networked clients and requires bearer
+  keys plus the dependency groups documented in
+  [`docs/MCP_TRANSPORT.md`](../docs/MCP_TRANSPORT.md).
