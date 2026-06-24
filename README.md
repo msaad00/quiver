@@ -90,7 +90,7 @@ Six surfaces, one bundle: **CLI · CI · MCP · webhook receiver · library · p
 | Maintained security content | real-corpus thresholds, OCSF version bumps, MITRE catalog updates, vendor schema drift handling |
 | Cost baseline | ~12 engineer-weeks of harness plus ~240 hours of detector content to reach v0.10.0 parity, before ongoing maintenance |
 
-**Independent security grades.** [`docs/SECURITY_GRADES.md`](docs/SECURITY_GRADES.md) — auto-generated, regenerated weekly by `scripts/regen_security_grades.py`: Bandit (code findings), pip-audit (CVEs), agent-bom (skill trust + provenance), 13 in-repo trust-contract validators. Composite grade visible at the top of the doc.
+**Independent security grades.** [`docs/SECURITY_GRADES.md`](docs/SECURITY_GRADES.md) — auto-generated, regenerated weekly by `scripts/regen_security_grades.py`: Bandit (code findings), pip-audit (CVEs), agent-bom (skill trust + provenance), 14 in-repo trust-contract validators. Composite grade visible at the top of the doc.
 
 ## Architecture
 

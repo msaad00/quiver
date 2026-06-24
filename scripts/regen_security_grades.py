@@ -35,9 +35,18 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+from skill_validation_common import extract_frontmatter, iter_skill_dirs, parse_frontmatter
+
 ROOT = Path(__file__).resolve().parents[1]
 DOC = ROOT / "docs" / "SECURITY_GRADES.md"
 AGENT_BOM_SRC = Path("/Users/mohamedsaad/Desktop/agent-bom")
+TRUST_FRONTMATTER_FIELDS = (
+    "purpose",
+    "capability",
+    "persistence",
+    "telemetry",
+    "privilege_escalation",
+)
 
 
 def _run(cmd: list[str], **kw: Any) -> subprocess.CompletedProcess:
@@ -127,6 +136,7 @@ def run_pip_audit() -> dict[str, Any]:
     cmd = ["uv", "run", "--group", "dev", "pip-audit", "--format", "json"]
     result = _run(cmd)
     findings: list[dict[str, Any]] = []
+    seen_findings: set[tuple[str, str, str]] = set()
     try:
         # pip-audit emits an array of {name, version, vulns: [...]}.
         parsed = json.loads(result.stdout)
@@ -134,6 +144,10 @@ def run_pip_audit() -> dict[str, Any]:
             parsed = parsed.get("dependencies", [])
         for dep in parsed:
             for vuln in dep.get("vulns", []):
+                finding_key = (dep.get("name", "?"), dep.get("version", "?"), vuln.get("id", "?"))
+                if finding_key in seen_findings:
+                    continue
+                seen_findings.add(finding_key)
                 findings.append(
                     {
                         "package": dep.get("name", "?"),
@@ -276,9 +290,35 @@ def composite_grade(parts: dict[str, dict[str, Any]]) -> tuple[int, str]:
     return int(total), _grade(int(total))
 
 
+def trust_frontmatter_coverage() -> dict[str, Any]:
+    """Return mechanical coverage for the trust metadata fields on skills."""
+    missing: list[dict[str, Any]] = []
+    skill_dirs = iter_skill_dirs()
+
+    for skill_dir in skill_dirs:
+        skill_md = skill_dir / "SKILL.md"
+        frontmatter = parse_frontmatter(extract_frontmatter(skill_md))
+        missing_fields = [field for field in TRUST_FRONTMATTER_FIELDS if not frontmatter.get(field)]
+        if missing_fields:
+            missing.append(
+                {
+                    "path": str(skill_md.relative_to(ROOT)),
+                    "missing": missing_fields,
+                }
+            )
+
+    return {
+        "total": len(skill_dirs),
+        "complete": len(skill_dirs) - len(missing),
+        "fields": TRUST_FRONTMATTER_FIELDS,
+        "missing": missing,
+    }
+
+
 def render(parts: dict[str, dict[str, Any]]) -> str:
     """Compose the markdown doc."""
     composite_score, composite_letter = composite_grade(parts)
+    trust_frontmatter = trust_frontmatter_coverage()
     now = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
 
     out: list[str] = []
@@ -407,12 +447,24 @@ def render(parts: dict[str, dict[str, Any]]) -> str:
             "**Interpretation.** A high `unsigned` provenance count is a known gap — "
             "sigstore bundle signing for skill bundles is roadmap, not shipped. Verdict "
             "labels like `malicious` in agent-bom default heuristics map to "
-            "'agent-bom couldn't verify provenance + frontmatter was incomplete' — they "
+            "'agent-bom couldn't verify provenance or policy metadata' — they "
             "are not assertions of actual malice. The credentials axis (0 leaks) and the "
             "in-repo validators are the load-bearing signals."
         )
         out.append("")
-        out.append("**Known frontmatter gaps causing warn/fail rows:** `purpose`, `capability`, `persistence`, `telemetry`, `privilege_escalation` fields are not yet on SKILL.md frontmatter. Adding them is a v0.10.x polish item.")
+        fields = ", ".join(f"`{field}`" for field in trust_frontmatter["fields"])
+        out.append(
+            f"**Trust frontmatter coverage:** {trust_frontmatter['complete']}/{trust_frontmatter['total']} "
+            f"shipped skills declare {fields}. The remaining warn/fail rows are scanner "
+            "heuristics for unsigned provenance, instruction-scope strictness, and install-mechanism "
+            "expectations; they are not a leaked-secret signal."
+        )
+        if trust_frontmatter["missing"]:
+            out.append("")
+            out.append("| Skill | Missing fields |")
+            out.append("|---|---|")
+            for item in trust_frontmatter["missing"]:
+                out.append(f"| `{item['path']}` | {', '.join(item['missing'])} |")
         out.append("")
 
     # --- methodology footer ---
