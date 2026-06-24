@@ -64,7 +64,8 @@ try:  # pragma: no cover - exercised only when the extra is missing
 except ModuleNotFoundError as exc:  # pragma: no cover
     raise ModuleNotFoundError(
         "mcp-server SSE transport requires `sse-starlette`, `starlette`, and "
-        "`uvicorn`. Install with `uv sync --group dev --extra mcp-sse` or pin "
+        "`uvicorn`. Install with "
+        "`uv sync --group dev --group mcp-sse --group http-runtime` or pin "
         "those packages in your deployment image."
     ) from exc
 
@@ -324,7 +325,7 @@ def serve() -> int:
     except ModuleNotFoundError as exc:  # pragma: no cover
         raise ModuleNotFoundError(
             "mcp-server SSE transport requires `uvicorn`. Install with "
-            "`uv sync --group dev --extra mcp-sse`."
+            "`uv sync --group dev --group http-runtime`."
         ) from exc
     bind = (os.environ.get(BIND_ENV) or DEFAULT_BIND).strip() or DEFAULT_BIND
     port_raw = (os.environ.get(PORT_ENV) or "").strip()

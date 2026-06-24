@@ -163,7 +163,7 @@ Transport expectations:
 - TLS for external API calls and remote sinks
 - local MCP uses stdio, not an unauthenticated network listener
 - MCP wrappers should emit invocation audit events that identify the tool, caller context presence, approval context presence, exit code, and a hashed argument payload without echoing secrets or raw stdin
-- any future HTTP or SSE transport must add explicit authentication, integrity, and timeout controls
+- any network MCP transport must add explicit authentication, integrity, and timeout controls; the shipped opt-in SSE / streamable HTTP transport uses bearer keys, public-bind refusal, shared audit-chain integrity, and the same per-call timeout path as stdio
 
 Storage expectations:
 - findings, evidence, and inventories should be encrypted at rest in the chosen sink

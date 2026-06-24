@@ -41,8 +41,8 @@ GOLDEN_DIR = REPO_ROOT / "skills" / "detection-engineering" / "golden"
 # the read-only path is well-trodden.
 
 # Skip the whole suite when sse-starlette / starlette is not installed
-# in the active venv. The repo's `mcp-sse` extra pulls them in; CI
-# pre-installs the dev group + all extras.
+# in the active venv. The repo's `mcp-sse` dependency group pulls them
+# in; CI pre-installs the dev group plus optional transport groups.
 sse_starlette = pytest.importorskip("sse_starlette")
 starlette = pytest.importorskip("starlette")
 from starlette.testclient import TestClient  # noqa: E402
