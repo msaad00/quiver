@@ -61,7 +61,7 @@ WORKDIR /build
 # operator).
 RUN pip install --upgrade pip && pip install --prefix=/install \
         "sse-starlette>=2,<4" \
-        "starlette>=0.39,<1" \
+        "starlette>=1.3.1,<2" \
         "uvicorn[standard]>=0.30,<1" \
         "pyyaml>=6,<7" \
         "httpx>=0.27,<1" \
