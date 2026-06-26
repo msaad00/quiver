@@ -79,7 +79,7 @@ Six surfaces, one bundle: **CLI · CI · MCP · webhook receiver · library · p
 
 **Find a skill:** [`docs/SKILL_INDEX.md`](docs/SKILL_INDEX.md) groups every shipped skill by **environment** (AWS · GCP · Azure/Entra · K8s · Identity · AI/MCP · Web · Cross-env) and by **purpose** (ingest / discover / detect / evaluate / remediate / view / output / source), and points at the framework-mapping docs for control-catalog pivots.
 
-**Which vendor signals normalize to OCSF today?** [`docs/INGEST_COVERAGE.md`](docs/INGEST_COVERAGE.md) — the canonical vendor × source × OCSF class matrix, **22 mappings shipped** (AWS · GCP · Azure · Entra · K8s · Okta · Workspace · MCP · **GitHub · Slack · Workday · Salesforce · SAP**) plus the 3 documented roadmap rows (native ClickHouse audit, AWS web-app exfil pipeline, Workspace beyond-login).
+**Which vendor signals normalize to OCSF today?** [`docs/INGEST_COVERAGE.md`](docs/INGEST_COVERAGE.md) — the canonical vendor × source × OCSF class matrix, **22 ingest skills shipped** (AWS · GCP · Azure · Entra · K8s · Okta · Workspace · MCP · **GitHub · Slack · Workday · Salesforce · SAP**) plus explicit not-yet-shipped rows for native ClickHouse audit, AWS web-app exfil pipeline, and Workspace Drive / Mobile depth.
 
 **Why use these skills instead of ad-hoc agent code?** [`docs/WHY.md`](docs/WHY.md) compares runtime Python, committed LLM-written skills, and building the catalog from scratch. The short version:
 

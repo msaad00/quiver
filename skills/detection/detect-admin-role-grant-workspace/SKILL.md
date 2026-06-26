@@ -83,6 +83,6 @@ export WORKSPACE_AUTHORIZED_ADMIN_ROLE_GRANTERS="breakglass-admin@example.com"
 cat workspace-admin.ocsf.jsonl | python src/detect.py > workspace-admin-role-findings.ocsf.jsonl
 ```
 
-## Roadmap
+## Delivery note
 
-Part of Google Workspace vendor story issue #32.
+Delivered as part of Google Workspace vendor story issue #32.
