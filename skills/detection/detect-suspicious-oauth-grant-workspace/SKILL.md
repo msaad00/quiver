@@ -78,6 +78,6 @@ export WORKSPACE_PREAPPROVED_OAUTH_CLIENT_IDS="trusted-client-1,trusted-client-2
 cat workspace-admin.ocsf.jsonl | python src/detect.py > workspace-oauth-findings.ocsf.jsonl
 ```
 
-## Roadmap
+## Delivery note
 
-Part of Google Workspace vendor story issue #32.
+Delivered as part of Google Workspace vendor story issue #32.

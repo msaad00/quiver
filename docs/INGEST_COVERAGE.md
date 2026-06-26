@@ -5,7 +5,8 @@ through this repo's ingest layer — and what's not yet covered.
 
 This page is the single source of truth for **"which signal can I send and
 get OCSF out the other side?"** The rows below are the canonical answer at
-HEAD; the roadmap rows below are tracked in their linked issues.
+HEAD; the not-yet-shipped rows below distinguish active tracking issues from
+explicit follow-on gaps.
 
 ## Currently shipped — 22 ingest skills
 
@@ -56,13 +57,13 @@ A dedicated native `ingest-clickhouse-query-log-ocsf` is on the roadmap (see
 below) — for now `detect-clickhouse-bulk-export` reads `system.query_log`
 records already shaped as OCSF API Activity 6003 by an upstream pipeline.
 
-## Roadmap — not yet shipped, tracked
+## Roadmap and explicit gaps — not yet shipped
 
-| Vendor | Source | Target OCSF class | Tracking |
+| Vendor | Source | Target OCSF class | Tracking / disposition |
 |---|---|---|---|
 | ClickHouse | `system.query_log` native ingest | API Activity 6003 | [`#436`](https://github.com/msaad00/cloud-ai-security-skills/issues/436) — `ingest-clickhouse-query-log-ocsf` |
 | AWS | Lambda + API Gateway access logs | HTTP Activity 4002 | [`#253`](https://github.com/msaad00/cloud-ai-security-skills/issues/253) — first detection-side use case is the web-app exfil arc |
-| Google Workspace | Drive / Mobile feeds (beyond login, token, and admin role activity) | API Activity 6003 + User Access 3005 | [`#32`](https://github.com/msaad00/cloud-ai-security-skills/issues/32) — follow-on vendor depth |
+| Google Workspace | Drive / Mobile feeds (beyond login, token, and admin role activity) | API Activity 6003 + User Access 3005 | Explicit follow-on gap; [`#32`](https://github.com/msaad00/cloud-ai-security-skills/issues/32) delivered the login / token / admin baseline |
 
 ## What "shipped" means here
 
@@ -73,15 +74,15 @@ A row in the shipped table guarantees:
 3. The skill is exercised by at least one downstream detector or test in CI.
 4. The OCSF wire shape is locked by snapshot test.
 
-A row in the roadmap table guarantees:
+A row in the roadmap / explicit-gaps table guarantees:
 
-1. There's a tracking issue (linked).
+1. If a tracking issue is linked, it owns the next shipped slice; otherwise the row is a deliberately documented gap, not an active claim.
 2. The intended OCSF class is documented up-front.
 3. Nothing is half-built or stubbed in the repo today.
 
 ## Adding a new vendor mapping
 
-1. Open or claim the tracking issue.
+1. Open or claim the tracking issue, unless the row is only being documented as an explicit future gap.
 2. Add the SKILL.md + `src/ingest.py` + golden fixture under `skills/ingestion/ingest-<vendor>-<source>-ocsf/`.
 3. Run `scripts/coverage_summary.py --write` and `scripts/generate_framework_coverage_doc.py` to refresh the auto-generated docs.
 4. Move the row in this file from the roadmap table to the shipped table in the same PR.

@@ -103,6 +103,6 @@ python src/ingest.py workspace-admin-reports.json --output-format native > works
 - Preserves native identifiers for audit correlation.
 - Keeps unsupported event names visible in stderr so coverage gaps are measurable.
 
-## Roadmap
+## Delivery note
 
-Part of Google Workspace vendor story issue #32.
+Delivered as part of Google Workspace vendor story issue #32.
