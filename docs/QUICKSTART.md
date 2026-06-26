@@ -36,7 +36,7 @@ on a stdlib-only Python 3.11+. Cloud-specific skills (anything that talks to
 AWS / GCP / Azure / K8s / Snowflake / Databricks / ClickHouse) need their
 group installed first: `uv sync --group dev --group <cloud>`.
 
-> No top-level CLI is shipped today (the repo is structured as 117
+> No top-level CLI is shipped today (the repo is structured as 131
 > independent skill bundles, not a single binary). A `uvx`-installable entry
 > point that wraps the most common pipelines is tracked as a P1 follow-up.
 
