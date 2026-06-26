@@ -22,6 +22,66 @@ python examples/agents/configure_langgraph_harness.py \
   --output-env artifacts/acme-remediation-dryrun.env
 ```
 
+## Setup choices
+
+The generator asks for metadata, not secrets. Pick the smallest role, the data
+source mode, the model policy, and whether MCP calls should only be planned or
+eligible for an operator-owned stdio transport.
+
+| Decision | Generator flags | Effect |
+|---|---|---|
+| Role / privilege boundary | `--role readonly-soc`, `--role analyst-triage`, or `--role dry-run-remediation` | chooses read-only skills by default; only the dry-run role makes the remediation planner visible |
+| Caller identity | `--email`, optional `--user-id`, `--session-id`, `--roles` | audit attribution and IDP/ticketing context; not authentication |
+| Cloud identity hint | `--cloud-hint provider=hint` | command or env hint the agent can show a human; credentials stay in the cloud CLI/SDK chain |
+| Evidence source | `--data-source-mode raw-ingest` or `--data-source-mode security-lake-replay` | raw vendor events go through ingest; existing warehouse rows go through a read-only source query |
+| Lake backend | `--lake-backend snowflake`, `clickhouse`, or `databricks` | selects `source-snowflake-query`, `source-clickhouse-query`, or `source-databricks-query` |
+| Lake row shape | `--lake-records-format ocsf` or `raw_vendor` | OCSF rows skip raw normalization; raw rows keep source query followed by ingest |
+| Model use | default deterministic mode, or `--external-llm --llm-provider ... --llm-model ...` | records provider/model metadata and bounded routing; model output cannot set facts, approval, or write intent |
+| MCP execution | default `--mcp-execution-mode plan_only`, or `operator_stdio` with `--mcp-max-calls` | shipped default records the plan only; operator stdio mode can execute read-only calls through a separate transport |
+| Approval source | `--approval-source`, `--min-approvers` | documents the HITL authority; the profile still cannot self-approve |
+
+Security-lake replay profile:
+
+```bash
+python examples/agents/configure_langgraph_harness.py \
+  --role analyst-triage \
+  --profile-id acme-snowflake-replay \
+  --email analyst@example.com \
+  --data-source-mode security-lake-replay \
+  --lake-backend snowflake \
+  --lake-records-format ocsf \
+  --lake-query "SELECT payload FROM security.events_sink LIMIT 100" \
+  --output-profile artifacts/acme-snowflake-replay.json \
+  --output-env artifacts/acme-snowflake-replay.env
+```
+
+Bounded external-model metadata:
+
+```bash
+python examples/agents/configure_langgraph_harness.py \
+  --role analyst-triage \
+  --profile-id acme-triage-drafting \
+  --email analyst@example.com \
+  --external-llm \
+  --llm-provider openai \
+  --llm-model gpt-4.1-mini \
+  --output-profile artifacts/acme-triage-drafting.json \
+  --output-env artifacts/acme-triage-drafting.env
+```
+
+Operator stdio planning for read-only MCP calls:
+
+```bash
+python examples/agents/configure_langgraph_harness.py \
+  --role readonly-soc \
+  --profile-id acme-readonly-stdio \
+  --email analyst@example.com \
+  --mcp-execution-mode operator_stdio \
+  --mcp-max-calls 25 \
+  --output-profile artifacts/acme-readonly-stdio.json \
+  --output-env artifacts/acme-readonly-stdio.env
+```
+
 Inspect a profile before running the graph:
 
 ```bash
