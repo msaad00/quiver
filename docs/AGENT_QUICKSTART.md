@@ -1,6 +1,6 @@
 # Agent Quickstart
 
-Give any agent these 117 skills in under 60 seconds. Pick your client,
+Give any agent these 131 skills in under 60 seconds. Pick your client,
 paste the snippet, restart. Replace `/abs/path/to/cloud-ai-security-skills`
 with the absolute path to your local clone.
 

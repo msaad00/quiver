@@ -21,7 +21,7 @@ make replay windows duplicate-aware, while the shipped tables stay append-only.
    any cloud / SaaS / IdP / K8s / MCP signal
                          │
                          ▼
-                ingest-*  (17 skills)         ──── L1 normalize to OCSF 1.8
+                ingest-*  (22 skills)         ──── L1 normalize to OCSF 1.8
                          │
                          ▼
                 sink-snowflake-jsonl --apply  ──── L7 append-only insert

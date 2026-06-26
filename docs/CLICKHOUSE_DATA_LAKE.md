@@ -21,7 +21,7 @@ visible because the shipped tables are append-only `MergeTree` tables.
    any cloud / SaaS / IdP / K8s / MCP signal
                          │
                          ▼
-                ingest-*  (17 skills)        ──── L1 normalize to OCSF 1.8
+                ingest-*  (22 skills)        ──── L1 normalize to OCSF 1.8
                          │
                          ▼
                 sink-clickhouse-jsonl --apply ──── L7 append-only insert
@@ -41,7 +41,7 @@ visible because the shipped tables are append-only `MergeTree` tables.
                 source-clickhouse-query        ──── read-only SQL gate
                          │
                          ▼
-                detect-*  (64 skills)          ──── L3 deterministic rules
+                detect-*  (71 skills)          ──── L3 deterministic rules
                 view-*    (2 skills)           ──── L6 SARIF / Mermaid
                 discover-control-evidence      ──── L2 posture / compliance
                          │

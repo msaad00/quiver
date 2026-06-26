@@ -50,6 +50,27 @@ CLAIMS: list[Claim] = [
     # descriptions are now checked directly because these visuals are source SVG.
     # docs/ARCHITECTURE.md claims
     (REPO_ROOT / "docs" / "ARCHITECTURE.md", r"(\d+) shipped detectors", "detection"),
+    (REPO_ROOT / "docs" / "AGENT_QUICKSTART.md", r"Give any agent these (\d+) skills", "total"),
+    (
+        REPO_ROOT / "docs" / "QUICKSTART.md",
+        r"repo is structured as (\d+)[\s>]+independent\s+skill bundles",
+        "total",
+    ),
+    (
+        REPO_ROOT / "docs" / "CLICKHOUSE_DATA_LAKE.md",
+        r"ingest-\*\s+\((\d+) skills\)",
+        "ingest_only",
+    ),
+    (
+        REPO_ROOT / "docs" / "CLICKHOUSE_DATA_LAKE.md",
+        r"detect-\*\s+\((\d+) skills\)",
+        "detection",
+    ),
+    (
+        REPO_ROOT / "docs" / "SNOWFLAKE_DATA_LAKE.md",
+        r"ingest-\*\s+\((\d+) skills\)",
+        "ingest_only",
+    ),
     # Core SVG / alt-text surfaces that drifted during the ATT&CK + CIS expansion.
     (
         REPO_ROOT / "docs" / "images" / "runtime-surfaces.svg",
