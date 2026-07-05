@@ -49,11 +49,11 @@ python skills/ingestion/ingest-k8s-audit-ocsf/src/ingest.py audit.jsonl \
 
 | Layer | Shipped | Planned / roadmap |
 |---|---|---|
-| L1 Ingest | 15 shipped ingesters across AWS, GCP, Azure, K8s, Okta, Entra, Workspace, MCP | more identity and SaaS sources as demand justifies |
-| L2 Discover | 4 shipped skills (AI BOM, cloud control evidence, control evidence, environment graph) | wider SaaS and infra evidence sources |
-| L3 Detect | 12 shipped detectors tied to MITRE ATT&CK techniques (lateral movement, K8s container escape, K8s privesc + secret read, MCP tool drift, MCP prompt injection, Okta MFA fatigue, Okta credential stuffing, Entra credential addition, Entra role grant, Workspace suspicious login, AWS open security-group) | impossible travel, more AI-agent signals |
-| L4 Evaluate | 7 shipped benchmarks (CIS AWS / GCP / Azure, K8s, Docker / container, GPU cluster, model serving) | native by default, OCSF Compliance Finding (`class_uid=2003`) shipped as opt-in output |
-| L5 Remediate | `iam-departures-aws`, `remediate-aws-sg-revoke`, `remediate-okta-session-kill`, `remediate-container-escape-k8s`, `remediate-k8s-rbac-revoke`, `remediate-mcp-tool-quarantine`, `remediate-entra-credential-revoke`, and `remediate-workspace-session-kill` with HITL, dual audit, dry-run | broader remediation families (see issues #155, #242, #307) |
+| L1 Ingest | 22 shipped ingesters across AWS, GCP, Azure, K8s, Okta, Entra, Workspace, GitHub, Slack, Salesforce, SAP, Workday, MCP, plus 4 source adapters (S3 Select, Snowflake, Databricks, ClickHouse) | more identity and SaaS sources as demand justifies |
+| L2 Discover | 5 shipped skills (AI BOM, cloud control evidence, control evidence, environment graph, IAM-departures reconciler) | wider SaaS and infra evidence sources |
+| L3 Detect | 71 shipped detectors tied to MITRE ATT&CK / OWASP techniques (lateral movement, K8s container escape + privesc + secret read, MCP tool drift + prompt injection, identity attacks across Okta / Entra / Workspace, cloud-config and AI-runtime signals) | impossible travel, more AI-agent signals |
+| L4 Evaluate | 12 shipped benchmarks (CIS AWS / GCP / Azure, K8s, Docker / container, GPU cluster, model serving, CIS AWS Foundations OCSF, NIST AI RMF govern / map / measure / manage) | native by default, OCSF Compliance Finding (`class_uid=2003`) shipped as opt-in output |
+| L5 Remediate | 12 shipped HITL-gated write skills — `iam-departures-{aws,gcp,azure-entra}`, network revokes (`remediate-aws-sg-revoke`, `remediate-gcp-firewall-revoke`, `remediate-azure-nsg-revoke`), session kills (Okta, Workspace), `remediate-container-escape-k8s`, `remediate-k8s-rbac-revoke`, `remediate-mcp-tool-quarantine`, `remediate-entra-credential-revoke` — all with HITL, dual audit, dry-run | broader remediation families (see issues #155, #242, #307) |
 | L6 View | `convert-ocsf-to-sarif`, `convert-ocsf-to-mermaid-attack-flow` | graph overlay, warehouse-ready converters |
 | L7 Output | 3 shipped sinks (`sink-s3-jsonl`, `sink-snowflake-jsonl`, `sink-clickhouse-jsonl`) | BigQuery, Security Lake |
 
@@ -70,7 +70,7 @@ skills/
 └── output/         ← L7 (sink-* skills: append-only persistence)
 ```
 
-The repo ships **54 skills** across these seven layers and the three `source-*` adapters (15 + 4 + 12 + 7 + 8 + 2 + 3, plus 3 `source-*` adapters accounted for under ingestion).
+The repo ships **131 skills** across these seven layers: 22 ingest skills plus 4 `source-*` adapters, 5 discover, 71 detect, 12 evaluate, 12 remediate, 2 view, and 3 output sinks. The authoritative per-skill registry is [`docs/framework-coverage.json`](docs/framework-coverage.json); `scripts/validate_doc_counts.py` gates this paragraph against it in CI.
 
 `skills/detection-engineering/` holds the shared OCSF contract and frozen
 golden fixtures. Executable skills live only under the six layered

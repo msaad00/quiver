@@ -31,6 +31,9 @@ Read next:
   any-source POST → shipped ingest skill → fan-out to S3 / Snowflake /
   ClickHouse sinks. Default-deny routing, HMAC + bearer auth, single-process
   FastAPI app deployable on App Runner / Cloud Run / Container Apps / Kubernetes.
+- [`mcp-sse`](mcp-sse/): remote MCP SSE transport for the skills server —
+  Dockerfile, Helm chart, and docker-compose packaging so agents can reach the
+  same MCP tool surface over the network instead of stdio.
 
 This is a reference template, not a multi-tenant managed service. Operators still
 own packaging, deployment, sink wiring, IAM review, and environment-specific
@@ -38,10 +41,11 @@ controls.
 
 ## Live Deployment Status
 
-All three runners are shipped and CI-validated.
+All five runners (the three cloud detect pipelines, the webhook receiver, and
+the MCP SSE transport) are shipped and CI-validated.
 
 The repo does not yet claim a captured real-cloud deploy-and-first-event proof
-for all three templates. That remaining work is tracked in
+for all templates. That remaining work is tracked in
 [`#198`](https://github.com/msaad00/cloud-ai-security-skills/issues/198) and
 summarized in [DEPLOYMENT_VERIFICATION.md](DEPLOYMENT_VERIFICATION.md).
 

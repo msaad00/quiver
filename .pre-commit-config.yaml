@@ -1,6 +1,8 @@
 repos:
+  # Keep revs aligned with the versions locked in uv.lock so pre-commit
+  # and `uv run ruff/bandit` agree on findings and formatting.
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.6.9
+    rev: v0.15.10
     hooks:
       - id: ruff
       - id: ruff-format
@@ -12,7 +14,7 @@ repos:
       - id: check-yaml
       - id: check-merge-conflict
   - repo: https://github.com/PyCQA/bandit
-    rev: 1.7.10
+    rev: 1.9.4
     hooks:
       - id: bandit
         args:

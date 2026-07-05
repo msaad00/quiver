@@ -72,6 +72,7 @@ def main() -> int:
     skill_index = REPO_ROOT / "docs" / "SKILL_INDEX.md"
     agents = REPO_ROOT / "AGENTS.md"
     mappings = REPO_ROOT / "docs" / "FRAMEWORK_MAPPINGS.md"
+    architecture = REPO_ROOT / "ARCHITECTURE.md"
 
     candidates: list[str | None] = [
         check(readme, r"(\d+)\s+shipped skill bundles", total, "README total"),
@@ -98,6 +99,15 @@ def main() -> int:
             fws.get("mitre-attack-v14", 0),
             "FRAMEWORK_MAPPINGS ATT&CK",
         ),
+        check(architecture, r"repo ships \*\*(\d+) skills\*\*", total, "ARCHITECTURE total"),
+        check(architecture, r"(\d+) ingest skills plus", layers["ingestion"], "ARCHITECTURE ingest"),
+        check(architecture, r"plus (\d+) `source-\*` adapters", layers["sources"], "ARCHITECTURE sources"),
+        check(architecture, r"(\d+) discover", layers["discovery"], "ARCHITECTURE discover"),
+        check(architecture, r"(\d+) detect", layers["detection"], "ARCHITECTURE detect"),
+        check(architecture, r"(\d+) evaluate", layers["evaluation"], "ARCHITECTURE evaluate"),
+        check(architecture, r"(\d+) remediate", layers["remediation"], "ARCHITECTURE remediate"),
+        check(architecture, r"(\d+) view", layers["view"], "ARCHITECTURE view"),
+        check(architecture, r"(\d+) output sinks", layers["output"], "ARCHITECTURE output"),
     ]
     errors: list[str] = [e for e in candidates if e is not None]
     if errors:

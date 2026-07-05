@@ -5,7 +5,10 @@ updates:
     schedule:
       interval: "weekly"
 
-  - package-ecosystem: "pip"
+  # "uv" (not "pip") so Dependabot updates uv.lock together with
+  # pyproject.toml — the pip ecosystem edits only pyproject.toml, which
+  # fails CI's `uv lock --check` gate on every Python bump PR.
+  - package-ecosystem: "uv"
     directory: "/"
     schedule:
       interval: "weekly"

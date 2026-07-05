@@ -30,7 +30,7 @@ broader composition model.
 | Preset | Use case | Atoms | Write paths? |
 |---|---|---|---|
 | [`preset-cspm-readonly.json`](preset-cspm-readonly.json) | continuous CSPM scanning + posture review | the three `cspm-*-cis-benchmark` skills, K8s + container + GPU + model-serving evaluation, `convert-ocsf-to-sarif` | none |
-| [`preset-detection-only.json`](preset-detection-only.json) | feed raw logs through ingest + detect, hand findings to a SIEM | the 15 ingest skills, the 29 detect skills, both view skills | none |
+| [`preset-detection-only.json`](preset-detection-only.json) | feed raw logs through ingest + detect, hand findings to a SIEM | a curated 15-ingest / 32-detect subset plus both view skills (the JSON is authoritative) | none |
 | [`preset-incident-response.json`](preset-incident-response.json) | the workflow at [`../examples/workflows/incident-response-okta-mfa-fatigue.md`](../examples/workflows/incident-response-okta-mfa-fatigue.md) | one detector + one discover + one remediate | one HITL-gated session kill |
 | [`preset-ai-runtime.json`](preset-ai-runtime.json) | runtime guardrails for an AI agent platform — detect prompt injection, tool drift, exfiltration | MCP-proxy ingest, the AI-runtime detectors, MCP tool quarantine | one HITL-gated tool quarantine |
 
