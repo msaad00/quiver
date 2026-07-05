@@ -63,7 +63,7 @@ metadata:
 2. Add or modify skills following the structure above
 3. Ensure tests pass: `pytest skills/<layer>/your-skill/tests/ -v`
 4. Ensure linting passes: `ruff check .`
-5. Ensure shared validators pass: `python scripts/validate_skill_contract.py`, `python scripts/validate_skill_integrity.py`, `python scripts/validate_skill_structure.py`, `python scripts/validate_dependency_consistency.py`, `python scripts/validate_framework_coverage.py`, and `python scripts/validate_safe_skill_bar.py`. If `validate_skill_structure.py` flags an empty subtree under `skills/detection-engineering/` (or anywhere else), it usually means stale `__pycache__` from an earlier on-disk layout — run `git clean -fdX skills/detection-engineering/` to drop ignored files only, then re-run the validator.
+5. Ensure shared validators pass: `make validate` runs the same validator set CI enforces (contract, integrity, runtime, structure, presets, dependency consistency, framework coverage, OCSF metadata, counts, deny-list parity, provenance, trust frontmatter, safe-skill bar, golden OCSF, and docs sync). If `validate_skill_structure.py` flags an empty subtree under `skills/detection-engineering/` (or anywhere else), it usually means stale `__pycache__` from an earlier on-disk layout — run `git clean -fdX skills/detection-engineering/` to drop ignored files only, then re-run the validator.
 6. Open a PR against `main` with a clear description
 7. If the PR is intended for a release cut, follow [`docs/RELEASE_CHECKLIST.md`](docs/RELEASE_CHECKLIST.md) before tagging
 

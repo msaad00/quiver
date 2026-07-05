@@ -176,7 +176,12 @@ jobs:
             cspm-gcp-cis-benchmark \
             cspm-azure-cis-benchmark \
             k8s-security-benchmark \
-            container-security
+            container-security \
+            evaluate-cis-aws-foundations-ocsf \
+            evaluate-nist-ai-rmf-govern \
+            evaluate-nist-ai-rmf-map \
+            evaluate-nist-ai-rmf-measure \
+            evaluate-nist-ai-rmf-manage
           do
             echo "==> skills/evaluation/${skill}"
             pytest "skills/evaluation/${skill}/tests/" -v -o "testpaths=tests"
