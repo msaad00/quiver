@@ -39,6 +39,7 @@ jobs:
           python-version: "3.11"
           packages: ruff sqlfluff
       - run: ruff check skills/ tests/ mcp-server/ scripts/ --config pyproject.toml
+      - run: ruff format --check . --config pyproject.toml
       - run: sqlfluff lint packs
 
   skill-contract:
