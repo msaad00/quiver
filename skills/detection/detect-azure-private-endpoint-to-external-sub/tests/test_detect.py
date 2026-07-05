@@ -129,14 +129,8 @@ class TestDetection:
         assert finding["evidence"]["boundary"] == "cross-subscription"
         assert finding["evidence"]["allowlist_mode"] == "fail-open"
         assert finding["evidence"]["target_subscription"] == TARGET_SUB
-        assert (
-            finding["finding_info"]["attacks"][0]["technique"]["uid"]
-            == PRIMARY_TECHNIQUE_UID
-        )
-        assert (
-            finding["finding_info"]["attacks"][1]["technique"]["uid"]
-            == SECONDARY_TECHNIQUE_UID
-        )
+        assert finding["finding_info"]["attacks"][0]["technique"]["uid"] == PRIMARY_TECHNIQUE_UID
+        assert finding["finding_info"]["attacks"][1]["technique"]["uid"] == SECONDARY_TECHNIQUE_UID
 
     def test_authorized_sub_does_not_fire(self, monkeypatch) -> None:
         monkeypatch.setenv(AUTHORIZED_SUBS_ENV, AUTHORIZED_SUB + "," + TARGET_SUB)
@@ -164,11 +158,7 @@ class TestDetection:
         assert findings == []
 
     def test_wrong_operation_does_not_fire(self) -> None:
-        findings = list(
-            detect(
-                [_event(operation="Microsoft.Network/virtualNetworks/write")]
-            )
-        )
+        findings = list(detect([_event(operation="Microsoft.Network/virtualNetworks/write")]))
         assert findings == []
 
     def test_non_azure_producer_ignored(self, capsys) -> None:
@@ -195,9 +185,7 @@ class TestDetection:
             },
             {
                 "name": "to-external-storage",
-                "privateLinkServiceId": _link_service_id(
-                    SECOND_TARGET_SUB, "secondary-storage"
-                ),
+                "privateLinkServiceId": _link_service_id(SECOND_TARGET_SUB, "secondary-storage"),
             },
         ]
         findings = list(detect([_event(connections=connections)]))
@@ -241,15 +229,7 @@ class TestDetection:
             f"PROVIDERS/Microsoft.Sql/servers/x"
         )
         findings = list(
-            detect(
-                [
-                    _event(
-                        connections=[
-                            {"name": "c", "privateLinkServiceId": upper_link}
-                        ]
-                    )
-                ]
-            )
+            detect([_event(connections=[{"name": "c", "privateLinkServiceId": upper_link}])])
         )
         assert len(findings) == 1
         assert findings[0]["evidence"]["target_subscription"] == TARGET_SUB

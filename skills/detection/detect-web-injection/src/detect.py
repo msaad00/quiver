@@ -79,11 +79,27 @@ INJECTION_PATTERNS: tuple[tuple[str, str, re.Pattern[str]], ...] = (
     # --- SQL ---
     ("sql", "union-select", re.compile(r"\bunion\s+(all\s+)?select\b", re.IGNORECASE)),
     ("sql", "or-1-equals-1", re.compile(r"\bor\s+1\s*=\s*1\b", re.IGNORECASE)),
-    ("sql", "tautology-quoted", re.compile(r"['\"]\s*or\s*['\"]?\s*1\s*['\"]?\s*=\s*['\"]?\s*1", re.IGNORECASE)),
-    ("sql", "comment-tail", re.compile(r"(--\s|#\s|/\*).*?(\bor\b|\bunion\b|\bdrop\b|\bselect\b)", re.IGNORECASE)),
+    (
+        "sql",
+        "tautology-quoted",
+        re.compile(r"['\"]\s*or\s*['\"]?\s*1\s*['\"]?\s*=\s*['\"]?\s*1", re.IGNORECASE),
+    ),
+    (
+        "sql",
+        "comment-tail",
+        re.compile(r"(--\s|#\s|/\*).*?(\bor\b|\bunion\b|\bdrop\b|\bselect\b)", re.IGNORECASE),
+    ),
     ("sql", "drop-table", re.compile(r"\bdrop\s+table\b", re.IGNORECASE)),
-    ("sql", "stacked-query", re.compile(r";\s*(select|insert|update|delete|drop|exec)\b", re.IGNORECASE)),
-    ("sql", "sleep-time-based", re.compile(r"\b(sleep|pg_sleep|waitfor\s+delay)\s*\(", re.IGNORECASE)),
+    (
+        "sql",
+        "stacked-query",
+        re.compile(r";\s*(select|insert|update|delete|drop|exec)\b", re.IGNORECASE),
+    ),
+    (
+        "sql",
+        "sleep-time-based",
+        re.compile(r"\b(sleep|pg_sleep|waitfor\s+delay)\s*\(", re.IGNORECASE),
+    ),
     # --- Command ---
     ("command", "shell-substitute", re.compile(r"\$\([^)]{1,40}\)")),
     ("command", "backticks", re.compile(r"`[^`]{1,40}`")),
@@ -254,7 +270,11 @@ def _to_ocsf(native: dict[str, Any]) -> dict[str, Any]:
         {"name": "src.ip", "type": "IP Address", "value": native["src_ip"]},
         {"name": "http_request.http_method", "type": "Other", "value": native["http_method"]},
         {"name": "http_request.url.path", "type": "URL String", "value": native["http_path"]},
-        {"name": "http_response.status_code", "type": "Other", "value": str(native["http_status_code"])},
+        {
+            "name": "http_response.status_code",
+            "type": "Other",
+            "value": str(native["http_status_code"]),
+        },
     ]
 
     return {
@@ -350,8 +370,11 @@ def detect(
             if hit:
                 family, label, excerpt = hit
                 native = _build_native(
-                    event=event, family=family, label=label,
-                    surface=surface_name, excerpt=excerpt,
+                    event=event,
+                    family=family,
+                    label=label,
+                    surface=surface_name,
+                    excerpt=excerpt,
                 )
                 yield native if output_format == "native" else _to_ocsf(native)
 
@@ -360,8 +383,11 @@ def detect(
             if hit:
                 family, label, excerpt = hit
                 native = _build_native(
-                    event=event, family=family, label=label,
-                    surface=f"header:{header_name}", excerpt=excerpt,
+                    event=event,
+                    family=family,
+                    label=label,
+                    surface=f"header:{header_name}",
+                    excerpt=excerpt,
                 )
                 yield native if output_format == "native" else _to_ocsf(native)
 
@@ -375,8 +401,11 @@ def load_jsonl(stream: Iterable[str]) -> Iterable[dict[str, Any]]:
             obj = json.loads(line)
         except json.JSONDecodeError as exc:
             emit_stderr_event(
-                SKILL_NAME, level="warning", event="json_parse_failed",
-                message=f"skipping line {lineno}: json parse failed: {exc}", line=lineno,
+                SKILL_NAME,
+                level="warning",
+                event="json_parse_failed",
+                message=f"skipping line {lineno}: json parse failed: {exc}",
+                line=lineno,
             )
             continue
         if isinstance(obj, dict):
@@ -390,7 +419,9 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("input", nargs="?", help="JSONL input. Defaults to stdin.")
     parser.add_argument("--output", "-o", help="JSONL output. Defaults to stdout.")
     parser.add_argument(
-        "--output-format", choices=sorted(OUTPUT_FORMATS), default="ocsf",
+        "--output-format",
+        choices=sorted(OUTPUT_FORMATS),
+        default="ocsf",
         help="Emit OCSF Detection Finding (default) or native projection.",
     )
     args = parser.parse_args(argv)

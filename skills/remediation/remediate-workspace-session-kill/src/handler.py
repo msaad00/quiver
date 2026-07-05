@@ -171,12 +171,19 @@ class GoogleAdminSDKClient:
         client = self._client("https://www.googleapis.com/auth/admin.directory.user.security")
         client.users().patch(userKey=user_key, body={"changePasswordAtNextLogin": True}).execute()
 
-    def list_recent_successful_logins(self, user_key: str, *, since_ms: int) -> list[dict[str, Any]]:
+    def list_recent_successful_logins(
+        self, user_key: str, *, since_ms: int
+    ) -> list[dict[str, Any]]:
         client = self._client("https://www.googleapis.com/auth/admin.reports.audit.readonly")
         start = datetime.fromtimestamp(since_ms / 1000, tz=timezone.utc).isoformat()
         response = (
             client.activities()
-            .list(userKey=user_key, applicationName="login", startTime=start, eventName="login_success")
+            .list(
+                userKey=user_key,
+                applicationName="login",
+                startTime=start,
+                eventName="login_success",
+            )
             .execute()
         )
         items = response.get("items") or []
@@ -274,7 +281,11 @@ def _finding_product(event: dict[str, Any]) -> str:
 
 
 def _finding_uid(event: dict[str, Any]) -> str:
-    return str((event.get("finding_info") or {}).get("uid") or (event.get("metadata") or {}).get("uid") or "")
+    return str(
+        (event.get("finding_info") or {}).get("uid")
+        or (event.get("metadata") or {}).get("uid")
+        or ""
+    )
 
 
 def _observable_value(event: dict[str, Any], name: str) -> str:
@@ -335,8 +346,12 @@ def _target_from_event(event: dict[str, Any]) -> Target | None:
     user_name = _observable_value(event, "user.name") or user_uid
     if not user_uid:
         return Target(
-            user_uid="", user_name=user_name, source_ips=(), session_uids=(),
-            producer_skill=producer, finding_uid=_finding_uid(event),
+            user_uid="",
+            user_name=user_name,
+            source_ips=(),
+            session_uids=(),
+            producer_skill=producer,
+            finding_uid=_finding_uid(event),
         )
 
     return Target(
@@ -349,7 +364,9 @@ def _target_from_event(event: dict[str, Any]) -> Target | None:
     )
 
 
-def parse_targets(events: Iterable[dict[str, Any]]) -> Iterator[tuple[Target | None, dict[str, Any]]]:
+def parse_targets(
+    events: Iterable[dict[str, Any]],
+) -> Iterator[tuple[Target | None, dict[str, Any]]]:
     for event in events:
         yield _target_from_event(event), event
 
@@ -392,11 +409,7 @@ def load_allowed_domains() -> tuple[str, ...]:
     raw = os.getenv("WORKSPACE_SESSION_KILL_ALLOWED_DOMAINS", "").strip()
     if not raw:
         return ()
-    return tuple(
-        domain
-        for domain in (part.strip().lower() for part in raw.split(","))
-        if domain
-    )
+    return tuple(domain for domain in (part.strip().lower() for part in raw.split(",")) if domain)
 
 
 def check_apply_gate() -> tuple[bool, str]:
@@ -427,7 +440,9 @@ def _step_endpoint(step: str, user_uid: str) -> str:
     return f"<unknown step {step}> {user_uid}"
 
 
-def _plan_record(target: Target, *, status: str, detail: str | None, dry_run: bool) -> dict[str, Any]:
+def _plan_record(
+    target: Target, *, status: str, detail: str | None, dry_run: bool
+) -> dict[str, Any]:
     return {
         "schema_mode": "native",
         "canonical_schema_version": CANONICAL_VERSION,
@@ -441,7 +456,12 @@ def _plan_record(target: Target, *, status: str, detail: str | None, dry_run: bo
             "session_uids": list(target.session_uids),
         },
         "actions": [
-            {"step": step, "endpoint": _step_endpoint(step, target.user_uid), "status": status, "detail": detail}
+            {
+                "step": step,
+                "endpoint": _step_endpoint(step, target.user_uid),
+                "status": status,
+                "detail": detail,
+            }
             for step in CONTAINMENT_STEPS
         ],
         "status": status,
@@ -501,24 +521,40 @@ def apply_actions(
                 workspace_client.force_password_change(target.user_uid)
         except Exception as exc:
             audit.record(
-                target=target, step=step, status=STATUS_FAILURE, detail=str(exc),
-                incident_id=incident_id, approver=approver,
+                target=target,
+                step=step,
+                status=STATUS_FAILURE,
+                detail=str(exc),
+                incident_id=incident_id,
+                approver=approver,
             )
-            action_results.append({
-                "step": step, "endpoint": _step_endpoint(step, target.user_uid),
-                "status": STATUS_FAILURE, "detail": str(exc),
-            })
+            action_results.append(
+                {
+                    "step": step,
+                    "endpoint": _step_endpoint(step, target.user_uid),
+                    "status": STATUS_FAILURE,
+                    "detail": str(exc),
+                }
+            )
             overall_status = STATUS_FAILURE
             continue
 
         last_audit_ref = audit.record(
-            target=target, step=step, status=STATUS_SUCCESS,
-            detail=f"completed {step}", incident_id=incident_id, approver=approver,
+            target=target,
+            step=step,
+            status=STATUS_SUCCESS,
+            detail=f"completed {step}",
+            incident_id=incident_id,
+            approver=approver,
         )
-        action_results.append({
-            "step": step, "endpoint": _step_endpoint(step, target.user_uid),
-            "status": STATUS_SUCCESS, "detail": None,
-        })
+        action_results.append(
+            {
+                "step": step,
+                "endpoint": _step_endpoint(step, target.user_uid),
+                "status": STATUS_SUCCESS,
+                "detail": None,
+            }
+        )
 
     record = _plan_record(target, status=overall_status, detail=None, dry_run=False)
     record["actions"] = action_results
@@ -538,7 +574,9 @@ def reverify_target(
     """Re-verify by reading Admin SDK Reports for any login_success activity by
     this user since the remediated_at timestamp. Emits one verification record;
     on DRIFT also emits an OCSF Detection Finding via the shared contract."""
-    checked_at_ms = now_ms if now_ms is not None else int(datetime.now(timezone.utc).timestamp() * 1000)
+    checked_at_ms = (
+        now_ms if now_ms is not None else int(datetime.now(timezone.utc).timestamp() * 1000)
+    )
     remediated_at_ms_resolved = remediated_at_ms if remediated_at_ms is not None else checked_at_ms
 
     reference = RemediationReference(
@@ -564,8 +602,14 @@ def reverify_target(
             actual_state="admin sdk reports api unreadable; cannot determine state",
             detail=str(exc),
         )
-        record = build_verification_record(reference=reference, result=result, verifier_skill=SKILL_NAME)
-        record["target"] = {"provider": "GoogleWorkspace", "user_uid": target.user_uid, "user_name": target.user_name}
+        record = build_verification_record(
+            reference=reference, result=result, verifier_skill=SKILL_NAME
+        )
+        record["target"] = {
+            "provider": "GoogleWorkspace",
+            "user_uid": target.user_uid,
+            "user_name": target.user_name,
+        }
         return [record]
 
     if recent_logins:
@@ -587,11 +631,19 @@ def reverify_target(
             detail="session-kill confirmed",
         )
 
-    record = build_verification_record(reference=reference, result=result, verifier_skill=SKILL_NAME)
-    record["target"] = {"provider": "GoogleWorkspace", "user_uid": target.user_uid, "user_name": target.user_name}
+    record = build_verification_record(
+        reference=reference, result=result, verifier_skill=SKILL_NAME
+    )
+    record["target"] = {
+        "provider": "GoogleWorkspace",
+        "user_uid": target.user_uid,
+        "user_name": target.user_name,
+    }
     outputs: list[dict[str, Any]] = [record]
     if result.status == VerificationStatus.DRIFT:
-        outputs.append(build_drift_finding(reference=reference, result=result, verifier_skill=SKILL_NAME))
+        outputs.append(
+            build_drift_finding(reference=reference, result=result, verifier_skill=SKILL_NAME)
+        )
     return outputs
 
 
@@ -604,16 +656,22 @@ def load_jsonl(stream: Iterable[str]) -> Iterable[dict[str, Any]]:
             obj = json.loads(line)
         except json.JSONDecodeError as exc:
             emit_stderr_event(
-                SKILL_NAME, level="warning", event="json_parse_failed",
-                message=f"skipping line {lineno}: json parse failed: {exc}", line=lineno,
+                SKILL_NAME,
+                level="warning",
+                event="json_parse_failed",
+                message=f"skipping line {lineno}: json parse failed: {exc}",
+                line=lineno,
             )
             continue
         if isinstance(obj, dict):
             yield obj
         else:
             emit_stderr_event(
-                SKILL_NAME, level="warning", event="invalid_json_shape",
-                message=f"skipping line {lineno}: not a JSON object", line=lineno,
+                SKILL_NAME,
+                level="warning",
+                event="invalid_json_shape",
+                message=f"skipping line {lineno}: not a JSON object",
+                line=lineno,
             )
 
 
@@ -653,12 +711,16 @@ def run(
         if protected:
             status = STATUS_SKIPPED_DENY_LIST if apply else STATUS_WOULD_VIOLATE_DENY_LIST
             emit_stderr_event(
-                SKILL_NAME, level="warning", event="target_denied",
+                SKILL_NAME,
+                level="warning",
+                event="target_denied",
                 message=f"refusing to remediate protected principal `{target.user_name}` (matched `{matched}`)",
-                user_uid=target.user_uid, matched_pattern=matched,
+                user_uid=target.user_uid,
+                matched_pattern=matched,
             )
             yield _skip_record(
-                target, status=status,
+                target,
+                status=status,
                 detail=f"matched deny pattern `{matched}`",
                 dry_run=dry_run,
             )
@@ -677,7 +739,8 @@ def run(
 
         if not apply:
             yield _plan_record(
-                target, status=STATUS_PLANNED,
+                target,
+                status=STATUS_PLANNED,
                 detail=f"dry-run: would sign out `{target.user_uid}` and force password change",
                 dry_run=True,
             )
@@ -692,15 +755,16 @@ def run(
             yield _skip_record(
                 target,
                 status=STATUS_SKIPPED_DOMAIN_BOUNDARY,
-                detail=(
-                    "target user domain is outside WORKSPACE_SESSION_KILL_ALLOWED_DOMAINS"
-                ),
+                detail=("target user domain is outside WORKSPACE_SESSION_KILL_ALLOWED_DOMAINS"),
                 dry_run=False,
             )
             continue
         yield apply_actions(
-            target, workspace_client=workspace_client, audit=audit,
-            incident_id=incident_id, approver=approver,
+            target,
+            workspace_client=workspace_client,
+            audit=audit,
+            incident_id=incident_id,
+            approver=approver,
         )
 
 
@@ -711,11 +775,13 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("input", nargs="?", help="JSONL input. Defaults to stdin.")
     parser.add_argument("--output", "-o", help="JSONL output. Defaults to stdout.")
     parser.add_argument(
-        "--apply", action="store_true",
+        "--apply",
+        action="store_true",
         help="Sign out + force password change on the target user after approval gates pass.",
     )
     parser.add_argument(
-        "--reverify", action="store_true",
+        "--reverify",
+        action="store_true",
         help="Read-only verification: confirm no successful login since remediation.",
     )
     args = parser.parse_args(argv)
@@ -758,7 +824,8 @@ def main(argv: list[str] | None = None) -> int:
         for record in run(
             load_jsonl(in_stream),
             workspace_client=workspace_client,
-            apply=args.apply, reverify=args.reverify,
+            apply=args.apply,
+            reverify=args.reverify,
             audit=audit,
             incident_id=incident_id,
             approver=approver,

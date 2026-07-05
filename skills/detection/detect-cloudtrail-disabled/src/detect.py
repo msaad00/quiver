@@ -92,12 +92,7 @@ def _request_parameters(event: dict[str, Any]) -> dict[str, Any]:
 
 
 def _trail_identifier(event: dict[str, Any], params: dict[str, Any]) -> tuple[str, str]:
-    trail_name = str(
-        params.get("name")
-        or params.get("trailName")
-        or params.get("trail")
-        or ""
-    )
+    trail_name = str(params.get("name") or params.get("trailName") or params.get("trail") or "")
     trail_arn = str(params.get("trailARN") or params.get("trailArn") or "")
     if trail_name or trail_arn:
         return trail_name, trail_arn

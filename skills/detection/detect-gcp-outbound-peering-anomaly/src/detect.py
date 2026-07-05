@@ -135,9 +135,7 @@ def _is_authorized(project: str, allowlist: frozenset[str]) -> bool:
     return project.strip().lower() in allowlist
 
 
-def _finding_uid(
-    *, source_network: str, peer_network: str, peering_name: str, time_ms: int
-) -> str:
+def _finding_uid(*, source_network: str, peer_network: str, peering_name: str, time_ms: int) -> str:
     material = f"{SKILL_NAME}|{source_network}|{peer_network}|{peering_name}|{time_ms}"
     return f"gcppeer-{hashlib.sha256(material.encode('utf-8')).hexdigest()[:16]}"
 
@@ -220,9 +218,7 @@ def _to_ocsf(native: dict[str, Any]) -> dict[str, Any]:
         },
         "finding_info": {
             "uid": native["finding_uid"],
-            "title": (
-                f"GCP VPC peering to external project `{native['peer_project']}`"
-            ),
+            "title": (f"GCP VPC peering to external project `{native['peer_project']}`"),
             "desc": description,
             "types": [
                 "gcp-outbound-peering-anomaly",

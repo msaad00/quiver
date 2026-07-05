@@ -43,7 +43,10 @@ SEVERITY_HIGH = 4
 
 PATTERNS: tuple[tuple[str, re.Pattern[str]], ...] = (
     ("aws-access-key-id", re.compile(r"\b(AKIA[0-9A-Z]{16})\b")),
-    ("github-token", re.compile(r"\b(gh[pousr]_[A-Za-z0-9_]{20,255}|github_pat_[A-Za-z0-9_]{20,255})\b")),
+    (
+        "github-token",
+        re.compile(r"\b(gh[pousr]_[A-Za-z0-9_]{20,255}|github_pat_[A-Za-z0-9_]{20,255})\b"),
+    ),
     ("openai-key", re.compile(r"\b(sk-(?:proj-)?[A-Za-z0-9_-]{20,})\b")),
     ("slack-token", re.compile(r"\b(xox[baprs]-[A-Za-z0-9-]{10,})\b")),
 )
@@ -183,7 +186,9 @@ def _credential_leak_event(event: dict[str, Any]) -> dict[str, Any] | None:
     return normalized
 
 
-def _finding_uid(session_uid: str, tool_name: str, event_uid: str, matches: list[dict[str, str]]) -> str:
+def _finding_uid(
+    session_uid: str, tool_name: str, event_uid: str, matches: list[dict[str, str]]
+) -> str:
     material = f"{session_uid}|{tool_name}|{event_uid}|{'|'.join(sorted(m['fingerprint'] for m in matches))}"
     return f"det-mcp-credential-leak-{hashlib.sha256(material.encode('utf-8')).hexdigest()[:16]}"
 
@@ -234,7 +239,11 @@ def _build_native_finding(event: dict[str, Any]) -> dict[str, Any]:
             {"name": "tool.event_uid", "type": "Other", "value": event_uid},
         ]
         + [
-            {"name": f"credential.{item['signal']}.fingerprint", "type": "Fingerprint", "value": item["fingerprint"]}
+            {
+                "name": f"credential.{item['signal']}.fingerprint",
+                "type": "Fingerprint",
+                "value": item["fingerprint"],
+            }
             for item in matches
         ],
         "evidence": {
@@ -285,7 +294,9 @@ def _render_ocsf_finding(native_finding: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def detect(events: Iterable[dict[str, Any]], output_format: str = "ocsf") -> Iterable[dict[str, Any]]:
+def detect(
+    events: Iterable[dict[str, Any]], output_format: str = "ocsf"
+) -> Iterable[dict[str, Any]]:
     if output_format not in OUTPUT_FORMATS:
         raise ValueError(f"unsupported output_format `{output_format}`")
     for event in events:

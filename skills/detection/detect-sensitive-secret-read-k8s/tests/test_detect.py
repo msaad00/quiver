@@ -103,7 +103,9 @@ class TestPatternMatching:
 
     def test_benign_names_skipped(self):
         for name in ("my-app-config", "feature-flags", "locales", "deploy-env", "nginx-conf"):
-            assert matches_sensitive_pattern(name, SENSITIVE_NAME_PATTERNS) == [], f"should not match: {name}"
+            assert matches_sensitive_pattern(name, SENSITIVE_NAME_PATTERNS) == [], (
+                f"should not match: {name}"
+            )
 
     def test_case_insensitive(self):
         assert matches_sensitive_pattern("AWS-Access-Key", SENSITIVE_NAME_PATTERNS)
@@ -243,8 +245,12 @@ class TestIdempotency:
 
     def test_different_actors_dedup_independently(self):
         events = [
-            _event(verb="get", secret_name="aws-access-key", actor="system:serviceaccount:default:app1"),
-            _event(verb="get", secret_name="aws-access-key", actor="system:serviceaccount:default:app2"),
+            _event(
+                verb="get", secret_name="aws-access-key", actor="system:serviceaccount:default:app1"
+            ),
+            _event(
+                verb="get", secret_name="aws-access-key", actor="system:serviceaccount:default:app2"
+            ),
         ]
         findings = list(detect(events))
         assert len(findings) == 2
@@ -298,7 +304,9 @@ class TestGoldenFixture:
         expected = _load_jsonl(EXPECTED)
         assert len(produced) == len(expected)
         for p, e in zip(produced, expected):
-            assert p == e, f"finding drift:\n  produced: {json.dumps(p, sort_keys=True)}\n  expected: {json.dumps(e, sort_keys=True)}"
+            assert p == e, (
+                f"finding drift:\n  produced: {json.dumps(p, sort_keys=True)}\n  expected: {json.dumps(e, sort_keys=True)}"
+            )
 
     def test_fixture_fires_on_aws_access_key(self):
         events = _load_jsonl(INPUT_FIXTURE)
@@ -329,6 +337,7 @@ class TestGoldenFixture:
         watcher_findings = [
             f
             for f in findings
-            if {o["name"]: o["value"] for o in f["observables"]}.get("actor.name") == "system:serviceaccount:default:watcher"
+            if {o["name"]: o["value"] for o in f["observables"]}.get("actor.name")
+            == "system:serviceaccount:default:watcher"
         ]
         assert watcher_findings == []

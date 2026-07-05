@@ -150,9 +150,7 @@ class TestDetection:
         assert list(detect(events)) == []
 
     def test_burst_collapses_to_one_finding_per_pair(self) -> None:
-        events = [
-            _event(uid=f"ev-burst-{i}", time_ms=1_000_000 + i * 1_000) for i in range(5)
-        ]
+        events = [_event(uid=f"ev-burst-{i}", time_ms=1_000_000 + i * 1_000) for i in range(5)]
         findings = list(detect(events))
         # All 5 are same (model, actor) within 24h => one finding.
         assert len(findings) == 1
@@ -219,7 +217,10 @@ class TestMetadata:
         assert metadata["providers"] == ("databricks",)
         assert MITRE_TECHNIQUE_UID in metadata["attack_coverage"]["databricks"]["techniques"]
         assert ATLAS_TECHNIQUE_UID in metadata["attack_coverage"]["databricks"]["techniques"]
-        assert "mlflow.downloadArtifact" in metadata["attack_coverage"]["databricks"]["anchor_operations"]
+        assert (
+            "mlflow.downloadArtifact"
+            in metadata["attack_coverage"]["databricks"]["anchor_operations"]
+        )
         assert "ingest-databricks-audit-ocsf" in ACCEPTED_PRODUCERS
         assert OUTPUT_FORMATS == ("ocsf", "native")
         assert "mlflow.getModelVersionDownloadUri" in ANCHOR_OPERATIONS

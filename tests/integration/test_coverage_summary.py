@@ -14,9 +14,7 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 SCRIPT = REPO_ROOT / "scripts" / "coverage_summary.py"
-spec = importlib.util.spec_from_file_location(
-    "cloud_security_coverage_summary_test", SCRIPT
-)
+spec = importlib.util.spec_from_file_location("cloud_security_coverage_summary_test", SCRIPT)
 assert spec and spec.loader
 COV = importlib.util.module_from_spec(spec)
 sys.modules[spec.name] = COV

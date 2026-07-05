@@ -11,7 +11,9 @@ import pytest
 # Mock googleapiclient + google.oauth2 BEFORE the worker handler imports them.
 sys.modules.setdefault("googleapiclient", types.ModuleType("googleapiclient"))
 sys.modules.setdefault("googleapiclient.discovery", types.SimpleNamespace(build=MagicMock()))
-sys.modules.setdefault("googleapiclient.http", types.SimpleNamespace(MediaInMemoryUpload=MagicMock()))
+sys.modules.setdefault(
+    "googleapiclient.http", types.SimpleNamespace(MediaInMemoryUpload=MagicMock())
+)
 sys.modules.setdefault("google", types.ModuleType("google"))
 sys.modules.setdefault("google.oauth2", types.ModuleType("google.oauth2"))
 
@@ -67,7 +69,12 @@ class TestHitlGate:
 
 class TestProtectedPrincipals:
     def test_break_glass_refused(self):
-        event = {"entry": _entry(email="break-glass-1@acme.example", principal_id="break-glass-1@acme.example"), "dry_run": True}
+        event = {
+            "entry": _entry(
+                email="break-glass-1@acme.example", principal_id="break-glass-1@acme.example"
+            ),
+            "dry_run": True,
+        }
         result = worker_handler.handler(event)
         assert result["status"] == "refused"
         assert "protected principal" in result["error"]
@@ -101,6 +108,7 @@ class TestFullRemediation:
             def step(clients, entry, actions):
                 calls.append(name)
                 actions.append({"action": name, "target": entry["principal_id"], "timestamp": "t"})
+
             return step
 
         from cloud_function_worker import steps as steps_module
@@ -114,9 +122,16 @@ class TestFullRemediation:
         # Neutralise audit + checkpoint writes (no Firestore / GCS in tests).
         monkeypatch.setattr(worker_handler, "_write_audit", lambda record: None)
         monkeypatch.setattr(worker_handler, "_save_checkpoint", lambda *a, **kw: None)
-        monkeypatch.setattr(worker_handler, "_load_checkpoint", lambda entry: {
-            "status": "new", "actions_taken": [], "completed_steps": [], "updated_at": ""
-        })
+        monkeypatch.setattr(
+            worker_handler,
+            "_load_checkpoint",
+            lambda entry: {
+                "status": "new",
+                "actions_taken": [],
+                "completed_steps": [],
+                "updated_at": "",
+            },
+        )
 
         result = worker_handler.handler({"entry": _entry()})
         assert result["status"] == "remediated"
@@ -134,6 +149,7 @@ class TestFullRemediation:
             def step(clients, entry, actions):
                 calls.append(name)
                 actions.append({"action": name, "target": entry["principal_id"], "timestamp": "t"})
+
             return step
 
         from cloud_function_worker import steps as steps_module
@@ -169,8 +185,12 @@ class TestFullRemediation:
             "_load_checkpoint",
             lambda entry: {
                 "status": "remediated",
-                "actions_taken": [{"action": "final_disable_or_delete", "target": "x", "timestamp": "t"}],
-                "completed_steps": [name for name, _ in worker_handler.steps_module.remediation_steps()],
+                "actions_taken": [
+                    {"action": "final_disable_or_delete", "target": "x", "timestamp": "t"}
+                ],
+                "completed_steps": [
+                    name for name, _ in worker_handler.steps_module.remediation_steps()
+                ],
                 "updated_at": "2026-04-17T00:00:00+00:00",
             },
         )
@@ -185,9 +205,16 @@ class TestFullRemediation:
         audit_calls: list[dict] = []
         monkeypatch.setattr(worker_handler, "_write_audit", audit_calls.append)
         monkeypatch.setattr(worker_handler, "_save_checkpoint", lambda *a, **kw: None)
-        monkeypatch.setattr(worker_handler, "_load_checkpoint", lambda entry: {
-            "status": "new", "actions_taken": [], "completed_steps": [], "updated_at": ""
-        })
+        monkeypatch.setattr(
+            worker_handler,
+            "_load_checkpoint",
+            lambda entry: {
+                "status": "new",
+                "actions_taken": [],
+                "completed_steps": [],
+                "updated_at": "",
+            },
+        )
 
         def _boom(*args, **kwargs):
             raise RuntimeError("Workspace API refused")

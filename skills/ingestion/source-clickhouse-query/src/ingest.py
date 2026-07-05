@@ -34,11 +34,11 @@ def _connect() -> Any:
         "username": os.environ.get("CLICKHOUSE_USER", "default"),
         "password": os.environ.get("CLICKHOUSE_PASSWORD", ""),
     }
-    if (port := os.environ.get("CLICKHOUSE_PORT")):
+    if port := os.environ.get("CLICKHOUSE_PORT"):
         kwargs["port"] = int(port)
-    if (database := os.environ.get("CLICKHOUSE_DATABASE")):
+    if database := os.environ.get("CLICKHOUSE_DATABASE"):
         kwargs["database"] = database
-    if (secure := os.environ.get("CLICKHOUSE_SECURE")):
+    if secure := os.environ.get("CLICKHOUSE_SECURE"):
         kwargs["secure"] = secure.lower() not in {"0", "false", "no"}
     return clickhouse_connect.get_client(**kwargs)
 
@@ -49,8 +49,7 @@ def fetch_rows(query: str) -> list[dict[str, Any]]:
         result = client.query(_normalize_query(query))
         column_names = list(result.column_names)
         rows = [
-            {column_names[i]: value for i, value in enumerate(row)}
-            for row in result.result_rows
+            {column_names[i]: value for i, value in enumerate(row)} for row in result.result_rows
         ]
     finally:
         client.close()
@@ -58,8 +57,12 @@ def fetch_rows(query: str) -> list[dict[str, Any]]:
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Run a read-only ClickHouse query and emit raw JSONL rows.")
-    parser.add_argument("--query", help="Read-only SQL query to run. If omitted, the query is read from stdin.")
+    parser = argparse.ArgumentParser(
+        description="Run a read-only ClickHouse query and emit raw JSONL rows."
+    )
+    parser.add_argument(
+        "--query", help="Read-only SQL query to run. If omitted, the query is read from stdin."
+    )
     parser.add_argument(
         "--output-format",
         choices=("raw",),

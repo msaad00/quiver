@@ -111,15 +111,25 @@ class TestSeverityAndStatus:
         assert detail is None
 
     def test_status_failure(self):
-        status_id, detail = status_from_outcome({"result": "FAILURE", "reason": "INVALID_CREDENTIALS"})
+        status_id, detail = status_from_outcome(
+            {"result": "FAILURE", "reason": "INVALID_CREDENTIALS"}
+        )
         assert status_id == STATUS_FAILURE
         assert detail == "INVALID_CREDENTIALS"
 
 
 class TestClassification:
     def test_authentication_routes(self):
-        assert _classify_event("user.session.start") == (AUTH_CLASS_UID, "Authentication", AUTH_ACTIVITY_LOGON)
-        assert _classify_event("user.session.end") == (AUTH_CLASS_UID, "Authentication", AUTH_ACTIVITY_LOGOFF)
+        assert _classify_event("user.session.start") == (
+            AUTH_CLASS_UID,
+            "Authentication",
+            AUTH_ACTIVITY_LOGON,
+        )
+        assert _classify_event("user.session.end") == (
+            AUTH_CLASS_UID,
+            "Authentication",
+            AUTH_ACTIVITY_LOGOFF,
+        )
         assert _classify_event("user.authentication.auth_via_mfa") == (
             AUTH_CLASS_UID,
             "Authentication",
@@ -331,7 +341,14 @@ class TestIterRawEvents:
         assert [event["uuid"] for event in events] == ["hook-1", "hook-2"]
 
     def test_ndjson_and_bad_line(self, capsys):
-        events = list(iter_raw_events(['{"uuid":"ok","published":"2026-04-13T02:15:00.000Z","eventType":"user.session.start"}', '{"bad"']))
+        events = list(
+            iter_raw_events(
+                [
+                    '{"uuid":"ok","published":"2026-04-13T02:15:00.000Z","eventType":"user.session.start"}',
+                    '{"bad"',
+                ]
+            )
+        )
         assert len(events) == 1
         assert events[0]["uuid"] == "ok"
         assert "skipping line" in capsys.readouterr().err
@@ -347,10 +364,24 @@ class TestIterRawEvents:
 
     def test_mixed_batch_keeps_valid_events(self, capsys, monkeypatch):
         monkeypatch.setenv("SKILL_LOG_FORMAT", "json")
-        out = list(ingest([json.dumps(_event(uuid="okta-good-1")), '{"bad"', "[]", json.dumps(_event(uuid="okta-good-2"))]))
+        out = list(
+            ingest(
+                [
+                    json.dumps(_event(uuid="okta-good-1")),
+                    '{"bad"',
+                    "[]",
+                    json.dumps(_event(uuid="okta-good-2")),
+                ]
+            )
+        )
         assert [event["metadata"]["uid"] for event in out] == ["okta-good-1", "okta-good-2"]
-        stderr_lines = [json.loads(line) for line in capsys.readouterr().err.splitlines() if line.strip()]
-        assert [payload["event"] for payload in stderr_lines] == ["json_parse_failed", "invalid_json_shape"]
+        stderr_lines = [
+            json.loads(line) for line in capsys.readouterr().err.splitlines() if line.strip()
+        ]
+        assert [payload["event"] for payload in stderr_lines] == [
+            "json_parse_failed",
+            "invalid_json_shape",
+        ]
         assert [payload["line"] for payload in stderr_lines] == [2, 3]
 
 
@@ -461,7 +492,10 @@ class TestExpandedMapping:
 
     def test_src_endpoint_autonomous_system(self):
         event = convert_event(_rich_event())
-        assert event["src_endpoint"]["autonomous_system"] == {"number": 13335, "name": "Cloudflare, Inc."}
+        assert event["src_endpoint"]["autonomous_system"] == {
+            "number": 13335,
+            "name": "Cloudflare, Inc.",
+        }
 
     def test_src_endpoint_is_proxy_and_domain_and_zone(self):
         event = convert_event(_rich_event())
@@ -471,7 +505,11 @@ class TestExpandedMapping:
 
     def test_device_and_http_request(self):
         event = convert_event(_rich_event())
-        assert event["device"] == {"uid": "cli-device-abc", "name": "Computer", "os": {"name": "Mac OS X"}}
+        assert event["device"] == {
+            "uid": "cli-device-abc",
+            "name": "Computer",
+            "os": {"name": "Mac OS X"},
+        }
         assert event["http_request"] == {"user_agent": "Mozilla/5.0"}
 
     def test_auth_protocol_and_factors(self):
@@ -501,7 +539,10 @@ class TestExpandedMapping:
         enrichments = event["enrichments"]
         by_name = {entry["name"]: entry for entry in enrichments}
         assert by_name["okta.risk_level"]["value"] == "HIGH"
-        assert by_name["okta.risk_reasons"]["data"]["reasons"] == ["newCountry", "anomalousLocation"]
+        assert by_name["okta.risk_reasons"]["data"]["reasons"] == [
+            "newCountry",
+            "anomalousLocation",
+        ]
         assert by_name["okta.behaviors"]["data"]["behaviors"] == {"New Geo-Location": "POSITIVE"}
 
     def test_risk_reasons_accepts_list_shape(self):

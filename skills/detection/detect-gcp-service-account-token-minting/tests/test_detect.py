@@ -16,7 +16,9 @@ from skills._shared.errors import ContractError  # noqa: E402
 
 THIS = Path(__file__).resolve().parent
 SRC = THIS.parent / "src" / "detect.py"
-SPEC = importlib.util.spec_from_file_location("detect_gcp_service_account_token_minting_under_test", SRC)
+SPEC = importlib.util.spec_from_file_location(
+    "detect_gcp_service_account_token_minting_under_test", SRC
+)
 assert SPEC and SPEC.loader
 MODULE = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(MODULE)
@@ -78,7 +80,10 @@ def test_fires_on_generate_id_token():
     findings = list(detect([_event(operation=GENERATE_ID_TOKEN_OPERATION)]))
     assert len(findings) == 1
     assert findings[0]["evidence"]["token_type"] == "id_token"
-    assert any(obs["name"] == "token.type" and obs["value"] == "id_token" for obs in findings[0]["observables"])
+    assert any(
+        obs["name"] == "token.type" and obs["value"] == "id_token"
+        for obs in findings[0]["observables"]
+    )
 
 
 def test_native_output_contains_target_service_account_and_token_type():
@@ -125,7 +130,12 @@ def test_accepts_raw_service_account_resource_name_without_prefix():
             [
                 {
                     **_event(),
-                    "resources": [{"name": "sa-deploy@my-project.iam.gserviceaccount.com", "type": "service_account"}],
+                    "resources": [
+                        {
+                            "name": "sa-deploy@my-project.iam.gserviceaccount.com",
+                            "type": "service_account",
+                        }
+                    ],
                 }
             ]
         )
@@ -148,4 +158,3 @@ def test_finding_uid_is_deterministic():
     second = list(detect([event]))[0]["finding_info"]["uid"]
     assert first == second
     assert first.startswith("gsatm-")
-

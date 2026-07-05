@@ -209,9 +209,13 @@ def _build_native_finding(event: dict[str, Any], allowlist_mode: str) -> dict[st
         {"name": "snowflake.granted_role", "type": "Role", "value": granted_role},
     ]
     if grantee_user:
-        observables.append({"name": "snowflake.grantee_user", "type": "User Name", "value": grantee_user})
+        observables.append(
+            {"name": "snowflake.grantee_user", "type": "User Name", "value": grantee_user}
+        )
     if grantee_role:
-        observables.append({"name": "snowflake.grantee_role", "type": "Role", "value": grantee_role})
+        observables.append(
+            {"name": "snowflake.grantee_role", "type": "Role", "value": grantee_role}
+        )
 
     return {
         "schema_mode": "native",
@@ -316,7 +320,9 @@ def coverage_metadata() -> dict[str, Any]:
     }
 
 
-def detect(events: Iterable[dict[str, Any]], output_format: str = "ocsf") -> Iterable[dict[str, Any]]:
+def detect(
+    events: Iterable[dict[str, Any]], output_format: str = "ocsf"
+) -> Iterable[dict[str, Any]]:
     if output_format not in OUTPUT_FORMATS:
         raise ContractError(
             f"unsupported output_format: {output_format}",
@@ -388,9 +394,15 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         description="Detect Snowflake privileged-role grants by unauthorized granters from OCSF 1.8 input."
     )
-    parser.add_argument("input", nargs="?", help="OCSF 1.8 API Activity 6003 JSONL input. Defaults to stdin.")
-    parser.add_argument("--output", "-o", help="Detection Finding JSONL output. Defaults to stdout.")
-    parser.add_argument("--output-format", choices=OUTPUT_FORMATS, default="ocsf", help="Output format.")
+    parser.add_argument(
+        "input", nargs="?", help="OCSF 1.8 API Activity 6003 JSONL input. Defaults to stdin."
+    )
+    parser.add_argument(
+        "--output", "-o", help="Detection Finding JSONL output. Defaults to stdout."
+    )
+    parser.add_argument(
+        "--output-format", choices=OUTPUT_FORMATS, default="ocsf", help="Output format."
+    )
     args = parser.parse_args(argv)
 
     in_stream = sys.stdin if not args.input else open(args.input, "r", encoding="utf-8")

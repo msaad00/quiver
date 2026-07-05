@@ -85,7 +85,9 @@ class TestServiceAccount:
 
     def test_namespace_extraction(self):
         assert service_account_namespace("system:serviceaccount:default:builder") == "default"
-        assert service_account_namespace("system:serviceaccount:kube-system:coredns") == "kube-system"
+        assert (
+            service_account_namespace("system:serviceaccount:kube-system:coredns") == "kube-system"
+        )
 
     def test_namespace_non_sa(self):
         assert service_account_namespace("kube-admin") is None
@@ -103,7 +105,9 @@ class TestStatus:
             assert detail is None
 
     def test_4xx_failure(self):
-        sid, detail = _status_id_and_detail({"code": 403, "reason": "Forbidden", "message": "denied"})
+        sid, detail = _status_id_and_detail(
+            {"code": 403, "reason": "Forbidden", "message": "denied"}
+        )
         assert sid == STATUS_FAILURE
         assert "Forbidden" in detail
         assert "denied" in detail
@@ -188,7 +192,9 @@ class TestConvertEvent:
         assert "system:authenticated" in group_names
 
     def test_non_service_account_no_type(self):
-        e = convert_event(self._event(user={"username": "kube-admin", "groups": ["system:masters"]}))
+        e = convert_event(
+            self._event(user={"username": "kube-admin", "groups": ["system:masters"]})
+        )
         assert e["actor"]["user"]["name"] == "kube-admin"
         assert "type" not in e["actor"]["user"]
 
@@ -325,14 +331,18 @@ class TestGoldenFixture:
         expected = _load_jsonl(OCSF_FIXTURE)
         assert len(produced) == len(expected)
         for p, e in zip(produced, expected):
-            assert p == e, f"event mismatch:\n  produced: {json.dumps(p, sort_keys=True)}\n  expected: {json.dumps(e, sort_keys=True)}"
+            assert p == e, (
+                f"event mismatch:\n  produced: {json.dumps(p, sort_keys=True)}\n  expected: {json.dumps(e, sort_keys=True)}"
+            )
 
     def test_fixture_captures_priv_esc_chain(self):
         """The fixture is designed to be a minimum viable priv-esc chain:
         list secrets → get secret → exec pod → create clusterrolebinding → denied delete.
         """
         events = _load_jsonl(OCSF_FIXTURE)
-        verbs_and_resources = [(e["api"]["operation"], (e["resources"] or [{}])[0].get("type")) for e in events]
+        verbs_and_resources = [
+            (e["api"]["operation"], (e["resources"] or [{}])[0].get("type")) for e in events
+        ]
         assert ("list", "secrets") in verbs_and_resources
         assert ("get", "secrets") in verbs_and_resources
         assert ("create", "pods") in verbs_and_resources
@@ -390,6 +400,11 @@ class TestStderrTelemetry:
         out = list(ingest([json.dumps(read_event), '{"bad": ', "[]", json.dumps(delete_event)]))
         assert len(out) == 2
         assert [event["metadata"]["uid"] for event in out] == ["k8s-read", "k8s-delete"]
-        stderr_lines = [json.loads(line) for line in capsys.readouterr().err.splitlines() if line.strip()]
-        assert [payload["event"] for payload in stderr_lines] == ["json_parse_failed", "invalid_json_shape"]
+        stderr_lines = [
+            json.loads(line) for line in capsys.readouterr().err.splitlines() if line.strip()
+        ]
+        assert [payload["event"] for payload in stderr_lines] == [
+            "json_parse_failed",
+            "invalid_json_shape",
+        ]
         assert [payload["line"] for payload in stderr_lines] == [2, 3]

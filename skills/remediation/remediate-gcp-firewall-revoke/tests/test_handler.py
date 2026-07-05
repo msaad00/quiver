@@ -64,8 +64,7 @@ def _finding(
         obs.append({"name": "permission.port", "type": "Other", "value": str(p)})
     return {
         "class_uid": 2004,
-        "metadata": {"uid": "find-1",
-                     "product": {"feature": {"name": "detect-gcp-open-firewall"}}},
+        "metadata": {"uid": "find-1", "product": {"feature": {"name": "detect-gcp-open-firewall"}}},
         "finding_info": {"uid": "find-1"},
         "observables": obs,
     }
@@ -76,13 +75,21 @@ class _FakeAudit:
     writes: list[dict] = field(default_factory=list)
 
     def record(self, *, target, step, status, detail, incident_id, approver):
-        self.writes.append({
-            "rule_name": target.rule_name, "project_id": target.project_id,
-            "step": step, "status": status, "detail": detail,
-            "incident_id": incident_id, "approver": approver,
-        })
-        return {"row_uid": f"row-{len(self.writes)}",
-                "s3_evidence_uri": f"s3://bucket/{target.rule_name}-{len(self.writes)}.json"}
+        self.writes.append(
+            {
+                "rule_name": target.rule_name,
+                "project_id": target.project_id,
+                "step": step,
+                "status": status,
+                "detail": detail,
+                "incident_id": incident_id,
+                "approver": approver,
+            }
+        )
+        return {
+            "row_uid": f"row-{len(self.writes)}",
+            "s3_evidence_uri": f"s3://bucket/{target.rule_name}-{len(self.writes)}.json",
+        }
 
 
 @dataclass
@@ -152,9 +159,7 @@ def test_check_apply_gate_requires_both_envs(monkeypatch):
 
 
 def test_parse_targets_extracts_full_target():
-    target, _ = next(
-        parse_targets([_finding(cidrs=["0.0.0.0/0", "::/0"], ports=[22, 3306])])
-    )
+    target, _ = next(parse_targets([_finding(cidrs=["0.0.0.0/0", "::/0"], ports=[22, 3306])]))
     assert target.rule_name == "allow-ssh-world"
     assert target.project_id == "p-1"
     assert target.cidrs == ("0.0.0.0/0", "::/0")
@@ -174,10 +179,18 @@ def test_parse_targets_rejects_wrong_producer(capsys):
 
 
 def _t(**overrides) -> Target:
-    base = dict(rule_name="allow-x", project_id="p-1", network="n",
-                cidrs=("0.0.0.0/0",), ports=(22,), ip_protocol="tcp",
-                actor="a", rule="r",
-                producer_skill="detect-gcp-open-firewall", finding_uid="f")
+    base = dict(
+        rule_name="allow-x",
+        project_id="p-1",
+        network="n",
+        cidrs=("0.0.0.0/0",),
+        ports=(22,),
+        ip_protocol="tcp",
+        actor="a",
+        rule="r",
+        producer_skill="detect-gcp-open-firewall",
+        finding_uid="f",
+    )
     base.update(overrides)
     return Target(**base)
 
@@ -185,8 +198,10 @@ def _t(**overrides) -> Target:
 def test_protected_default_rule_by_name_prefix():
     p, why = is_protected_firewall(
         _t(rule_name="default-allow-internal"),
-        name_prefixes=("default-",), rule_names=(),
-        intentionally_open_marker="intentionally-open", firewall_get=None,
+        name_prefixes=("default-",),
+        rule_names=(),
+        intentionally_open_marker="intentionally-open",
+        firewall_get=None,
     )
     assert p is True
     assert "default-" in why
@@ -195,8 +210,10 @@ def test_protected_default_rule_by_name_prefix():
 def test_protected_via_env_rule_name_allowlist():
     p, why = is_protected_firewall(
         _t(rule_name="allow-bootstrap"),
-        name_prefixes=(), rule_names=("allow-bootstrap",),
-        intentionally_open_marker="intentionally-open", firewall_get=None,
+        name_prefixes=(),
+        rule_names=("allow-bootstrap",),
+        intentionally_open_marker="intentionally-open",
+        firewall_get=None,
     )
     assert p is True
     assert "allow-bootstrap" in why
@@ -205,8 +222,11 @@ def test_protected_via_env_rule_name_allowlist():
 def test_protected_via_intentionally_open_description():
     fw = {"name": "x", "description": "PUBLIC api - intentionally-open per ARCH-123"}
     p, why = is_protected_firewall(
-        _t(), name_prefixes=(), rule_names=(),
-        intentionally_open_marker="intentionally-open", firewall_get=fw,
+        _t(),
+        name_prefixes=(),
+        rule_names=(),
+        intentionally_open_marker="intentionally-open",
+        firewall_get=fw,
     )
     assert p is True
     assert "intentionally-open" in why
@@ -215,7 +235,8 @@ def test_protected_via_intentionally_open_description():
 def test_unprotected_when_no_match():
     p, _ = is_protected_firewall(
         _t(rule_name="my-prod-allow"),
-        name_prefixes=("default-",), rule_names=(),
+        name_prefixes=("default-",),
+        rule_names=(),
         intentionally_open_marker="intentionally-open",
         firewall_get={"description": ""},
     )
@@ -280,9 +301,15 @@ def test_run_skips_intentionally_open_described_rule_in_apply():
         }
     )
     records = list(
-        run([_finding()], compute_client=compute, apply=True, audit=audit,
-            incident_id="INC-1", approver="alice",
-            allowed_project_ids=("p-1",))
+        run(
+            [_finding()],
+            compute_client=compute,
+            apply=True,
+            audit=audit,
+            incident_id="INC-1",
+            approver="alice",
+            allowed_project_ids=("p-1",),
+        )
     )
     assert records[0]["status"] == STATUS_SKIPPED_PROTECTED
     assert compute.patches == []
@@ -292,8 +319,11 @@ def test_run_skips_intentionally_open_described_rule_in_apply():
 
 def test_run_skips_via_env_protected_rule_name():
     records = list(
-        run([_finding(rule_name="allow-bootstrap")], compute_client=_FakeCompute(),
-            rule_names=("allow-bootstrap",))
+        run(
+            [_finding(rule_name="allow-bootstrap")],
+            compute_client=_FakeCompute(),
+            rule_names=("allow-bootstrap",),
+        )
     )
     assert records[0]["status"] == STATUS_WOULD_VIOLATE_PROTECTED
 
@@ -303,9 +333,17 @@ def test_run_skips_via_env_protected_rule_name():
 
 def test_run_apply_requires_audit_writer():
     import pytest
+
     with pytest.raises(ValueError, match="audit writer is required"):
-        list(run([_finding()], compute_client=_FakeCompute(), apply=True, audit=None,
-                 allowed_project_ids=("p-1",)))
+        list(
+            run(
+                [_finding()],
+                compute_client=_FakeCompute(),
+                apply=True,
+                audit=None,
+                allowed_project_ids=("p-1",),
+            )
+        )
 
 
 def test_check_apply_gate_rejects_missing_envs(monkeypatch):
@@ -324,14 +362,22 @@ def test_run_apply_patches_with_dual_audit():
     compute = _FakeCompute(
         firewalls={
             ("p-1", "allow-ssh-world"): {
-                "name": "allow-ssh-world", "disabled": False, "description": "",
+                "name": "allow-ssh-world",
+                "disabled": False,
+                "description": "",
             }
         }
     )
     records = list(
-        run([_finding()], compute_client=compute, apply=True, audit=audit,
-            incident_id="INC-1", approver="alice@security",
-            allowed_project_ids=("p-1",))
+        run(
+            [_finding()],
+            compute_client=compute,
+            apply=True,
+            audit=audit,
+            incident_id="INC-1",
+            approver="alice@security",
+            allowed_project_ids=("p-1",),
+        )
     )
     rec = records[0]
     assert rec["status"] == STATUS_SUCCESS
@@ -349,14 +395,19 @@ def test_run_apply_patches_with_dual_audit():
 def test_run_apply_delete_mode_calls_delete():
     audit = _FakeAudit()
     compute = _FakeCompute(
-        firewalls={
-            ("p-1", "allow-ssh-world"): {"name": "allow-ssh-world", "disabled": False}
-        }
+        firewalls={("p-1", "allow-ssh-world"): {"name": "allow-ssh-world", "disabled": False}}
     )
     records = list(
-        run([_finding()], compute_client=compute, apply=True, audit=audit,
-            incident_id="INC-1", approver="alice", mode=MODE_DELETE,
-            allowed_project_ids=("p-1",))
+        run(
+            [_finding()],
+            compute_client=compute,
+            apply=True,
+            audit=audit,
+            incident_id="INC-1",
+            approver="alice",
+            mode=MODE_DELETE,
+            allowed_project_ids=("p-1",),
+        )
     )
     assert records[0]["status"] == STATUS_SUCCESS
     assert compute.deletes == [("p-1", "allow-ssh-world")]
@@ -367,9 +418,15 @@ def test_run_apply_writes_failure_audit_when_patch_throws():
     audit = _FakeAudit()
     compute = _FakeCompute(raise_on_patch=True)
     records = list(
-        run([_finding()], compute_client=compute, apply=True, audit=audit,
-            incident_id="INC-1", approver="alice",
-            allowed_project_ids=("p-1",))
+        run(
+            [_finding()],
+            compute_client=compute,
+            apply=True,
+            audit=audit,
+            incident_id="INC-1",
+            approver="alice",
+            allowed_project_ids=("p-1",),
+        )
     )
     assert records[0]["status"] == STATUS_FAILURE
     assert len(audit.writes) == 2
@@ -378,6 +435,7 @@ def test_run_apply_writes_failure_audit_when_patch_throws():
 
 def test_run_unsupported_mode_raises():
     import pytest
+
     with pytest.raises(ValueError, match="unsupported mode"):
         list(run([_finding()], compute_client=_FakeCompute(), mode="purge"))
 
@@ -386,9 +444,15 @@ def test_run_apply_skips_wrong_project_boundary():
     audit = _FakeAudit()
     compute = _FakeCompute()
     records = list(
-        run([_finding()], compute_client=compute, apply=True, audit=audit,
-            incident_id="INC-1", approver="alice",
-            allowed_project_ids=("p-2",))
+        run(
+            [_finding()],
+            compute_client=compute,
+            apply=True,
+            audit=audit,
+            incident_id="INC-1",
+            approver="alice",
+            allowed_project_ids=("p-2",),
+        )
     )
     assert records[0]["status"] == STATUS_SKIPPED_PROJECT_BOUNDARY
     assert compute.patches == []
@@ -401,9 +465,7 @@ def test_run_apply_skips_wrong_project_boundary():
 
 def test_run_reverify_verified_when_rule_disabled():
     compute = _FakeCompute(
-        firewalls={
-            ("p-1", "allow-ssh-world"): {"name": "allow-ssh-world", "disabled": True}
-        }
+        firewalls={("p-1", "allow-ssh-world"): {"name": "allow-ssh-world", "disabled": True}}
     )
     records = list(run([_finding()], compute_client=compute, reverify=True))
     assert len(records) == 1
@@ -422,9 +484,7 @@ def test_run_reverify_verified_when_rule_deleted():
 
 def test_run_reverify_drift_emits_ocsf_finding_alongside_verification():
     compute = _FakeCompute(
-        firewalls={
-            ("p-1", "allow-ssh-world"): {"name": "allow-ssh-world", "disabled": False}
-        }
+        firewalls={("p-1", "allow-ssh-world"): {"name": "allow-ssh-world", "disabled": False}}
     )
     records = list(run([_finding()], compute_client=compute, reverify=True))
     assert len(records) == 2
@@ -442,9 +502,7 @@ def test_run_reverify_drift_emits_ocsf_finding_alongside_verification():
 
 def test_run_reverify_uses_finding_time_as_remediation_reference():
     compute = _FakeCompute(
-        firewalls={
-            ("p-1", "allow-ssh-world"): {"name": "allow-ssh-world", "disabled": True}
-        }
+        firewalls={("p-1", "allow-ssh-world"): {"name": "allow-ssh-world", "disabled": True}}
     )
     event = _finding()
     event["time"] = 1700000000123
@@ -472,8 +530,9 @@ def test_google_compute_client_uses_googleapiclient_discovery():
     fake_firewalls.get.return_value = fake_get
     fake_get.execute.return_value = {"name": "allow-ssh-world", "disabled": True}
 
-    with patch.dict(sys.modules, {"googleapiclient": MagicMock(),
-                                   "googleapiclient.discovery": fake_discovery}):
+    with patch.dict(
+        sys.modules, {"googleapiclient": MagicMock(), "googleapiclient.discovery": fake_discovery}
+    ):
         client = GoogleComputeClient()
         result = client.get_firewall("p-1", "allow-ssh-world")
         assert result == {"name": "allow-ssh-world", "disabled": True}
@@ -488,8 +547,9 @@ def test_google_compute_client_patch_sets_disabled_true():
     fake_firewalls = MagicMock()
     fake_service.firewalls.return_value = fake_firewalls
 
-    with patch.dict(sys.modules, {"googleapiclient": MagicMock(),
-                                   "googleapiclient.discovery": fake_discovery}):
+    with patch.dict(
+        sys.modules, {"googleapiclient": MagicMock(), "googleapiclient.discovery": fake_discovery}
+    ):
         client = GoogleComputeClient()
         client.patch_firewall_disable("p-1", "allow-ssh-world")
         fake_firewalls.patch.assert_called_with(

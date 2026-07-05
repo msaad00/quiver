@@ -104,7 +104,11 @@ async def remediate_user(
     if dry_run:
         result.status = RemediationStatus.DRY_RUN
         for i, action in enumerate(_STEP_NAMES, 1):
-            result.steps.append(RemediationStep(step_number=i, action=action, target=user_id, status=RemediationStatus.DRY_RUN))
+            result.steps.append(
+                RemediationStep(
+                    step_number=i, action=action, target=user_id, status=RemediationStatus.DRY_RUN
+                )
+            )
         result.complete()
         return result
 
@@ -152,11 +156,20 @@ async def _revoke_sessions(client, user_id: str, step: int) -> RemediationStep:
     """POST /users/{id}/revokeSignInSessions — invalidates all refresh tokens."""
     try:
         await client.users.by_user_id(user_id).revoke_sign_in_sessions.post()
-        return RemediationStep(step_number=step, action="revoke_sign_in_sessions", target=user_id, detail="All sessions revoked")
+        return RemediationStep(
+            step_number=step,
+            action="revoke_sign_in_sessions",
+            target=user_id,
+            detail="All sessions revoked",
+        )
     except Exception as e:
         logger.warning("Failed to revoke sessions for %s: %s", user_id, e)
         return RemediationStep(
-            step_number=step, action="revoke_sign_in_sessions", target=user_id, status=RemediationStatus.FAILED, error=str(e)
+            step_number=step,
+            action="revoke_sign_in_sessions",
+            target=user_id,
+            status=RemediationStatus.FAILED,
+            error=str(e),
         )
 
 
@@ -174,7 +187,11 @@ async def _remove_group_memberships(client, user_id: str, step: int) -> Remediat
             if member.odata_type == "#microsoft.graph.group":
                 try:
                     # /$ref is critical — without it you delete the user, not the membership
-                    await client.groups.by_group_id(member.id).members.by_directory_object_id(user_id).ref.delete()
+                    await (
+                        client.groups.by_group_id(member.id)
+                        .members.by_directory_object_id(user_id)
+                        .ref.delete()
+                    )
                     removed += 1
                 except Exception:
                     # Dynamic groups can't be manually modified
@@ -188,7 +205,11 @@ async def _remove_group_memberships(client, user_id: str, step: int) -> Remediat
     except Exception as e:
         logger.warning("Failed to remove group memberships for %s: %s", user_id, e)
         return RemediationStep(
-            step_number=step, action="remove_group_memberships", target=user_id, status=RemediationStatus.FAILED, error=str(e)
+            step_number=step,
+            action="remove_group_memberships",
+            target=user_id,
+            status=RemediationStatus.FAILED,
+            error=str(e),
         )
 
 
@@ -198,7 +219,11 @@ async def _remove_app_role_assignments(client, user_id: str, step: int) -> Remed
         assignments = await client.users.by_user_id(user_id).app_role_assignments.get()
         removed = 0
         for assignment in assignments.value or []:
-            await client.users.by_user_id(user_id).app_role_assignments.by_app_role_assignment_id(assignment.id).delete()
+            await (
+                client.users.by_user_id(user_id)
+                .app_role_assignments.by_app_role_assignment_id(assignment.id)
+                .delete()
+            )
             removed += 1
         return RemediationStep(
             step_number=step,
@@ -209,7 +234,11 @@ async def _remove_app_role_assignments(client, user_id: str, step: int) -> Remed
     except Exception as e:
         logger.warning("Failed to remove app role assignments for %s: %s", user_id, e)
         return RemediationStep(
-            step_number=step, action="remove_app_role_assignments", target=user_id, status=RemediationStatus.FAILED, error=str(e)
+            step_number=step,
+            action="remove_app_role_assignments",
+            target=user_id,
+            status=RemediationStatus.FAILED,
+            error=str(e),
         )
 
 
@@ -230,7 +259,11 @@ async def _revoke_oauth2_grants(client, user_id: str, step: int) -> RemediationS
     except Exception as e:
         logger.warning("Failed to revoke OAuth2 grants for %s: %s", user_id, e)
         return RemediationStep(
-            step_number=step, action="revoke_oauth2_grants", target=user_id, status=RemediationStatus.FAILED, error=str(e)
+            step_number=step,
+            action="revoke_oauth2_grants",
+            target=user_id,
+            status=RemediationStatus.FAILED,
+            error=str(e),
         )
 
 
@@ -242,10 +275,21 @@ async def _disable_user(client, user_id: str, step: int) -> RemediationStep:
         body = User()
         body.account_enabled = False
         await client.users.by_user_id(user_id).patch(body)
-        return RemediationStep(step_number=step, action="disable_user", target=user_id, detail="accountEnabled set to false")
+        return RemediationStep(
+            step_number=step,
+            action="disable_user",
+            target=user_id,
+            detail="accountEnabled set to false",
+        )
     except Exception as e:
         logger.warning("Failed to disable user %s: %s", user_id, e)
-        return RemediationStep(step_number=step, action="disable_user", target=user_id, status=RemediationStatus.FAILED, error=str(e))
+        return RemediationStep(
+            step_number=step,
+            action="disable_user",
+            target=user_id,
+            status=RemediationStatus.FAILED,
+            error=str(e),
+        )
 
 
 async def _delete_user(client, user_id: str, step: int) -> RemediationStep:
@@ -260,4 +304,10 @@ async def _delete_user(client, user_id: str, step: int) -> RemediationStep:
         )
     except Exception as e:
         logger.warning("Failed to delete user %s: %s", user_id, e)
-        return RemediationStep(step_number=step, action="delete_user", target=user_id, status=RemediationStatus.FAILED, error=str(e))
+        return RemediationStep(
+            step_number=step,
+            action="delete_user",
+            target=user_id,
+            status=RemediationStatus.FAILED,
+            error=str(e),
+        )

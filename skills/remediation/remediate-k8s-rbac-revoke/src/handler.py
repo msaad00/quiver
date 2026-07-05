@@ -56,9 +56,7 @@ DEFAULT_DENY_NAMESPACES = (
     "linkerd-",
 )
 
-DEFAULT_DENY_BINDING_PREFIXES = (
-    "system:",
-)
+DEFAULT_DENY_BINDING_PREFIXES = ("system:",)
 
 SUPPORTED_BINDING_TYPES = frozenset({"rolebindings", "clusterrolebindings"})
 
@@ -255,7 +253,11 @@ def _finding_product(event: dict[str, Any]) -> str:
 
 
 def _finding_uid(event: dict[str, Any]) -> str:
-    return str((event.get("finding_info") or {}).get("uid") or (event.get("metadata") or {}).get("uid") or "")
+    return str(
+        (event.get("finding_info") or {}).get("uid")
+        or (event.get("metadata") or {}).get("uid")
+        or ""
+    )
 
 
 def _observable_value(event: dict[str, Any], name: str) -> str:
@@ -309,7 +311,9 @@ def _target_from_event(event: dict[str, Any]) -> Target | None:
     )
 
 
-def parse_targets(events: Iterable[dict[str, Any]]) -> Iterator[tuple[Target | None, dict[str, Any]]]:
+def parse_targets(
+    events: Iterable[dict[str, Any]],
+) -> Iterator[tuple[Target | None, dict[str, Any]]]:
     for event in events:
         yield _target_from_event(event), event
 
@@ -354,7 +358,9 @@ def is_protected_binding(name: str, prefixes: Iterable[str]) -> tuple[bool, str]
 
 def _delete_endpoint(target: Target) -> str:
     if target.binding_type == "clusterrolebindings":
-        return f"DELETE /apis/rbac.authorization.k8s.io/v1/clusterrolebindings/{target.binding_name}"
+        return (
+            f"DELETE /apis/rbac.authorization.k8s.io/v1/clusterrolebindings/{target.binding_name}"
+        )
     return (
         f"DELETE /apis/rbac.authorization.k8s.io/v1/namespaces/"
         f"{target.namespace}/rolebindings/{target.binding_name}"
@@ -370,7 +376,9 @@ def _verify_endpoint(target: Target) -> str:
     )
 
 
-def _plan_record(target: Target, *, status: str, detail: str | None, dry_run: bool) -> dict[str, Any]:
+def _plan_record(
+    target: Target, *, status: str, detail: str | None, dry_run: bool
+) -> dict[str, Any]:
     return {
         "schema_mode": "native",
         "canonical_schema_version": CANONICAL_VERSION,
@@ -458,7 +466,10 @@ def check_apply_gate() -> tuple[bool, str]:
     if not allowed_clusters:
         return False, "K8S_RBAC_REVOKE_ALLOWED_CLUSTERS is required for --apply"
     if cluster_name not in allowed_clusters:
-        return False, f"K8S_CLUSTER_NAME `{cluster_name}` is not listed in K8S_RBAC_REVOKE_ALLOWED_CLUSTERS"
+        return (
+            False,
+            f"K8S_CLUSTER_NAME `{cluster_name}` is not listed in K8S_RBAC_REVOKE_ALLOWED_CLUSTERS",
+        )
     return True, ""
 
 
@@ -505,7 +516,10 @@ def revoke_binding(
         approver=approver,
     )
     record = _plan_record(
-        target, status=STATUS_SUCCESS, detail=f"deleted {target.binding_type}/{target.binding_name}", dry_run=False
+        target,
+        status=STATUS_SUCCESS,
+        detail=f"deleted {target.binding_type}/{target.binding_name}",
+        dry_run=False,
     )
     record["audit"] = second_audit
     record["incident_id"] = incident_id
@@ -520,7 +534,9 @@ def reverify_revocation(target: Target, *, kube_client: KubernetesClient) -> dic
         existing = kube_client.get_role_binding(target.namespace, target.binding_name)
 
     if existing is None:
-        return _verification_record(target, status=STATUS_VERIFIED, detail="binding no longer present")
+        return _verification_record(
+            target, status=STATUS_VERIFIED, detail="binding no longer present"
+        )
     return _verification_record(
         target,
         status=STATUS_DRIFT,
@@ -621,7 +637,11 @@ def run(
 
         protected, prefix = is_protected_binding(target.binding_name, protected_prefixes)
         if protected:
-            status = STATUS_SKIPPED_PROTECTED_BINDING if apply else STATUS_WOULD_VIOLATE_PROTECTED_BINDING
+            status = (
+                STATUS_SKIPPED_PROTECTED_BINDING
+                if apply
+                else STATUS_WOULD_VIOLATE_PROTECTED_BINDING
+            )
             yield _skip_record(
                 target,
                 status=status,
@@ -656,8 +676,7 @@ def run(
                 target,
                 status=STATUS_SKIPPED_CLUSTER_BOUNDARY,
                 detail=(
-                    f"cluster `{cluster_name}` is not listed in "
-                    "K8S_RBAC_REVOKE_ALLOWED_CLUSTERS"
+                    f"cluster `{cluster_name}` is not listed in K8S_RBAC_REVOKE_ALLOWED_CLUSTERS"
                 ),
                 dry_run=False,
             )

@@ -80,7 +80,12 @@ def _flow(
         "class_uid": NETWORK_ACTIVITY_CLASS,
         "activity_id": activity_id,
         "time": time_ms,
-        "src_endpoint": {"ip": src_ip, "port": 55412, "instance_uid": instance, "subnet_uid": "subnet-priv-1a"},
+        "src_endpoint": {
+            "ip": src_ip,
+            "port": 55412,
+            "instance_uid": instance,
+            "subnet_uid": "subnet-priv-1a",
+        },
         "dst_endpoint": {"ip": dst_ip, "port": dst_port},
         "traffic": {"packets": 300, "bytes": bytes_},
         "connection_info": {"protocol_num": 6, "protocol_name": "TCP"},
@@ -221,8 +226,13 @@ class TestPositiveCases:
         ]
         findings = list(detect(events))
         assert len(findings) == 2
-        dsts = {tuple(o["value"] for o in f["observables"] if o["name"] in ("dst.ip", "dst.port")) for f in findings}
-        assert ("10.0.3.75", "3306") in dsts or ("10.0.3.75", "3306") in {(d[0], d[1]) for d in dsts if len(d) >= 2}
+        dsts = {
+            tuple(o["value"] for o in f["observables"] if o["name"] in ("dst.ip", "dst.port"))
+            for f in findings
+        }
+        assert ("10.0.3.75", "3306") in dsts or ("10.0.3.75", "3306") in {
+            (d[0], d[1]) for d in dsts if len(d) >= 2
+        }
 
     def test_deterministic_uid(self):
         events = [_anchor_event(), _flow()]
@@ -568,8 +578,13 @@ class TestCrossCloudAnchors:
         assert "iam-credentials" in metadata["asset_classes"]
         assert "service-principals" in metadata["attack_coverage"]["azure"]["principal_types"]
         assert "entra-graph" in metadata["attack_coverage"]["azure"]["operation_families"]
-        assert "POST /applications/{id}/addPassword" in metadata["attack_coverage"]["azure"]["operation_families"]["entra-graph"]
-        assert "CreateServiceAccountKey" in "".join(metadata["attack_coverage"]["gcp"]["anchor_operations"])
+        assert (
+            "POST /applications/{id}/addPassword"
+            in metadata["attack_coverage"]["azure"]["operation_families"]["entra-graph"]
+        )
+        assert "CreateServiceAccountKey" in "".join(
+            metadata["attack_coverage"]["gcp"]["anchor_operations"]
+        )
 
 
 # ── Stream robustness ───────────────────────────────────────────

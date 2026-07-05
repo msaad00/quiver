@@ -219,9 +219,7 @@ def _build_native_finding(
         {"name": "actor.user.name", "type": "User Name", "value": actor_name or actor_uid},
         {"name": "snowflake.failed_mfa_count", "type": "Other", "value": str(failed_count)},
     ]
-    observables.extend(
-        {"name": "src.ip", "type": "IP Address", "value": ip} for ip in source_ips
-    )
+    observables.extend({"name": "src.ip", "type": "IP Address", "value": ip} for ip in source_ips)
     observables.extend(
         {"name": "snowflake.authentication_method", "type": "Other", "value": method}
         for method in authentication_methods
@@ -335,7 +333,9 @@ def coverage_metadata() -> dict[str, Any]:
     }
 
 
-def detect(events: Iterable[dict[str, Any]], output_format: str = "ocsf") -> Iterable[dict[str, Any]]:
+def detect(
+    events: Iterable[dict[str, Any]], output_format: str = "ocsf"
+) -> Iterable[dict[str, Any]]:
     if output_format not in OUTPUT_FORMATS:
         raise ContractError(
             f"unsupported output_format: {output_format}",
@@ -442,9 +442,15 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         description="Detect Snowflake failed-MFA bursts from OCSF 1.8 Authentication 3002 input."
     )
-    parser.add_argument("input", nargs="?", help="OCSF 1.8 Authentication 3002 JSONL input. Defaults to stdin.")
-    parser.add_argument("--output", "-o", help="Detection Finding JSONL output. Defaults to stdout.")
-    parser.add_argument("--output-format", choices=OUTPUT_FORMATS, default="ocsf", help="Output format.")
+    parser.add_argument(
+        "input", nargs="?", help="OCSF 1.8 Authentication 3002 JSONL input. Defaults to stdin."
+    )
+    parser.add_argument(
+        "--output", "-o", help="Detection Finding JSONL output. Defaults to stdout."
+    )
+    parser.add_argument(
+        "--output-format", choices=OUTPUT_FORMATS, default="ocsf", help="Output format."
+    )
     args = parser.parse_args(argv)
 
     in_stream = sys.stdin if not args.input else open(args.input, "r", encoding="utf-8")

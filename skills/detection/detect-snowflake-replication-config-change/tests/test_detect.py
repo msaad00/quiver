@@ -133,14 +133,10 @@ class TestDetection:
 
     def test_allowlist_is_case_insensitive(self, monkeypatch) -> None:
         monkeypatch.setenv(AUTHORIZED_TARGETS_ENV, "partner_prod_ab123")
-        events = [
-            _event(uid="q-1", time_ms=1_000, target_accounts=["PARTNER_PROD_AB123"])
-        ]
+        events = [_event(uid="q-1", time_ms=1_000, target_accounts=["PARTNER_PROD_AB123"])]
         assert list(detect(events)) == []
 
-    def test_empty_allowlist_fails_open_with_stderr_warning(
-        self, monkeypatch, capsys
-    ) -> None:
+    def test_empty_allowlist_fails_open_with_stderr_warning(self, monkeypatch, capsys) -> None:
         monkeypatch.delenv(AUTHORIZED_TARGETS_ENV, raising=False)
         monkeypatch.setenv("SKILL_LOG_FORMAT", "json")
         events = [
@@ -156,9 +152,7 @@ class TestDetection:
         err = capsys.readouterr().err
         assert "allowlist_empty" in err
 
-    def test_account_replication_enable_with_empty_allowlist_fires(
-        self, monkeypatch
-    ) -> None:
+    def test_account_replication_enable_with_empty_allowlist_fires(self, monkeypatch) -> None:
         monkeypatch.delenv(AUTHORIZED_TARGETS_ENV, raising=False)
         events = [
             _event(
@@ -213,9 +207,7 @@ class TestDetection:
 
     def test_native_output_format(self, monkeypatch) -> None:
         monkeypatch.setenv(AUTHORIZED_TARGETS_ENV, "PARTNER_PROD_AB123")
-        events = [
-            _event(uid="q-1", time_ms=1_000, target_accounts=["ATTACKER_XY"])
-        ]
+        events = [_event(uid="q-1", time_ms=1_000, target_accounts=["ATTACKER_XY"])]
         findings = list(detect(events, output_format="native"))
         assert OUTPUT_FORMATS == ("ocsf", "native")
         assert len(findings) == 1

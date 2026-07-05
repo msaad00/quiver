@@ -105,8 +105,8 @@ _RULE_ID_RE = re.compile(
 
 @dataclasses.dataclass(frozen=True)
 class Target:
-    rule_id: str          # fully-qualified ARM id
-    rule_name: str        # last path segment
+    rule_id: str  # fully-qualified ARM id
+    rule_name: str  # last path segment
     nsg_name: str
     resource_group: str
     subscription_id: str
@@ -116,7 +116,7 @@ class Target:
     protocol: str
     direction: str
     actor: str
-    rule: str             # which detector rule fired
+    rule: str  # which detector rule fired
     producer_skill: str
     finding_uid: str
 
@@ -310,8 +310,11 @@ class DualAuditWriter:
         }
         body = json.dumps(envelope, separators=(",", ":"))
         boto3.client("s3").put_object(
-            Bucket=self.s3_bucket, Key=evidence_key, Body=body.encode("utf-8"),
-            ServerSideEncryption="aws:kms", SSEKMSKeyId=self.kms_key_arn,
+            Bucket=self.s3_bucket,
+            Key=evidence_key,
+            Body=body.encode("utf-8"),
+            ServerSideEncryption="aws:kms",
+            SSEKMSKeyId=self.kms_key_arn,
             ContentType="application/json",
         )
         boto3.client("dynamodb").put_item(
@@ -419,7 +422,9 @@ def _target_from_event(event: dict[str, Any]) -> Target | None:
     producer = _finding_product(event)
     if producer not in ACCEPTED_PRODUCERS:
         emit_stderr_event(
-            SKILL_NAME, level="warning", event="wrong_source_skill",
+            SKILL_NAME,
+            level="warning",
+            event="wrong_source_skill",
             message=f"skipping finding from unaccepted producer `{producer or '<missing>'}`",
         )
         return None
@@ -471,7 +476,9 @@ def _target_from_event(event: dict[str, Any]) -> Target | None:
     )
 
 
-def parse_targets(events: Iterable[dict[str, Any]]) -> Iterator[tuple[Target | None, dict[str, Any]]]:
+def parse_targets(
+    events: Iterable[dict[str, Any]],
+) -> Iterator[tuple[Target | None, dict[str, Any]]]:
     for event in events:
         yield _target_from_event(event), event
 
@@ -582,12 +589,14 @@ def _plan_record(
         "record_type": RECORD_PLAN if dry_run else RECORD_ACTION,
         "source_skill": SKILL_NAME,
         "target": _target_block(target),
-        "actions": [{
-            "step": step,
-            "endpoint": endpoint,
-            "status": status,
-            "detail": detail,
-        }],
+        "actions": [
+            {
+                "step": step,
+                "endpoint": endpoint,
+                "status": status,
+                "detail": detail,
+            }
+        ],
         "status": status,
         "mode": mode,
         "dry_run": dry_run,
@@ -626,12 +635,15 @@ def revoke_rule(
 ) -> dict[str, Any]:
     step = STEP_DELETE_RULE if mode == MODE_DELETE else STEP_PATCH_RULE
     first = audit.record(
-        target=target, step=step, status=STATUS_IN_PROGRESS,
+        target=target,
+        step=step,
+        status=STATUS_IN_PROGRESS,
         detail=(
             f"about to {mode} rule `{target.rule_name}` on NSG `{target.nsg_name}` "
             f"in rg `{target.resource_group}` (sub `{target.subscription_id}`)"
         ),
-        incident_id=incident_id, approver=approver,
+        incident_id=incident_id,
+        approver=approver,
     )
     try:
         if mode == MODE_DELETE:
@@ -642,12 +654,15 @@ def revoke_rule(
                 rule_name=target.rule_name,
             )
         else:
-            existing = network_client.get_security_rule(
-                subscription_id=target.subscription_id,
-                resource_group=target.resource_group,
-                nsg_name=target.nsg_name,
-                rule_name=target.rule_name,
-            ) or {}
+            existing = (
+                network_client.get_security_rule(
+                    subscription_id=target.subscription_id,
+                    resource_group=target.resource_group,
+                    nsg_name=target.nsg_name,
+                    rule_name=target.rule_name,
+                )
+                or {}
+            )
             network_client.patch_security_rule_to_deny(
                 subscription_id=target.subscription_id,
                 resource_group=target.resource_group,
@@ -657,17 +672,24 @@ def revoke_rule(
             )
     except Exception as exc:
         audit.record(
-            target=target, step=step, status=STATUS_FAILURE,
-            detail=str(exc), incident_id=incident_id, approver=approver,
+            target=target,
+            step=step,
+            status=STATUS_FAILURE,
+            detail=str(exc),
+            incident_id=incident_id,
+            approver=approver,
         )
         rec = _plan_record(target, status=STATUS_FAILURE, detail=str(exc), dry_run=False, mode=mode)
         rec["audit"] = first
         return rec
 
     last = audit.record(
-        target=target, step=step, status=STATUS_SUCCESS,
+        target=target,
+        step=step,
+        status=STATUS_SUCCESS,
         detail=f"{mode} succeeded for rule `{target.rule_name}` on NSG `{target.nsg_name}`",
-        incident_id=incident_id, approver=approver,
+        incident_id=incident_id,
+        approver=approver,
     )
     rec = _plan_record(target, status=STATUS_SUCCESS, detail=None, dry_run=False, mode=mode)
     rec["audit"] = last
@@ -704,8 +726,8 @@ def reverify_target(
 ) -> list[dict[str, Any]]:
     """Re-verify the offending rule is gone (or patched to Deny).
     Emits one verification record; on DRIFT also emits OCSF Detection Finding."""
-    checked_at_ms = now_ms if now_ms is not None else int(
-        datetime.now(timezone.utc).timestamp() * 1000
+    checked_at_ms = (
+        now_ms if now_ms is not None else int(datetime.now(timezone.utc).timestamp() * 1000)
     )
     remediated_at_ms_resolved = remediated_at_ms if remediated_at_ms is not None else checked_at_ms
 
@@ -722,7 +744,9 @@ def reverify_target(
         f"OR no longer carries a public source prefix"
     )
 
-    if not (target.subscription_id and target.resource_group and target.nsg_name and target.rule_name):
+    if not (
+        target.subscription_id and target.resource_group and target.nsg_name and target.rule_name
+    ):
         result = VerificationResult(
             status=VerificationStatus.UNREACHABLE,
             checked_at_ms=checked_at_ms,
@@ -731,7 +755,9 @@ def reverify_target(
             actual_state="rule id was not parseable into sub/rg/nsg/rule; cannot reverify",
             detail="missing target identifier components",
         )
-        record = build_verification_record(reference=reference, result=result, verifier_skill=SKILL_NAME)
+        record = build_verification_record(
+            reference=reference, result=result, verifier_skill=SKILL_NAME
+        )
         record["target"] = _target_block(target)
         return [record]
 
@@ -751,7 +777,9 @@ def reverify_target(
             actual_state="security_rules.get raised; cannot determine state",
             detail=str(exc),
         )
-        record = build_verification_record(reference=reference, result=result, verifier_skill=SKILL_NAME)
+        record = build_verification_record(
+            reference=reference, result=result, verifier_skill=SKILL_NAME
+        )
         record["target"] = _target_block(target)
         return [record]
 
@@ -783,11 +811,15 @@ def reverify_target(
             detail="revoke confirmed (delete or patch landed)",
         )
 
-    record = build_verification_record(reference=reference, result=result, verifier_skill=SKILL_NAME)
+    record = build_verification_record(
+        reference=reference, result=result, verifier_skill=SKILL_NAME
+    )
     record["target"] = _target_block(target)
     outputs: list[dict[str, Any]] = [record]
     if result.status == VerificationStatus.DRIFT:
-        outputs.append(build_drift_finding(reference=reference, result=result, verifier_skill=SKILL_NAME))
+        outputs.append(
+            build_drift_finding(reference=reference, result=result, verifier_skill=SKILL_NAME)
+        )
     return outputs
 
 
@@ -800,8 +832,11 @@ def load_jsonl(stream: Iterable[str]) -> Iterable[dict[str, Any]]:
             obj = json.loads(line)
         except json.JSONDecodeError as exc:
             emit_stderr_event(
-                SKILL_NAME, level="warning", event="json_parse_failed",
-                message=f"skipping line {lineno}: json parse failed: {exc}", line=lineno,
+                SKILL_NAME,
+                level="warning",
+                event="json_parse_failed",
+                message=f"skipping line {lineno}: json parse failed: {exc}",
+                line=lineno,
             )
             continue
         if isinstance(obj, dict):
@@ -839,20 +874,29 @@ def run(
 
         if not target.rule_id:
             yield _skip_record(
-                target, status=STATUS_SKIPPED_NO_RULE,
+                target,
+                status=STATUS_SKIPPED_NO_RULE,
                 detail="finding did not carry a target.uid (rule id) observable",
-                dry_run=dry_run, mode=mode,
+                dry_run=dry_run,
+                mode=mode,
             )
             continue
 
-        if not (target.subscription_id and target.resource_group and target.nsg_name and target.rule_name):
+        if not (
+            target.subscription_id
+            and target.resource_group
+            and target.nsg_name
+            and target.rule_name
+        ):
             yield _skip_record(
-                target, status=STATUS_SKIPPED_BAD_RULE_ID,
+                target,
+                status=STATUS_SKIPPED_BAD_RULE_ID,
                 detail=(
                     f"target.uid `{target.rule_id}` did not parse as an Azure NSG "
                     "security rule resource id"
                 ),
-                dry_run=dry_run, mode=mode,
+                dry_run=dry_run,
+                mode=mode,
             )
             continue
 
@@ -891,8 +935,11 @@ def run(
         if protected:
             status = STATUS_SKIPPED_PROTECTED if apply else STATUS_WOULD_VIOLATE_PROTECTED
             yield _skip_record(
-                target, status=status, detail=f"target is protected: {why}",
-                dry_run=dry_run, mode=mode,
+                target,
+                status=status,
+                detail=f"target is protected: {why}",
+                dry_run=dry_run,
+                mode=mode,
             )
             continue
 
@@ -907,21 +954,27 @@ def run(
         if not apply:
             verb = "delete" if mode == MODE_DELETE else "patch (access=Deny on)"
             yield _plan_record(
-                target, status=STATUS_PLANNED,
+                target,
+                status=STATUS_PLANNED,
                 detail=(
                     f"dry-run: would {verb} rule `{target.rule_name}` on NSG "
                     f"`{target.nsg_name}` (rg `{target.resource_group}`, sub "
                     f"`{target.subscription_id}`)"
                 ),
-                dry_run=True, mode=mode,
+                dry_run=True,
+                mode=mode,
             )
             continue
 
         if audit is None:
             raise ValueError("audit writer is required under --apply")
         yield revoke_rule(
-            target, network_client=network_client, audit=audit,
-            incident_id=incident_id, approver=approver, mode=mode,
+            target,
+            network_client=network_client,
+            audit=audit,
+            incident_id=incident_id,
+            approver=approver,
+            mode=mode,
         )
 
 
@@ -931,12 +984,20 @@ def main(argv: list[str] | None = None) -> int:
     )
     parser.add_argument("input", nargs="?", help="JSONL input. Defaults to stdin.")
     parser.add_argument("--output", "-o", help="JSONL output. Defaults to stdout.")
-    parser.add_argument("--apply", action="store_true",
-        help="Delete (or patch) the offending rule after approval gates pass.")
-    parser.add_argument("--reverify", action="store_true",
-        help="Read-only verification: confirm the offending rule is gone or patched to Deny.")
     parser.add_argument(
-        "--mode", choices=sorted(SUPPORTED_MODES), default=MODE_DELETE,
+        "--apply",
+        action="store_true",
+        help="Delete (or patch) the offending rule after approval gates pass.",
+    )
+    parser.add_argument(
+        "--reverify",
+        action="store_true",
+        help="Read-only verification: confirm the offending rule is gone or patched to Deny.",
+    )
+    parser.add_argument(
+        "--mode",
+        choices=sorted(SUPPORTED_MODES),
+        default=MODE_DELETE,
         help="Action mode. `delete` (default) removes the rule. `patch` rewrites access=Deny.",
     )
     args = parser.parse_args(argv)
@@ -967,10 +1028,15 @@ def main(argv: list[str] | None = None) -> int:
             )
 
         for record in run(
-            load_jsonl(in_stream), network_client=network_client,
-            apply=args.apply, reverify=args.reverify, audit=audit,
+            load_jsonl(in_stream),
+            network_client=network_client,
+            apply=args.apply,
+            reverify=args.reverify,
+            audit=audit,
             rule_ids=load_protected_rule_ids(),
-            incident_id=incident_id, approver=approver, mode=args.mode,
+            incident_id=incident_id,
+            approver=approver,
+            mode=args.mode,
             allowed_subscription_ids=load_allowed_subscription_ids(),
         ):
             out_stream.write(json.dumps(record, separators=(",", ":")) + "\n")

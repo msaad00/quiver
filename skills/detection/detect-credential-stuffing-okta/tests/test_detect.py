@@ -224,7 +224,9 @@ class TestDetection:
         events = [_event(uid="evt-f1", time_ms=1000, ip="203.0.113.1")]
         # Same uid repeated — should be deduped
         events.extend(_event(uid="evt-f1", time_ms=1000, ip="203.0.113.1") for _ in range(4))
-        events.append(_event(uid="evt-s", time_ms=9000, status_id=STATUS_SUCCESS, status_detail=None))
+        events.append(
+            _event(uid="evt-s", time_ms=9000, status_id=STATUS_SUCCESS, status_detail=None)
+        )
         assert list(detect(events)) == []
 
     def test_out_of_order_events_are_sorted(self):

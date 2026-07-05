@@ -71,13 +71,12 @@ class RetryPolicy:
 
     def __post_init__(self) -> None:  # type: ignore[override]
         if not (ABS_MIN_ATTEMPTS <= self.max_attempts <= ABS_MAX_ATTEMPTS):
-            raise ValueError(
-                f"max_attempts must be in [{ABS_MIN_ATTEMPTS}, {ABS_MAX_ATTEMPTS}]"
-            )
-        if self.total_budget_seconds <= 0 or self.total_budget_seconds > ABS_MAX_TOTAL_BUDGET_SECONDS:
-            raise ValueError(
-                f"total_budget_seconds must be in (0, {ABS_MAX_TOTAL_BUDGET_SECONDS}]"
-            )
+            raise ValueError(f"max_attempts must be in [{ABS_MIN_ATTEMPTS}, {ABS_MAX_ATTEMPTS}]")
+        if (
+            self.total_budget_seconds <= 0
+            or self.total_budget_seconds > ABS_MAX_TOTAL_BUDGET_SECONDS
+        ):
+            raise ValueError(f"total_budget_seconds must be in (0, {ABS_MAX_TOTAL_BUDGET_SECONDS}]")
         if self.base_seconds < 0 or self.backoff_cap_seconds < 0:
             raise ValueError("backoff seconds must be non-negative")
 
@@ -158,7 +157,12 @@ def _google_is_transient(exc: BaseException) -> bool:
     if isinstance(status, int) and status in {429, 500, 502, 503, 504}:
         return True
     name = type(exc).__name__
-    return name in {"ServiceUnavailable", "InternalServerError", "TooManyRequests", "DeadlineExceeded"}
+    return name in {
+        "ServiceUnavailable",
+        "InternalServerError",
+        "TooManyRequests",
+        "DeadlineExceeded",
+    }
 
 
 def _azure_is_transient(exc: BaseException) -> bool:
@@ -220,7 +224,7 @@ def compute_backoff(
     """Full-jitter exponential backoff. Returns the seconds to sleep
     before attempt N+1 given that attempts 0..N just failed."""
     rng = rng or random.SystemRandom()
-    raw = policy.base_seconds * (2 ** attempt)
+    raw = policy.base_seconds * (2**attempt)
     capped = min(raw, policy.backoff_cap_seconds)
     return rng.uniform(0, capped) if capped > 0 else 0
 
@@ -303,7 +307,9 @@ def retry_on_throttle(
                     type(exc).__name__,
                     exc,
                 )
+
             return retry_call(func, *args, policy=bound_policy, on_retry=_on_retry, **kwargs)
+
         return _inner
 
     return _decorator

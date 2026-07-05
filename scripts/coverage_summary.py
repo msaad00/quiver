@@ -36,16 +36,16 @@ SNAPSHOT_MD = REPO_ROOT / "docs" / "COVERAGE_SNAPSHOT.md"
 # regenerate. Frameworks not in this map fall back to skill-tag count
 # (the looser proxy).
 FRAMEWORK_TOTAL_CONTROLS: dict[str, int] = {
-    "cis-aws-v3": 58,           # CIS AWS Foundations v3 — numbered controls
+    "cis-aws-v3": 58,  # CIS AWS Foundations v3 — numbered controls
     "cis-gcp-v3": 60,
     "cis-azure-v2.1": 60,
-    "cis-k8s": 30,              # CIS K8s Benchmark v1.8 — agent-bom-relevant slice
-    "cis-docker": 17,           # CIS Docker Benchmark v1.7 — runtime-relevant slice
-    "cis-controls-v8": 18,      # 18 controls in CIS Controls v8
+    "cis-k8s": 30,  # CIS K8s Benchmark v1.8 — agent-bom-relevant slice
+    "cis-docker": 17,  # CIS Docker Benchmark v1.7 — runtime-relevant slice
+    "cis-controls-v8": 18,  # 18 controls in CIS Controls v8
     "owasp-top-10": 10,
     "owasp-llm-top-10": 10,
     "owasp-mcp-top-10": 10,
-    "nist-ai-rmf": 72,          # AI RMF 1.0 subcategories (the IDs the evaluator emits)
+    "nist-ai-rmf": 72,  # AI RMF 1.0 subcategories (the IDs the evaluator emits)
     # mitre-attack-v14, mitre-atlas, ocsf-1.8, nist-csf-2.0, soc2-tsc,
     # iso-27001-2022, pci-dss-4.0, cyclonedx-ml-bom intentionally not
     # enumerated yet — either too coarse-grained or the repo doesn't
@@ -99,6 +99,7 @@ def _label_path(path: Path) -> str:
         return str(path.relative_to(REPO_ROOT))
     except ValueError:
         return str(path)
+
 
 # Friendly labels for the framework / provider / layer keys we ship.
 PROVIDER_LABEL = {
@@ -215,7 +216,9 @@ def render(skills: list[dict]) -> str:
     lines.append("")
     lines.append("## By cloud / vendor")
     lines.append("")
-    lines.append("Skills overlap when a skill targets multiple providers (the `multi` row), so the column may sum to more than the total.")
+    lines.append(
+        "Skills overlap when a skill targets multiple providers (the `multi` row), so the column may sum to more than the total."
+    )
     lines.append("")
     lines.append("| Cloud / vendor | Skills | % of repo |")
     lines.append("|---|---:|---:|")
@@ -224,7 +227,9 @@ def render(skills: list[dict]) -> str:
     lines.append("")
     lines.append("## By framework")
     lines.append("")
-    lines.append("Skills can carry multiple framework tags (e.g. a CIS check tagged with NIST CSF mapping); the column does not sum to 100%.")
+    lines.append(
+        "Skills can carry multiple framework tags (e.g. a CIS check tagged with NIST CSF mapping); the column does not sum to 100%."
+    )
     lines.append("")
     lines.append("| Framework | Skills | % of repo |")
     lines.append("|---|---:|---:|")
@@ -285,9 +290,7 @@ def render(skills: list[dict]) -> str:
         else:
             skill_count = len(frameworks.get(key, set()))
             pct_today = 100 * skill_count / total if total else 0
-        lines.append(
-            f"| {label} | `{key}` | {issue} | {target}% | {pct_today:.0f}% |"
-        )
+        lines.append(f"| {label} | `{key}` | {issue} | {target}% | {pct_today:.0f}% |")
     lines.append("")
     lines.append("## Where the gaps are")
     lines.append("")

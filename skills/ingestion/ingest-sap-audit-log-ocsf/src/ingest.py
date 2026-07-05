@@ -156,7 +156,9 @@ def _message(record: dict[str, Any]) -> str:
 
 
 def _event_code(record: dict[str, Any]) -> str:
-    return _text(_first(record, "message_id", "msgid", "event_id", "event_code", "audit_event", "event")).upper()
+    return _text(
+        _first(record, "message_id", "msgid", "event_id", "event_code", "audit_event", "event")
+    ).upper()
 
 
 def _transaction_code(record: dict[str, Any]) -> str:
@@ -180,12 +182,21 @@ def _event_family(record: dict[str, Any]) -> str:
     if any(term in joined for term in ("logon", "login", "user authenticated", "authentication")):
         return "login"
     if tx_code:
-        if any(term in joined for term in ("change", "changed", "update", "delete", "maintain", "import", "transport")):
+        if any(
+            term in joined
+            for term in ("change", "changed", "update", "delete", "maintain", "import", "transport")
+        ):
             return "change"
         return "transaction"
-    if any(term in joined for term in ("sap_all", "sap_new", "profile assigned", "authorization assigned")):
+    if any(
+        term in joined
+        for term in ("sap_all", "sap_new", "profile assigned", "authorization assigned")
+    ):
         return "privileged_access"
-    if any(term in joined for term in ("change", "changed", "update", "delete", "maintain", "debug", "table")):
+    if any(
+        term in joined
+        for term in ("change", "changed", "update", "delete", "maintain", "debug", "table")
+    ):
         return "change"
     if any(term in joined for term in ("rfc", "function module", "remote function")):
         return "rfc"
@@ -202,14 +213,18 @@ def _activity_id(family: str, record: dict[str, Any]) -> int:
         return ACTIVITY_DELETE
     if any(term in message for term in ("create", "insert", "add")):
         return ACTIVITY_CREATE
-    if family in {"change", "privileged_access"} or any(term in message for term in ("change", "update", "maintain")):
+    if family in {"change", "privileged_access"} or any(
+        term in message for term in ("change", "update", "maintain")
+    ):
         return ACTIVITY_UPDATE
     return ACTIVITY_OTHER
 
 
 def _status_id(record: dict[str, Any]) -> int:
     text = f"{_text(_first(record, 'status', 'result', 'outcome', 'severity'))} {_message(record)}".lower()
-    if any(term in text for term in ("fail", "error", "denied", "invalid", "unsuccessful", "rejected")):
+    if any(
+        term in text for term in ("fail", "error", "denied", "invalid", "unsuccessful", "rejected")
+    ):
         return STATUS_FAILURE
     if any(term in text for term in ("success", "successful", "succeeded", "ok")):
         return STATUS_SUCCESS
@@ -225,7 +240,9 @@ def _severity_id(family: str, status_id: int) -> int:
 
 
 def _status_name(status_id: int) -> str:
-    return {STATUS_SUCCESS: "success", STATUS_FAILURE: "failure", STATUS_UNKNOWN: "unknown"}.get(status_id, "unknown")
+    return {STATUS_SUCCESS: "success", STATUS_FAILURE: "failure", STATUS_UNKNOWN: "unknown"}.get(
+        status_id, "unknown"
+    )
 
 
 def _severity_name(severity_id: int) -> str:
@@ -280,7 +297,9 @@ def _resources(record: dict[str, Any]) -> list[dict[str, Any]]:
 
 
 def _privilege_names(record: dict[str, Any]) -> list[str]:
-    names = set(_tokens(_first(record, "privilege", "privileges", "profile", "profiles", "role", "roles")))
+    names = set(
+        _tokens(_first(record, "privilege", "privileges", "profile", "profiles", "role", "roles"))
+    )
     message = _message(record).upper()
     for profile in PRIVILEGED_PROFILES:
         if profile in message:
@@ -308,7 +327,9 @@ def _sap_block(record: dict[str, Any], family: str) -> dict[str, Any]:
         "table": _text(_first(record, "table", "table_name", "object", "object_name")),
         "privilege_names": privilege_names,
         "privileged": bool(PRIVILEGED_PROFILES.intersection(privilege_names)),
-        "change_count": _int_value(record, "change_count", "changed_records", "records_changed", "row_count", "count"),
+        "change_count": _int_value(
+            record, "change_count", "changed_records", "records_changed", "row_count", "count"
+        ),
         "terminal": _text(_first(record, "terminal", "terminal_id", "workstation")),
         "instance": _text(_first(record, "instance", "application_server", "server", "host_name")),
         "raw": record,
@@ -332,7 +353,9 @@ def _event_uid(record: dict[str, Any], family: str) -> str:
     }
     if not any(material.values()):
         material["raw"] = json.dumps(record, sort_keys=True, separators=(",", ":"), default=str)
-    return hashlib.sha256(json.dumps(material, sort_keys=True, separators=(",", ":")).encode("utf-8")).hexdigest()
+    return hashlib.sha256(
+        json.dumps(material, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    ).hexdigest()
 
 
 def validate_record(record: dict[str, Any]) -> tuple[bool, str]:
@@ -420,7 +443,11 @@ def _render_native_event(canonical: dict[str, Any]) -> dict[str, Any]:
 
 def convert_record(record: dict[str, Any], output_format: str = "ocsf") -> dict[str, Any]:
     canonical = _build_canonical_event(record)
-    return _render_native_event(canonical) if output_format == "native" else _render_ocsf_event(canonical)
+    return (
+        _render_native_event(canonical)
+        if output_format == "native"
+        else _render_ocsf_event(canonical)
+    )
 
 
 def _yield_wrapped(value: Any) -> Iterable[dict[str, Any]]:
@@ -450,12 +477,16 @@ def _parse_delimited_text(lines: list[str]) -> Iterable[dict[str, Any]]:
     if len(nonempty) > 1 and any(char in nonempty[0] for char in (",", ";", "|", "\t")):
         try:
             reader = csv.DictReader(nonempty, dialect=dialect)
-            if reader.fieldnames and any(field and not field.isdigit() for field in reader.fieldnames):
+            if reader.fieldnames and any(
+                field and not field.isdigit() for field in reader.fieldnames
+            ):
                 for row in reader:
                     yield {key: value for key, value in row.items() if key}
                 return
         except csv.Error as exc:
-            emit_stderr_event(SKILL_NAME, level="warning", event="csv_parse_failed", message=str(exc))
+            emit_stderr_event(
+                SKILL_NAME, level="warning", event="csv_parse_failed", message=str(exc)
+            )
     for line in nonempty:
         parts = [part.strip() for part in line.replace("|", ";").split(";")]
         if len(parts) >= 6:
@@ -507,17 +538,33 @@ def ingest(stream: Iterable[str], output_format: str = "ocsf") -> Iterable[dict[
     for record in iter_raw_records(stream):
         ok, reason = validate_record(record)
         if not ok:
-            emit_stderr_event(SKILL_NAME, level="warning", event="invalid_record", message=f"skipping record: {reason}", reason=reason)
+            emit_stderr_event(
+                SKILL_NAME,
+                level="warning",
+                event="invalid_record",
+                message=f"skipping record: {reason}",
+                reason=reason,
+            )
             continue
         try:
             yield convert_record(record, output_format=output_format)
         except Exception as exc:
-            emit_stderr_event(SKILL_NAME, level="warning", event="convert_error", message=f"skipping record: {exc}", error=str(exc))
+            emit_stderr_event(
+                SKILL_NAME,
+                level="warning",
+                event="convert_error",
+                message=f"skipping record: {exc}",
+                error=str(exc),
+            )
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Convert SAP Security Audit Log exports to OCSF Application Activity.")
-    parser.add_argument("input", nargs="?", help="Input JSON/JSONL/CSV/text file. Defaults to stdin.")
+    parser = argparse.ArgumentParser(
+        description="Convert SAP Security Audit Log exports to OCSF Application Activity."
+    )
+    parser.add_argument(
+        "input", nargs="?", help="Input JSON/JSONL/CSV/text file. Defaults to stdin."
+    )
     parser.add_argument("--output", "-o", help="Output JSONL file. Defaults to stdout.")
     parser.add_argument("--output-format", choices=OUTPUT_FORMATS, default="ocsf")
     args = parser.parse_args(argv)

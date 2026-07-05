@@ -125,12 +125,12 @@ SUPPORTED_TARGET_TYPES = frozenset({"ServicePrincipal", "Application"})
 
 @dataclasses.dataclass(frozen=True)
 class Target:
-    object_id: str          # target.uid — the SP/Application objectId
-    display_name: str       # target.name
-    target_type: str        # target.type ("ServicePrincipal" | "Application")
-    actor: str              # actor.name (audit context)
-    api_operation: str      # api.operation (audit context)
-    rule: str               # which detector rule fired
+    object_id: str  # target.uid — the SP/Application objectId
+    display_name: str  # target.name
+    target_type: str  # target.type ("ServicePrincipal" | "Application")
+    actor: str  # actor.name (audit context)
+    api_operation: str  # api.operation (audit context)
+    rule: str  # which detector rule fired
     producer_skill: str
     finding_uid: str
 
@@ -221,9 +221,7 @@ class MsGraphClient:
             if response.status == 404 and allow_not_found:
                 return None
             detail = payload.decode("utf-8", errors="replace")
-            raise RuntimeError(
-                f"Microsoft Graph {response.status}: {detail or response.reason}"
-            )
+            raise RuntimeError(f"Microsoft Graph {response.status}: {detail or response.reason}")
         if not payload:
             return None
         return json.loads(payload)
@@ -290,7 +288,9 @@ class MsGraphClient:
             match = matches[0]
             return ResolvedServicePrincipal(
                 object_id=str(match.get("id") or ""),
-                display_name=str(match.get("displayName") or target.display_name or target.object_id),
+                display_name=str(
+                    match.get("displayName") or target.display_name or target.object_id
+                ),
                 app_id=str(match.get("appId") or app_id),
                 source_target_type=target.target_type,
                 source_object_id=target.object_id,
@@ -339,9 +339,7 @@ class MsGraphClient:
         return [item for item in values if isinstance(item, dict)]
 
     def list_app_role_assignments(self, object_id: str) -> list[dict[str, Any]]:
-        return self._collection(
-            f"{self._service_principal_base_url(object_id)}/appRoleAssignments"
-        )
+        return self._collection(f"{self._service_principal_base_url(object_id)}/appRoleAssignments")
 
     def list_oauth2_permission_grants(self, object_id: str) -> list[dict[str, Any]]:
         escaped = object_id.replace("'", "''")
@@ -451,7 +449,11 @@ def _finding_product(event: dict[str, Any]) -> str:
 
 
 def _finding_uid(event: dict[str, Any]) -> str:
-    return str((event.get("finding_info") or {}).get("uid") or (event.get("metadata") or {}).get("uid") or "")
+    return str(
+        (event.get("finding_info") or {}).get("uid")
+        or (event.get("metadata") or {}).get("uid")
+        or ""
+    )
 
 
 def _observable_value(event: dict[str, Any], name: str) -> str:
@@ -510,7 +512,9 @@ def _target_from_event(event: dict[str, Any]) -> Target | None:
     )
 
 
-def parse_targets(events: Iterable[dict[str, Any]]) -> Iterator[tuple[Target | None, dict[str, Any]]]:
+def parse_targets(
+    events: Iterable[dict[str, Any]],
+) -> Iterator[tuple[Target | None, dict[str, Any]]]:
     for event in events:
         yield _target_from_event(event), event
 
@@ -524,7 +528,9 @@ def load_protected_object_ids() -> tuple[str, ...]:
     return tuple(part.strip() for part in raw.split(",") if part.strip())
 
 
-def is_protected_target(target: Target, *, name_prefixes: Iterable[str], object_ids: Iterable[str]) -> tuple[bool, str]:
+def is_protected_target(
+    target: Target, *, name_prefixes: Iterable[str], object_ids: Iterable[str]
+) -> tuple[bool, str]:
     name_lc = (target.display_name or "").strip().lower()
     if name_lc:
         for prefix in name_prefixes:
@@ -550,7 +556,10 @@ def check_apply_gate() -> tuple[bool, str]:
     if not allowed_tenants:
         return False, "ENTRA_REVOKE_ALLOWED_TENANT_IDS is required for --apply"
     if tenant_id not in allowed_tenants:
-        return False, f"AZURE_TENANT_ID `{tenant_id}` is not listed in ENTRA_REVOKE_ALLOWED_TENANT_IDS"
+        return (
+            False,
+            f"AZURE_TENANT_ID `{tenant_id}` is not listed in ENTRA_REVOKE_ALLOWED_TENANT_IDS",
+        )
     return True, ""
 
 
@@ -584,7 +593,9 @@ def _resolved_target(target: Target, resolved: ResolvedServicePrincipal) -> Targ
     )
 
 
-def _build_triage_payload(resolved: ResolvedServicePrincipal, *, graph_client: GraphClient) -> dict[str, Any]:
+def _build_triage_payload(
+    resolved: ResolvedServicePrincipal, *, graph_client: GraphClient
+) -> dict[str, Any]:
     """Read the SP's current credentials + assignments; bundle for operator triage."""
     return {
         "key_credentials": graph_client.list_key_credentials(resolved.object_id),
@@ -628,13 +639,17 @@ def _plan_record(
         "actions": [
             {
                 "step": STEP_DISABLE_SP,
-                "endpoint": _disable_endpoint(resolved) if resolved is not None else "PATCH /v1.0/servicePrincipals/<resolved-target>",
+                "endpoint": _disable_endpoint(resolved)
+                if resolved is not None
+                else "PATCH /v1.0/servicePrincipals/<resolved-target>",
                 "status": status,
                 "detail": detail,
             },
             {
                 "step": STEP_TRIAGE_LIST,
-                "endpoint": _triage_endpoint(resolved) if resolved is not None else "GET /v1.0/servicePrincipals/<resolved-target> (...)",
+                "endpoint": _triage_endpoint(resolved)
+                if resolved is not None
+                else "GET /v1.0/servicePrincipals/<resolved-target> (...)",
                 "status": status,
                 "detail": "list current credentials + assignments for operator triage",
             },
@@ -786,7 +801,9 @@ def reverify_target(
 ) -> list[dict[str, Any]]:
     """Re-verify the SP is still disabled. Emits one verification record;
     on DRIFT also emits an OCSF Detection Finding via the shared contract."""
-    checked_at_ms = now_ms if now_ms is not None else int(datetime.now(timezone.utc).timestamp() * 1000)
+    checked_at_ms = (
+        now_ms if now_ms is not None else int(datetime.now(timezone.utc).timestamp() * 1000)
+    )
     remediated_at_ms_resolved = remediated_at_ms if remediated_at_ms is not None else checked_at_ms
 
     reference = RemediationReference(
@@ -810,7 +827,9 @@ def reverify_target(
             actual_state="microsoft graph resolution raised; cannot determine state",
             detail=str(exc),
         )
-        record = build_verification_record(reference=reference, result=result, verifier_skill=SKILL_NAME)
+        record = build_verification_record(
+            reference=reference, result=result, verifier_skill=SKILL_NAME
+        )
         record["target"] = {
             "provider": "Entra",
             "object_id": target.object_id,
@@ -836,7 +855,9 @@ def reverify_target(
             result = VerificationResult(
                 status=VerificationStatus.UNREACHABLE,
                 checked_at_ms=checked_at_ms,
-                sla_deadline_ms=sla_deadline(remediated_at_ms_resolved, DEFAULT_VERIFICATION_SLA_MS),
+                sla_deadline_ms=sla_deadline(
+                    remediated_at_ms_resolved, DEFAULT_VERIFICATION_SLA_MS
+                ),
                 expected_state=expected,
                 actual_state="microsoft graph call raised; cannot determine state",
                 detail=str(exc),
@@ -846,7 +867,9 @@ def reverify_target(
                 result = VerificationResult(
                     status=VerificationStatus.VERIFIED,
                     checked_at_ms=checked_at_ms,
-                    sla_deadline_ms=sla_deadline(remediated_at_ms_resolved, DEFAULT_VERIFICATION_SLA_MS),
+                    sla_deadline_ms=sla_deadline(
+                        remediated_at_ms_resolved, DEFAULT_VERIFICATION_SLA_MS
+                    ),
                     expected_state=expected,
                     actual_state="service principal not found (deleted) — stronger than disabled",
                     detail="containment confirmed via absence",
@@ -855,7 +878,9 @@ def reverify_target(
                 result = VerificationResult(
                     status=VerificationStatus.VERIFIED,
                     checked_at_ms=checked_at_ms,
-                    sla_deadline_ms=sla_deadline(remediated_at_ms_resolved, DEFAULT_VERIFICATION_SLA_MS),
+                    sla_deadline_ms=sla_deadline(
+                        remediated_at_ms_resolved, DEFAULT_VERIFICATION_SLA_MS
+                    ),
                     expected_state=expected,
                     actual_state="accountEnabled=false",
                     detail="service principal still disabled",
@@ -864,13 +889,17 @@ def reverify_target(
                 result = VerificationResult(
                     status=VerificationStatus.DRIFT,
                     checked_at_ms=checked_at_ms,
-                    sla_deadline_ms=sla_deadline(remediated_at_ms_resolved, DEFAULT_VERIFICATION_SLA_MS),
+                    sla_deadline_ms=sla_deadline(
+                        remediated_at_ms_resolved, DEFAULT_VERIFICATION_SLA_MS
+                    ),
                     expected_state=expected,
                     actual_state=f"accountEnabled={sp.get('accountEnabled')!r}",
                     detail="service principal was re-enabled after remediation",
                 )
 
-    record = build_verification_record(reference=reference, result=result, verifier_skill=SKILL_NAME)
+    record = build_verification_record(
+        reference=reference, result=result, verifier_skill=SKILL_NAME
+    )
     record["target"] = {
         "provider": "Entra",
         "object_id": target.object_id,

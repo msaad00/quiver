@@ -177,13 +177,15 @@ def _iter_endpoints(config: dict) -> list[dict]:
                     or endpoint.get("managed_identity"),
                 },
                 "network": {
-                    "public": endpoint.get("public", False) or endpoint.get("public_network_access", False),
+                    "public": endpoint.get("public", False)
+                    or endpoint.get("public_network_access", False),
                     "vpc": bool(endpoint.get("private_endpoint")),
                     "private_endpoint": bool(endpoint.get("private_endpoint")),
                 },
                 "tls": {"enabled": True},
                 "logging": {
-                    "enabled": bool(endpoint.get("app_insights_enabled")) or bool(endpoint.get("logging_enabled")),
+                    "enabled": bool(endpoint.get("app_insights_enabled"))
+                    or bool(endpoint.get("logging_enabled")),
                 },
                 "guardrails": {
                     "enabled": bool(endpoint.get("rai_policy_name"))
@@ -207,7 +209,8 @@ def _iter_endpoints(config: dict) -> list[dict]:
                     or (deployment.get("identity", {}) or {}).get("type"),
                 },
                 "network": {
-                    "public": deployment.get("public", False) or deployment.get("public_network_access", False),
+                    "public": deployment.get("public", False)
+                    or deployment.get("public_network_access", False),
                     "vpc": bool(deployment.get("private_endpoint")),
                     "private_endpoint": bool(deployment.get("private_endpoint")),
                 },
@@ -262,7 +265,9 @@ def check_1_1_endpoint_auth_required(config: dict) -> Finding:
         section="auth",
         severity="CRITICAL",
         status="FAIL" if unauthenticated else "PASS",
-        detail=f"{len(unauthenticated)} endpoints without auth" if unauthenticated else "All endpoints require authentication",
+        detail=f"{len(unauthenticated)} endpoints without auth"
+        if unauthenticated
+        else "All endpoints require authentication",
         remediation="Enable API key, OAuth2, or mTLS on all model serving endpoints",
         mitre_atlas="AML.T0024",
         nist_csf="PR.AC-1",
@@ -311,7 +316,9 @@ def check_1_2_no_hardcoded_api_keys(config: dict, scan_paths: list[str] | None =
         section="auth",
         severity="CRITICAL",
         status="FAIL" if found else "PASS",
-        detail=f"{len(found)} potential hardcoded secrets" if found else "No hardcoded secrets found",
+        detail=f"{len(found)} potential hardcoded secrets"
+        if found
+        else "No hardcoded secrets found",
         remediation="Use Secrets Manager, Vault, or environment variable references instead of inline secrets",
         mitre_atlas="AML.T0024",
         nist_csf="PR.AC-4",
@@ -335,7 +342,9 @@ def check_1_3_rbac_model_access(config: dict) -> Finding:
         section="auth",
         severity="HIGH",
         status="FAIL" if no_rbac else "PASS",
-        detail=f"{len(no_rbac)} endpoints without RBAC" if no_rbac else "All endpoints have role-based access",
+        detail=f"{len(no_rbac)} endpoints without RBAC"
+        if no_rbac
+        else "All endpoints have role-based access",
         remediation="Configure role-based permissions per endpoint (admin, user, read-only)",
         mitre_atlas="AML.T0024",
         nist_csf="PR.AC-4",
@@ -359,7 +368,9 @@ def check_1_4_workload_identity_required(config: dict) -> Finding:
         section="auth",
         severity="HIGH",
         status="FAIL" if missing_identity else "PASS",
-        detail=f"{len(missing_identity)} endpoints without workload identity" if missing_identity else "All endpoints use provider-managed identity",
+        detail=f"{len(missing_identity)} endpoints without workload identity"
+        if missing_identity
+        else "All endpoints use provider-managed identity",
         remediation="Use IAM roles, Vertex AI service accounts, Azure managed identity, or equivalent provider-native workload identity.",
         mitre_atlas="AML.T0024",
         nist_csf="PR.AC-4",
@@ -387,7 +398,9 @@ def check_2_1_rate_limiting_enabled(config: dict) -> Finding:
         section="abuse_prevention",
         severity="HIGH",
         status="FAIL" if no_rate_limit else "PASS",
-        detail=f"{len(no_rate_limit)} endpoints without rate limiting" if no_rate_limit else "All endpoints rate-limited",
+        detail=f"{len(no_rate_limit)} endpoints without rate limiting"
+        if no_rate_limit
+        else "All endpoints rate-limited",
         remediation="Set per-client RPM/RPD limits to prevent abuse and cost overruns",
         mitre_atlas="AML.T0042",
         nist_csf="PR.DS-4",
@@ -412,7 +425,9 @@ def check_2_2_input_size_limits(config: dict) -> Finding:
         section="abuse_prevention",
         severity="MEDIUM",
         status="FAIL" if no_limits else "PASS",
-        detail=f"{len(no_limits)} endpoints without input size limits" if no_limits else "All endpoints have input limits",
+        detail=f"{len(no_limits)} endpoints without input size limits"
+        if no_limits
+        else "All endpoints have input limits",
         remediation="Set max_tokens and max_input_size to prevent resource exhaustion",
         mitre_atlas="AML.T0042",
         nist_csf="PR.DS-4",
@@ -459,14 +474,18 @@ def check_3_1_output_filtering(config: dict) -> Finding:
 def check_3_2_no_training_data_in_response(config: dict) -> Finding:
     """MS-3.2 — Training data not exposed via model responses."""
     privacy = config.get("privacy", config.get("data_protection", {}))
-    memorization_guard = privacy.get("memorization_guard", privacy.get("training_data_filter", False))
+    memorization_guard = privacy.get(
+        "memorization_guard", privacy.get("training_data_filter", False)
+    )
     return Finding(
         check_id="MS-3.2",
         title="Training data memorization guard",
         section="data_egress",
         severity="HIGH",
         status="PASS" if memorization_guard else "WARN",
-        detail="Memorization guard enabled" if memorization_guard else "No memorization guard configured — model may leak training data",
+        detail="Memorization guard enabled"
+        if memorization_guard
+        else "No memorization guard configured — model may leak training data",
         remediation="Enable training data memorization detection to prevent data extraction attacks",
         mitre_atlas="AML.T0025",
         nist_csf="PR.DS-5",
@@ -524,7 +543,9 @@ def check_4_1_no_privileged_containers(config: dict) -> Finding:
         section="runtime",
         severity="CRITICAL",
         status="FAIL" if privileged else "PASS",
-        detail=f"{len(privileged)} privileged containers" if privileged else "No privileged containers",
+        detail=f"{len(privileged)} privileged containers"
+        if privileged
+        else "No privileged containers",
         remediation="Remove privileged: true from all model serving containers. Use specific capabilities instead.",
         mitre_atlas="AML.T0011",
         nist_csf="PR.AC-4",
@@ -547,7 +568,9 @@ def check_4_2_read_only_rootfs(config: dict) -> Finding:
         section="runtime",
         severity="MEDIUM",
         status="FAIL" if writable else "PASS",
-        detail=f"{len(writable)} containers with writable rootfs" if writable else "All containers have read-only rootfs",
+        detail=f"{len(writable)} containers with writable rootfs"
+        if writable
+        else "All containers have read-only rootfs",
         remediation="Set readOnlyRootFilesystem: true and use emptyDir volumes for temp data",
         mitre_atlas="AML.T0011",
         nist_csf="PR.DS-6",
@@ -572,7 +595,9 @@ def check_4_3_non_root_user(config: dict) -> Finding:
         section="runtime",
         severity="HIGH",
         status="FAIL" if root_containers else "PASS",
-        detail=f"{len(root_containers)} containers running as root" if root_containers else "All containers run as non-root",
+        detail=f"{len(root_containers)} containers running as root"
+        if root_containers
+        else "All containers run as non-root",
         remediation="Set runAsNonRoot: true and runAsUser to a non-zero UID",
         mitre_atlas="AML.T0011",
         nist_csf="PR.AC-4",
@@ -616,7 +641,11 @@ def check_5_2_no_public_endpoints(config: dict) -> Finding:
     for ep in endpoints:
         visibility = ep.get("visibility", ep.get("access", ""))
         network = ep.get("network", {})
-        if visibility == "public" or network.get("public", False) or not network.get("vpc", network.get("private", True)):
+        if (
+            visibility == "public"
+            or network.get("public", False)
+            or not network.get("vpc", network.get("private", True))
+        ):
             public.append(ep.get("name", "unknown"))
     return Finding(
         check_id="MS-5.2",
@@ -624,7 +653,9 @@ def check_5_2_no_public_endpoints(config: dict) -> Finding:
         section="network",
         severity="HIGH",
         status="FAIL" if public else "PASS",
-        detail=f"{len(public)} publicly accessible endpoints" if public else "All endpoints behind VPC/gateway",
+        detail=f"{len(public)} publicly accessible endpoints"
+        if public
+        else "All endpoints behind VPC/gateway",
         remediation="Place model endpoints behind API gateway or VPC. No direct public access.",
         mitre_atlas="AML.T0024",
         nist_csf="PR.AC-5",
@@ -650,7 +681,9 @@ def check_5_3_private_network_isolation(config: dict) -> Finding:
         section="network",
         severity="HIGH",
         status="FAIL" if missing_private else "PASS",
-        detail=f"{len(missing_private)} endpoints without private network attachment" if missing_private else "All endpoints use private network isolation",
+        detail=f"{len(missing_private)} endpoints without private network attachment"
+        if missing_private
+        else "All endpoints use private network isolation",
         remediation="Attach SageMaker endpoints to VPCs, Vertex AI endpoints to PSC/private networking, or Azure ML/Foundry endpoints to private endpoints.",
         mitre_atlas="AML.T0024",
         nist_csf="PR.AC-5",
@@ -667,14 +700,18 @@ def check_5_3_private_network_isolation(config: dict) -> Finding:
 def check_6_1_prompt_injection_guard(config: dict) -> Finding:
     """MS-6.1 — Prompt injection detection enabled."""
     safety = config.get("safety", config.get("guardrails", config.get("content_safety", {})))
-    injection_guard = safety.get("prompt_injection", safety.get("injection_detection", safety.get("input_guard", False)))
+    injection_guard = safety.get(
+        "prompt_injection", safety.get("injection_detection", safety.get("input_guard", False))
+    )
     return Finding(
         check_id="MS-6.1",
         title="Prompt injection detection",
         section="safety",
         severity="HIGH",
         status="PASS" if injection_guard else "FAIL",
-        detail="Prompt injection guard enabled" if injection_guard else "No prompt injection detection configured",
+        detail="Prompt injection guard enabled"
+        if injection_guard
+        else "No prompt injection detection configured",
         remediation="Enable prompt injection detection to prevent adversarial input attacks",
         mitre_atlas="AML.T0051",
         nist_csf="DE.CM-4",
@@ -717,7 +754,9 @@ def check_6_3_model_versioning(config: dict) -> Finding:
         section="safety",
         severity="MEDIUM",
         status="FAIL" if no_version else "PASS",
-        detail=f"{len(no_version)} models without explicit version" if no_version else "All models have explicit versions",
+        detail=f"{len(no_version)} models without explicit version"
+        if no_version
+        else "All models have explicit versions",
         remediation="Pin model versions (never use 'latest'). Enable model registry with immutable tags.",
         mitre_atlas="AML.T0010",
         nist_csf="PR.DS-6",
@@ -740,7 +779,9 @@ def check_6_4_guardrails_attached(config: dict) -> Finding:
         section="safety",
         severity="HIGH",
         status="FAIL" if missing_guardrails else "PASS",
-        detail=f"{len(missing_guardrails)} endpoints without guardrails or content safety attachment" if missing_guardrails else "All endpoints attach guardrails or content safety layers",
+        detail=f"{len(missing_guardrails)} endpoints without guardrails or content safety attachment"
+        if missing_guardrails
+        else "All endpoints attach guardrails or content safety layers",
         remediation="Attach Bedrock guardrails, Vertex AI safety settings, Azure AI content safety, or equivalent provider-native safety layers.",
         mitre_atlas="AML.T0048",
         nist_csf="DE.CM-4",
@@ -763,7 +804,9 @@ def check_6_5_ai_endpoint_audit_logging(config: dict) -> Finding:
         section="safety",
         severity="MEDIUM",
         status="FAIL" if no_logging else "PASS",
-        detail=f"{len(no_logging)} endpoints without audit or access logging" if no_logging else "All endpoints have audit logging or access capture enabled",
+        detail=f"{len(no_logging)} endpoints without audit or access logging"
+        if no_logging
+        else "All endpoints have audit logging or access capture enabled",
         remediation="Enable provider-native endpoint access logging, diagnostics, or request capture on all AI endpoints.",
         mitre_atlas="AML.T0010",
         nist_csf="DE.CM-3",
@@ -777,16 +820,41 @@ def check_6_5_ai_endpoint_audit_logging(config: dict) -> Finding:
 # ═══════════════════════════════════════════════════════════════════════════
 
 ALL_CHECKS = {
-    "auth": [check_1_1_endpoint_auth_required, check_1_2_no_hardcoded_api_keys, check_1_3_rbac_model_access, check_1_4_workload_identity_required],
+    "auth": [
+        check_1_1_endpoint_auth_required,
+        check_1_2_no_hardcoded_api_keys,
+        check_1_3_rbac_model_access,
+        check_1_4_workload_identity_required,
+    ],
     "abuse_prevention": [check_2_1_rate_limiting_enabled, check_2_2_input_size_limits],
-    "data_egress": [check_3_1_output_filtering, check_3_2_no_training_data_in_response, check_3_3_logging_no_pii],
-    "runtime": [check_4_1_no_privileged_containers, check_4_2_read_only_rootfs, check_4_3_non_root_user],
-    "network": [check_5_1_tls_enforced, check_5_2_no_public_endpoints, check_5_3_private_network_isolation],
-    "safety": [check_6_1_prompt_injection_guard, check_6_2_content_safety_enabled, check_6_3_model_versioning, check_6_4_guardrails_attached, check_6_5_ai_endpoint_audit_logging],
+    "data_egress": [
+        check_3_1_output_filtering,
+        check_3_2_no_training_data_in_response,
+        check_3_3_logging_no_pii,
+    ],
+    "runtime": [
+        check_4_1_no_privileged_containers,
+        check_4_2_read_only_rootfs,
+        check_4_3_non_root_user,
+    ],
+    "network": [
+        check_5_1_tls_enforced,
+        check_5_2_no_public_endpoints,
+        check_5_3_private_network_isolation,
+    ],
+    "safety": [
+        check_6_1_prompt_injection_guard,
+        check_6_2_content_safety_enabled,
+        check_6_3_model_versioning,
+        check_6_4_guardrails_attached,
+        check_6_5_ai_endpoint_audit_logging,
+    ],
 }
 
 
-def run_benchmark(config: dict, *, section: str | None = None, scan_paths: list[str] | None = None) -> list[Finding]:
+def run_benchmark(
+    config: dict, *, section: str | None = None, scan_paths: list[str] | None = None
+) -> list[Finding]:
     """Run all or section-specific checks against a serving config."""
     findings: list[Finding] = []
     sections = {section: ALL_CHECKS[section]} if section and section in ALL_CHECKS else ALL_CHECKS
@@ -842,7 +910,10 @@ def load_config(path: str) -> dict:
 
             return yaml.safe_load(content) or {}
         except ImportError:
-            print("Error: PyYAML required for YAML configs. Install with: pip install pyyaml", file=sys.stderr)
+            print(
+                "Error: PyYAML required for YAML configs. Install with: pip install pyyaml",
+                file=sys.stderr,
+            )
             sys.exit(1)
     return json.loads(content)
 
@@ -850,9 +921,15 @@ def load_config(path: str) -> dict:
 def main() -> None:
     parser = argparse.ArgumentParser(description="Model Serving Security Benchmark")
     parser.add_argument("config", help="Path to serving config file (JSON/YAML)")
-    parser.add_argument("--section", choices=list(ALL_CHECKS.keys()), help="Run specific section only")
-    parser.add_argument("--scan-paths", nargs="*", help="Additional paths to scan for hardcoded secrets")
-    parser.add_argument("--output", choices=["console", "json"], default="console", help="Output format")
+    parser.add_argument(
+        "--section", choices=list(ALL_CHECKS.keys()), help="Run specific section only"
+    )
+    parser.add_argument(
+        "--scan-paths", nargs="*", help="Additional paths to scan for hardcoded secrets"
+    )
+    parser.add_argument(
+        "--output", choices=["console", "json"], default="console", help="Output format"
+    )
     parser.add_argument("--output-format", choices=list(OUTPUT_FORMATS), default="native")
     args = parser.parse_args()
 
@@ -875,7 +952,9 @@ def main() -> None:
     else:
         print_summary(findings)
 
-    critical_or_high_fails = sum(1 for f in findings if f.status == "FAIL" and f.severity in ("CRITICAL", "HIGH"))
+    critical_or_high_fails = sum(
+        1 for f in findings if f.status == "FAIL" and f.severity in ("CRITICAL", "HIGH")
+    )
     sys.exit(1 if critical_or_high_fails else 0)
 
 

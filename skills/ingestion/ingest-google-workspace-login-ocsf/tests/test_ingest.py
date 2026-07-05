@@ -87,15 +87,29 @@ class TestParseTs:
 
 class TestClassification:
     def test_supported_events_are_narrow(self):
-        assert SUPPORTED_EVENT_NAMES == {"login_success", "login_failure", "logout", "2sv_enroll", "2sv_disable"}
+        assert SUPPORTED_EVENT_NAMES == {
+            "login_success",
+            "login_failure",
+            "logout",
+            "2sv_enroll",
+            "2sv_disable",
+        }
 
     def test_authentication_routes(self):
         assert _classify("login_success") == (AUTH_CLASS_UID, "Authentication", AUTH_ACTIVITY_LOGON)
         assert _classify("logout") == (AUTH_CLASS_UID, "Authentication", AUTH_ACTIVITY_LOGOFF)
 
     def test_account_change_routes(self):
-        assert _classify("2sv_enroll") == (ACCOUNT_CHANGE_CLASS_UID, "Account Change", ACCOUNT_CHANGE_MFA_ENABLE)
-        assert _classify("2sv_disable") == (ACCOUNT_CHANGE_CLASS_UID, "Account Change", ACCOUNT_CHANGE_MFA_DISABLE)
+        assert _classify("2sv_enroll") == (
+            ACCOUNT_CHANGE_CLASS_UID,
+            "Account Change",
+            ACCOUNT_CHANGE_MFA_ENABLE,
+        )
+        assert _classify("2sv_disable") == (
+            ACCOUNT_CHANGE_CLASS_UID,
+            "Account Change",
+            ACCOUNT_CHANGE_MFA_DISABLE,
+        )
 
 
 class TestValidation:
@@ -127,7 +141,10 @@ class TestConvert:
         assert event["user"]["email_addr"] == "alice@example.com"
         assert event["src_endpoint"]["ip"] == "198.51.100.21"
         assert event["session"]["uid"] == "workspace-evt-1"
-        assert event["unmapped"]["google_workspace_login"]["parameters"]["login_type"] == "google_password"
+        assert (
+            event["unmapped"]["google_workspace_login"]["parameters"]["login_type"]
+            == "google_password"
+        )
 
     def test_login_failure(self):
         activity = _activity(
@@ -175,12 +192,30 @@ class TestConvert:
 
 class TestIterRawActivities:
     def test_items_wrapper(self):
-        wrapped = {"items": [_activity(), _activity(id={**_activity()["id"], "uniqueQualifier": "workspace-evt-2"})]}
+        wrapped = {
+            "items": [
+                _activity(),
+                _activity(id={**_activity()["id"], "uniqueQualifier": "workspace-evt-2"}),
+            ]
+        }
         events = list(iter_raw_activities([json.dumps(wrapped)]))
         assert len(events) == 2
 
     def test_array(self):
-        events = list(iter_raw_activities([json.dumps([_activity(), _activity(id={**_activity()["id"], "uniqueQualifier": "workspace-evt-2"})])]))
+        events = list(
+            iter_raw_activities(
+                [
+                    json.dumps(
+                        [
+                            _activity(),
+                            _activity(
+                                id={**_activity()["id"], "uniqueQualifier": "workspace-evt-2"}
+                            ),
+                        ]
+                    )
+                ]
+            )
+        )
         assert len(events) == 2
 
     def test_ndjson_and_bad_line(self, capsys):

@@ -21,7 +21,10 @@ def _event(user: str = "SAP*", profile: str = "SAP_ALL") -> dict[str, object]:
     return {
         "class_uid": 6002,
         "time": 1780920000000,
-        "metadata": {"uid": "sap-priv-1", "product": {"feature": {"name": "ingest-sap-audit-log-ocsf"}}},
+        "metadata": {
+            "uid": "sap-priv-1",
+            "product": {"feature": {"name": "ingest-sap-audit-log-ocsf"}},
+        },
         "actor": {"user": {"uid": f"100:{user}", "name": user}},
         "src_endpoint": {"ip": "198.51.100.10"},
         "unmapped": {

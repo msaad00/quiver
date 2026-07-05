@@ -12,6 +12,7 @@ from typing import TYPE_CHECKING, Any
 if TYPE_CHECKING:
     from reconciler.sources import DepartureRecord
 
+
 class ManifestBuilder:
     """Build the canonical manifest body without persisting it."""
 
@@ -49,7 +50,12 @@ class ManifestBuilder:
         for r in skipped:
             if r.iam_deleted:
                 reasons["iam_already_deleted"] += 1
-            elif r.is_rehire and r.iam_last_used_at and r.rehire_date and r.iam_last_used_at > r.rehire_date:
+            elif (
+                r.is_rehire
+                and r.iam_last_used_at
+                and r.rehire_date
+                and r.iam_last_used_at > r.rehire_date
+            ):
                 reasons["rehire_same_iam"] += 1
             elif r.remediation_status.value == "remediated":
                 reasons["already_remediated"] += 1

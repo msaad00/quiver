@@ -76,21 +76,19 @@ TECHNIQUE_NAME = "Exploit Public-Facing Application"
 
 ACCEPTED_PRODUCERS = frozenset({"ingest-azure-activity-ocsf"})
 
-NSG_RULE_WRITE_OPERATION = (
-    "Microsoft.Network/networkSecurityGroups/securityRules/write"
-)
+NSG_RULE_WRITE_OPERATION = "Microsoft.Network/networkSecurityGroups/securityRules/write"
 
 # Default risky ports — admin / database / cache / search surfaces. Same set as
 # the AWS / GCP siblings to keep cross-cloud parity.
 DEFAULT_RISKY_PORTS = (
-    22,     # SSH
-    23,     # Telnet
-    3306,   # MySQL
-    3389,   # RDP
-    5432,   # Postgres
-    5984,   # CouchDB
-    6379,   # Redis
-    9200,   # Elasticsearch
+    22,  # SSH
+    23,  # Telnet
+    3306,  # MySQL
+    3389,  # RDP
+    5432,  # Postgres
+    5984,  # CouchDB
+    6379,  # Redis
+    9200,  # Elasticsearch
     11211,  # Memcached
     27017,  # MongoDB
 )
@@ -323,7 +321,11 @@ def _to_ocsf(native: dict[str, Any]) -> dict[str, Any]:
         {"name": "api.operation", "type": "Other", "value": NSG_RULE_WRITE_OPERATION},
         {"name": "rule", "type": "Other", "value": native["rule"]},
         {"name": "target.uid", "type": "Other", "value": native["rule_uid"]},
-        {"name": "target.name", "type": "Other", "value": native["rule_name"] or native["rule_uid"]},
+        {
+            "name": "target.name",
+            "type": "Other",
+            "value": native["rule_name"] or native["rule_uid"],
+        },
         {"name": "target.type", "type": "Other", "value": "NetworkSecurityRule"},
         {"name": "account.uid", "type": "Other", "value": native["account_uid"]},
         {"name": "region", "type": "Other", "value": native["region"]},
@@ -411,7 +413,9 @@ def detect(
         producer = _producer(event)
         if producer not in ACCEPTED_PRODUCERS:
             emit_stderr_event(
-                SKILL_NAME, level="warning", event="wrong_source",
+                SKILL_NAME,
+                level="warning",
+                event="wrong_source",
                 message=f"skipping event from non-azure-activity producer `{producer}`",
             )
             continue
@@ -444,14 +448,19 @@ def detect(
         rule_name = _rule_name_from_resource_id(rule_uid)
         if not rule_uid:
             emit_stderr_event(
-                SKILL_NAME, level="warning", event="no_rule_id",
+                SKILL_NAME,
+                level="warning",
+                event="no_rule_id",
                 message="NSG rule write missing target resource id; skipping",
             )
             continue
 
         native = _build_native_finding(
-            event=event, rule_uid=rule_uid, rule_name=rule_name,
-            public_sources_hit=public_sources, risky_ports_hit=port_hits,
+            event=event,
+            rule_uid=rule_uid,
+            rule_name=rule_name,
+            public_sources_hit=public_sources,
+            risky_ports_hit=port_hits,
             rule_props=props,
         )
         yield native if output_format == "native" else _to_ocsf(native)
@@ -466,8 +475,11 @@ def load_jsonl(stream: Iterable[str]) -> Iterable[dict[str, Any]]:
             obj = json.loads(line)
         except json.JSONDecodeError as exc:
             emit_stderr_event(
-                SKILL_NAME, level="warning", event="json_parse_failed",
-                message=f"skipping line {lineno}: json parse failed: {exc}", line=lineno,
+                SKILL_NAME,
+                level="warning",
+                event="json_parse_failed",
+                message=f"skipping line {lineno}: json parse failed: {exc}",
+                line=lineno,
             )
             continue
         if isinstance(obj, dict):
@@ -481,7 +493,9 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("input", nargs="?", help="JSONL input. Defaults to stdin.")
     parser.add_argument("--output", "-o", help="JSONL output. Defaults to stdout.")
     parser.add_argument(
-        "--output-format", choices=sorted(OUTPUT_FORMATS), default="ocsf",
+        "--output-format",
+        choices=sorted(OUTPUT_FORMATS),
+        default="ocsf",
         help="Emit OCSF Detection Finding (default) or native projection.",
     )
     args = parser.parse_args(argv)

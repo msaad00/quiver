@@ -143,8 +143,7 @@ class TestDetection:
 
     def test_multi_token_burst_fires_once_per_token(self) -> None:
         events = [
-            _event(uid=f"ev-burst-{i}", time_ms=1_000 + i, token_id=f"tok-{i}")
-            for i in range(4)
+            _event(uid=f"ev-burst-{i}", time_ms=1_000 + i, token_id=f"tok-{i}") for i in range(4)
         ]
         findings = list(detect(events))
         assert len(findings) == 4
@@ -229,7 +228,9 @@ class TestMetadata:
     def test_coverage_metadata(self) -> None:
         metadata = coverage_metadata()
         assert metadata["providers"] == ("databricks",)
-        assert TOKEN_CREATE_OPERATION in metadata["attack_coverage"]["databricks"]["anchor_operations"]
+        assert (
+            TOKEN_CREATE_OPERATION in metadata["attack_coverage"]["databricks"]["anchor_operations"]
+        )
         assert MITRE_TECHNIQUE_UID in metadata["attack_coverage"]["databricks"]["techniques"]
         assert MITRE_SUBTECHNIQUE_UID in metadata["attack_coverage"]["databricks"]["techniques"]
         assert "ingest-databricks-audit-ocsf" in ACCEPTED_PRODUCERS

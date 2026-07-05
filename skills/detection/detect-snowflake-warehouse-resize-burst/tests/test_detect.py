@@ -124,7 +124,13 @@ class TestDetection:
 
     def test_non_snowflake_producer_is_ignored(self) -> None:
         events = [
-            _event(uid="q-1", time_ms=1_000, size_from="XSMALL", size_to="LARGE", producer="ingest-cloudtrail-ocsf"),
+            _event(
+                uid="q-1",
+                time_ms=1_000,
+                size_from="XSMALL",
+                size_to="LARGE",
+                producer="ingest-cloudtrail-ocsf",
+            ),
         ]
         assert list(detect(events)) == []
 
@@ -151,8 +157,12 @@ class TestDetection:
 
     def test_two_warehouses_each_fire_separately(self) -> None:
         events = [
-            _event(uid="a-1", time_ms=1_000, warehouse_name="WH_A", size_from="XSMALL", size_to="LARGE"),
-            _event(uid="b-1", time_ms=1_500, warehouse_name="WH_B", size_from="XSMALL", size_to="LARGE"),
+            _event(
+                uid="a-1", time_ms=1_000, warehouse_name="WH_A", size_from="XSMALL", size_to="LARGE"
+            ),
+            _event(
+                uid="b-1", time_ms=1_500, warehouse_name="WH_B", size_from="XSMALL", size_to="LARGE"
+            ),
         ]
         findings = list(detect(events))
         assert len(findings) == 2
@@ -193,7 +203,12 @@ class TestThresholdOverrides:
             _event(uid="q-1", time_ms=1_000, size_from="XSMALL", size_to="SMALL"),
             # 2 hours later
             _event(uid="q-2", time_ms=1_000 + 2 * 60 * 60_000, size_from="SMALL", size_to="MEDIUM"),
-            _event(uid="q-3", time_ms=1_000 + 2 * 60 * 60_000 + 5_000, size_from="MEDIUM", size_to="LARGE"),
+            _event(
+                uid="q-3",
+                time_ms=1_000 + 2 * 60 * 60_000 + 5_000,
+                size_from="MEDIUM",
+                size_to="LARGE",
+            ),
         ]
         # default 60-min window: events too spread out → no fire
         assert list(detect(events)) == []

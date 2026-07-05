@@ -49,7 +49,11 @@ class TestRemediationResult:
             account_id="123456789012",
         )
         r.steps.append(RemediationStep(step_number=1, action="test", target="x"))
-        r.steps.append(RemediationStep(step_number=2, action="test2", target="x", status=RemediationStatus.FAILED))
+        r.steps.append(
+            RemediationStep(
+                step_number=2, action="test2", target="x", status=RemediationStatus.FAILED
+            )
+        )
         r.complete()
         assert r.status == RemediationStatus.PARTIAL
         assert r.steps_completed == 1
@@ -62,7 +66,11 @@ class TestRemediationResult:
             identity_type="service_account",
             account_id="my-project",
         )
-        r.steps.append(RemediationStep(step_number=1, action="test", target="x", status=RemediationStatus.FAILED))
+        r.steps.append(
+            RemediationStep(
+                step_number=1, action="test", target="x", status=RemediationStatus.FAILED
+            )
+        )
         r.complete()
         assert r.status == RemediationStatus.FAILED
 
@@ -73,7 +81,9 @@ class TestRemediationResult:
             identity_type="snowflake_user",
             account_id="myaccount",
         )
-        r.steps.append(RemediationStep(step_number=1, action="disable", target="departing_user", detail="done"))
+        r.steps.append(
+            RemediationStep(step_number=1, action="disable", target="departing_user", detail="done")
+        )
         r.complete()
         d = r.to_dict()
         assert d["cloud"] == "snowflake"
@@ -111,7 +121,9 @@ class TestAzureEntra:
     def test_identity_type_is_entra_user(self):
         from lambda_worker.clouds import azure_entra
 
-        result = asyncio.run(azure_entra.remediate_user("user@domain.com", "tenant-123", dry_run=True))
+        result = asyncio.run(
+            azure_entra.remediate_user("user@domain.com", "tenant-123", dry_run=True)
+        )
         assert result.identity_type == "entra_user"
 
 
@@ -160,7 +172,9 @@ class TestSnowflake:
     def test_dry_run_produces_all_steps(self):
         from lambda_worker.clouds import snowflake_user
 
-        result = asyncio.run(snowflake_user.remediate_user("departing_user", "myaccount", dry_run=True))
+        result = asyncio.run(
+            snowflake_user.remediate_user("departing_user", "myaccount", dry_run=True)
+        )
         assert result.status == RemediationStatus.DRY_RUN
         assert result.cloud == CloudProvider.SNOWFLAKE
         assert len(result.steps) == 6
@@ -225,7 +239,9 @@ class TestDatabricks:
         from lambda_worker.clouds import databricks_scim
 
         # workspace_only still needs workspace client, but dry_run skips all
-        result = asyncio.run(databricks_scim.remediate_user("user@company.com", workspace_only=True, dry_run=True))
+        result = asyncio.run(
+            databricks_scim.remediate_user("user@company.com", workspace_only=True, dry_run=True)
+        )
         # dry_run returns all steps as DRY_RUN regardless of workspace_only
         assert result.status == RemediationStatus.DRY_RUN
 

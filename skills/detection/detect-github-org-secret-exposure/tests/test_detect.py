@@ -200,7 +200,9 @@ class TestDetection:
 
     def test_codespaces_secret_operation_also_fires(self) -> None:
         findings = list(
-            detect([_event(uid="ev-cs", time_ms=1_000, api_operation="codespaces.org_secret_update")])
+            detect(
+                [_event(uid="ev-cs", time_ms=1_000, api_operation="codespaces.org_secret_update")]
+            )
         )
         assert len(findings) == 1
 

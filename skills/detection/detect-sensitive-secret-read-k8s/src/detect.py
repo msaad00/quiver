@@ -314,7 +314,9 @@ def detect(
     at most one finding per call, even if the actor reads the same secret
     multiple times in the input.
     """
-    active_patterns: tuple[str, ...] = tuple(patterns) if patterns is not None else SENSITIVE_NAME_PATTERNS
+    active_patterns: tuple[str, ...] = (
+        tuple(patterns) if patterns is not None else SENSITIVE_NAME_PATTERNS
+    )
     seen: set[str] = set()
 
     for event in events:
@@ -374,10 +376,19 @@ def load_jsonl(stream: Iterable[str]) -> Iterable[dict[str, Any]]:
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Detect reads of Kubernetes Secrets with sensitive names.")
+    parser = argparse.ArgumentParser(
+        description="Detect reads of Kubernetes Secrets with sensitive names."
+    )
     parser.add_argument("input", nargs="?", help="Native or OCSF JSONL input. Defaults to stdin.")
-    parser.add_argument("--output", "-o", help="Detection Finding JSONL output. Defaults to stdout.")
-    parser.add_argument("--output-format", choices=OUTPUT_FORMATS, default="ocsf", help="Render OCSF detection findings or the native detection-finding shape.")
+    parser.add_argument(
+        "--output", "-o", help="Detection Finding JSONL output. Defaults to stdout."
+    )
+    parser.add_argument(
+        "--output-format",
+        choices=OUTPUT_FORMATS,
+        default="ocsf",
+        help="Render OCSF detection findings or the native detection-finding shape.",
+    )
     parser.add_argument(
         "--sensitive-pattern",
         action="append",

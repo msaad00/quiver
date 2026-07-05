@@ -137,7 +137,9 @@ class TestToolDefinition:
         assert skill.min_approvers is None
 
     def test_unsupported_write_skill_rbac_metadata_is_parsed(self):
-        remediation = next(skill for skill in discover_skills(REPO_ROOT) if skill.name == "iam-departures-aws")
+        remediation = next(
+            skill for skill in discover_skills(REPO_ROOT) if skill.name == "iam-departures-aws"
+        )
         assert remediation.network_egress == (
             "api.workday.com",
             "*.snowflakecomputing.com",
@@ -157,7 +159,9 @@ class TestToolDefinition:
 
     def test_mcp_tool_quarantine_requires_two_approvers_in_metadata(self):
         remediation = next(
-            skill for skill in discover_skills(REPO_ROOT) if skill.name == "remediate-mcp-tool-quarantine"
+            skill
+            for skill in discover_skills(REPO_ROOT)
+            if skill.name == "remediate-mcp-tool-quarantine"
         )
         assert remediation.min_approvers == 2
 
@@ -270,9 +274,9 @@ class TestMcpTimeoutParsing:
 class TestFrontmatterParsing:
     def test_parses_quoted_value_with_colon(self):
         frontmatter = (
-            'name: example-skill\n'
+            "name: example-skill\n"
             'description: "Detect: suspicious behavior in foo:bar streams"\n'
-            'license: Apache-2.0\n'
+            "license: Apache-2.0\n"
         )
         data = MODULE._parse_frontmatter(frontmatter)
         assert data["description"] == "Detect: suspicious behavior in foo:bar streams"
@@ -280,24 +284,18 @@ class TestFrontmatterParsing:
 
     def test_parses_block_scalar_description(self):
         frontmatter = (
-            'name: block-scalar-skill\n'
-            'description: >-\n'
-            '  this description spans\n'
-            '  multiple wrapped lines\n'
-            'license: Apache-2.0\n'
+            "name: block-scalar-skill\n"
+            "description: >-\n"
+            "  this description spans\n"
+            "  multiple wrapped lines\n"
+            "license: Apache-2.0\n"
         )
         data = MODULE._parse_frontmatter(frontmatter)
         assert "multiple wrapped lines" in data["description"]
         assert data["name"] == "block-scalar-skill"
 
     def test_parses_list_value_into_comma_string(self):
-        frontmatter = (
-            'name: list-skill\n'
-            'execution_modes:\n'
-            '  - jit\n'
-            '  - mcp\n'
-            '  - ci\n'
-        )
+        frontmatter = "name: list-skill\nexecution_modes:\n  - jit\n  - mcp\n  - ci\n"
         data = MODULE._parse_frontmatter(frontmatter)
         assert data["execution_modes"] == "jit, mcp, ci"
 

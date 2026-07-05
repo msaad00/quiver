@@ -81,9 +81,7 @@ def _load_manifest() -> list[dict[str, Any]]:
         data = yaml.safe_load(fh) or {}
     fixtures = data.get("fixtures") or []
     if not isinstance(fixtures, list):
-        raise ValueError(
-            "captured/MANIFEST.yaml: top-level `fixtures` must be a list."
-        )
+        raise ValueError("captured/MANIFEST.yaml: top-level `fixtures` must be a list.")
     return fixtures
 
 
@@ -114,8 +112,7 @@ def _validate_entry(entry: dict[str, Any]) -> list[str]:
         pass
     elif not isinstance(synthetic, bool):
         violations.append(
-            f"{path}: synthetic_seeded must be a boolean, got "
-            f"{type(synthetic).__name__}."
+            f"{path}: synthetic_seeded must be a boolean, got {type(synthetic).__name__}."
         )
 
     detector = entry.get("consuming_detector")
@@ -157,9 +154,7 @@ def main() -> int:
     declared_paths: set[str] = set()
     for entry in manifest_entries:
         if not isinstance(entry, dict):
-            violations.append(
-                f"manifest entry is not a mapping: {entry!r}"
-            )
+            violations.append(f"manifest entry is not a mapping: {entry!r}")
             continue
         path = entry.get("path")
         if isinstance(path, str):
@@ -175,10 +170,7 @@ def main() -> int:
             "Every fixture must be declared."
         )
     for declared in sorted(declared_paths - fixture_names):
-        violations.append(
-            f"{declared}: declared in MANIFEST.yaml but not present under "
-            "captured/."
-        )
+        violations.append(f"{declared}: declared in MANIFEST.yaml but not present under captured/.")
 
     if not fixture_files:
         # Empty directories defeat the point of the contract — fail loudly.
@@ -189,8 +181,7 @@ def main() -> int:
 
     if violations:
         print(
-            "Captured-fixture provenance violations:\n  - "
-            + "\n  - ".join(violations),
+            "Captured-fixture provenance violations:\n  - " + "\n  - ".join(violations),
             file=sys.stderr,
         )
         return 1

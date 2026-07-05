@@ -110,9 +110,7 @@ class TestDetection:
         assert finding["evidence"]["opened_wide"] == "account_network_policy_unset"
 
     def test_allowed_ip_list_wildcard_ipv4_fires(self) -> None:
-        events = [
-            _event(uid="q-1", time_ms=1_000, allowed_ip_list=["0.0.0.0/0"])
-        ]
+        events = [_event(uid="q-1", time_ms=1_000, allowed_ip_list=["0.0.0.0/0"])]
         findings = list(detect(events))
         assert len(findings) == 1
         assert findings[0]["evidence"]["opened_wide"] == "allowed_ip_list_wildcard"
@@ -146,9 +144,7 @@ class TestDetection:
         assert list(detect(events)) == []
 
     def test_failed_event_is_ignored(self) -> None:
-        events = [
-            _event(uid="q-1", time_ms=1_000, allowed_ip_list=["0.0.0.0/0"], status_id=2)
-        ]
+        events = [_event(uid="q-1", time_ms=1_000, allowed_ip_list=["0.0.0.0/0"], status_id=2)]
         assert list(detect(events)) == []
 
     def test_duplicate_metadata_uid_does_not_inflate(self) -> None:

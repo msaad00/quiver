@@ -106,10 +106,7 @@ def _render_fixture(payload, replacements: dict[str, str]):
     if isinstance(payload, list):
         return [_render_fixture(item, replacements) for item in payload]
     if isinstance(payload, dict):
-        return {
-            key: _render_fixture(value, replacements)
-            for key, value in payload.items()
-        }
+        return {key: _render_fixture(value, replacements) for key, value in payload.items()}
     return payload
 
 
@@ -146,7 +143,8 @@ class TestExampleSmoke:
             env=env,
         )
         audit_lines = [
-            line for line in result.stderr.splitlines()
+            line
+            for line in result.stderr.splitlines()
             if line.strip().startswith("{") and '"' in line
         ]
         assert audit_lines, f"no audit-style stderr line found: {result.stderr!r}"
@@ -178,6 +176,7 @@ class TestAllowlistDiscipline:
         # verify no single declaration contains both a read-only marker and a
         # remediation marker. (We don't run the file — we scan its source.)
         import re
+
         combined = re.findall(
             r"ALLOWED_SKILLS_\w+\s*=\s*[\"'](?P<csv>[^\"']+)[\"']",
             text,
@@ -221,7 +220,9 @@ class TestHitlGateReachable:
         # which may exit nonzero if deps aren't present. That's fine — the
         # thing we're asserting is that the gate was reached and the stage-3
         # block was entered, visible in stderr.
-        assert "remediation_dry_run" in result.stdout or "reconciler" in (result.stdout + result.stderr)
+        assert "remediation_dry_run" in result.stdout or "reconciler" in (
+            result.stdout + result.stderr
+        )
 
     def test_langgraph_reaches_remediation_with_approval(self):
         env = {
@@ -265,7 +266,9 @@ class TestLangGraphHarnessRuntime:
         assert summary["review"]["status"] == "blocked"
         assert summary["remediation"]["status"] == "skipped"
 
-    def test_runtime_wrapper_accepts_profile_caller_and_events(self, monkeypatch: pytest.MonkeyPatch):
+    def test_runtime_wrapper_accepts_profile_caller_and_events(
+        self, monkeypatch: pytest.MonkeyPatch
+    ):
         monkeypatch.delenv("DEMO_APPROVE", raising=False)
         runtime = self._runtime_module()
         config = runtime.HarnessRunConfig(
@@ -292,20 +295,28 @@ class TestLangGraphHarnessRuntime:
         assert result.summary["audit"]["correlation_id"] == "wrapper-test-session"
         assert result.summary["findings_count"] == 1
 
-    def test_runtime_wrapper_replays_checkpoint(self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch):
+    def test_runtime_wrapper_replays_checkpoint(
+        self, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+    ):
         monkeypatch.delenv("DEMO_APPROVE", raising=False)
         runtime = self._runtime_module()
         checkpoint_path = tmp_path / "langgraph-checkpoint.json"
 
         first = runtime.run_harness(runtime.HarnessRunConfig(checkpoint_path=checkpoint_path))
-        replayed = runtime.run_harness(runtime.HarnessRunConfig(replay_checkpoint_path=checkpoint_path))
+        replayed = runtime.run_harness(
+            runtime.HarnessRunConfig(replay_checkpoint_path=checkpoint_path)
+        )
 
         assert first.checkpoint["path"] == str(checkpoint_path)
         assert replayed.runtime["execution_mode"] == "checkpoint_replay"
         assert replayed.runtime["replayed"] is True
-        assert replayed.summary["integrity"]["state_hash"] == first.summary["integrity"]["state_hash"]
+        assert (
+            replayed.summary["integrity"]["state_hash"] == first.summary["integrity"]["state_hash"]
+        )
 
-    def test_runtime_wrapper_accepts_stateful_approval_context(self, monkeypatch: pytest.MonkeyPatch):
+    def test_runtime_wrapper_accepts_stateful_approval_context(
+        self, monkeypatch: pytest.MonkeyPatch
+    ):
         monkeypatch.delenv("DEMO_APPROVE", raising=False)
         runtime = self._runtime_module()
         config = runtime.HarnessRunConfig(
@@ -365,14 +376,19 @@ class TestLangGraphHarnessRunner:
     def test_runner_accepts_raw_events_and_caller_context(self, tmp_path: Path):
         raw_events = tmp_path / "events.jsonl"
         raw_events.write_text(
-            "\n".join([
-                json.dumps({
-                    "source": "cloudtrail",
-                    "event_name": "CreateAccessKey",
-                    "actor_uid": "AIDARUNNER",
-                    "resource_uid": "arn:aws:iam::111122223333:user/runner",
-                }),
-            ]) + "\n",
+            "\n".join(
+                [
+                    json.dumps(
+                        {
+                            "source": "cloudtrail",
+                            "event_name": "CreateAccessKey",
+                            "actor_uid": "AIDARUNNER",
+                            "resource_uid": "arn:aws:iam::111122223333:user/runner",
+                        }
+                    ),
+                ]
+            )
+            + "\n",
             encoding="utf-8",
         )
         caller_context = {
@@ -414,11 +430,16 @@ class TestLangGraphHarnessRunner:
 
     def test_runner_accepts_explicit_approval_context_file(self, tmp_path: Path):
         approval_context = tmp_path / "approval.json"
-        approval_context.write_text(json.dumps({
-            "approver_id": "reviewer@example.com",
-            "ticket_id": "SEC-RUNNER-FILE-1",
-            "approval_timestamp": "2026-06-23T00:00:00+00:00",
-        }), encoding="utf-8")
+        approval_context.write_text(
+            json.dumps(
+                {
+                    "approver_id": "reviewer@example.com",
+                    "ticket_id": "SEC-RUNNER-FILE-1",
+                    "approval_timestamp": "2026-06-23T00:00:00+00:00",
+                }
+            ),
+            encoding="utf-8",
+        )
 
         summary, _ = self._run(
             "--profile",
@@ -463,12 +484,17 @@ class TestLangGraphHarnessRunner:
     def test_runner_rejects_secret_material_in_approval_context(self, tmp_path: Path):
         approval_context = tmp_path / "approval.json"
         synthetic_pat = "ghp_" + ("a" * 36)
-        approval_context.write_text(json.dumps({
-            "approver_id": "reviewer@example.com",
-            "ticket_id": "SEC-RUNNER-SECRET-1",
-            "approval_timestamp": "2026-06-23T00:00:00+00:00",
-            "notes": synthetic_pat,
-        }), encoding="utf-8")
+        approval_context.write_text(
+            json.dumps(
+                {
+                    "approver_id": "reviewer@example.com",
+                    "ticket_id": "SEC-RUNNER-SECRET-1",
+                    "approval_timestamp": "2026-06-23T00:00:00+00:00",
+                    "notes": synthetic_pat,
+                }
+            ),
+            encoding="utf-8",
+        )
 
         result = subprocess.run(
             [
@@ -544,7 +570,10 @@ class TestLangGraphMcpPlanExecutor:
                         "params": {
                             "name": "source-snowflake-query",
                             "arguments": {
-                                "args": ["--query", "SELECT payload FROM security.events_sink LIMIT 1"],
+                                "args": [
+                                    "--query",
+                                    "SELECT payload FROM security.events_sink LIMIT 1",
+                                ],
                                 "input": "",
                                 "_caller_context": {
                                     "allowed_skills": ["source-snowflake-query"],
@@ -574,7 +603,9 @@ class TestLangGraphMcpPlanExecutor:
 
     def test_executor_runs_operator_stdio_with_local_fake_server(self, tmp_path: Path):
         summary_path = tmp_path / "summary.json"
-        summary_path.write_text(json.dumps(self._summary("operator_stdio"), sort_keys=True), encoding="utf-8")
+        summary_path.write_text(
+            json.dumps(self._summary("operator_stdio"), sort_keys=True), encoding="utf-8"
+        )
         fake_server = tmp_path / "fake_mcp_server.py"
         fake_server.write_text(
             """
@@ -701,11 +732,13 @@ class TestLangGraphSocWorkflow:
     ) -> tuple[dict, subprocess.CompletedProcess[str]]:
         env = {**os.environ}
         if approved:
-            env.update({
-                "DEMO_APPROVE": "yes",
-                "DEMO_APPROVER": "reviewer@example.com",
-                "DEMO_TICKET": "SEC-LANGGRAPH-1",
-            })
+            env.update(
+                {
+                    "DEMO_APPROVE": "yes",
+                    "DEMO_APPROVER": "reviewer@example.com",
+                    "DEMO_TICKET": "SEC-LANGGRAPH-1",
+                }
+            )
         else:
             env.pop("DEMO_APPROVE", None)
             env.pop("DEMO_APPROVER", None)
@@ -741,28 +774,38 @@ class TestLangGraphSocWorkflow:
         assert summary["harness"]["model_policy"]["selected_model_tier"] == "tiny"
         assert summary["harness"]["model_policy"]["selection_source"] == "profile_model_policy"
         assert summary["token_budget_usage"]["status"] == "within_budget"
-        assert summary["token_budget_usage"]["compact_input_tokens_estimate"] <= summary["harness"]["token_budget"]["max_input_tokens"]
-        assert summary["token_budget_usage"]["compact_evidence_chars"] <= summary["harness"]["token_budget"]["max_evidence_chars"]
+        assert (
+            summary["token_budget_usage"]["compact_input_tokens_estimate"]
+            <= summary["harness"]["token_budget"]["max_input_tokens"]
+        )
+        assert (
+            summary["token_budget_usage"]["compact_evidence_chars"]
+            <= summary["harness"]["token_budget"]["max_evidence_chars"]
+        )
         assert summary["audit"]["llm_token_budget_status"] == "within_budget"
-        assert summary["audit"]["llm_compact_input_tokens"] == summary["token_budget_usage"]["compact_input_tokens_estimate"]
+        assert (
+            summary["audit"]["llm_compact_input_tokens"]
+            == summary["token_budget_usage"]["compact_input_tokens_estimate"]
+        )
         assert summary["llm_evidence_cards"]
         assert all("raw_events" not in card for card in summary["llm_evidence_cards"])
         assert all("ocsf_events" not in card for card in summary["llm_evidence_cards"])
         assert [agent["agent_id"] for agent in summary["agents"]] == self.EXPECTED_AGENT_IDS
-        triage_agent = next(agent for agent in summary["agents"] if agent["agent_id"] == "triage-agent")
+        triage_agent = next(
+            agent for agent in summary["agents"] if agent["agent_id"] == "triage-agent"
+        )
         assert triage_agent["privilege_boundary"] == "no_tool_writes"
         assert triage_agent["skill_scope"] == []
         assert triage_agent["model_tier"] == "tiny"
         assert "approval" in triage_agent["forbidden_outputs"]
-        remediation_agent = next(agent for agent in summary["agents"] if agent["agent_id"] == "remediation-planner")
+        remediation_agent = next(
+            agent for agent in summary["agents"] if agent["agent_id"] == "remediation-planner"
+        )
         assert remediation_agent["requires_human_approval"] is True
         assert remediation_agent["privilege_boundary"] == "dry_run_write_planning"
         assert summary["agent_policy"]["schema_version"] == "langgraph-agent-policy-v1"
         assert summary["agent_policy"]["policy_hash"] == summary["audit"]["agent_policy_hash"]
-        policy_entries = {
-            entry["agent_id"]: entry
-            for entry in summary["agent_policy"]["entries"]
-        }
+        policy_entries = {entry["agent_id"]: entry for entry in summary["agent_policy"]["entries"]}
         assert policy_entries["triage-agent"]["decision"] == "no_direct_tools"
         assert policy_entries["triage-agent"]["effective_skill_grants"] == []
         assert policy_entries["remediation-planner"]["denied_skill_scope"] == ["iam-departures-aws"]
@@ -776,7 +819,10 @@ class TestLangGraphSocWorkflow:
         ]
         assert all(run["input_hash"] and run["output_hash"] for run in summary["agent_runs"])
         assert summary["agent_recommendations"][0]["recommended_action"] == "request_approval"
-        assert summary["agent_recommendations"][0]["generated_by"] == "deterministic-local:policy-bounded-triage-v1"
+        assert (
+            summary["agent_recommendations"][0]["generated_by"]
+            == "deterministic-local:policy-bounded-triage-v1"
+        )
         assert summary["confidence_scores"][0]["reason_codes"] == [
             "rule_match",
             "stable_resource_uid",
@@ -812,8 +858,7 @@ class TestLangGraphSocWorkflow:
         assert all(node["guardrails"] for node in contract["nodes"])
 
         edge_pairs = {
-            (edge["source"], edge["target"], edge["condition"])
-            for edge in contract["edges"]
+            (edge["source"], edge["target"], edge["condition"]) for edge in contract["edges"]
         }
         assert ("review", "remediate", "route_after_review == remediate") in edge_pairs
         assert ("review", "writeback", "route_after_review == writeback") in edge_pairs
@@ -829,7 +874,10 @@ class TestLangGraphSocWorkflow:
         assert "closed_adapter_schema" in triage_node["guardrails"]
         assert "token_budget_enforced" in triage_node["guardrails"]
         assert "compact_evidence_only" in triage_node["guardrails"]
-        assert "LLM adapters can rank, summarize, draft, or request review only" in contract["invariants"]
+        assert (
+            "LLM adapters can rank, summarize, draft, or request review only"
+            in contract["invariants"]
+        )
 
     def test_no_approval_blocks_remediation_but_writes_audit_and_eval(self):
         summary, result = self._run()
@@ -860,7 +908,8 @@ class TestLangGraphSocWorkflow:
         assert summary["remediation"]["reason"] == "remediation skill not in effective allowlist"
         assert "planned_steps" not in summary["remediation"]
         remediation_policy = next(
-            entry for entry in summary["agent_policy"]["entries"]
+            entry
+            for entry in summary["agent_policy"]["entries"]
             if entry["agent_id"] == "remediation-planner"
         )
         assert remediation_policy["denied_skill_scope"] == ["iam-departures-aws"]
@@ -881,31 +930,42 @@ class TestLangGraphSocWorkflow:
         assert summary["data_source"]["source_skill"] == "ingest-cloudtrail-ocsf"
         assert summary["remediation"]["idempotency_key"].startswith("rem-")
         planned_remediation_call = next(
-            call for call in summary["mcp_call_plan"]
-            if call["skill"] == "iam-departures-aws"
+            call for call in summary["mcp_call_plan"] if call["skill"] == "iam-departures-aws"
         )
         assert planned_remediation_call["status"] == "planned"
         assert planned_remediation_call["request"]["method"] == "tools/call"
-        assert planned_remediation_call["request"]["params"]["arguments"]["_approval_context"]["ticket_id"] == "SEC-LANGGRAPH-1"
+        assert (
+            planned_remediation_call["request"]["params"]["arguments"]["_approval_context"][
+                "ticket_id"
+            ]
+            == "SEC-LANGGRAPH-1"
+        )
         assert "--apply" not in planned_remediation_call["request"]["params"]["arguments"]["args"]
         assert summary["mcp_execution"]["schema_version"] == "langgraph-mcp-execution-v1"
         assert summary["mcp_execution"]["mode"] == "plan_only"
-        assert summary["mcp_execution"]["planned_call_count"] == summary["audit"]["mcp_planned_call_count"]
+        assert (
+            summary["mcp_execution"]["planned_call_count"]
+            == summary["audit"]["mcp_planned_call_count"]
+        )
         assert summary["mcp_execution"]["executed_call_count"] == 0
         assert summary["mcp_execution"]["write_executed_count"] == 0
-        assert summary["mcp_execution"]["status_counts"]["skipped_plan_only"] == summary["audit"]["mcp_planned_call_count"]
-        assert summary["idempotency"]["remediation_key"] == summary["remediation"]["idempotency_key"]
+        assert (
+            summary["mcp_execution"]["status_counts"]["skipped_plan_only"]
+            == summary["audit"]["mcp_planned_call_count"]
+        )
+        assert (
+            summary["idempotency"]["remediation_key"] == summary["remediation"]["idempotency_key"]
+        )
         assert summary["integrity"]["approved_payload_hash"]
         assert summary["audit"]["idempotency_key"] == summary["remediation"]["idempotency_key"]
         assert summary["audit"]["route"] == {
             "after_review": "remediate",
             "after_remediation": "writeback",
         }
-        policy_entries = {
-            entry["agent_id"]: entry
-            for entry in summary["agent_policy"]["entries"]
-        }
-        assert policy_entries["remediation-planner"]["effective_skill_grants"] == ["iam-departures-aws"]
+        policy_entries = {entry["agent_id"]: entry for entry in summary["agent_policy"]["entries"]}
+        assert policy_entries["remediation-planner"]["effective_skill_grants"] == [
+            "iam-departures-aws"
+        ]
         assert policy_entries["remediation-planner"]["denied_skill_scope"] == []
         assert policy_entries["remediation-planner"]["decision"] == "ready"
         assert [run["agent_id"] for run in summary["agent_runs"]] == [
@@ -921,11 +981,13 @@ class TestLangGraphSocWorkflow:
         assert summary["eval"]["status"] == "pass"
 
     def test_llm_harness_records_provider_model_without_granting_authority(self):
-        summary, _ = self._run(extra_env={
-            "DEMO_EXTERNAL_LLM_ALLOWED": "yes",
-            "DEMO_LLM_PROVIDER": "openai",
-            "DEMO_LLM_MODEL": "gpt-4.1-mini",
-        })
+        summary, _ = self._run(
+            extra_env={
+                "DEMO_EXTERNAL_LLM_ALLOWED": "yes",
+                "DEMO_LLM_PROVIDER": "openai",
+                "DEMO_LLM_MODEL": "gpt-4.1-mini",
+            }
+        )
         assert summary["harness"]["mode"] == "external_llm_optional"
         assert summary["harness"]["provider"] == "openai"
         assert summary["harness"]["model"] == "gpt-4.1-mini"
@@ -935,7 +997,9 @@ class TestLangGraphSocWorkflow:
         assert "call_write_tools" not in summary["harness"]["allowed_outputs"]
         assert summary["agent_recommendations"][0]["generated_by"] == "openai:gpt-4.1-mini"
         assert summary["remediation"]["status"] == "skipped"
-        triage_agent = next(agent for agent in summary["agents"] if agent["agent_id"] == "triage-agent")
+        triage_agent = next(
+            agent for agent in summary["agents"] if agent["agent_id"] == "triage-agent"
+        )
         assert "approval" in triage_agent["forbidden_outputs"]
         assert "write_intent" in triage_agent["forbidden_outputs"]
         assert summary["llm_validation"][0]["status"] == "fallback"
@@ -1000,12 +1064,14 @@ class TestLangGraphSocWorkflow:
         assert report["results"][1]["skill"] == "iam-departures-aws"
 
     def test_token_budget_overage_uses_deterministic_fallback(self):
-        summary, _ = self._run(extra_env={
-            "DEMO_EXTERNAL_LLM_ALLOWED": "yes",
-            "DEMO_LLM_PROVIDER": "fixture",
-            "DEMO_LLM_MODEL": "oversized-context-fixture",
-            "DEMO_TOKEN_MAX_INPUT_TOKENS": "1",
-        })
+        summary, _ = self._run(
+            extra_env={
+                "DEMO_EXTERNAL_LLM_ALLOWED": "yes",
+                "DEMO_LLM_PROVIDER": "fixture",
+                "DEMO_LLM_MODEL": "oversized-context-fixture",
+                "DEMO_TOKEN_MAX_INPUT_TOKENS": "1",
+            }
+        )
         assert summary["token_budget_usage"]["status"] == "fallback"
         assert summary["token_budget_usage"]["fallback_reason"] == "token_budget_exceeded"
         assert summary["llm_validation"][0]["status"] == "fallback"
@@ -1019,28 +1085,38 @@ class TestLangGraphSocWorkflow:
         baseline, _ = self._run()
         finding_uid = baseline["framework_maps"][0]["finding_uid"]
         fixture = tmp_path / "accepted-llm-output.json"
-        fixture.write_text(json.dumps({
-            "recommendations": [
+        fixture.write_text(
+            json.dumps(
                 {
-                    "finding_uid": finding_uid,
-                    "priority": "critical",
-                    "recommended_action": "request_approval",
-                    "rationale": "Fixture model ranks the finding for immediate analyst review.",
-                },
-            ],
-        }), encoding="utf-8")
+                    "recommendations": [
+                        {
+                            "finding_uid": finding_uid,
+                            "priority": "critical",
+                            "recommended_action": "request_approval",
+                            "rationale": "Fixture model ranks the finding for immediate analyst review.",
+                        },
+                    ],
+                }
+            ),
+            encoding="utf-8",
+        )
 
-        summary, _ = self._run(extra_env={
-            "DEMO_EXTERNAL_LLM_ALLOWED": "yes",
-            "DEMO_LLM_PROVIDER": "fixture",
-            "DEMO_LLM_MODEL": "triage-fixture-v1",
-            "DEMO_LLM_ADAPTER_FIXTURE": str(fixture),
-        })
+        summary, _ = self._run(
+            extra_env={
+                "DEMO_EXTERNAL_LLM_ALLOWED": "yes",
+                "DEMO_LLM_PROVIDER": "fixture",
+                "DEMO_LLM_MODEL": "triage-fixture-v1",
+                "DEMO_LLM_ADAPTER_FIXTURE": str(fixture),
+            }
+        )
 
         recommendation = summary["agent_recommendations"][0]
         assert recommendation["priority"] == "critical"
         assert recommendation["recommended_action"] == "request_approval"
-        assert recommendation["rationale"] == "Fixture model ranks the finding for immediate analyst review."
+        assert (
+            recommendation["rationale"]
+            == "Fixture model ranks the finding for immediate analyst review."
+        )
         assert recommendation["generated_by"] == "fixture:triage-fixture-v1"
         assert summary["llm_validation"][0]["status"] == "accepted"
         assert summary["llm_validation"][0]["reason"] == "schema_valid"
@@ -1052,23 +1128,30 @@ class TestLangGraphSocWorkflow:
         baseline, _ = self._run()
         finding_uid = baseline["framework_maps"][0]["finding_uid"]
         fixture = tmp_path / "langchain-message-output.json"
-        fixture.write_text(json.dumps({
-            "recommendations": [
+        fixture.write_text(
+            json.dumps(
                 {
-                    "finding_uid": finding_uid,
-                    "priority": "critical",
-                    "recommended_action": "request_approval",
-                    "rationale": "LangChain fixture ranks this for immediate analyst review.",
-                },
-            ],
-        }), encoding="utf-8")
+                    "recommendations": [
+                        {
+                            "finding_uid": finding_uid,
+                            "priority": "critical",
+                            "recommended_action": "request_approval",
+                            "rationale": "LangChain fixture ranks this for immediate analyst review.",
+                        },
+                    ],
+                }
+            ),
+            encoding="utf-8",
+        )
 
-        summary, _ = self._run(extra_env={
-            "DEMO_EXTERNAL_LLM_ALLOWED": "yes",
-            "DEMO_LLM_PROVIDER": "langchain",
-            "DEMO_LLM_MODEL": "chat-model-fixture-v1",
-            "DEMO_LANGCHAIN_ADAPTER_FIXTURE": str(fixture),
-        })
+        summary, _ = self._run(
+            extra_env={
+                "DEMO_EXTERNAL_LLM_ALLOWED": "yes",
+                "DEMO_LLM_PROVIDER": "langchain",
+                "DEMO_LLM_MODEL": "chat-model-fixture-v1",
+                "DEMO_LANGCHAIN_ADAPTER_FIXTURE": str(fixture),
+            }
+        )
 
         recommendation = summary["agent_recommendations"][0]
         assert recommendation["priority"] == "critical"
@@ -1081,25 +1164,32 @@ class TestLangGraphSocWorkflow:
         baseline, _ = self._run()
         finding_uid = baseline["framework_maps"][0]["finding_uid"]
         fixture = tmp_path / "forbidden-llm-output.json"
-        fixture.write_text(json.dumps({
-            "recommendations": [
+        fixture.write_text(
+            json.dumps(
                 {
-                    "finding_uid": finding_uid,
-                    "priority": "low",
-                    "recommended_action": "close",
-                    "rationale": "This output should not be trusted.",
-                    "approval": {"approver_id": "model"},
-                    "cvss": {"base_score": 0.0},
-                },
-            ],
-        }), encoding="utf-8")
+                    "recommendations": [
+                        {
+                            "finding_uid": finding_uid,
+                            "priority": "low",
+                            "recommended_action": "close",
+                            "rationale": "This output should not be trusted.",
+                            "approval": {"approver_id": "model"},
+                            "cvss": {"base_score": 0.0},
+                        },
+                    ],
+                }
+            ),
+            encoding="utf-8",
+        )
 
-        summary, _ = self._run(extra_env={
-            "DEMO_EXTERNAL_LLM_ALLOWED": "yes",
-            "DEMO_LLM_PROVIDER": "fixture",
-            "DEMO_LLM_MODEL": "triage-fixture-v1",
-            "DEMO_LLM_ADAPTER_FIXTURE": str(fixture),
-        })
+        summary, _ = self._run(
+            extra_env={
+                "DEMO_EXTERNAL_LLM_ALLOWED": "yes",
+                "DEMO_LLM_PROVIDER": "fixture",
+                "DEMO_LLM_MODEL": "triage-fixture-v1",
+                "DEMO_LLM_ADAPTER_FIXTURE": str(fixture),
+            }
+        )
 
         recommendation = summary["agent_recommendations"][0]
         assert recommendation["priority"] == "high"
@@ -1111,9 +1201,11 @@ class TestLangGraphSocWorkflow:
         assert summary["audit"]["llm_adapter_rejected"] == 1
 
     def test_profile_loads_caller_context_and_allowed_skills(self):
-        summary, _ = self._run(extra_env={
-            "DEMO_HARNESS_PROFILE": str(self.PROFILES / "readonly-soc.json"),
-        })
+        summary, _ = self._run(
+            extra_env={
+                "DEMO_HARNESS_PROFILE": str(self.PROFILES / "readonly-soc.json"),
+            }
+        )
         assert summary["profile"]["profile_id"] == "readonly-soc"
         assert summary["caller_context"]["email"] == "soc-readonly@example.com"
         assert summary["audit"]["profile_id"] == "readonly-soc"
@@ -1129,18 +1221,18 @@ class TestLangGraphSocWorkflow:
             "convert-ocsf-to-sarif",
         ]
         ingest_source_calls = [
-            call for call in summary["mcp_call_plan"]
+            call
+            for call in summary["mcp_call_plan"]
             if call["node"] == "ingest" and call["skill"].startswith("source-")
         ]
-        assert [
-            (call["skill"], call["status"]) for call in ingest_source_calls
-        ] == [
+        assert [(call["skill"], call["status"]) for call in ingest_source_calls] == [
             ("source-snowflake-query", "planned"),
             ("source-clickhouse-query", "not_required"),
             ("source-databricks-query", "not_required"),
         ]
         normalize_ingest = next(
-            call for call in summary["mcp_call_plan"]
+            call
+            for call in summary["mcp_call_plan"]
             if call["node"] == "normalize" and call["skill"] == "ingest-cloudtrail-ocsf"
         )
         assert normalize_ingest["status"] == "not_required"
@@ -1148,16 +1240,20 @@ class TestLangGraphSocWorkflow:
         assert summary["remediation"]["status"] == "skipped"
 
     def test_profile_llm_metadata_is_bounded(self):
-        summary, _ = self._run(extra_env={
-            "DEMO_HARNESS_PROFILE": str(self.PROFILES / "analyst-triage.json"),
-        })
+        summary, _ = self._run(
+            extra_env={
+                "DEMO_HARNESS_PROFILE": str(self.PROFILES / "analyst-triage.json"),
+            }
+        )
         assert summary["profile"]["profile_id"] == "analyst-triage"
         assert summary["harness"]["mode"] == "external_llm_optional"
         assert summary["harness"]["provider"] == "openai"
         assert summary["harness"]["model"] == "gpt-4.1-mini"
         assert summary["harness"]["model_policy"]["selected_model_tier"] == "small"
         assert summary["harness"]["model_policy"]["selection_source"] == "profile_model_policy"
-        triage_agent = next(agent for agent in summary["agents"] if agent["agent_id"] == "triage-agent")
+        triage_agent = next(
+            agent for agent in summary["agents"] if agent["agent_id"] == "triage-agent"
+        )
         assert triage_agent["model_tier"] == "small"
         assert triage_agent["privilege_boundary"] == "no_tool_writes"
         assert triage_agent["skill_scope"] == []
@@ -1165,9 +1261,11 @@ class TestLangGraphSocWorkflow:
         assert summary["review"]["status"] == "blocked"
 
     def test_remediation_profile_does_not_grant_approval(self):
-        summary, _ = self._run(extra_env={
-            "DEMO_HARNESS_PROFILE": str(self.PROFILES / "dry-run-remediation.json"),
-        })
+        summary, _ = self._run(
+            extra_env={
+                "DEMO_HARNESS_PROFILE": str(self.PROFILES / "dry-run-remediation.json"),
+            }
+        )
         assert summary["profile"]["profile_id"] == "dry-run-remediation"
         assert "iam-departures-aws" in summary["effective_allowed_skills"]
         assert summary["review"]["status"] == "blocked"
@@ -1207,7 +1305,9 @@ class TestLangGraphSocWorkflow:
             },
         )
         assert replay["remediation"]["status"] == "skipped"
-        assert replay["remediation"]["reason"] == "duplicate idempotency key; write intent suppressed"
+        assert (
+            replay["remediation"]["reason"] == "duplicate idempotency key; write intent suppressed"
+        )
         assert "planned_steps" not in replay["remediation"]
         assert replay["idempotency"]["duplicate_write_suppressed"] is True
         assert replay["remediation"]["idempotency_key"] == remediation_key
@@ -1451,7 +1551,10 @@ class TestLangGraphContractSchemas:
                 assert profile["token_budget"]["fallback_on_budget_exceeded"] is True
             assert profile["model_policy"]["policy_version"] == "langgraph-model-policy-v1"
             assert profile["model_policy"]["selection_strategy"] == "smallest_sufficient"
-            assert profile["token_budget"]["model_tier"] in profile["model_policy"]["allowed_model_tiers"]
+            assert (
+                profile["token_budget"]["model_tier"]
+                in profile["model_policy"]["allowed_model_tiers"]
+            )
             if profile.get("agent_roster"):
                 roster = {agent["agent_id"]: agent for agent in profile["agent_roster"]}
                 if "triage-agent" in roster:
@@ -1463,10 +1566,7 @@ class TestLangGraphContractSchemas:
     def test_llm_adapter_eval_fixtures_match_expected_schema_outcome(self):
         schema = json.loads(self.ADAPTER_SCHEMA.read_text(encoding="utf-8"))
         dataset = json.loads(self.DATASET.read_text(encoding="utf-8"))
-        adapter_cases = [
-            case for case in dataset["cases"]
-            if "llm_adapter_fixture" in case
-        ]
+        adapter_cases = [case for case in dataset["cases"] if "llm_adapter_fixture" in case]
         assert {case["case_id"] for case in adapter_cases} == {
             "llm_adapter_accepts_bounded_triage",
             "llm_adapter_rejects_forbidden_security_facts",
@@ -1518,13 +1618,9 @@ class TestLangGraphContractSchemas:
             assert edge["target"] in node_names
         assert len(contract["edges"]) == 14
 
-        remediation_node = next(
-            node for node in contract["nodes"] if node["node"] == "remediate"
-        )
+        remediation_node = next(node for node in contract["nodes"] if node["node"] == "remediate")
         assert remediation_node["skills"] == ["iam-departures-aws"]
-        triage_node = next(
-            node for node in contract["nodes"] if node["node"] == "llm_triage"
-        )
+        triage_node = next(node for node in contract["nodes"] if node["node"] == "llm_triage")
         assert triage_node["skills"] == []
 
     def test_emitted_agent_policy_matches_schema_and_known_boundaries(self):
@@ -1542,10 +1638,7 @@ class TestLangGraphContractSchemas:
         assert _schema_errors(schema, agent_policy) == []
         assert agent_policy["policy_hash"] == summary["audit"]["agent_policy_hash"]
 
-        entries = {
-            entry["agent_id"]: entry
-            for entry in agent_policy["entries"]
-        }
+        entries = {entry["agent_id"]: entry for entry in agent_policy["entries"]}
         assert entries["triage-agent"]["effective_skill_grants"] == []
         assert entries["triage-agent"]["decision"] == "no_direct_tools"
         assert entries["remediation-planner"]["write_policy"] == "dry_run_only_after_hitl"
@@ -1688,7 +1781,8 @@ class TestLangGraphHarnessSetup:
         assert summary["data_source"]["mode"] == "security_lake_replay"
         assert summary["data_source"]["backend"] == "clickhouse"
         clickhouse_source_call = next(
-            call for call in summary["mcp_call_plan"]
+            call
+            for call in summary["mcp_call_plan"]
             if call["node"] == "ingest" and call["skill"] == "source-clickhouse-query"
         )
         assert clickhouse_source_call["status"] == "planned"
@@ -1698,7 +1792,9 @@ class TestLangGraphHarnessSetup:
         ]
         assert summary["mcp_execution"]["mode"] == "plan_only"
         assert summary["mcp_execution"]["executed_call_count"] == 0
-        triage_agent = next(agent for agent in summary["agents"] if agent["agent_id"] == "triage-agent")
+        triage_agent = next(
+            agent for agent in summary["agents"] if agent["agent_id"] == "triage-agent"
+        )
         assert triage_agent["model_tier"] == "small"
         assert triage_agent["skill_scope"] == []
         assert summary["review"]["status"] == "blocked"
@@ -1771,7 +1867,9 @@ class TestLangGraphHarnessSetup:
         assert profile["runtime"]["dry_run_default"] is True
         assert profile["runtime"]["apply_supported"] is False
         assert profile["runtime"]["security_data_source"]["mode"] == "raw_ingest"
-        assert profile["runtime"]["security_data_source"]["source_skill"] == "ingest-cloudtrail-ocsf"
+        assert (
+            profile["runtime"]["security_data_source"]["source_skill"] == "ingest-cloudtrail-ocsf"
+        )
         assert profile["approval_policy"]["remediation_requires_approval_context"] is True
         assert profile["token_budget"]["model_tier"] == "tiny"
         assert profile["model_policy"]["allowed_model_tiers"] == ["tiny"]
@@ -1889,10 +1987,7 @@ class TestLangGraphHarnessPreflight:
         assert report["remediation_preflight"]["would_plan_dry_run"] is False
         assert report["remediation_preflight"]["skill_granted"] is False
 
-        entries = {
-            entry["agent_id"]: entry
-            for entry in report["agent_policy"]["entries"]
-        }
+        entries = {entry["agent_id"]: entry for entry in report["agent_policy"]["entries"]}
         assert entries["triage-agent"]["decision"] == "no_direct_tools"
         assert entries["remediation-planner"]["denied_skill_scope"] == ["iam-departures-aws"]
         assert entries["remediation-planner"]["decision"] == "blocked_by_allowlist"
@@ -2053,8 +2148,7 @@ class TestLangGraphHarnessEvals:
         stdout_report = json.loads(result.stdout)
         file_report = json.loads(report_path.read_text(encoding="utf-8"))
         history_rows = [
-            json.loads(line)
-            for line in history_path.read_text(encoding="utf-8").splitlines()
+            json.loads(line) for line in history_path.read_text(encoding="utf-8").splitlines()
         ]
         assert file_report == stdout_report
         schema = json.loads(self.SCHEMA.read_text(encoding="utf-8"))

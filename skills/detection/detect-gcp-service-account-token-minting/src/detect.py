@@ -131,7 +131,9 @@ def _token_type(operation: str) -> str:
     return "unknown"
 
 
-def _finding_uid(event_uid: str, target_sa: str, actor_name: str, operation: str, time_ms: int) -> str:
+def _finding_uid(
+    event_uid: str, target_sa: str, actor_name: str, operation: str, time_ms: int
+) -> str:
     material = f"{SKILL_NAME}|{event_uid}|{target_sa}|{actor_name}|{operation}|{time_ms}"
     return f"gsatm-{hashlib.sha256(material.encode('utf-8')).hexdigest()[:16]}"
 
@@ -140,7 +142,9 @@ def _build_native_finding(*, event: dict[str, Any], target_service_account: str)
     time_ms = _time_ms(event)
     operation = _api_operation(event)
     actor_name = _actor_name(event)
-    finding_uid = _finding_uid(_event_uid(event), target_service_account, actor_name, operation, time_ms)
+    finding_uid = _finding_uid(
+        _event_uid(event), target_service_account, actor_name, operation, time_ms
+    )
     return {
         "schema_mode": "native",
         "canonical_schema_version": CANONICAL_VERSION,
@@ -299,7 +303,9 @@ def _iter_jsonl(path: str | None) -> Iterator[dict[str, Any]]:
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Detect GCP service-account token minting from audit logs.")
+    parser = argparse.ArgumentParser(
+        description="Detect GCP service-account token minting from audit logs."
+    )
     parser.add_argument("input", nargs="?", help="Optional JSONL input file. Defaults to stdin.")
     parser.add_argument(
         "--output-format",
@@ -338,4 +344,3 @@ def main(argv: list[str] | None = None) -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

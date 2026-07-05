@@ -150,7 +150,9 @@ class TestParserHandler:
         }
 
         mock_s3 = MagicMock()
-        mock_s3.get_object.return_value = {"Body": MagicMock(read=MagicMock(return_value=json.dumps(manifest).encode()))}
+        mock_s3.get_object.return_value = {
+            "Body": MagicMock(read=MagicMock(return_value=json.dumps(manifest).encode()))
+        }
         mock_boto3.client.return_value = mock_s3
 
         result = handler(

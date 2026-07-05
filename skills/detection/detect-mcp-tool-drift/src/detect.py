@@ -236,7 +236,9 @@ def _render_ocsf_finding(native_finding: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def detect(events: Iterable[dict[str, Any]], output_format: str = "ocsf") -> Iterable[dict[str, Any]]:
+def detect(
+    events: Iterable[dict[str, Any]], output_format: str = "ocsf"
+) -> Iterable[dict[str, Any]]:
     """Walk events in order; yield a finding per (session, tool) drift.
 
     State is minimal: one last-seen fingerprint per (session, tool name). We also
@@ -300,9 +302,13 @@ def load_jsonl(stream: Iterable[str]) -> Iterable[dict[str, Any]]:
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Detect MCP tool schema drift from OCSF or native activity events.")
+    parser = argparse.ArgumentParser(
+        description="Detect MCP tool schema drift from OCSF or native activity events."
+    )
     parser.add_argument("input", nargs="?", help="OCSF or native JSONL input. Defaults to stdin.")
-    parser.add_argument("--output", "-o", help="Detection Finding JSONL output. Defaults to stdout.")
+    parser.add_argument(
+        "--output", "-o", help="Detection Finding JSONL output. Defaults to stdout."
+    )
     parser.add_argument(
         "--output-format",
         choices=OUTPUT_FORMATS,

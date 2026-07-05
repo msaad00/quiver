@@ -152,10 +152,15 @@ class TestDetection:
         assert list(detect([_event(uid="evt-1", time_ms=1000, status_id=2)])) == []
 
     def test_wrong_source_skill_is_skipped(self):
-        assert list(detect([_event(uid="evt-1", time_ms=1000, source_skill="ingest-cloudtrail-ocsf")])) == []
+        assert (
+            list(detect([_event(uid="evt-1", time_ms=1000, source_skill="ingest-cloudtrail-ocsf")]))
+            == []
+        )
 
     def test_duplicate_event_uid_is_suppressed(self):
-        findings = list(detect([_event(uid="evt-1", time_ms=1000), _event(uid="evt-1", time_ms=1000)]))
+        findings = list(
+            detect([_event(uid="evt-1", time_ms=1000), _event(uid="evt-1", time_ms=1000)])
+        )
         assert len(findings) == 1
 
     def test_golden_fixture_matches(self):

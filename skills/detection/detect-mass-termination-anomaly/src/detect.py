@@ -68,7 +68,13 @@ def _parse_positive_int_env(name: str, default: int) -> int:
     try:
         value = int(raw)
     except ValueError:
-        emit_stderr_event(SKILL_NAME, level="warning", event="invalid_env_int", message=f"{name} must be an integer", env_var=name)
+        emit_stderr_event(
+            SKILL_NAME,
+            level="warning",
+            event="invalid_env_int",
+            message=f"{name} must be an integer",
+            env_var=name,
+        )
         return default
     return value if value > 0 else default
 
@@ -118,7 +124,14 @@ def _batch_id(event: dict[str, Any]) -> str:
     block = _workday_block(event)
     raw_value = block.get("raw")
     raw: dict[str, Any] = raw_value if isinstance(raw_value, dict) else {}
-    for key in ("batch_id", "batchId", "campaign_id", "campaignId", "transaction_id", "transactionId"):
+    for key in (
+        "batch_id",
+        "batchId",
+        "campaign_id",
+        "campaignId",
+        "transaction_id",
+        "transactionId",
+    ):
         value = block.get(key) or raw.get(key)
         if value not in (None, ""):
             return str(value).strip()
@@ -128,23 +141,41 @@ def _batch_id(event: dict[str, Any]) -> str:
 def _worker_id(event: dict[str, Any]) -> str:
     user = event.get("user") or {}
     block = _workday_block(event)
-    return str(user.get("uid") or user.get("email_addr") or user.get("name") or block.get("worker_id") or block.get("worker_email") or "").strip()
+    return str(
+        user.get("uid")
+        or user.get("email_addr")
+        or user.get("name")
+        or block.get("worker_id")
+        or block.get("worker_email")
+        or ""
+    ).strip()
 
 
 def _worker_label(event: dict[str, Any]) -> str:
     user = event.get("user") or {}
-    return str(user.get("email_addr") or user.get("name") or user.get("uid") or _worker_id(event)).strip()
+    return str(
+        user.get("email_addr") or user.get("name") or user.get("uid") or _worker_id(event)
+    ).strip()
 
 
 def _org(event: dict[str, Any]) -> str:
     block = _workday_block(event)
     raw_value = block.get("raw")
     raw: dict[str, Any] = raw_value if isinstance(raw_value, dict) else {}
-    return str(block.get("supervisory_org") or raw.get("supervisory_org") or raw.get("supervisoryOrg") or raw.get("organization") or "").strip()
+    return str(
+        block.get("supervisory_org")
+        or raw.get("supervisory_org")
+        or raw.get("supervisoryOrg")
+        or raw.get("organization")
+        or ""
+    ).strip()
 
 
 def _is_relevant(event: dict[str, Any]) -> bool:
-    if event.get("class_uid") != ACCOUNT_CHANGE_CLASS_UID and event.get("record_type") != "account_change":
+    if (
+        event.get("class_uid") != ACCOUNT_CHANGE_CLASS_UID
+        and event.get("record_type") != "account_change"
+    ):
         return False
     if _producer(event) != WORKDAY_INGEST_SKILL:
         return False
@@ -164,7 +195,9 @@ def _finding_uid(window_start_ms: int, count: int, raw_event_uids: list[str]) ->
     return f"det-workday-mass-termination-{digest}"
 
 
-def _build_native_finding(events: list[dict[str, Any]], window_start_ms: int, window_minutes: int, threshold: int) -> dict[str, Any]:
+def _build_native_finding(
+    events: list[dict[str, Any]], window_start_ms: int, window_minutes: int, threshold: int
+) -> dict[str, Any]:
     workers = sorted({_worker_label(event) for event in events if _worker_label(event)})
     orgs = sorted({_org(event) for event in events if _org(event)})
     batch_ids = sorted({_batch_id(event) for event in events if _batch_id(event)})
@@ -202,7 +235,9 @@ def _build_native_finding(events: list[dict[str, Any]], window_start_ms: int, wi
         "title": f"Workday mass termination anomaly: {len(events)} events in {window_minutes} minutes",
         "description": description,
         "finding_types": ["workday-mass-termination-anomaly", OWASP_FINDING_TYPE],
-        "first_seen_time_ms": min((_event_time(event) for event in events), default=window_start_ms),
+        "first_seen_time_ms": min(
+            (_event_time(event) for event in events), default=window_start_ms
+        ),
         "last_seen_time_ms": max((_event_time(event) for event in events), default=window_end_ms),
         "mitre_attacks": [
             {
@@ -276,7 +311,13 @@ def iter_records(stream: Iterable[str]) -> Iterable[dict[str, Any]]:
         try:
             obj = json.loads(line)
         except json.JSONDecodeError as exc:
-            emit_stderr_event(SKILL_NAME, level="warning", event="json_parse_failed", message=str(exc), line=lineno)
+            emit_stderr_event(
+                SKILL_NAME,
+                level="warning",
+                event="json_parse_failed",
+                message=str(exc),
+                line=lineno,
+            )
             continue
         if isinstance(obj, dict):
             yield obj

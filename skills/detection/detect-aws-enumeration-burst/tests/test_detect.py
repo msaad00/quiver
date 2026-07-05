@@ -72,12 +72,42 @@ def test_detection_set_contains_high_signal_discovery_calls():
 
 def test_fires_on_short_window_enumeration_burst():
     events = [
-        _ct_event(service="iam.amazonaws.com", operation="ListUsers", event_uid="evt-1", time_ms=1700000000000),
-        _ct_event(service="iam.amazonaws.com", operation="ListRoles", event_uid="evt-2", time_ms=1700000010000),
-        _ct_event(service="iam.amazonaws.com", operation="GetAccountAuthorizationDetails", event_uid="evt-3", time_ms=1700000020000),
-        _ct_event(service="ec2.amazonaws.com", operation="DescribeInstances", event_uid="evt-4", time_ms=1700000030000),
-        _ct_event(service="s3.amazonaws.com", operation="ListBuckets", event_uid="evt-5", time_ms=1700000040000),
-        _ct_event(service="organizations.amazonaws.com", operation="ListAccounts", event_uid="evt-6", time_ms=1700000050000),
+        _ct_event(
+            service="iam.amazonaws.com",
+            operation="ListUsers",
+            event_uid="evt-1",
+            time_ms=1700000000000,
+        ),
+        _ct_event(
+            service="iam.amazonaws.com",
+            operation="ListRoles",
+            event_uid="evt-2",
+            time_ms=1700000010000,
+        ),
+        _ct_event(
+            service="iam.amazonaws.com",
+            operation="GetAccountAuthorizationDetails",
+            event_uid="evt-3",
+            time_ms=1700000020000,
+        ),
+        _ct_event(
+            service="ec2.amazonaws.com",
+            operation="DescribeInstances",
+            event_uid="evt-4",
+            time_ms=1700000030000,
+        ),
+        _ct_event(
+            service="s3.amazonaws.com",
+            operation="ListBuckets",
+            event_uid="evt-5",
+            time_ms=1700000040000,
+        ),
+        _ct_event(
+            service="organizations.amazonaws.com",
+            operation="ListAccounts",
+            event_uid="evt-6",
+            time_ms=1700000050000,
+        ),
     ]
     findings = list(detect(events))
     assert len(findings) == 1
@@ -85,17 +115,49 @@ def test_fires_on_short_window_enumeration_burst():
     assert finding["class_uid"] == 2004
     assert finding["finding_info"]["title"] == "AWS discovery API burst"
     assert finding["finding_info"]["attacks"][0]["technique_uid"] == TECHNIQUE_UID
-    assert any(obs["name"] == "calls.distinct" and obs["value"] == "6" for obs in finding["observables"])
+    assert any(
+        obs["name"] == "calls.distinct" and obs["value"] == "6" for obs in finding["observables"]
+    )
 
 
 def test_native_output_contains_counts_and_calls():
     events = [
-        _ct_event(service="iam.amazonaws.com", operation="ListUsers", event_uid="evt-1", time_ms=1700000000000),
-        _ct_event(service="iam.amazonaws.com", operation="ListRoles", event_uid="evt-2", time_ms=1700000010000),
-        _ct_event(service="iam.amazonaws.com", operation="GetAccountAuthorizationDetails", event_uid="evt-3", time_ms=1700000020000),
-        _ct_event(service="ec2.amazonaws.com", operation="DescribeInstances", event_uid="evt-4", time_ms=1700000030000),
-        _ct_event(service="s3.amazonaws.com", operation="ListBuckets", event_uid="evt-5", time_ms=1700000040000),
-        _ct_event(service="organizations.amazonaws.com", operation="ListAccounts", event_uid="evt-6", time_ms=1700000050000),
+        _ct_event(
+            service="iam.amazonaws.com",
+            operation="ListUsers",
+            event_uid="evt-1",
+            time_ms=1700000000000,
+        ),
+        _ct_event(
+            service="iam.amazonaws.com",
+            operation="ListRoles",
+            event_uid="evt-2",
+            time_ms=1700000010000,
+        ),
+        _ct_event(
+            service="iam.amazonaws.com",
+            operation="GetAccountAuthorizationDetails",
+            event_uid="evt-3",
+            time_ms=1700000020000,
+        ),
+        _ct_event(
+            service="ec2.amazonaws.com",
+            operation="DescribeInstances",
+            event_uid="evt-4",
+            time_ms=1700000030000,
+        ),
+        _ct_event(
+            service="s3.amazonaws.com",
+            operation="ListBuckets",
+            event_uid="evt-5",
+            time_ms=1700000040000,
+        ),
+        _ct_event(
+            service="organizations.amazonaws.com",
+            operation="ListAccounts",
+            event_uid="evt-6",
+            time_ms=1700000050000,
+        ),
     ]
     findings = list(detect(events, output_format="native"))
     finding = findings[0]
@@ -107,48 +169,169 @@ def test_native_output_contains_counts_and_calls():
 
 def test_skips_below_total_event_threshold():
     events = [
-        _ct_event(service="iam.amazonaws.com", operation="ListUsers", event_uid="evt-1", time_ms=1700000000000),
-        _ct_event(service="iam.amazonaws.com", operation="ListRoles", event_uid="evt-2", time_ms=1700000010000),
-        _ct_event(service="iam.amazonaws.com", operation="GetAccountAuthorizationDetails", event_uid="evt-3", time_ms=1700000020000),
-        _ct_event(service="ec2.amazonaws.com", operation="DescribeInstances", event_uid="evt-4", time_ms=1700000030000),
-        _ct_event(service="s3.amazonaws.com", operation="ListBuckets", event_uid="evt-5", time_ms=1700000040000),
+        _ct_event(
+            service="iam.amazonaws.com",
+            operation="ListUsers",
+            event_uid="evt-1",
+            time_ms=1700000000000,
+        ),
+        _ct_event(
+            service="iam.amazonaws.com",
+            operation="ListRoles",
+            event_uid="evt-2",
+            time_ms=1700000010000,
+        ),
+        _ct_event(
+            service="iam.amazonaws.com",
+            operation="GetAccountAuthorizationDetails",
+            event_uid="evt-3",
+            time_ms=1700000020000,
+        ),
+        _ct_event(
+            service="ec2.amazonaws.com",
+            operation="DescribeInstances",
+            event_uid="evt-4",
+            time_ms=1700000030000,
+        ),
+        _ct_event(
+            service="s3.amazonaws.com",
+            operation="ListBuckets",
+            event_uid="evt-5",
+            time_ms=1700000040000,
+        ),
     ]
     assert list(detect(events)) == []
 
 
 def test_skips_below_distinct_call_threshold():
     events = [
-        _ct_event(service="iam.amazonaws.com", operation="ListUsers", event_uid="evt-1", time_ms=1700000000000),
-        _ct_event(service="iam.amazonaws.com", operation="ListUsers", event_uid="evt-2", time_ms=1700000010000),
-        _ct_event(service="iam.amazonaws.com", operation="ListRoles", event_uid="evt-3", time_ms=1700000020000),
-        _ct_event(service="iam.amazonaws.com", operation="ListRoles", event_uid="evt-4", time_ms=1700000030000),
-        _ct_event(service="ec2.amazonaws.com", operation="DescribeInstances", event_uid="evt-5", time_ms=1700000040000),
-        _ct_event(service="s3.amazonaws.com", operation="ListBuckets", event_uid="evt-6", time_ms=1700000050000),
+        _ct_event(
+            service="iam.amazonaws.com",
+            operation="ListUsers",
+            event_uid="evt-1",
+            time_ms=1700000000000,
+        ),
+        _ct_event(
+            service="iam.amazonaws.com",
+            operation="ListUsers",
+            event_uid="evt-2",
+            time_ms=1700000010000,
+        ),
+        _ct_event(
+            service="iam.amazonaws.com",
+            operation="ListRoles",
+            event_uid="evt-3",
+            time_ms=1700000020000,
+        ),
+        _ct_event(
+            service="iam.amazonaws.com",
+            operation="ListRoles",
+            event_uid="evt-4",
+            time_ms=1700000030000,
+        ),
+        _ct_event(
+            service="ec2.amazonaws.com",
+            operation="DescribeInstances",
+            event_uid="evt-5",
+            time_ms=1700000040000,
+        ),
+        _ct_event(
+            service="s3.amazonaws.com",
+            operation="ListBuckets",
+            event_uid="evt-6",
+            time_ms=1700000050000,
+        ),
     ]
     assert list(detect(events)) == []
 
 
 def test_skips_failed_event():
     events = [
-        _ct_event(service="iam.amazonaws.com", operation="ListUsers", event_uid="evt-1", time_ms=1700000000000),
-        _ct_event(service="iam.amazonaws.com", operation="ListRoles", event_uid="evt-2", time_ms=1700000010000),
-        _ct_event(service="iam.amazonaws.com", operation="GetAccountAuthorizationDetails", event_uid="evt-3", time_ms=1700000020000),
-        _ct_event(service="ec2.amazonaws.com", operation="DescribeInstances", event_uid="evt-4", time_ms=1700000030000),
-        _ct_event(service="s3.amazonaws.com", operation="ListBuckets", event_uid="evt-5", time_ms=1700000040000),
-        _ct_event(service="organizations.amazonaws.com", operation="ListAccounts", event_uid="evt-6", time_ms=1700000050000, success=False),
+        _ct_event(
+            service="iam.amazonaws.com",
+            operation="ListUsers",
+            event_uid="evt-1",
+            time_ms=1700000000000,
+        ),
+        _ct_event(
+            service="iam.amazonaws.com",
+            operation="ListRoles",
+            event_uid="evt-2",
+            time_ms=1700000010000,
+        ),
+        _ct_event(
+            service="iam.amazonaws.com",
+            operation="GetAccountAuthorizationDetails",
+            event_uid="evt-3",
+            time_ms=1700000020000,
+        ),
+        _ct_event(
+            service="ec2.amazonaws.com",
+            operation="DescribeInstances",
+            event_uid="evt-4",
+            time_ms=1700000030000,
+        ),
+        _ct_event(
+            service="s3.amazonaws.com",
+            operation="ListBuckets",
+            event_uid="evt-5",
+            time_ms=1700000040000,
+        ),
+        _ct_event(
+            service="organizations.amazonaws.com",
+            operation="ListAccounts",
+            event_uid="evt-6",
+            time_ms=1700000050000,
+            success=False,
+        ),
     ]
     assert list(detect(events)) == []
 
 
 def test_skips_unrelated_operation():
     events = [
-        _ct_event(service="iam.amazonaws.com", operation="ListUsers", event_uid="evt-1", time_ms=1700000000000),
-        _ct_event(service="iam.amazonaws.com", operation="ListRoles", event_uid="evt-2", time_ms=1700000010000),
-        _ct_event(service="iam.amazonaws.com", operation="GetAccountAuthorizationDetails", event_uid="evt-3", time_ms=1700000020000),
-        _ct_event(service="ec2.amazonaws.com", operation="DescribeInstances", event_uid="evt-4", time_ms=1700000030000),
-        _ct_event(service="ec2.amazonaws.com", operation="ModifyInstanceAttribute", event_uid="evt-5", time_ms=1700000040000),
-        _ct_event(service="ec2.amazonaws.com", operation="CreateTags", event_uid="evt-6", time_ms=1700000050000),
-        _ct_event(service="s3.amazonaws.com", operation="ListBuckets", event_uid="evt-7", time_ms=1700000060000),
+        _ct_event(
+            service="iam.amazonaws.com",
+            operation="ListUsers",
+            event_uid="evt-1",
+            time_ms=1700000000000,
+        ),
+        _ct_event(
+            service="iam.amazonaws.com",
+            operation="ListRoles",
+            event_uid="evt-2",
+            time_ms=1700000010000,
+        ),
+        _ct_event(
+            service="iam.amazonaws.com",
+            operation="GetAccountAuthorizationDetails",
+            event_uid="evt-3",
+            time_ms=1700000020000,
+        ),
+        _ct_event(
+            service="ec2.amazonaws.com",
+            operation="DescribeInstances",
+            event_uid="evt-4",
+            time_ms=1700000030000,
+        ),
+        _ct_event(
+            service="ec2.amazonaws.com",
+            operation="ModifyInstanceAttribute",
+            event_uid="evt-5",
+            time_ms=1700000040000,
+        ),
+        _ct_event(
+            service="ec2.amazonaws.com",
+            operation="CreateTags",
+            event_uid="evt-6",
+            time_ms=1700000050000,
+        ),
+        _ct_event(
+            service="s3.amazonaws.com",
+            operation="ListBuckets",
+            event_uid="evt-7",
+            time_ms=1700000060000,
+        ),
     ]
     assert list(detect(events)) == []
 
@@ -161,12 +344,54 @@ def test_skips_wrong_producer(capsys):
 
 def test_skips_missing_actor(capsys):
     events = [
-        _ct_event(service="iam.amazonaws.com", operation="ListUsers", event_uid="evt-1", time_ms=1700000000000, actor="", session_uid=""),
-        _ct_event(service="iam.amazonaws.com", operation="ListRoles", event_uid="evt-2", time_ms=1700000010000, actor="", session_uid=""),
-        _ct_event(service="iam.amazonaws.com", operation="GetAccountAuthorizationDetails", event_uid="evt-3", time_ms=1700000020000, actor="", session_uid=""),
-        _ct_event(service="ec2.amazonaws.com", operation="DescribeInstances", event_uid="evt-4", time_ms=1700000030000, actor="", session_uid=""),
-        _ct_event(service="s3.amazonaws.com", operation="ListBuckets", event_uid="evt-5", time_ms=1700000040000, actor="", session_uid=""),
-        _ct_event(service="organizations.amazonaws.com", operation="ListAccounts", event_uid="evt-6", time_ms=1700000050000, actor="", session_uid=""),
+        _ct_event(
+            service="iam.amazonaws.com",
+            operation="ListUsers",
+            event_uid="evt-1",
+            time_ms=1700000000000,
+            actor="",
+            session_uid="",
+        ),
+        _ct_event(
+            service="iam.amazonaws.com",
+            operation="ListRoles",
+            event_uid="evt-2",
+            time_ms=1700000010000,
+            actor="",
+            session_uid="",
+        ),
+        _ct_event(
+            service="iam.amazonaws.com",
+            operation="GetAccountAuthorizationDetails",
+            event_uid="evt-3",
+            time_ms=1700000020000,
+            actor="",
+            session_uid="",
+        ),
+        _ct_event(
+            service="ec2.amazonaws.com",
+            operation="DescribeInstances",
+            event_uid="evt-4",
+            time_ms=1700000030000,
+            actor="",
+            session_uid="",
+        ),
+        _ct_event(
+            service="s3.amazonaws.com",
+            operation="ListBuckets",
+            event_uid="evt-5",
+            time_ms=1700000040000,
+            actor="",
+            session_uid="",
+        ),
+        _ct_event(
+            service="organizations.amazonaws.com",
+            operation="ListAccounts",
+            event_uid="evt-6",
+            time_ms=1700000050000,
+            actor="",
+            session_uid="",
+        ),
     ]
     findings = list(detect(events))
     assert findings == []
@@ -175,12 +400,42 @@ def test_skips_missing_actor(capsys):
 
 def test_finding_uid_is_deterministic():
     events = [
-        _ct_event(service="iam.amazonaws.com", operation="ListUsers", event_uid="evt-1", time_ms=1700000000000),
-        _ct_event(service="iam.amazonaws.com", operation="ListRoles", event_uid="evt-2", time_ms=1700000010000),
-        _ct_event(service="iam.amazonaws.com", operation="GetAccountAuthorizationDetails", event_uid="evt-3", time_ms=1700000020000),
-        _ct_event(service="ec2.amazonaws.com", operation="DescribeInstances", event_uid="evt-4", time_ms=1700000030000),
-        _ct_event(service="s3.amazonaws.com", operation="ListBuckets", event_uid="evt-5", time_ms=1700000040000),
-        _ct_event(service="organizations.amazonaws.com", operation="ListAccounts", event_uid="evt-6", time_ms=1700000050000),
+        _ct_event(
+            service="iam.amazonaws.com",
+            operation="ListUsers",
+            event_uid="evt-1",
+            time_ms=1700000000000,
+        ),
+        _ct_event(
+            service="iam.amazonaws.com",
+            operation="ListRoles",
+            event_uid="evt-2",
+            time_ms=1700000010000,
+        ),
+        _ct_event(
+            service="iam.amazonaws.com",
+            operation="GetAccountAuthorizationDetails",
+            event_uid="evt-3",
+            time_ms=1700000020000,
+        ),
+        _ct_event(
+            service="ec2.amazonaws.com",
+            operation="DescribeInstances",
+            event_uid="evt-4",
+            time_ms=1700000030000,
+        ),
+        _ct_event(
+            service="s3.amazonaws.com",
+            operation="ListBuckets",
+            event_uid="evt-5",
+            time_ms=1700000040000,
+        ),
+        _ct_event(
+            service="organizations.amazonaws.com",
+            operation="ListAccounts",
+            event_uid="evt-6",
+            time_ms=1700000050000,
+        ),
     ]
     first = list(detect(events))[0]["finding_info"]["uid"]
     second = list(detect(events))[0]["finding_info"]["uid"]

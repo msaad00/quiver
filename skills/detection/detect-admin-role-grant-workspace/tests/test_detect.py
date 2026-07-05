@@ -24,7 +24,9 @@ def _event(role: str = "Super Admin") -> dict[str, object]:
             "uid": "evt-2",
             "product": {"feature": {"name": "ingest-workspace-admin-ocsf"}},
         },
-        "actor": {"user": {"uid": "1001", "email_addr": "alice@example.com", "name": "alice@example.com"}},
+        "actor": {
+            "user": {"uid": "1001", "email_addr": "alice@example.com", "name": "alice@example.com"}
+        },
         "user": {"name": "bob@example.com", "email_addr": "bob@example.com"},
         "unmapped": {
             "google_workspace_admin": {
@@ -56,7 +58,9 @@ def test_ignores_authorized_granter(monkeypatch) -> None:
 
 
 def test_ignores_unprotected_role() -> None:
-    findings = detect_mod.detect(StringIO(json.dumps(_event("Groups Reader")) + "\n"), output_format="native")
+    findings = detect_mod.detect(
+        StringIO(json.dumps(_event("Groups Reader")) + "\n"), output_format="native"
+    )
 
     assert findings == []
 

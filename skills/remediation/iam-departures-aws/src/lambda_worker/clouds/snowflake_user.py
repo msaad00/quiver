@@ -117,7 +117,9 @@ async def remediate_user(
     Returns:
         RemediationResult with per-step status.
     """
-    target_role = ownership_target_role or os.environ.get("SNOWFLAKE_OWNERSHIP_TARGET_ROLE", "SYSADMIN")
+    target_role = ownership_target_role or os.environ.get(
+        "SNOWFLAKE_OWNERSHIP_TARGET_ROLE", "SYSADMIN"
+    )
 
     result = RemediationResult(
         cloud=CloudProvider.SNOWFLAKE,
@@ -129,7 +131,11 @@ async def remediate_user(
     if dry_run:
         result.status = RemediationStatus.DRY_RUN
         for i, action in enumerate(_STEP_NAMES, 1):
-            result.steps.append(RemediationStep(step_number=i, action=action, target=username, status=RemediationStatus.DRY_RUN))
+            result.steps.append(
+                RemediationStep(
+                    step_number=i, action=action, target=username, status=RemediationStatus.DRY_RUN
+                )
+            )
         result.complete()
         return result
 
@@ -182,11 +188,20 @@ def _abort_queries(cursor, username: str, step: int) -> RemediationStep:
     """ALTER USER {name} ABORT ALL QUERIES — kills active sessions."""
     try:
         cursor.execute(f"ALTER USER {_quote_identifier(username)} ABORT ALL QUERIES")
-        return RemediationStep(step_number=step, action="abort_active_queries", target=username, detail="All active queries aborted")
+        return RemediationStep(
+            step_number=step,
+            action="abort_active_queries",
+            target=username,
+            detail="All active queries aborted",
+        )
     except Exception as e:
         logger.warning("Failed to abort queries for %s: %s", username, e)
         return RemediationStep(
-            step_number=step, action="abort_active_queries", target=username, status=RemediationStatus.FAILED, error=str(e)
+            step_number=step,
+            action="abort_active_queries",
+            target=username,
+            status=RemediationStatus.FAILED,
+            error=str(e),
         )
 
 
@@ -194,10 +209,21 @@ def _disable_user(cursor, username: str, step: int) -> RemediationStep:
     """ALTER USER SET DISABLED=TRUE — prevents new logins."""
     try:
         cursor.execute(f"ALTER USER {_quote_identifier(username)} SET DISABLED = TRUE")
-        return RemediationStep(step_number=step, action="disable_user", target=username, detail="User disabled (no new logins)")
+        return RemediationStep(
+            step_number=step,
+            action="disable_user",
+            target=username,
+            detail="User disabled (no new logins)",
+        )
     except Exception as e:
         logger.warning("Failed to disable user %s: %s", username, e)
-        return RemediationStep(step_number=step, action="disable_user", target=username, status=RemediationStatus.FAILED, error=str(e))
+        return RemediationStep(
+            step_number=step,
+            action="disable_user",
+            target=username,
+            status=RemediationStatus.FAILED,
+            error=str(e),
+        )
 
 
 def _revoke_roles(cursor, username: str, step: int) -> RemediationStep:
@@ -215,7 +241,9 @@ def _revoke_roles(cursor, username: str, step: int) -> RemediationStep:
                 skipped += 1
                 continue
             try:
-                cursor.execute(f"REVOKE ROLE {_quote_identifier(role_name)} FROM USER {quoted_username}")
+                cursor.execute(
+                    f"REVOKE ROLE {_quote_identifier(role_name)} FROM USER {quoted_username}"
+                )
                 revoked += 1
             except Exception:
                 skipped += 1
@@ -228,7 +256,13 @@ def _revoke_roles(cursor, username: str, step: int) -> RemediationStep:
         )
     except Exception as e:
         logger.warning("Failed to revoke roles for %s: %s", username, e)
-        return RemediationStep(step_number=step, action="revoke_roles", target=username, status=RemediationStatus.FAILED, error=str(e))
+        return RemediationStep(
+            step_number=step,
+            action="revoke_roles",
+            target=username,
+            status=RemediationStatus.FAILED,
+            error=str(e),
+        )
 
 
 def _transfer_ownership(cursor, username: str, target_role: str, step: int) -> RemediationStep:
@@ -276,7 +310,11 @@ def _transfer_ownership(cursor, username: str, target_role: str, step: int) -> R
     except Exception as e:
         logger.warning("Failed to transfer ownership for %s: %s", username, e)
         return RemediationStep(
-            step_number=step, action="transfer_ownership", target=username, status=RemediationStatus.FAILED, error=str(e)
+            step_number=step,
+            action="transfer_ownership",
+            target=username,
+            status=RemediationStatus.FAILED,
+            error=str(e),
         )
 
 
@@ -284,10 +322,21 @@ def _drop_user(cursor, username: str, step: int) -> RemediationStep:
     """DROP USER IF EXISTS — permanent deletion (no soft delete in Snowflake)."""
     try:
         cursor.execute(f"DROP USER IF EXISTS {_quote_identifier(username)}")
-        return RemediationStep(step_number=step, action="drop_user", target=username, detail="User dropped (permanent, no soft delete)")
+        return RemediationStep(
+            step_number=step,
+            action="drop_user",
+            target=username,
+            detail="User dropped (permanent, no soft delete)",
+        )
     except Exception as e:
         logger.warning("Failed to drop user %s: %s", username, e)
-        return RemediationStep(step_number=step, action="drop_user", target=username, status=RemediationStatus.FAILED, error=str(e))
+        return RemediationStep(
+            step_number=step,
+            action="drop_user",
+            target=username,
+            status=RemediationStatus.FAILED,
+            error=str(e),
+        )
 
 
 def _verify_dropped(cursor, username: str, step: int) -> RemediationStep:
@@ -303,10 +352,21 @@ def _verify_dropped(cursor, username: str, step: int) -> RemediationStep:
                 status=RemediationStatus.FAILED,
                 error="User still exists after DROP",
             )
-        return RemediationStep(step_number=step, action="verify_dropped", target=username, detail="Confirmed: user no longer exists")
+        return RemediationStep(
+            step_number=step,
+            action="verify_dropped",
+            target=username,
+            detail="Confirmed: user no longer exists",
+        )
     except Exception as e:
         logger.warning("Failed to verify user drop for %s: %s", username, e)
-        return RemediationStep(step_number=step, action="verify_dropped", target=username, status=RemediationStatus.FAILED, error=str(e))
+        return RemediationStep(
+            step_number=step,
+            action="verify_dropped",
+            target=username,
+            status=RemediationStatus.FAILED,
+            error=str(e),
+        )
 
 
 def _quote_identifier(value: str) -> str:

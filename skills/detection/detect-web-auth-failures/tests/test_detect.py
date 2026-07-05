@@ -56,12 +56,13 @@ def test_defaults():
 def test_fires_on_brute_force_burst():
     """5 failures in window from one IP → brute-force-burst finding."""
     events = [
-        _http_event(status=401, time_ms=1_000 + i * 1_000, actor_uid=f"u{i}")
-        for i in range(5)
+        _http_event(status=401, time_ms=1_000 + i * 1_000, actor_uid=f"u{i}") for i in range(5)
     ]
     findings = list(detect(events))
     bursts = [
-        f for f in findings if any(o["name"] == "rule" and o["value"] == "brute-force-burst" for o in f["observables"])
+        f
+        for f in findings
+        if any(o["name"] == "rule" and o["value"] == "brute-force-burst" for o in f["observables"])
     ]
     assert len(bursts) == 1
     f = bursts[0]
@@ -72,9 +73,7 @@ def test_fires_on_brute_force_burst():
 
 def test_brute_force_dedupes_within_same_window():
     """One burst finding for the same window even after extra failures."""
-    events = [
-        _http_event(status=401, time_ms=1_000 + i * 1_000) for i in range(8)
-    ]
+    events = [_http_event(status=401, time_ms=1_000 + i * 1_000) for i in range(8)]
     bursts = [
         f
         for f in detect(events)
@@ -85,9 +84,7 @@ def test_brute_force_dedupes_within_same_window():
 
 def test_fires_on_stuffing_flip():
     """5 failures then a 200 success on the same login endpoint → stuffing-flip."""
-    events = [
-        _http_event(status=401, time_ms=1_000 + i * 1_000) for i in range(5)
-    ]
+    events = [_http_event(status=401, time_ms=1_000 + i * 1_000) for i in range(5)]
     events.append(_http_event(status=200, time_ms=10_000, actor_uid="alice"))
     findings = list(detect(events))
     flips = [
@@ -119,7 +116,10 @@ def test_fires_on_oauth_password_grant_weak_login():
     ]
     assert len(weak) == 1
     assert weak[0]["finding_info"]["attacks"][0]["technique_uid"] == "T1078"
-    assert any(o["name"] == "auth.reason" and o["value"] == "oauth-password-grant" for o in weak[0]["observables"])
+    assert any(
+        o["name"] == "auth.reason" and o["value"] == "oauth-password-grant"
+        for o in weak[0]["observables"]
+    )
 
 
 def test_fires_on_login_without_mfa_challenge_in_window():
@@ -179,7 +179,9 @@ def test_failures_outside_window_dont_aggregate():
 
 def test_skips_non_login_path():
     """A 401 on /api/items is not a login failure for this detector."""
-    events = [_http_event(path="/api/items", status=401, time_ms=1_000 + i * 1_000) for i in range(6)]
+    events = [
+        _http_event(path="/api/items", status=401, time_ms=1_000 + i * 1_000) for i in range(6)
+    ]
     findings = list(detect(events))
     assert findings == []
 

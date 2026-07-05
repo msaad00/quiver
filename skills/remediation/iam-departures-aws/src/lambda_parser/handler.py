@@ -215,7 +215,12 @@ def _validate_entry(entry: dict) -> dict:
     # Confirm IAM user actually exists in the target account.
     # Skipped on the MCP / CLI plan path — that surface lacks per-account
     # assumed-role credentials. The deployed runner always runs the check.
-    if os.environ.get("IAM_DEPARTURES_AWS_SKIP_EXISTENCE_CHECK", "").strip() not in {"1", "true", "yes", "on"}:
+    if os.environ.get("IAM_DEPARTURES_AWS_SKIP_EXISTENCE_CHECK", "").strip() not in {
+        "1",
+        "true",
+        "yes",
+        "on",
+    }:
         account_id = entry["recipient_account_id"]
         iam_username = entry["iam_username"]
 

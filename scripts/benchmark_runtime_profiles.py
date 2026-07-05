@@ -53,7 +53,8 @@ CASES: tuple[BenchmarkCase, ...] = (
     ),
     BenchmarkCase(
         name="detect-lateral-movement",
-        fixture_path=REPO_ROOT / "skills/detection-engineering/golden/lateral_movement_input.ocsf.jsonl",
+        fixture_path=REPO_ROOT
+        / "skills/detection-engineering/golden/lateral_movement_input.ocsf.jsonl",
         fixture_shape=[
             "mixed OCSF API Activity and Network Activity rows",
             "repeated to 1,000 and 10,000 input records",
@@ -67,7 +68,8 @@ CASES: tuple[BenchmarkCase, ...] = (
     ),
     BenchmarkCase(
         name="sink-snowflake-jsonl",
-        fixture_path=REPO_ROOT / "skills/detection-engineering/golden/lateral_movement_findings.ocsf.jsonl",
+        fixture_path=REPO_ROOT
+        / "skills/detection-engineering/golden/lateral_movement_findings.ocsf.jsonl",
         fixture_shape=[
             "OCSF finding JSONL",
             "measured in --dry-run mode only",
@@ -101,7 +103,9 @@ def _normalize_ru_maxrss(raw_value: int) -> float:
 
 
 def _load_fixture_lines(path: Path) -> list[str]:
-    lines = [line.rstrip("\n") for line in path.read_text(encoding="utf-8").splitlines() if line.strip()]
+    lines = [
+        line.rstrip("\n") for line in path.read_text(encoding="utf-8").splitlines() if line.strip()
+    ]
     if not lines:
         raise ValueError(f"fixture `{path}` did not contain any non-empty lines")
     return lines
@@ -117,10 +121,14 @@ def _round_ms(value: float) -> float:
     return round(value * 1000, 2)
 
 
-def _measure_child_once(input_path: Path, input_mode: InputMode, command: Sequence[str]) -> dict[str, float]:
+def _measure_child_once(
+    input_path: Path, input_mode: InputMode, command: Sequence[str]
+) -> dict[str, float]:
     before = resource.getrusage(resource.RUSAGE_CHILDREN)
     start = time.perf_counter()
-    with input_path.open("rb") if input_mode == "stdin" else open("/dev/null", "rb") as stdin_handle:
+    with (
+        input_path.open("rb") if input_mode == "stdin" else open("/dev/null", "rb") as stdin_handle
+    ):
         stdin = stdin_handle if input_mode == "stdin" else None
         completed = subprocess.run(
             list(command),
@@ -143,7 +151,9 @@ def _measure_child_once(input_path: Path, input_mode: InputMode, command: Sequen
     }
 
 
-def _run_helper(input_path: Path, input_mode: InputMode, command: Sequence[str]) -> dict[str, float]:
+def _run_helper(
+    input_path: Path, input_mode: InputMode, command: Sequence[str]
+) -> dict[str, float]:
     helper_command = [
         PYTHON,
         str(REPO_ROOT / "scripts/benchmark_runtime_profiles.py"),
@@ -157,7 +167,9 @@ def _run_helper(input_path: Path, input_mode: InputMode, command: Sequence[str])
     ]
     completed = subprocess.run(helper_command, capture_output=True, text=True, check=False)
     if completed.returncode != 0:
-        raise RuntimeError(completed.stderr.strip() or completed.stdout.strip() or "benchmark helper failed")
+        raise RuntimeError(
+            completed.stderr.strip() or completed.stdout.strip() or "benchmark helper failed"
+        )
     raw_result = json.loads(completed.stdout)
     if not isinstance(raw_result, dict):
         raise RuntimeError("benchmark helper did not return a JSON object")
@@ -179,9 +191,15 @@ def _summarize_case(case: BenchmarkCase, load_name: LoadName, input_path: Path) 
     return {
         "load_level": load_name,
         "input_records": input_records,
-        "avg_wall_ms": round(_average([_round_ms(sample["wall_seconds"]) for sample in samples]), 2),
-        "avg_cpu_user_ms": round(_average([_round_ms(sample["cpu_user_seconds"]) for sample in samples]), 2),
-        "avg_cpu_sys_ms": round(_average([_round_ms(sample["cpu_sys_seconds"]) for sample in samples]), 2),
+        "avg_wall_ms": round(
+            _average([_round_ms(sample["wall_seconds"]) for sample in samples]), 2
+        ),
+        "avg_cpu_user_ms": round(
+            _average([_round_ms(sample["cpu_user_seconds"]) for sample in samples]), 2
+        ),
+        "avg_cpu_sys_ms": round(
+            _average([_round_ms(sample["cpu_sys_seconds"]) for sample in samples]), 2
+        ),
         "peak_rss_mib": round(max(sample["peak_rss_mib"] for sample in samples), 1),
         "approx_throughput_rps": round(input_records / avg_wall_seconds, 1),
         "runs": samples,
@@ -241,7 +259,9 @@ def main(argv: Sequence[str] | None = None) -> int:
     if args_list and args_list[0] == "_measure-one":
         return _main_measure_one(args_list[1:])
 
-    parser = argparse.ArgumentParser(description="Benchmark representative runtime profiles for shipped skills.")
+    parser = argparse.ArgumentParser(
+        description="Benchmark representative runtime profiles for shipped skills."
+    )
     parser.add_argument(
         "--case",
         action="append",
@@ -255,7 +275,9 @@ def main(argv: Sequence[str] | None = None) -> int:
     )
     parsed = parser.parse_args(args_list)
 
-    selected_cases = CASES if not parsed.case else tuple(_case_by_name(name) for name in parsed.case)
+    selected_cases = (
+        CASES if not parsed.case else tuple(_case_by_name(name) for name in parsed.case)
+    )
     snapshot = _build_snapshot(selected_cases)
     rendered = json.dumps(snapshot, indent=2, sort_keys=False) + "\n"
     if parsed.output:

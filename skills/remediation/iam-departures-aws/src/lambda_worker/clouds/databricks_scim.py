@@ -104,7 +104,11 @@ async def remediate_user(
     if dry_run:
         result.status = RemediationStatus.DRY_RUN
         for i, action in enumerate(_STEP_NAMES, 1):
-            result.steps.append(RemediationStep(step_number=i, action=action, target=username, status=RemediationStatus.DRY_RUN))
+            result.steps.append(
+                RemediationStep(
+                    step_number=i, action=action, target=username, status=RemediationStatus.DRY_RUN
+                )
+            )
         result.complete()
         return result
 
@@ -122,10 +126,20 @@ async def remediate_user(
         result.steps.append(_delete_account_user(username, step=4))
     else:
         result.steps.append(
-            RemediationStep(step_number=3, action="deactivate_account_user", target=username, detail="Skipped (workspace_only mode)")
+            RemediationStep(
+                step_number=3,
+                action="deactivate_account_user",
+                target=username,
+                detail="Skipped (workspace_only mode)",
+            )
         )
         result.steps.append(
-            RemediationStep(step_number=4, action="delete_account_user", target=username, detail="Skipped (workspace_only mode)")
+            RemediationStep(
+                step_number=4,
+                action="delete_account_user",
+                target=username,
+                detail="Skipped (workspace_only mode)",
+            )
         )
 
     result.complete()
@@ -160,7 +174,13 @@ def _revoke_pats(username: str, step: int) -> RemediationStep:
         )
     except Exception as e:
         logger.warning("Failed to revoke PATs for %s: %s", username, e)
-        return RemediationStep(step_number=step, action="revoke_pats", target=username, status=RemediationStatus.FAILED, error=str(e))
+        return RemediationStep(
+            step_number=step,
+            action="revoke_pats",
+            target=username,
+            status=RemediationStatus.FAILED,
+            error=str(e),
+        )
 
 
 def _deactivate_workspace_user(username: str, step: int) -> RemediationStep:
@@ -176,7 +196,10 @@ def _deactivate_workspace_user(username: str, step: int) -> RemediationStep:
         user = _find_workspace_user(ws, username)
         if user is None:
             return RemediationStep(
-                step_number=step, action="deactivate_workspace_user", target=username, detail="User not found in workspace, skipped"
+                step_number=step,
+                action="deactivate_workspace_user",
+                target=username,
+                detail="User not found in workspace, skipped",
             )
 
         ws.users.patch(
@@ -191,12 +214,19 @@ def _deactivate_workspace_user(username: str, step: int) -> RemediationStep:
             schemas=[iam.PatchSchema.URN_IETF_PARAMS_SCIM_API_MESSAGES_2_0_PATCH_OP],
         )
         return RemediationStep(
-            step_number=step, action="deactivate_workspace_user", target=username, detail=f"User {user.id} deactivated in workspace"
+            step_number=step,
+            action="deactivate_workspace_user",
+            target=username,
+            detail=f"User {user.id} deactivated in workspace",
         )
     except Exception as e:
         logger.warning("Failed to deactivate workspace user %s: %s", username, e)
         return RemediationStep(
-            step_number=step, action="deactivate_workspace_user", target=username, status=RemediationStatus.FAILED, error=str(e)
+            step_number=step,
+            action="deactivate_workspace_user",
+            target=username,
+            status=RemediationStatus.FAILED,
+            error=str(e),
         )
 
 
@@ -212,7 +242,10 @@ def _deactivate_account_user(username: str, step: int) -> RemediationStep:
         user = _find_account_user(ac, username)
         if user is None:
             return RemediationStep(
-                step_number=step, action="deactivate_account_user", target=username, detail="User not found at account level, skipped"
+                step_number=step,
+                action="deactivate_account_user",
+                target=username,
+                detail="User not found at account level, skipped",
             )
 
         ac.users.patch(
@@ -227,12 +260,19 @@ def _deactivate_account_user(username: str, step: int) -> RemediationStep:
             schemas=[iam.PatchSchema.URN_IETF_PARAMS_SCIM_API_MESSAGES_2_0_PATCH_OP],
         )
         return RemediationStep(
-            step_number=step, action="deactivate_account_user", target=username, detail=f"User {user.id} deactivated at account level"
+            step_number=step,
+            action="deactivate_account_user",
+            target=username,
+            detail=f"User {user.id} deactivated at account level",
         )
     except Exception as e:
         logger.warning("Failed to deactivate account user %s: %s", username, e)
         return RemediationStep(
-            step_number=step, action="deactivate_account_user", target=username, status=RemediationStatus.FAILED, error=str(e)
+            step_number=step,
+            action="deactivate_account_user",
+            target=username,
+            status=RemediationStatus.FAILED,
+            error=str(e),
         )
 
 
@@ -248,7 +288,10 @@ def _delete_account_user(username: str, step: int) -> RemediationStep:
         user = _find_account_user(ac, username)
         if user is None:
             return RemediationStep(
-                step_number=step, action="delete_account_user", target=username, detail="User not found at account level, skipped"
+                step_number=step,
+                action="delete_account_user",
+                target=username,
+                detail="User not found at account level, skipped",
             )
 
         ac.users.delete(id=user.id)
@@ -261,7 +304,11 @@ def _delete_account_user(username: str, step: int) -> RemediationStep:
     except Exception as e:
         logger.warning("Failed to delete account user %s: %s", username, e)
         return RemediationStep(
-            step_number=step, action="delete_account_user", target=username, status=RemediationStatus.FAILED, error=str(e)
+            step_number=step,
+            action="delete_account_user",
+            target=username,
+            status=RemediationStatus.FAILED,
+            error=str(e),
         )
 
 

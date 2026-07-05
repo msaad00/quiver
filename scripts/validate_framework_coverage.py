@@ -6,7 +6,15 @@ from typing import TypedDict
 
 from skill_validation_common import ROOT, discover_skill_contracts
 
-ALLOWED_LAYERS = {"ingestion", "discovery", "detection", "evaluation", "view", "remediation", "output"}
+ALLOWED_LAYERS = {
+    "ingestion",
+    "discovery",
+    "detection",
+    "evaluation",
+    "view",
+    "remediation",
+    "output",
+}
 ALLOWED_STATUSES = {"gap", "mapped", "implemented", "tested", "validated"}
 ALLOWED_EXECUTION_MODES = {"cli", "ci", "mcp", "persistent"}
 
@@ -75,7 +83,9 @@ def main() -> int:
         if layer not in ALLOWED_LAYERS:
             errors.append(f"{path}: invalid layer `{layer}`")
         elif layer != skill.category:
-            errors.append(f"{path}: registry layer `{layer}` does not match skill layer `{skill.category}`")
+            errors.append(
+                f"{path}: registry layer `{layer}` does not match skill layer `{skill.category}`"
+            )
 
         status = entry.get("coverage_status")
         if status not in ALLOWED_STATUSES:
@@ -111,7 +121,9 @@ def main() -> int:
     for path in missing:
         errors.append(f"docs/framework-coverage.json: missing registry entry for `{path}`")
     for path in extra:
-        errors.append(f"docs/framework-coverage.json: registry entry without shipped skill `{path}`")
+        errors.append(
+            f"docs/framework-coverage.json: registry entry without shipped skill `{path}`"
+        )
 
     for target in registry.get("coverage_targets", []):
         framework = target.get("framework")

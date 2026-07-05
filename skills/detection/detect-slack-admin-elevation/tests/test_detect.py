@@ -125,9 +125,7 @@ class TestDetection:
 
     def test_role_change_to_owner_fires(self, monkeypatch) -> None:
         monkeypatch.setenv("SLACK_AUTHORIZED_GRANTERS", "U_BREAKGLASS")
-        findings = list(
-            detect([_event(uid="a5", action="role_change_to_owner", new_role="owner")])
-        )
+        findings = list(detect([_event(uid="a5", action="role_change_to_owner", new_role="owner")]))
         assert len(findings) == 1
         assert findings[0]["evidence"]["new_role"] == "owner"
 

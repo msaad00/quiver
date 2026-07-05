@@ -227,14 +227,22 @@ def _to_ocsf(native: dict[str, Any]) -> dict[str, Any]:
         {"name": "src.ip", "type": "IP Address", "value": native["src_ip"]},
         {"name": "http_request.http_method", "type": "Other", "value": native["http_method"]},
         {"name": "http_request.url.path", "type": "URL String", "value": native["http_path"]},
-        {"name": "http_response.status_code", "type": "Other", "value": str(native["http_status_code"])},
+        {
+            "name": "http_response.status_code",
+            "type": "Other",
+            "value": str(native["http_status_code"]),
+        },
     ]
     failure_count = native["evidence"].get("failure_count")
     if failure_count is not None:
-        observables.append({"name": "auth.failure_count", "type": "Other", "value": str(failure_count)})
+        observables.append(
+            {"name": "auth.failure_count", "type": "Other", "value": str(failure_count)}
+        )
     unique_users = native["evidence"].get("unique_users")
     if unique_users is not None:
-        observables.append({"name": "auth.unique_users", "type": "Other", "value": str(unique_users)})
+        observables.append(
+            {"name": "auth.unique_users", "type": "Other", "value": str(unique_users)}
+        )
     reason = native["evidence"].get("reason")
     if reason:
         observables.append({"name": "auth.reason", "type": "Other", "value": reason})
@@ -413,8 +421,11 @@ def load_jsonl(stream: Iterable[str]) -> Iterable[dict[str, Any]]:
             obj = json.loads(line)
         except json.JSONDecodeError as exc:
             emit_stderr_event(
-                SKILL_NAME, level="warning", event="json_parse_failed",
-                message=f"skipping line {lineno}: json parse failed: {exc}", line=lineno,
+                SKILL_NAME,
+                level="warning",
+                event="json_parse_failed",
+                message=f"skipping line {lineno}: json parse failed: {exc}",
+                line=lineno,
             )
             continue
         if isinstance(obj, dict):
@@ -428,15 +439,21 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("input", nargs="?", help="JSONL input. Defaults to stdin.")
     parser.add_argument("--output", "-o", help="JSONL output. Defaults to stdout.")
     parser.add_argument(
-        "--output-format", choices=sorted(OUTPUT_FORMATS), default="ocsf",
+        "--output-format",
+        choices=sorted(OUTPUT_FORMATS),
+        default="ocsf",
         help="Emit OCSF Detection Finding (default) or native projection.",
     )
     parser.add_argument(
-        "--window-ms", type=int, default=DEFAULT_WINDOW_MS,
+        "--window-ms",
+        type=int,
+        default=DEFAULT_WINDOW_MS,
         help=f"Per-IP window size in ms (default {DEFAULT_WINDOW_MS}).",
     )
     parser.add_argument(
-        "--min-failures", type=int, default=DEFAULT_MIN_FAILURES,
+        "--min-failures",
+        type=int,
+        default=DEFAULT_MIN_FAILURES,
         help=f"Minimum failures in window to flag burst (default {DEFAULT_MIN_FAILURES}).",
     )
     args = parser.parse_args(argv)

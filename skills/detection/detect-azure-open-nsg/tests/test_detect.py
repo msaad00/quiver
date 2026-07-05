@@ -107,9 +107,7 @@ def test_public_source_prefixes_set():
 
 
 def test_fires_on_rdp_open_to_star():
-    findings = list(
-        detect([_az_event(source_prefix="*", dest_port_range="3389")])
-    )
+    findings = list(detect([_az_event(source_prefix="*", dest_port_range="3389")]))
     assert len(findings) == 1
     f = findings[0]
     assert f["class_uid"] == 2004
@@ -120,17 +118,10 @@ def test_fires_on_rdp_open_to_star():
         for obs in f["observables"]
     )
     assert any(
-        obs["name"] == "rule.source_prefix" and obs["value"] == "*"
-        for obs in f["observables"]
+        obs["name"] == "rule.source_prefix" and obs["value"] == "*" for obs in f["observables"]
     )
-    assert any(
-        obs["name"] == "rule.port" and obs["value"] == "3389"
-        for obs in f["observables"]
-    )
-    assert any(
-        obs["name"] == "rule.protocol" and obs["value"] == "Tcp"
-        for obs in f["observables"]
-    )
+    assert any(obs["name"] == "rule.port" and obs["value"] == "3389" for obs in f["observables"])
+    assert any(obs["name"] == "rule.protocol" and obs["value"] == "Tcp" for obs in f["observables"])
 
 
 def test_fires_on_mssql_open_from_internet_tag():
@@ -154,9 +145,7 @@ def test_fires_on_mssql_open_from_internet_tag():
 
 def test_fires_on_ssh_range_22_25_from_world():
     """A 22-25 range from 0.0.0.0/0 includes port 22 and must fire."""
-    findings = list(
-        detect([_az_event(source_prefix="0.0.0.0/0", dest_port_range="22-25")])
-    )
+    findings = list(detect([_az_event(source_prefix="0.0.0.0/0", dest_port_range="22-25")]))
     assert len(findings) == 1
     port_obs = [obs for obs in findings[0]["observables"] if obs["name"] == "rule.port"]
     # only 22 from default risky list overlaps 22-25
@@ -164,9 +153,7 @@ def test_fires_on_ssh_range_22_25_from_world():
 
 
 def test_fires_on_ipv6_world_open_ssh():
-    findings = list(
-        detect([_az_event(source_prefix="::/0", dest_port_range="22")])
-    )
+    findings = list(detect([_az_event(source_prefix="::/0", dest_port_range="22")]))
     assert len(findings) == 1
     assert any(
         obs["name"] == "rule.source_prefix" and obs["value"] == "::/0"
@@ -176,9 +163,7 @@ def test_fires_on_ipv6_world_open_ssh():
 
 def test_fires_on_star_port_range():
     """destinationPortRange=`*` means all ports; every risky port is hit."""
-    findings = list(
-        detect([_az_event(source_prefix="*", dest_port_range="*")])
-    )
+    findings = list(detect([_az_event(source_prefix="*", dest_port_range="*")]))
     assert len(findings) == 1
     port_obs = [obs for obs in findings[0]["observables"] if obs["name"] == "rule.port"]
     # every default risky port should be observed
@@ -199,9 +184,7 @@ def test_fires_when_source_in_prefixes_array():
     )
     assert len(findings) == 1
     src_obs = [
-        obs["value"]
-        for obs in findings[0]["observables"]
-        if obs["name"] == "rule.source_prefix"
+        obs["value"] for obs in findings[0]["observables"] if obs["name"] == "rule.source_prefix"
     ]
     # only the public one is cited
     assert src_obs == ["0.0.0.0/0"]
@@ -220,20 +203,14 @@ def test_fires_when_port_in_ranges_array():
         )
     )
     assert len(findings) == 1
-    port_obs = {
-        obs["value"]
-        for obs in findings[0]["observables"]
-        if obs["name"] == "rule.port"
-    }
+    port_obs = {obs["value"] for obs in findings[0]["observables"] if obs["name"] == "rule.port"}
     # 3389 is risky, 80 is not
     assert "3389" in port_obs
     assert "80" not in port_obs
 
 
 def test_native_output_format():
-    findings = list(
-        detect([_az_event()], output_format="native")
-    )
+    findings = list(detect([_az_event()], output_format="native"))
     f = findings[0]
     assert f["schema_mode"] == "native"
     assert f["record_type"] == "detection_finding"
@@ -246,9 +223,7 @@ def test_native_output_format():
 
 def test_no_finding_for_ntp_port_123():
     """0.0.0.0/0 on port 123 (NTP) is not in risky list."""
-    findings = list(
-        detect([_az_event(source_prefix="0.0.0.0/0", dest_port_range="123")])
-    )
+    findings = list(detect([_az_event(source_prefix="0.0.0.0/0", dest_port_range="123")]))
     assert findings == []
 
 
@@ -260,30 +235,30 @@ def test_no_finding_for_outbound_rule():
 
 
 def test_no_finding_for_deny_rule():
-    findings = list(
-        detect([_az_event(access="Deny", source_prefix="*", dest_port_range="22")])
-    )
+    findings = list(detect([_az_event(access="Deny", source_prefix="*", dest_port_range="22")]))
     assert findings == []
 
 
 def test_no_finding_for_private_source_10_8():
-    findings = list(
-        detect([_az_event(source_prefix="10.0.0.0/8", dest_port_range="22")])
-    )
+    findings = list(detect([_az_event(source_prefix="10.0.0.0/8", dest_port_range="22")]))
     assert findings == []
 
 
 def test_no_finding_for_failed_event():
-    findings = list(
-        detect([_az_event(success=False, source_prefix="*", dest_port_range="22")])
-    )
+    findings = list(detect([_az_event(success=False, source_prefix="*", dest_port_range="22")]))
     assert findings == []
 
 
 def test_no_finding_for_unrelated_operation():
     findings = list(
         detect(
-            [_az_event(operation="Microsoft.Network/networkSecurityGroups/read", source_prefix="*", dest_port_range="22")]
+            [
+                _az_event(
+                    operation="Microsoft.Network/networkSecurityGroups/read",
+                    source_prefix="*",
+                    dest_port_range="22",
+                )
+            ]
         )
     )
     assert findings == []
@@ -291,7 +266,9 @@ def test_no_finding_for_unrelated_operation():
 
 def test_skips_event_from_wrong_producer(capsys):
     findings = list(
-        detect([_az_event(producer="ingest-cloudtrail-ocsf", source_prefix="*", dest_port_range="22")])
+        detect(
+            [_az_event(producer="ingest-cloudtrail-ocsf", source_prefix="*", dest_port_range="22")]
+        )
     )
     assert findings == []
     assert "non-azure-activity producer" in capsys.readouterr().err

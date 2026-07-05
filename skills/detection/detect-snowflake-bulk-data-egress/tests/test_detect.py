@@ -110,9 +110,27 @@ class TestDetection:
 
     def test_three_stages_over_row_threshold_fires_when_bytes_low(self) -> None:
         events = [
-            _event(uid="q-1", time_ms=1_000, stage_name="@s3_a", bytes_scanned=10, rows_unloaded=400_000),
-            _event(uid="q-2", time_ms=2_000, stage_name="@s3_b", bytes_scanned=10, rows_unloaded=400_000),
-            _event(uid="q-3", time_ms=3_000, stage_name="@s3_c", bytes_scanned=10, rows_unloaded=400_000),
+            _event(
+                uid="q-1",
+                time_ms=1_000,
+                stage_name="@s3_a",
+                bytes_scanned=10,
+                rows_unloaded=400_000,
+            ),
+            _event(
+                uid="q-2",
+                time_ms=2_000,
+                stage_name="@s3_b",
+                bytes_scanned=10,
+                rows_unloaded=400_000,
+            ),
+            _event(
+                uid="q-3",
+                time_ms=3_000,
+                stage_name="@s3_c",
+                bytes_scanned=10,
+                rows_unloaded=400_000,
+            ),
         ]
         findings = list(detect(events))
         assert len(findings) == 1
@@ -122,7 +140,12 @@ class TestDetection:
     def test_single_stage_burst_does_not_fire(self) -> None:
         # Legit batch ETL pattern: one stage, large volume. No fan-out, no fire.
         events = [
-            _event(uid=f"q-{i}", time_ms=1_000 + i, stage_name="@etl_stage", bytes_scanned=3_000_000_000)
+            _event(
+                uid=f"q-{i}",
+                time_ms=1_000 + i,
+                stage_name="@etl_stage",
+                bytes_scanned=3_000_000_000,
+            )
             for i in range(5)
         ]
         assert list(detect(events)) == []
@@ -174,12 +197,48 @@ class TestDetection:
 
     def test_two_principals_each_fire_separately(self) -> None:
         events = [
-            _event(uid="a-1", time_ms=1_000, actor_uid="ALICE", stage_name="@a_alpha", bytes_scanned=2_500_000_000),
-            _event(uid="a-2", time_ms=2_000, actor_uid="ALICE", stage_name="@a_beta", bytes_scanned=2_500_000_000),
-            _event(uid="b-1", time_ms=2_500, actor_uid="BOB", stage_name="@b_alpha", bytes_scanned=2_500_000_000),
-            _event(uid="b-2", time_ms=2_700, actor_uid="BOB", stage_name="@b_beta", bytes_scanned=2_500_000_000),
-            _event(uid="a-3", time_ms=3_000, actor_uid="ALICE", stage_name="@a_gamma", bytes_scanned=2_500_000_000),
-            _event(uid="b-3", time_ms=3_500, actor_uid="BOB", stage_name="@b_gamma", bytes_scanned=2_500_000_000),
+            _event(
+                uid="a-1",
+                time_ms=1_000,
+                actor_uid="ALICE",
+                stage_name="@a_alpha",
+                bytes_scanned=2_500_000_000,
+            ),
+            _event(
+                uid="a-2",
+                time_ms=2_000,
+                actor_uid="ALICE",
+                stage_name="@a_beta",
+                bytes_scanned=2_500_000_000,
+            ),
+            _event(
+                uid="b-1",
+                time_ms=2_500,
+                actor_uid="BOB",
+                stage_name="@b_alpha",
+                bytes_scanned=2_500_000_000,
+            ),
+            _event(
+                uid="b-2",
+                time_ms=2_700,
+                actor_uid="BOB",
+                stage_name="@b_beta",
+                bytes_scanned=2_500_000_000,
+            ),
+            _event(
+                uid="a-3",
+                time_ms=3_000,
+                actor_uid="ALICE",
+                stage_name="@a_gamma",
+                bytes_scanned=2_500_000_000,
+            ),
+            _event(
+                uid="b-3",
+                time_ms=3_500,
+                actor_uid="BOB",
+                stage_name="@b_gamma",
+                bytes_scanned=2_500_000_000,
+            ),
         ]
         findings = list(detect(events))
         assert len(findings) == 2
@@ -232,9 +291,15 @@ class TestThresholdOverrides:
 
     def test_byte_threshold_env_override(self, monkeypatch) -> None:
         events = [
-            _event(uid="q-1", time_ms=1_000, stage_name="@s3_a", bytes_scanned=10, rows_unloaded=10),
-            _event(uid="q-2", time_ms=2_000, stage_name="@s3_b", bytes_scanned=10, rows_unloaded=10),
-            _event(uid="q-3", time_ms=3_000, stage_name="@s3_c", bytes_scanned=10, rows_unloaded=10),
+            _event(
+                uid="q-1", time_ms=1_000, stage_name="@s3_a", bytes_scanned=10, rows_unloaded=10
+            ),
+            _event(
+                uid="q-2", time_ms=2_000, stage_name="@s3_b", bytes_scanned=10, rows_unloaded=10
+            ),
+            _event(
+                uid="q-3", time_ms=3_000, stage_name="@s3_c", bytes_scanned=10, rows_unloaded=10
+            ),
         ]
         # default thresholds: not enough volume → no fire
         assert list(detect(events)) == []

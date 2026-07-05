@@ -401,8 +401,21 @@ DEFAULT_AGENT_ROSTER: list[AgentDefinition] = [
         "model_tier": "tiny",
         "requires_human_approval": False,
         "failure_route": "deterministic_fallback",
-        "allowed_outputs": ["rank_findings", "summarize_evidence", "draft_analyst_note", "request_human_review"],
-        "forbidden_outputs": ["approval", "cvss", "mitre", "epss", "kev", "write_intent", "audit_chain_mutation"],
+        "allowed_outputs": [
+            "rank_findings",
+            "summarize_evidence",
+            "draft_analyst_note",
+            "request_human_review",
+        ],
+        "forbidden_outputs": [
+            "approval",
+            "cvss",
+            "mitre",
+            "epss",
+            "kev",
+            "write_intent",
+            "audit_chain_mutation",
+        ],
     },
     {
         "agent_id": "review-gate",
@@ -543,30 +556,38 @@ def _merge_agent_roster(profile_roster: list[dict[str, Any]] | None) -> list[Age
             candidate["privilege_boundary"] = "no_tool_writes"
             candidate["skill_scope"] = []
             candidate["requires_human_approval"] = False
-            candidate["forbidden_outputs"] = sorted({
-                *default["forbidden_outputs"],
-                *candidate.get("forbidden_outputs", []),
-                "approval",
-                "write_intent",
-                "audit_chain_mutation",
-            })
+            candidate["forbidden_outputs"] = sorted(
+                {
+                    *default["forbidden_outputs"],
+                    *candidate.get("forbidden_outputs", []),
+                    "approval",
+                    "write_intent",
+                    "audit_chain_mutation",
+                }
+            )
         if candidate["agent_id"] == "remediation-planner":
             candidate["requires_human_approval"] = True
             candidate["privilege_boundary"] = "dry_run_write_planning"
             candidate["skill_scope"] = [ALLOWED_SKILLS_REMEDIATION]
-            candidate["forbidden_outputs"] = sorted({
-                *default["forbidden_outputs"],
-                *candidate.get("forbidden_outputs", []),
-                "apply",
-                "ungated_write",
-            })
+            candidate["forbidden_outputs"] = sorted(
+                {
+                    *default["forbidden_outputs"],
+                    *candidate.get("forbidden_outputs", []),
+                    "apply",
+                    "ungated_write",
+                }
+            )
         merged.append(candidate)  # type: ignore[arg-type]
     return merged
 
 
 def load_harness_profile(path_text: str | None = None) -> HarnessProfile:
     """Load operator profile metadata without reading credentials or secrets."""
-    selected = path_text or os.environ.get("CLOUD_SECURITY_HARNESS_PROFILE") or os.environ.get("DEMO_HARNESS_PROFILE")
+    selected = (
+        path_text
+        or os.environ.get("CLOUD_SECURITY_HARNESS_PROFILE")
+        or os.environ.get("DEMO_HARNESS_PROFILE")
+    )
     if not selected:
         return _default_harness_profile()
     payload = json.loads(Path(selected).read_text(encoding="utf-8"))
@@ -630,9 +651,8 @@ def _data_source_decision(profile: HarnessProfile) -> dict[str, Any]:
         "mode": mode,
         "backend": backend,
         "source_skill": source_skill,
-        "records_format": source.get("records_format") or (
-            "raw_vendor" if mode == "raw_ingest" else "ocsf"
-        ),
+        "records_format": source.get("records_format")
+        or ("raw_vendor" if mode == "raw_ingest" else "ocsf"),
         "query": source.get("query") or "",
         "raw_ingest_required": mode == "raw_ingest",
         "security_lake_replay": mode == "security_lake_replay",
@@ -707,8 +727,18 @@ def _pipeline_node_contracts(state: GraphState | None = None) -> list[PipelineNo
             "node": "llm_triage",
             "agent_id": "triage-agent",
             "skills": [],
-            "inputs": ["framework_maps", "confidence_scores", "harness_profile.llm", "token_budget"],
-            "outputs": ["agent_recommendations", "llm_validation", "agent_runs", "token_budget_usage"],
+            "inputs": [
+                "framework_maps",
+                "confidence_scores",
+                "harness_profile.llm",
+                "token_budget",
+            ],
+            "outputs": [
+                "agent_recommendations",
+                "llm_validation",
+                "agent_runs",
+                "token_budget_usage",
+            ],
             "guardrails": [
                 "closed_adapter_schema",
                 "rank_summarize_draft_only",
@@ -731,7 +761,11 @@ def _pipeline_node_contracts(state: GraphState | None = None) -> list[PipelineNo
             "skills": agent_by_id["remediation-planner"]["skill_scope"],
             "inputs": ["review_decision", "framework_maps", "confidence_scores", "idempotency"],
             "outputs": ["remediation_result", "api_errors", "idempotency.remediation_key"],
-            "guardrails": ["dry_run_default", "approval_context_required", "stable_idempotency_key"],
+            "guardrails": [
+                "dry_run_default",
+                "approval_context_required",
+                "stable_idempotency_key",
+            ],
         },
         {
             "node": "retry_queue",
@@ -771,9 +805,21 @@ def _pipeline_edge_contracts() -> list[PipelineEdgeContract]:
         {"source": "llm_triage", "target": "review", "condition": "always"},
         {"source": "review", "target": "remediate", "condition": "route_after_review == remediate"},
         {"source": "review", "target": "writeback", "condition": "route_after_review == writeback"},
-        {"source": "remediate", "target": "retry_queue", "condition": "route_after_remediation == retry_queue"},
-        {"source": "remediate", "target": "escalate", "condition": "route_after_remediation == escalate"},
-        {"source": "remediate", "target": "writeback", "condition": "route_after_remediation == writeback"},
+        {
+            "source": "remediate",
+            "target": "retry_queue",
+            "condition": "route_after_remediation == retry_queue",
+        },
+        {
+            "source": "remediate",
+            "target": "escalate",
+            "condition": "route_after_remediation == escalate",
+        },
+        {
+            "source": "remediate",
+            "target": "writeback",
+            "condition": "route_after_remediation == writeback",
+        },
         {"source": "retry_queue", "target": "writeback", "condition": "always"},
         {"source": "escalate", "target": "writeback", "condition": "always"},
     ]
@@ -824,7 +870,9 @@ def _agent_policy_decision(
 def effective_agent_policy(state: GraphState) -> dict[str, Any]:
     """Compile profile, roster, and allowlist into per-agent grants."""
     profile = state.get("harness_profile") or {}
-    effective_allowed = list(state.get("effective_allowed_skills") or _effective_allowed_skills(profile))
+    effective_allowed = list(
+        state.get("effective_allowed_skills") or _effective_allowed_skills(profile)
+    )
     allowed_set = set(effective_allowed)
     harness_config = state.get("harness_config") or _agent_harness_config(state)
     selected_model_tier = (harness_config.get("model_policy") or {}).get("selected_model_tier")
@@ -834,31 +882,30 @@ def effective_agent_policy(state: GraphState) -> dict[str, Any]:
         requested_scope = list(agent["skill_scope"])
         effective_grants = [skill for skill in requested_scope if skill in allowed_set]
         denied_scope = [skill for skill in requested_scope if skill not in allowed_set]
-        approval_satisfied = (
-            not agent["requires_human_approval"]
-            or review_status == "approved"
-        )
+        approval_satisfied = not agent["requires_human_approval"] or review_status == "approved"
         model_policy_tier = selected_model_tier if agent["kind"] == "llm_optional" else "none"
-        entries.append({
-            "agent_id": agent["agent_id"],
-            "kind": agent["kind"],
-            "privilege_boundary": agent["privilege_boundary"],
-            "owns": list(agent["owns"]),
-            "requested_skill_scope": requested_scope,
-            "effective_skill_grants": effective_grants,
-            "denied_skill_scope": denied_scope,
-            "model_tier": agent["model_tier"],
-            "model_policy_tier": model_policy_tier,
-            "requires_human_approval": agent["requires_human_approval"],
-            "approval_satisfied": approval_satisfied,
-            "write_policy": _agent_write_policy(agent),
-            "decision": _agent_policy_decision(
-                agent=agent,
-                effective_grants=effective_grants,
-                denied_scope=denied_scope,
-                approval_satisfied=approval_satisfied,
-            ),
-        })
+        entries.append(
+            {
+                "agent_id": agent["agent_id"],
+                "kind": agent["kind"],
+                "privilege_boundary": agent["privilege_boundary"],
+                "owns": list(agent["owns"]),
+                "requested_skill_scope": requested_scope,
+                "effective_skill_grants": effective_grants,
+                "denied_skill_scope": denied_scope,
+                "model_tier": agent["model_tier"],
+                "model_policy_tier": model_policy_tier,
+                "requires_human_approval": agent["requires_human_approval"],
+                "approval_satisfied": approval_satisfied,
+                "write_policy": _agent_write_policy(agent),
+                "decision": _agent_policy_decision(
+                    agent=agent,
+                    effective_grants=effective_grants,
+                    denied_scope=denied_scope,
+                    approval_satisfied=approval_satisfied,
+                ),
+            }
+        )
     payload = {
         "schema_version": "langgraph-agent-policy-v1",
         "profile_id": profile.get("profile_id"),
@@ -903,10 +950,11 @@ def preview_agent_policy(
         }
     agent_policy = effective_agent_policy(state)
     remediation_entry = next(
-        entry for entry in agent_policy["entries"]
-        if entry["agent_id"] == "remediation-planner"
+        entry for entry in agent_policy["entries"] if entry["agent_id"] == "remediation-planner"
     )
-    remediation_skill_granted = ALLOWED_SKILLS_REMEDIATION in remediation_entry["effective_skill_grants"]
+    remediation_skill_granted = (
+        ALLOWED_SKILLS_REMEDIATION in remediation_entry["effective_skill_grants"]
+    )
     return {
         "schema_version": "langgraph-harness-preflight-v1",
         "profile_id": profile["profile_id"],
@@ -978,13 +1026,9 @@ def _compact_json_chars(payload: Any) -> int:
 
 def _compact_evidence_cards(state: GraphState, budget: dict[str, Any]) -> list[dict[str, Any]]:
     confidence_by_uid = {
-        score["finding_uid"]: score
-        for score in state.get("confidence_scores") or []
+        score["finding_uid"]: score for score in state.get("confidence_scores") or []
     }
-    findings_by_uid = {
-        finding["uid"]: finding
-        for finding in state.get("findings") or []
-    }
+    findings_by_uid = {finding["uid"]: finding for finding in state.get("findings") or []}
     cards = []
     max_cards = int(budget["max_findings_per_call"])
     max_card_chars = max(160, int(budget["max_evidence_chars"]) // max_cards)
@@ -992,25 +1036,29 @@ def _compact_evidence_cards(state: GraphState, budget: dict[str, Any]) -> list[d
         finding_uid = mapped["finding_uid"]
         finding = findings_by_uid.get(finding_uid, {})
         confidence = confidence_by_uid.get(finding_uid, {})
-        cards.append({
-            "finding_uid": finding_uid,
-            "title": str(finding.get("title", "security finding"))[:max_card_chars],
-            "severity": finding.get("severity", mapped["cvss"]["severity"]),
-            "confidence": confidence.get("score", 0.0),
-            "reason_codes": [str(reason)[:80] for reason in confidence.get("reason_codes", [])[:6]],
-            "mitre_attack": mapped["mitre_attack"],
-            "mitre_atlas": mapped["mitre_atlas"],
-            "cvss": {
-                "base_score": mapped["cvss"]["base_score"],
-                "severity": mapped["cvss"]["severity"],
-            },
-            "epss_percentile": mapped["epss_percentile"],
-            "kev_listed": mapped["kev_listed"],
-            "evidence_refs": [
-                f"finding_uid:{finding_uid}",
-                f"resource_uid:{finding.get('resource_uid', 'unknown')}",
-            ],
-        })
+        cards.append(
+            {
+                "finding_uid": finding_uid,
+                "title": str(finding.get("title", "security finding"))[:max_card_chars],
+                "severity": finding.get("severity", mapped["cvss"]["severity"]),
+                "confidence": confidence.get("score", 0.0),
+                "reason_codes": [
+                    str(reason)[:80] for reason in confidence.get("reason_codes", [])[:6]
+                ],
+                "mitre_attack": mapped["mitre_attack"],
+                "mitre_atlas": mapped["mitre_atlas"],
+                "cvss": {
+                    "base_score": mapped["cvss"]["base_score"],
+                    "severity": mapped["cvss"]["severity"],
+                },
+                "epss_percentile": mapped["epss_percentile"],
+                "kev_listed": mapped["kev_listed"],
+                "evidence_refs": [
+                    f"finding_uid:{finding_uid}",
+                    f"resource_uid:{finding.get('resource_uid', 'unknown')}",
+                ],
+            }
+        )
     return cards
 
 
@@ -1054,7 +1102,9 @@ def _token_budget_usage(
         "compression_required": budget["compression_required"],
         "compression_ratio": round(raw_tokens / compact_tokens, 2) if compact_tokens else 1.0,
         "cache_key": f"triage-{_stable_hash({'model': harness_config['model'], 'evidence': evidence_cards})[:16]}",
-        "status": "fallback" if over_budget and budget["fallback_on_budget_exceeded"] else "within_budget",
+        "status": "fallback"
+        if over_budget and budget["fallback_on_budget_exceeded"]
+        else "within_budget",
         "fallback_reason": "token_budget_exceeded" if over_budget else None,
     }
 
@@ -1114,12 +1164,14 @@ def ingest_node(state: GraphState) -> GraphState:
     effective_skills = _effective_allowed_skills(profile)
     state["effective_allowed_skills"] = effective_skills
     state["data_source_decision"] = _data_source_decision(profile)
-    raw_events = state.get("raw_events") or [{
-        "source": "cloudtrail",
-        "event_name": "CreateAccessKey",
-        "actor_uid": "AIDAEXAMPLE",
-        "resource_uid": "arn:aws:iam::111122223333:user/build-bot",
-    }]
+    raw_events = state.get("raw_events") or [
+        {
+            "source": "cloudtrail",
+            "event_name": "CreateAccessKey",
+            "actor_uid": "AIDAEXAMPLE",
+            "resource_uid": "arn:aws:iam::111122223333:user/build-bot",
+        }
+    ]
     state["raw_events"] = raw_events
     _emit_node(
         "ingest",
@@ -1138,19 +1190,23 @@ def normalize_node(state: GraphState) -> GraphState:
     normalized = []
     for index, event in enumerate(state.get("raw_events") or []):
         event_uid = f"evt-{_stable_hash(event)[:12]}"
-        normalized.append({
-            "class_uid": 6003,
-            "activity_name": event.get("event_name", "unknown"),
-            "metadata": {"uid": event_uid, "version": "1.8.0"},
-            "actor": {"uid": event.get("actor_uid", "unknown")},
-            "resource": {"uid": event.get("resource_uid", f"resource-{index}")},
-        })
+        normalized.append(
+            {
+                "class_uid": 6003,
+                "activity_name": event.get("event_name", "unknown"),
+                "metadata": {"uid": event_uid, "version": "1.8.0"},
+                "actor": {"uid": event.get("actor_uid", "unknown")},
+                "resource": {"uid": event.get("resource_uid", f"resource-{index}")},
+            }
+        )
     state["ocsf_events"] = normalized
     evidence_hash = _stable_hash(normalized)
-    workflow_key = _stable_hash({
-        "caller": state.get("caller_context", {}).get("session_id", "graph-demo-1"),
-        "evidence_hash": evidence_hash,
-    })[:16]
+    workflow_key = _stable_hash(
+        {
+            "caller": state.get("caller_context", {}).get("session_id", "graph-demo-1"),
+            "evidence_hash": evidence_hash,
+        }
+    )[:16]
     state["integrity"] = {
         "evidence_hash": evidence_hash,
         "approved_payload_hash": None,
@@ -1171,13 +1227,15 @@ def enrich_node(state: GraphState) -> GraphState:
     findings: list[Finding] = []
     for event in state.get("ocsf_events") or []:
         finding_uid = f"det-{event['metadata']['uid']}"
-        findings.append({
-            "uid": finding_uid,
-            "title": "High-risk access key creation",
-            "severity": "high",
-            "rule_id": "detect-aws-access-key-creation",
-            "resource_uid": event["resource"]["uid"],
-        })
+        findings.append(
+            {
+                "uid": finding_uid,
+                "title": "High-risk access key creation",
+                "severity": "high",
+                "rule_id": "detect-aws-access-key-creation",
+                "resource_uid": event["resource"]["uid"],
+            }
+        )
         enrichments[finding_uid] = {
             "osv_ids": [],
             "nvd_ids": ["CVE-2024-DEMO"],
@@ -1194,19 +1252,20 @@ def correlate_node(state: GraphState) -> GraphState:
     """Join findings to actor, tool, and resource lineage."""
     _append_trace(state, "correlate")
     events_by_resource = {
-        event["resource"]["uid"]: event
-        for event in state.get("ocsf_events") or []
+        event["resource"]["uid"]: event for event in state.get("ocsf_events") or []
     }
     correlations = []
     for finding in state.get("findings") or []:
         event = events_by_resource.get(finding.get("resource_uid", ""))
-        correlations.append({
-            "finding_uid": finding["uid"],
-            "resource_uid": finding.get("resource_uid", "unknown"),
-            "actor_uid": (event or {}).get("actor", {}).get("uid", "unknown"),
-            "tool_name": "cloud-ai-security-skills",
-            "window_minutes": 15,
-        })
+        correlations.append(
+            {
+                "finding_uid": finding["uid"],
+                "resource_uid": finding.get("resource_uid", "unknown"),
+                "actor_uid": (event or {}).get("actor", {}).get("uid", "unknown"),
+                "tool_name": "cloud-ai-security-skills",
+                "window_minutes": 15,
+            }
+        )
     state["correlations"] = correlations
     _record_agent_run(
         state,
@@ -1247,19 +1306,28 @@ def map_node(state: GraphState) -> GraphState:
     _append_trace(state, "map")
     maps = []
     for finding in state.get("findings") or []:
-        enrichment = state.get("enrichments", {}).get(finding["uid"], {
-            "epss_percentile": 0.0,
-            "kev_listed": False,
-        })
-        maps.append({
-            "finding_uid": finding["uid"],
-            "mitre_attack": ["T1098"],
-            "mitre_atlas": ["AML.TA0000"],
-            "cvss": {"base_score": 8.1, "severity": "high", "vector": "CVSS:3.1/AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:N"},
-            "epss_percentile": enrichment["epss_percentile"],
-            "kev_listed": enrichment["kev_listed"],
-            "controls": ["CIS-1.4", "NIST-CSF-PR.AA"],
-        })
+        enrichment = state.get("enrichments", {}).get(
+            finding["uid"],
+            {
+                "epss_percentile": 0.0,
+                "kev_listed": False,
+            },
+        )
+        maps.append(
+            {
+                "finding_uid": finding["uid"],
+                "mitre_attack": ["T1098"],
+                "mitre_atlas": ["AML.TA0000"],
+                "cvss": {
+                    "base_score": 8.1,
+                    "severity": "high",
+                    "vector": "CVSS:3.1/AV:N/AC:L/PR:L/UI:N/S:U/C:H/I:H/A:N",
+                },
+                "epss_percentile": enrichment["epss_percentile"],
+                "kev_listed": enrichment["kev_listed"],
+                "controls": ["CIS-1.4", "NIST-CSF-PR.AA"],
+            }
+        )
     state["framework_maps"] = maps
     _record_agent_run(
         state,
@@ -1272,7 +1340,9 @@ def map_node(state: GraphState) -> GraphState:
         },
         outputs={"framework_maps": maps},
     )
-    _emit_node("map", frameworks=["MITRE", "CVSS", "EPSS", "KEV", "CIS", "NIST"], mappings=len(maps))
+    _emit_node(
+        "map", frameworks=["MITRE", "CVSS", "EPSS", "KEV", "CIS", "NIST"], mappings=len(maps)
+    )
     return state
 
 
@@ -1295,8 +1365,7 @@ def llm_triage_node(state: GraphState) -> GraphState:
             if isinstance(recommendation, dict)
         }
     confidence_by_uid = {
-        score["finding_uid"]: score["score"]
-        for score in state.get("confidence_scores") or []
+        score["finding_uid"]: score["score"] for score in state.get("confidence_scores") or []
     }
     recommendations = []
     validation_records = []
@@ -1442,7 +1511,10 @@ def dry_run_remediation_node(state: GraphState) -> GraphState:
             state,
             agent_id="remediation-planner",
             stage="remediate",
-            inputs={"review_decision": decision, "effective_allowed_skills": state.get("effective_allowed_skills")},
+            inputs={
+                "review_decision": decision,
+                "effective_allowed_skills": state.get("effective_allowed_skills"),
+            },
             outputs=state["remediation_result"],
         )
         _emit_node("remediate", status="skipped", reason="skill_not_allowed")
@@ -1487,7 +1559,12 @@ def dry_run_remediation_node(state: GraphState) -> GraphState:
             inputs=approved_payload,
             outputs=state["remediation_result"],
         )
-        _emit_node("remediate", status="skipped", reason="duplicate_idempotency_key", idempotency_key=remediation_key)
+        _emit_node(
+            "remediate",
+            status="skipped",
+            reason="duplicate_idempotency_key",
+            idempotency_key=remediation_key,
+        )
         return state
 
     api_error = _simulated_api_error("remediate")
@@ -1527,7 +1604,11 @@ def dry_run_remediation_node(state: GraphState) -> GraphState:
         "status": "dry_run",
         "skill": ALLOWED_SKILLS_REMEDIATION,
         "dry_run": True,
-        "planned_steps": ["disable_access_key", "tag_principal_for_review", "write_evidence_bundle"],
+        "planned_steps": [
+            "disable_access_key",
+            "tag_principal_for_review",
+            "write_evidence_bundle",
+        ],
         "idempotency_key": remediation_key,
         "approval": approval,
     }
@@ -1635,7 +1716,9 @@ def audit_eval_writeback_node(state: GraphState) -> GraphState:
         "harness_profile": {
             "profile_id": (state.get("harness_profile") or {}).get("profile_id"),
             "allowed_skills": (state.get("harness_profile") or {}).get("allowed_skills"),
-            "cloud_identity_hints": (state.get("harness_profile") or {}).get("cloud_identity_hints"),
+            "cloud_identity_hints": (state.get("harness_profile") or {}).get(
+                "cloud_identity_hints"
+            ),
             "approval_policy": (state.get("harness_profile") or {}).get("approval_policy"),
         },
         "effective_allowed_skills": state.get("effective_allowed_skills"),
@@ -1682,19 +1765,27 @@ def audit_eval_writeback_node(state: GraphState) -> GraphState:
         "agent_run_count": len(state.get("agent_runs") or []),
         "agent_policy_hash": (state.get("agent_policy") or {}).get("policy_hash"),
         "mcp_planned_call_count": sum(
-            1 for call in state.get("mcp_call_plan") or []
-            if call.get("status") == "planned"
+            1 for call in state.get("mcp_call_plan") or [] if call.get("status") == "planned"
         ),
         "mcp_blocked_call_count": sum(
-            1 for call in state.get("mcp_call_plan") or []
+            1
+            for call in state.get("mcp_call_plan") or []
             if str(call.get("status", "")).startswith("blocked_")
         ),
         "mcp_executed_call_count": (state.get("mcp_execution") or {}).get("executed_call_count", 0),
-        "mcp_write_executed_count": (state.get("mcp_execution") or {}).get("write_executed_count", 0),
-        "llm_adapter_accepted": sum(1 for record in llm_validation if record["status"] == "accepted"),
-        "llm_adapter_rejected": sum(1 for record in llm_validation if record["status"] == "rejected"),
+        "mcp_write_executed_count": (state.get("mcp_execution") or {}).get(
+            "write_executed_count", 0
+        ),
+        "llm_adapter_accepted": sum(
+            1 for record in llm_validation if record["status"] == "accepted"
+        ),
+        "llm_adapter_rejected": sum(
+            1 for record in llm_validation if record["status"] == "rejected"
+        ),
         "llm_token_budget_status": (state.get("token_budget_usage") or {}).get("status"),
-        "llm_compact_input_tokens": (state.get("token_budget_usage") or {}).get("compact_input_tokens_estimate"),
+        "llm_compact_input_tokens": (state.get("token_budget_usage") or {}).get(
+            "compact_input_tokens_estimate"
+        ),
         "retryable_api_error_count": sum(
             1 for error in api_errors if error["classification"] == "retryable"
         ),
@@ -1759,11 +1850,14 @@ def run_graph(initial: GraphState) -> GraphState:
         elif remediation_route == "escalate":
             state = escalation_node(state)
     else:
-        state.setdefault("remediation_result", {
-            "status": "skipped",
-            "skill": ALLOWED_SKILLS_REMEDIATION,
-            "reason": "review blocked; remediation node not routed",
-        })
+        state.setdefault(
+            "remediation_result",
+            {
+                "status": "skipped",
+                "skill": ALLOWED_SKILLS_REMEDIATION,
+                "reason": "review blocked; remediation node not routed",
+            },
+        )
     state = audit_eval_writeback_node(state)
     return state
 
@@ -1889,7 +1983,9 @@ def write_checkpoint(final: GraphState, checkpoint_path: Path) -> dict[str, Any]
     """Persist a replay artifact for offline audit and regression checks."""
     payload = _checkpoint_payload(final)
     checkpoint_path.parent.mkdir(parents=True, exist_ok=True)
-    checkpoint_path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    checkpoint_path.write_text(
+        json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
     return {
         "path": str(checkpoint_path),
         "checkpoint_hash": payload["checkpoint_hash"],

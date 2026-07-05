@@ -193,7 +193,9 @@ def _build_native_finding(event: dict[str, Any], pattern_source: str) -> dict[st
         {"name": "slack.channel.name", "type": "Resource Name", "value": channel_name},
     ]
     if channel_id:
-        observables.append({"name": "slack.channel.id", "type": "Resource Name", "value": channel_id})
+        observables.append(
+            {"name": "slack.channel.id", "type": "Resource Name", "value": channel_id}
+        )
 
     return {
         "schema_mode": "native",
@@ -291,12 +293,15 @@ def coverage_metadata() -> dict[str, Any]:
             }
         },
         "thresholds": {
-            "sensitive_pattern": os.environ.get(SENSITIVE_PATTERNS_ENV, "").strip() or DEFAULT_SENSITIVE_PATTERN,
+            "sensitive_pattern": os.environ.get(SENSITIVE_PATTERNS_ENV, "").strip()
+            or DEFAULT_SENSITIVE_PATTERN,
         },
     }
 
 
-def detect(events: Iterable[dict[str, Any]], output_format: str = "ocsf") -> Iterable[dict[str, Any]]:
+def detect(
+    events: Iterable[dict[str, Any]], output_format: str = "ocsf"
+) -> Iterable[dict[str, Any]]:
     if output_format not in OUTPUT_FORMATS:
         raise ContractError(
             f"unsupported output_format: {output_format}",
@@ -355,9 +360,17 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         description="Detect external Slack guest added to a sensitive channel from OCSF 1.8 input."
     )
-    parser.add_argument("input", nargs="?", help="OCSF 1.8 User Access Management 3005 JSONL input. Defaults to stdin.")
-    parser.add_argument("--output", "-o", help="Detection Finding JSONL output. Defaults to stdout.")
-    parser.add_argument("--output-format", choices=OUTPUT_FORMATS, default="ocsf", help="Output format.")
+    parser.add_argument(
+        "input",
+        nargs="?",
+        help="OCSF 1.8 User Access Management 3005 JSONL input. Defaults to stdin.",
+    )
+    parser.add_argument(
+        "--output", "-o", help="Detection Finding JSONL output. Defaults to stdout."
+    )
+    parser.add_argument(
+        "--output-format", choices=OUTPUT_FORMATS, default="ocsf", help="Output format."
+    )
     args = parser.parse_args(argv)
 
     in_stream = sys.stdin if not args.input else open(args.input, "r", encoding="utf-8")

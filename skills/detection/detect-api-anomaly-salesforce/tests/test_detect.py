@@ -25,7 +25,9 @@ def _event(idx: int, client: str = "UnknownClient", ip: str = "203.0.113.88") ->
             "uid": f"evt-api-{idx}",
             "product": {"feature": {"name": "ingest-salesforce-event-mon-ocsf"}},
         },
-        "actor": {"user": {"uid": "005svc", "email_addr": "svc@example.com", "name": "svc@example.com"}},
+        "actor": {
+            "user": {"uid": "005svc", "email_addr": "svc@example.com", "name": "svc@example.com"}
+        },
         "src_endpoint": {"ip": ip},
         "api": {"operation": "query", "service": {"name": "salesforce.event_monitoring"}},
         "unmapped": {
@@ -40,7 +42,9 @@ def _event(idx: int, client: str = "UnknownClient", ip: str = "203.0.113.88") ->
 
 
 def test_detects_client_outside_baseline(monkeypatch) -> None:
-    baseline = {"005svc": {"client_names": ["ApprovedClient"], "ips": ["203.0.113.88"], "max_events": 100}}
+    baseline = {
+        "005svc": {"client_names": ["ApprovedClient"], "ips": ["203.0.113.88"], "max_events": 100}
+    }
     monkeypatch.setenv("SALESFORCE_API_BASELINE_JSON", json.dumps(baseline))
     stream = json.dumps(_event(1, client="UnknownClient")) + "\n"
 
@@ -52,7 +56,9 @@ def test_detects_client_outside_baseline(monkeypatch) -> None:
 
 
 def test_ignores_activity_inside_baseline(monkeypatch) -> None:
-    baseline = {"005svc": {"client_names": ["ApprovedClient"], "ips": ["203.0.113.88"], "max_events": 100}}
+    baseline = {
+        "005svc": {"client_names": ["ApprovedClient"], "ips": ["203.0.113.88"], "max_events": 100}
+    }
     monkeypatch.setenv("SALESFORCE_API_BASELINE_JSON", json.dumps(baseline))
     stream = json.dumps(_event(1, client="ApprovedClient")) + "\n"
 
@@ -72,7 +78,9 @@ def test_detects_no_baseline_high_event_count(monkeypatch) -> None:
 def test_cli_outputs_ocsf(tmp_path: Path) -> None:
     src = tmp_path / "events.jsonl"
     src.write_text(json.dumps(_event(1, client="UnknownClient")) + "\n", encoding="utf-8")
-    baseline = json.dumps({"005svc": {"client_names": ["ApprovedClient"], "ips": ["203.0.113.88"], "max_events": 100}})
+    baseline = json.dumps(
+        {"005svc": {"client_names": ["ApprovedClient"], "ips": ["203.0.113.88"], "max_events": 100}}
+    )
 
     result = subprocess.run(
         [sys.executable, str(MODULE_PATH), str(src)],

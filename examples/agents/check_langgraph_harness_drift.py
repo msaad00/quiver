@@ -220,17 +220,25 @@ def _check_profiles() -> DriftCheck:
         data_source = profile["runtime"].get("security_data_source") or {}
         if data_source.get("mode") not in {"raw_ingest", "security_lake_replay"}:
             failures.append(f"{profile_path.name}: security_data_source mode is invalid")
-        if data_source.get("mode") == "raw_ingest" and data_source.get("source_skill") != "ingest-cloudtrail-ocsf":
+        if (
+            data_source.get("mode") == "raw_ingest"
+            and data_source.get("source_skill") != "ingest-cloudtrail-ocsf"
+        ):
             failures.append(f"{profile_path.name}: raw_ingest must use ingest-cloudtrail-ocsf")
         if data_source.get("mode") == "security_lake_replay":
             if not str(data_source.get("source_skill", "")).startswith("source-"):
                 failures.append(f"{profile_path.name}: lake replay must use a source-* query skill")
             if data_source.get("backend") not in {"snowflake", "clickhouse", "databricks"}:
-                failures.append(f"{profile_path.name}: lake replay backend must be a shipped warehouse source")
+                failures.append(
+                    f"{profile_path.name}: lake replay backend must be a shipped warehouse source"
+                )
         mcp_execution = profile["runtime"].get("mcp_execution") or {}
         if mcp_execution.get("transport") != "mcp_stdio_jsonrpc":
             failures.append(f"{profile_path.name}: MCP execution transport must be stdio JSON-RPC")
-        if mcp_execution.get("mode") == "plan_only" and mcp_execution.get("execute_planned_calls") is not False:
+        if (
+            mcp_execution.get("mode") == "plan_only"
+            and mcp_execution.get("execute_planned_calls") is not False
+        ):
             failures.append(f"{profile_path.name}: plan_only must not execute planned MCP calls")
         if mcp_execution.get("allow_write_calls") is not False:
             failures.append(f"{profile_path.name}: write-capable MCP execution must stay disabled")
@@ -266,7 +274,8 @@ def _check_preflight_policy() -> DriftCheck:
             if report["remediation_preflight"].get("apply_supported") is not False:
                 failures.append(f"{profile_path.name}: preflight reports apply support")
             triage = next(
-                entry for entry in report["agent_policy"]["entries"]
+                entry
+                for entry in report["agent_policy"]["entries"]
                 if entry["agent_id"] == "triage-agent"
             )
             if triage.get("effective_skill_grants") != []:
@@ -337,11 +346,15 @@ def _check_no_harness_secret_literals() -> DriftCheck:
         text = path.read_text(encoding="utf-8")
         for pattern in SECRET_PATTERNS:
             for match in pattern.finditer(text):
-                findings.append(f"{path.relative_to(REPO_ROOT)}:{match.start()}: {match.group(0)[:32]}")
+                findings.append(
+                    f"{path.relative_to(REPO_ROOT)}:{match.start()}: {match.group(0)[:32]}"
+                )
     return DriftCheck(
         "harness_docs_have_no_secret_literals",
         not findings,
-        "no PAT/API-key/password literals in harness docs or profiles" if not findings else findings,
+        "no PAT/API-key/password literals in harness docs or profiles"
+        if not findings
+        else findings,
     )
 
 

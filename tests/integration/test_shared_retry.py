@@ -58,6 +58,7 @@ def test_total_budget_above_ceiling_rejected():
 def test_aws_throttling_is_transient():
     class _AWSExc(Exception):
         pass
+
     exc = _AWSExc("boto-style")
     exc.response = {"Error": {"Code": "ThrottlingException"}}
     assert RETRY.is_transient(exc) is True
@@ -66,6 +67,7 @@ def test_aws_throttling_is_transient():
 def test_aws_unknown_error_code_is_permanent():
     class _AWSExc(Exception):
         pass
+
     exc = _AWSExc("permanent")
     exc.response = {"Error": {"Code": "AccessDenied"}}
     assert RETRY.is_transient(exc) is False
@@ -74,24 +76,30 @@ def test_aws_unknown_error_code_is_permanent():
 def test_google_429_is_transient():
     class _Resp:
         status = 429
+
     class _GExc(Exception):
         resp = _Resp()
+
     assert RETRY.is_transient(_GExc("rate limit")) is True
 
 
 def test_google_500_is_transient():
     class _Resp:
         status = 500
+
     class _GExc(Exception):
         resp = _Resp()
+
     assert RETRY.is_transient(_GExc("internal")) is True
 
 
 def test_google_404_is_permanent():
     class _Resp:
         status = 404
+
     class _GExc(Exception):
         resp = _Resp()
+
     assert RETRY.is_transient(_GExc("not found")) is False
 
 
@@ -100,22 +108,27 @@ def test_azure_service_request_is_transient():
     # ServiceRequestError / ServiceResponseError).
     class ServiceRequestError(Exception):
         pass
+
     assert RETRY.is_transient(ServiceRequestError("connection reset")) is True
 
 
 def test_http_429_is_transient():
     class _Response:
         status_code = 429
+
     class _HTTPExc(Exception):
         response = _Response()
+
     assert RETRY.is_transient(_HTTPExc("rate limit")) is True
 
 
 def test_http_400_is_permanent():
     class _Response:
         status_code = 400
+
     class _HTTPExc(Exception):
         response = _Response()
+
     assert RETRY.is_transient(_HTTPExc("bad request")) is False
 
 
@@ -154,6 +167,7 @@ def test_retry_succeeds_after_two_transient_failures(monkeypatch):
 
 def test_retry_raises_after_max_attempts_exhausted(monkeypatch):
     """All attempts fail transiently → last exception bubbles."""
+
     class _Throttle(Exception):
         response = type("_R", (), {"status_code": 429})()
 
@@ -194,9 +208,7 @@ def test_total_budget_cuts_loop_short(monkeypatch):
     with pytest.raises(_Throttle):
         RETRY.retry_call(
             fn,
-            policy=RETRY.RetryPolicy(
-                max_attempts=10, base_seconds=0.01, total_budget_seconds=30
-            ),
+            policy=RETRY.RetryPolicy(max_attempts=10, base_seconds=0.01, total_budget_seconds=30),
         )
 
 

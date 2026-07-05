@@ -187,9 +187,7 @@ def _build_native_finding(event: dict[str, Any]) -> dict[str, Any]:
     event_uid = _metadata_uid(event)
     finding_uid = _finding_uid(event_uid, actor_uid, org, time_ms)
 
-    scope_phrase = (
-        f"scopes={','.join(scopes)}" if scopes else "scopes not surfaced by upstream"
-    )
+    scope_phrase = f"scopes={','.join(scopes)}" if scopes else "scopes not surfaced by upstream"
     description = (
         f"GitHub principal '{actor_name or actor_uid}' successfully created a "
         f"{pat_kind} in organization '{org or 'unknown'}' ({scope_phrase}). "
@@ -413,12 +411,15 @@ def load_jsonl(stream: Iterable[str]) -> Iterator[dict[str, Any]]:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         description=(
-            "Detect GitHub personal access token creation from OCSF 1.8 "
-            "API Activity 6003 input."
+            "Detect GitHub personal access token creation from OCSF 1.8 API Activity 6003 input."
         )
     )
-    parser.add_argument("input", nargs="?", help="OCSF 1.8 API Activity 6003 JSONL input. Defaults to stdin.")
-    parser.add_argument("--output", "-o", help="Detection Finding JSONL output. Defaults to stdout.")
+    parser.add_argument(
+        "input", nargs="?", help="OCSF 1.8 API Activity 6003 JSONL input. Defaults to stdin."
+    )
+    parser.add_argument(
+        "--output", "-o", help="Detection Finding JSONL output. Defaults to stdout."
+    )
     parser.add_argument(
         "--output-format",
         choices=OUTPUT_FORMATS,

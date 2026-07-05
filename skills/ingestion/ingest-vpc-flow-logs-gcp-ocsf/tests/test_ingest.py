@@ -55,8 +55,16 @@ def _entry(**payload_overrides) -> dict:
         "end_time": "2026-04-10T05:01:00.000000Z",
         "src_instance": {"vm_name": "gke-node-1", "region": "us-central1", "zone": "us-central1-a"},
         "dest_instance": {"vm_name": "mysql-1", "region": "us-central1", "zone": "us-central1-b"},
-        "src_vpc": {"project_id": "prod-project", "vpc_name": "prod-vpc", "subnetwork_name": "apps-subnet"},
-        "dest_vpc": {"project_id": "prod-project", "vpc_name": "prod-vpc", "subnetwork_name": "db-subnet"},
+        "src_vpc": {
+            "project_id": "prod-project",
+            "vpc_name": "prod-vpc",
+            "subnetwork_name": "apps-subnet",
+        },
+        "dest_vpc": {
+            "project_id": "prod-project",
+            "vpc_name": "prod-vpc",
+            "subnetwork_name": "db-subnet",
+        },
     }
     payload.update(payload_overrides)
     return {"timestamp": "2026-04-10T05:01:00.000000Z", "jsonPayload": payload}

@@ -95,9 +95,7 @@ class AuditSink:
         annotated["prev_hash"] = self._prev_hash
         # Compute chain_hash over the event WITHOUT chain_hash (otherwise it
         # depends on itself). prev_hash is included.
-        annotated["chain_hash"] = _chain_hash(
-            self._prev_hash, annotated, self._hmac_key or b""
-        )
+        annotated["chain_hash"] = _chain_hash(self._prev_hash, annotated, self._hmac_key or b"")
         self._prev_hash = annotated["chain_hash"]
         return annotated
 

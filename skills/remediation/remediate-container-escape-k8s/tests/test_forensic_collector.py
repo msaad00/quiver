@@ -53,7 +53,14 @@ def _finding(
     }
 
 
-def _write_proc(proc_root: Path, pid: str, container_id: str, *, status: str = "State:\tR\n", maps: str = "00400000-00452000 r-xp\n") -> None:
+def _write_proc(
+    proc_root: Path,
+    pid: str,
+    container_id: str,
+    *,
+    status: str = "State:\tR\n",
+    maps: str = "00400000-00452000 r-xp\n",
+) -> None:
     pid_root = proc_root / pid
     pid_root.mkdir(parents=True, exist_ok=True)
     (pid_root / "cgroup").write_text(f"0::/kubepods/{container_id}\n")
@@ -82,7 +89,9 @@ class _FakeKube:
     def list_target_pods(self, namespace: str, selector: dict[str, str]):
         return [pod for pod in self.pods if pod.namespace == namespace]
 
-    def create_volume_snapshot(self, namespace: str, pvc_name: str, snapshot_name: str, snapshot_class_name: str | None):
+    def create_volume_snapshot(
+        self, namespace: str, pvc_name: str, snapshot_name: str, snapshot_class_name: str | None
+    ):
         self.snapshots.append((namespace, pvc_name, snapshot_name, snapshot_class_name))
         return collector.VolumeSnapshotRef(
             namespace=namespace,
@@ -147,7 +156,9 @@ class TestRun:
         log_root = tmp_path / "var-log"
         (log_root / "containers").mkdir(parents=True)
         _write_proc(proc_root, "101", "abcd1234")
-        (log_root / "containers" / "api-7d9b_payments_api-abcd1234.log").write_text("runtime log line\n")
+        (log_root / "containers" / "api-7d9b_payments_api-abcd1234.log").write_text(
+            "runtime log line\n"
+        )
 
         kube = _FakeKube(
             workload_selectors={("payments", "deployments", "api"): {"app": "api"}},
@@ -176,7 +187,9 @@ class TestRun:
         log_root = tmp_path / "var-log"
         (log_root / "containers").mkdir(parents=True)
         _write_proc(proc_root, "101", "abcd1234")
-        (log_root / "containers" / "api-7d9b_payments_api-abcd1234.log").write_text("runtime log line\n")
+        (log_root / "containers" / "api-7d9b_payments_api-abcd1234.log").write_text(
+            "runtime log line\n"
+        )
 
         kube = _FakeKube(
             workload_selectors={("payments", "deployments", "api"): {"app": "api"}},
@@ -208,7 +221,9 @@ class TestRun:
         assert record["approver"] == "alice@example.com"
         assert len(uploader.uploads) == 1
         assert kube.snapshots and kube.snapshots[0][1] == "api-data"
-        with tarfile.open(fileobj=collector.io.BytesIO(uploader.uploads[0]["body"]), mode="r:gz") as tar:
+        with tarfile.open(
+            fileobj=collector.io.BytesIO(uploader.uploads[0]["body"]), mode="r:gz"
+        ) as tar:
             names = sorted(tar.getnames())
         assert "manifest/collection.json" in names
         assert "proc/api-7d9b/101/status.txt" in names

@@ -21,14 +21,18 @@ if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 _REV_MODULE = ROOT / "skills" / "_shared" / "remediation_verifier.py"
-_spec = importlib.util.spec_from_file_location("cloud_security_remediation_verifier_test", _REV_MODULE)
+_spec = importlib.util.spec_from_file_location(
+    "cloud_security_remediation_verifier_test", _REV_MODULE
+)
 assert _spec and _spec.loader
 REV = importlib.util.module_from_spec(_spec)
 sys.modules["cloud_security_remediation_verifier_test"] = REV
 _spec.loader.exec_module(REV)
 
 _OCSF_MODULE = ROOT / "skills" / "_shared" / "ocsf_validator.py"
-_ocsf_spec = importlib.util.spec_from_file_location("cloud_security_ocsf_validator_rev_test", _OCSF_MODULE)
+_ocsf_spec = importlib.util.spec_from_file_location(
+    "cloud_security_ocsf_validator_rev_test", _OCSF_MODULE
+)
 assert _ocsf_spec and _ocsf_spec.loader
 OCSF = importlib.util.module_from_spec(_ocsf_spec)
 sys.modules["cloud_security_ocsf_validator_rev_test"] = OCSF
@@ -212,7 +216,10 @@ class TestDriftFinding:
 
 class TestSLADeadline:
     def test_deadline_is_remediated_plus_sla(self):
-        assert REV.sla_deadline(1776046500000, REV.DEFAULT_VERIFICATION_SLA_MS) == 1776046500000 + 15 * 60 * 1000
+        assert (
+            REV.sla_deadline(1776046500000, REV.DEFAULT_VERIFICATION_SLA_MS)
+            == 1776046500000 + 15 * 60 * 1000
+        )
 
     def test_default_sla_is_15_minutes(self):
         assert REV.DEFAULT_VERIFICATION_SLA_MS == 15 * 60 * 1000

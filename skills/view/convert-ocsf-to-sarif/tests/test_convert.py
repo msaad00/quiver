@@ -125,13 +125,20 @@ class TestDocShape:
 
     def test_tool_name_pinned(self):
         doc = convert([_detection_finding()])
-        assert doc["runs"][0]["tool"]["driver"]["name"] == "cloud-ai-security-skills-detection-engineering"
+        assert (
+            doc["runs"][0]["tool"]["driver"]["name"]
+            == "cloud-ai-security-skills-detection-engineering"
+        )
 
     def test_skips_non_detection_finding(self, capsys):
         doc = convert(
             [
                 _detection_finding(),
-                {"class_uid": 6003, "metadata": {}, "finding_info": {}},  # API Activity, not a finding
+                {
+                    "class_uid": 6003,
+                    "metadata": {},
+                    "finding_info": {},
+                },  # API Activity, not a finding
             ]
         )
         assert len(doc["runs"][0]["results"]) == 1
@@ -172,7 +179,13 @@ class TestRuleDedup:
 
 class TestMitreTags:
     def test_tags_include_technique_and_tactic(self):
-        doc = convert([_detection_finding(technique_uid="T1611", tactic_uid="TA0004", tactic_name="Privilege Escalation")])
+        doc = convert(
+            [
+                _detection_finding(
+                    technique_uid="T1611", tactic_uid="TA0004", tactic_name="Privilege Escalation"
+                )
+            ]
+        )
         result = doc["runs"][0]["results"][0]
         tags = result["properties"]["tags"]
         assert "mitre/attack/technique/T1611" in tags

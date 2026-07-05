@@ -49,7 +49,9 @@ class TestAuthChecks:
         assert f.severity == "CRITICAL"
 
     def test_1_1_with_auth_passes(self):
-        config = {"endpoints": [{"name": "inference", "auth": {"type": "api_key", "enabled": True}}]}
+        config = {
+            "endpoints": [{"name": "inference", "auth": {"type": "api_key", "enabled": True}}]
+        }
         f = check_1_1_endpoint_auth_required(config)
         assert f.status == "PASS"
 
@@ -68,7 +70,11 @@ class TestAuthChecks:
         assert f.status == "PASS"
 
     def test_1_3_rbac_passes(self):
-        config = {"endpoints": [{"name": "inference", "auth": {"type": "oauth2", "roles": ["admin", "user"]}}]}
+        config = {
+            "endpoints": [
+                {"name": "inference", "auth": {"type": "oauth2", "roles": ["admin", "user"]}}
+            ]
+        }
         f = check_1_3_rbac_model_access(config)
         assert f.status == "PASS"
 
@@ -211,7 +217,11 @@ class TestRuntime:
         assert f.status == "FAIL"
 
     def test_4_3_non_root_passes(self):
-        config = {"containers": [{"name": "model", "security_context": {"runAsNonRoot": True, "runAsUser": 1000}}]}
+        config = {
+            "containers": [
+                {"name": "model", "security_context": {"runAsNonRoot": True, "runAsUser": 1000}}
+            ]
+        }
         f = check_4_3_non_root_user(config)
         assert f.status == "PASS"
 
@@ -361,7 +371,12 @@ class TestBenchmarkRunner:
                     "logging": {"enabled": True},
                 }
             ],
-            "containers": [{"name": "model", "security_context": {"runAsNonRoot": True, "readOnlyRootFilesystem": True}}],
+            "containers": [
+                {
+                    "name": "model",
+                    "security_context": {"runAsNonRoot": True, "readOnlyRootFilesystem": True},
+                }
+            ],
         }
         findings = run_benchmark(config)
         assert len(findings) == 20  # All 20 checks

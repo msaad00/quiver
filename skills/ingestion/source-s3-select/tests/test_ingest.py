@@ -50,10 +50,14 @@ class TestNormalizeExpression:
 
 class TestReadExpression:
     def test_prefers_cli_expression(self):
-        assert _read_expression("SELECT * FROM S3Object s", ["SELECT 2"]) == "SELECT * FROM S3Object s"
+        assert (
+            _read_expression("SELECT * FROM S3Object s", ["SELECT 2"]) == "SELECT * FROM S3Object s"
+        )
 
     def test_falls_back_to_stdin(self):
-        assert _read_expression(None, ["SELECT * ", "FROM S3Object s"]) == "SELECT * FROM S3Object s"
+        assert (
+            _read_expression(None, ["SELECT * ", "FROM S3Object s"]) == "SELECT * FROM S3Object s"
+        )
 
 
 class TestInputSerialization:
@@ -114,7 +118,7 @@ class TestFetchRows:
         fake = _FakeS3Client(
             [
                 {"Records": {"Payload": b'{"event":"a"'}},
-                {"Records": {"Payload": b'}\n'}},
+                {"Records": {"Payload": b"}\n"}},
             ]
         )
         monkeypatch.setattr(_INGEST, "_client", lambda: fake)

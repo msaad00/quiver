@@ -230,18 +230,28 @@ def _build_native_finding(
     if actor_name and actor_name != actor_uid:
         observables.append({"name": "actor.user.name", "type": "User Name", "value": actor_name})
     if workspace_id:
-        observables.append({"name": "databricks.workspace_id", "type": "Resource UID", "value": workspace_id})
+        observables.append(
+            {"name": "databricks.workspace_id", "type": "Resource UID", "value": workspace_id}
+        )
     if target_workspace_id:
         observables.append(
-            {"name": "databricks.target_workspace_id", "type": "Resource UID", "value": target_workspace_id}
+            {
+                "name": "databricks.target_workspace_id",
+                "type": "Resource UID",
+                "value": target_workspace_id,
+            }
         )
-    observables.append({"name": "databricks.model_name", "type": "Resource UID", "value": model_name})
+    observables.append(
+        {"name": "databricks.model_name", "type": "Resource UID", "value": model_name}
+    )
     if model_version:
         observables.append(
             {"name": "databricks.model_version", "type": "Other", "value": model_version}
         )
     if target_stage:
-        observables.append({"name": "databricks.target_stage", "type": "Other", "value": target_stage})
+        observables.append(
+            {"name": "databricks.target_stage", "type": "Other", "value": target_stage}
+        )
     for op in operations_seen:
         observables.append({"name": "api.operation", "type": "Other", "value": op})
 
@@ -490,9 +500,15 @@ def main(argv: list[str] | None = None) -> int:
             "API Activity 6003 input."
         )
     )
-    parser.add_argument("input", nargs="?", help="OCSF 1.8 API Activity 6003 JSONL input. Defaults to stdin.")
-    parser.add_argument("--output", "-o", help="Detection Finding JSONL output. Defaults to stdout.")
-    parser.add_argument("--output-format", choices=OUTPUT_FORMATS, default="ocsf", help="Output format.")
+    parser.add_argument(
+        "input", nargs="?", help="OCSF 1.8 API Activity 6003 JSONL input. Defaults to stdin."
+    )
+    parser.add_argument(
+        "--output", "-o", help="Detection Finding JSONL output. Defaults to stdout."
+    )
+    parser.add_argument(
+        "--output-format", choices=OUTPUT_FORMATS, default="ocsf", help="Output format."
+    )
     args = parser.parse_args(argv)
 
     in_stream = sys.stdin if not args.input else open(args.input, "r", encoding="utf-8")

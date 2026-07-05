@@ -120,7 +120,9 @@ def _rule_for_attack(attack: dict[str, Any]) -> dict[str, Any]:
         desc_parts.append(f"MITRE ATT&CK tactic: {tactic_name} ({tactic_uid})")
     if technique_uid != "no-mitre":
         desc_parts.append(f"Technique: {technique_name} ({technique_uid})")
-        desc_parts.append(f"Reference: https://attack.mitre.org/techniques/{technique_uid.replace('.', '/')}/")
+        desc_parts.append(
+            f"Reference: https://attack.mitre.org/techniques/{technique_uid.replace('.', '/')}/"
+        )
     if desc_parts:
         rule["fullDescription"] = {"text": " · ".join(desc_parts)}
 
@@ -183,7 +185,9 @@ def _build_result(finding: dict[str, Any]) -> dict[str, Any]:
         result["partialFingerprints"] = {"primaryLocationLineHash": uid}
 
     properties: dict[str, Any] = {
-        "detector": ((finding.get("metadata") or {}).get("product") or {}).get("feature", {}).get("name", ""),
+        "detector": ((finding.get("metadata") or {}).get("product") or {})
+        .get("feature", {})
+        .get("name", ""),
         "detected_at_ms": finding.get("time"),
         "ocsf_class_uid": finding.get("class_uid"),
         "ocsf_severity_id": severity_id,

@@ -93,7 +93,9 @@ def check_2_1_storage_cmk(storage_client, subscription_id: str) -> Finding:
             section="storage",
             severity="HIGH",
             status="FAIL" if non_cmk else "PASS",
-            detail=f"{len(non_cmk)} accounts do not use customer-managed keys" if non_cmk else "All accounts use customer-managed keys",
+            detail=f"{len(non_cmk)} accounts do not use customer-managed keys"
+            if non_cmk
+            else "All accounts use customer-managed keys",
             nist_csf="PR.DS-1",
             resources=non_cmk,
         )
@@ -123,7 +125,9 @@ def check_2_3_no_public_blob(storage_client, subscription_id: str) -> Finding:
             section="storage",
             severity="CRITICAL",
             status="FAIL" if public_accounts else "PASS",
-            detail=f"{len(public_accounts)} accounts allow public blob access" if public_accounts else "No public blob access",
+            detail=f"{len(public_accounts)} accounts allow public blob access"
+            if public_accounts
+            else "No public blob access",
             nist_csf="PR.AC-3",
             resources=public_accounts,
         )
@@ -153,7 +157,9 @@ def check_2_2_https_only(storage_client, subscription_id: str) -> Finding:
             section="storage",
             severity="HIGH",
             status="FAIL" if not_https else "PASS",
-            detail=f"{len(not_https)} accounts allow non-HTTPS" if not_https else "All accounts enforce HTTPS",
+            detail=f"{len(not_https)} accounts allow non-HTTPS"
+            if not_https
+            else "All accounts enforce HTTPS",
             nist_csf="PR.DS-2",
             resources=not_https,
         )
@@ -183,7 +189,9 @@ def check_2_4_network_rules(storage_client, subscription_id: str) -> Finding:
             section="storage",
             severity="HIGH",
             status="FAIL" if open_accounts else "PASS",
-            detail=f"{len(open_accounts)} accounts default-allow" if open_accounts else "All accounts deny by default",
+            detail=f"{len(open_accounts)} accounts default-allow"
+            if open_accounts
+            else "All accounts deny by default",
             nist_csf="PR.AC-5",
             resources=open_accounts,
         )
@@ -221,7 +229,11 @@ def _check_nsg_port(network_client, port: int, control_id: str, title: str) -> F
         open_rules = []
         for nsg in nsgs:
             for rule in nsg.security_rules or []:
-                if rule.direction == "Inbound" and rule.access == "Allow" and rule.source_address_prefix in ("*", "0.0.0.0/0", "Internet"):
+                if (
+                    rule.direction == "Inbound"
+                    and rule.access == "Allow"
+                    and rule.source_address_prefix in ("*", "0.0.0.0/0", "Internet")
+                ):
                     dest_ports = rule.destination_port_range or ""
                     if dest_ports == "*" or str(port) == dest_ports:
                         open_rules.append(f"{nsg.name}/{rule.name}")
@@ -238,7 +250,9 @@ def _check_nsg_port(network_client, port: int, control_id: str, title: str) -> F
             section="networking",
             severity="HIGH",
             status="FAIL" if open_rules else "PASS",
-            detail=f"{len(open_rules)} NSG rules allow 0.0.0.0/0:{port}" if open_rules else f"No unrestricted port {port}",
+            detail=f"{len(open_rules)} NSG rules allow 0.0.0.0/0:{port}"
+            if open_rules
+            else f"No unrestricted port {port}",
             nist_csf="PR.AC-5",
             resources=open_rules,
         )
@@ -496,7 +510,9 @@ def check_1_21_no_custom_owner_role(authorization_client, subscription_id: str) 
 # ---------------------------------------------------------------------------
 
 
-def _defender_plan_check(security_client, plan_name: str, control_id: str, title: str, severity: str) -> Finding:
+def _defender_plan_check(
+    security_client, plan_name: str, control_id: str, title: str, severity: str
+) -> Finding:
     """Shared helper: Defender for Cloud pricing tier == 'Standard' for a plan."""
     try:
         pricings = list(security_client.pricings.list())
@@ -835,16 +851,26 @@ def _postgres_param_check(
 def check_4_4_1_postgres_log_checkpoints(postgres_client, subscription_id: str) -> Finding:
     """CIS 4.4.1 — PostgreSQL `log_checkpoints` parameter is on."""
     return _postgres_param_check(
-        postgres_client, "log_checkpoints", "on", "4.4.1",
-        "PostgreSQL log_checkpoints on", "MEDIUM", "DE.AE-3",
+        postgres_client,
+        "log_checkpoints",
+        "on",
+        "4.4.1",
+        "PostgreSQL log_checkpoints on",
+        "MEDIUM",
+        "DE.AE-3",
     )
 
 
 def check_4_4_2_postgres_ssl_required(postgres_client, subscription_id: str) -> Finding:
     """CIS 4.4.2 — PostgreSQL `require_secure_transport` (SSL) is on."""
     return _postgres_param_check(
-        postgres_client, "require_secure_transport", "on", "4.4.2",
-        "PostgreSQL SSL required", "HIGH", "PR.DS-2",
+        postgres_client,
+        "require_secure_transport",
+        "on",
+        "4.4.2",
+        "PostgreSQL SSL required",
+        "HIGH",
+        "PR.DS-2",
     )
 
 
@@ -981,9 +1007,7 @@ def check_7_1_vm_os_disk_encryption(compute_client, subscription_id: str) -> Fin
             severity="HIGH",
             status="FAIL" if bad else "PASS",
             detail=(
-                f"{len(bad)} VM(s) with unencrypted OS disk"
-                if bad
-                else "All VM OS disks encrypted"
+                f"{len(bad)} VM(s) with unencrypted OS disk" if bad else "All VM OS disks encrypted"
             ),
             nist_csf="PR.DS-1",
             resources=bad,
@@ -1026,9 +1050,7 @@ def check_7_2_vm_managed_disks(compute_client, subscription_id: str) -> Finding:
             severity="MEDIUM",
             status="FAIL" if bad else "PASS",
             detail=(
-                f"{len(bad)} VM(s) using unmanaged disks"
-                if bad
-                else "All VMs use managed disks"
+                f"{len(bad)} VM(s) using unmanaged disks" if bad else "All VMs use managed disks"
             ),
             nist_csf="PR.DS-1",
             resources=bad,
@@ -1145,7 +1167,9 @@ def _check_kv_expiration(
         vaults = _list_key_vaults(keyvault_client)
         bad: list[str] = []
         for v in vaults:
-            vault_uri = getattr(getattr(v, "properties", None), "vault_uri", None) or getattr(v, "vault_uri", None)
+            vault_uri = getattr(getattr(v, "properties", None), "vault_uri", None) or getattr(
+                v, "vault_uri", None
+            )
             if not vault_uri:
                 continue
             try:
@@ -1194,16 +1218,22 @@ def _check_kv_expiration(
 def check_8_4_keyvault_key_expiration(keyvault_client, keys_client_factory) -> Finding:
     """CIS 8.4 — Key Vault keys have an expiration set."""
     return _check_kv_expiration(
-        keyvault_client, keys_client_factory, "list_properties_of_keys",
-        "8.4", "Key Vault keys have expiration",
+        keyvault_client,
+        keys_client_factory,
+        "list_properties_of_keys",
+        "8.4",
+        "Key Vault keys have expiration",
     )
 
 
 def check_8_5_keyvault_secret_expiration(keyvault_client, secrets_client_factory) -> Finding:
     """CIS 8.5 — Key Vault secrets have an expiration set."""
     return _check_kv_expiration(
-        keyvault_client, secrets_client_factory, "list_properties_of_secrets",
-        "8.5", "Key Vault secrets have expiration",
+        keyvault_client,
+        secrets_client_factory,
+        "list_properties_of_secrets",
+        "8.5",
+        "Key Vault secrets have expiration",
     )
 
 
@@ -1216,11 +1246,7 @@ def check_9_1_appservice_https_only(web_client, subscription_id: str) -> Finding
     """CIS 9.1 — App Service apps are configured for HTTPS-only."""
     try:
         apps = list(web_client.web_apps.list())
-        bad = [
-            getattr(a, "name", "?")
-            for a in apps
-            if not getattr(a, "https_only", False)
-        ]
+        bad = [getattr(a, "name", "?") for a in apps if not getattr(a, "https_only", False)]
         return Finding(
             control_id="9.1",
             title="App Service HTTPS-only",
@@ -1314,7 +1340,11 @@ def _resource_group_from_id(resource_id: str) -> str:
 
 
 def _status_symbol(status: str) -> str:
-    return {"PASS": "\033[92m✓\033[0m", "FAIL": "\033[91m✗\033[0m", "ERROR": "\033[90m?\033[0m"}.get(status, "?")
+    return {
+        "PASS": "\033[92m✓\033[0m",
+        "FAIL": "\033[91m✗\033[0m",
+        "ERROR": "\033[90m?\033[0m",
+    }.get(status, "?")
 
 
 def run_assessment(subscription_id: str, section: str | None = None) -> list[Finding]:
@@ -1329,7 +1359,9 @@ def run_assessment(subscription_id: str, section: str | None = None) -> list[Fin
         from azure.mgmt.network import NetworkManagementClient
         from azure.mgmt.storage import StorageManagementClient
     except ImportError:
-        print("ERROR: Install Azure SDKs: pip install azure-identity azure-mgmt-storage azure-mgmt-network")
+        print(
+            "ERROR: Install Azure SDKs: pip install azure-identity azure-mgmt-storage azure-mgmt-network"
+        )
         sys.exit(1)
 
     credential = DefaultAzureCredential()
@@ -1345,15 +1377,21 @@ def run_assessment(subscription_id: str, section: str | None = None) -> list[Fin
 
     authorization_client = _opt(
         "authorization",
-        lambda: __import__("azure.mgmt.authorization", fromlist=["AuthorizationManagementClient"]).AuthorizationManagementClient(credential, subscription_id),
+        lambda: __import__(
+            "azure.mgmt.authorization", fromlist=["AuthorizationManagementClient"]
+        ).AuthorizationManagementClient(credential, subscription_id),
     )
     security_client = _opt(
         "security",
-        lambda: __import__("azure.mgmt.security", fromlist=["SecurityCenter"]).SecurityCenter(credential, subscription_id),
+        lambda: __import__("azure.mgmt.security", fromlist=["SecurityCenter"]).SecurityCenter(
+            credential, subscription_id
+        ),
     )
     sql_client = _opt(
         "sql",
-        lambda: __import__("azure.mgmt.sql", fromlist=["SqlManagementClient"]).SqlManagementClient(credential, subscription_id),
+        lambda: __import__("azure.mgmt.sql", fromlist=["SqlManagementClient"]).SqlManagementClient(
+            credential, subscription_id
+        ),
     )
     postgres_client = _opt(
         "postgres",
@@ -1364,19 +1402,27 @@ def run_assessment(subscription_id: str, section: str | None = None) -> list[Fin
     )
     monitor_client = _opt(
         "monitor",
-        lambda: __import__("azure.mgmt.monitor", fromlist=["MonitorManagementClient"]).MonitorManagementClient(credential, subscription_id),
+        lambda: __import__(
+            "azure.mgmt.monitor", fromlist=["MonitorManagementClient"]
+        ).MonitorManagementClient(credential, subscription_id),
     )
     compute_client = _opt(
         "compute",
-        lambda: __import__("azure.mgmt.compute", fromlist=["ComputeManagementClient"]).ComputeManagementClient(credential, subscription_id),
+        lambda: __import__(
+            "azure.mgmt.compute", fromlist=["ComputeManagementClient"]
+        ).ComputeManagementClient(credential, subscription_id),
     )
     keyvault_client = _opt(
         "keyvault",
-        lambda: __import__("azure.mgmt.keyvault", fromlist=["KeyVaultManagementClient"]).KeyVaultManagementClient(credential, subscription_id),
+        lambda: __import__(
+            "azure.mgmt.keyvault", fromlist=["KeyVaultManagementClient"]
+        ).KeyVaultManagementClient(credential, subscription_id),
     )
     web_client = _opt(
         "web",
-        lambda: __import__("azure.mgmt.web", fromlist=["WebSiteManagementClient"]).WebSiteManagementClient(credential, subscription_id),
+        lambda: __import__(
+            "azure.mgmt.web", fromlist=["WebSiteManagementClient"]
+        ).WebSiteManagementClient(credential, subscription_id),
     )
     graph_client = None  # Microsoft Graph SDK not pulled in by default.
 
@@ -1384,7 +1430,9 @@ def run_assessment(subscription_id: str, section: str | None = None) -> list[Fin
         return __import__("azure.keyvault.keys", fromlist=["KeyClient"]).KeyClient(uri, credential)
 
     def _kv_secrets_factory(uri):
-        return __import__("azure.keyvault.secrets", fromlist=["SecretClient"]).SecretClient(uri, credential)
+        return __import__("azure.keyvault.secrets", fromlist=["SecretClient"]).SecretClient(
+            uri, credential
+        )
 
     findings: list[Finding] = []
 
@@ -1417,46 +1465,62 @@ def run_assessment(subscription_id: str, section: str | None = None) -> list[Fin
     if graph_client is not None:
         checks["identity"].append(lambda: check_1_5_no_guest_users(graph_client))
     if authorization_client is not None:
-        checks["identity"].append(lambda: check_1_21_no_custom_owner_role(authorization_client, subscription_id))
+        checks["identity"].append(
+            lambda: check_1_21_no_custom_owner_role(authorization_client, subscription_id)
+        )
     if security_client is not None:
-        checks["defender"].extend([
-            lambda: check_2_1_1_defender_for_servers(security_client, subscription_id),
-            lambda: check_2_1_4_defender_for_sql(security_client, subscription_id),
-            lambda: check_2_1_14_defender_for_key_vault(security_client, subscription_id),
-            lambda: check_2_1_21_auto_provisioning(security_client, subscription_id),
-        ])
+        checks["defender"].extend(
+            [
+                lambda: check_2_1_1_defender_for_servers(security_client, subscription_id),
+                lambda: check_2_1_4_defender_for_sql(security_client, subscription_id),
+                lambda: check_2_1_14_defender_for_key_vault(security_client, subscription_id),
+                lambda: check_2_1_21_auto_provisioning(security_client, subscription_id),
+            ]
+        )
     if sql_client is not None:
-        checks["database"].extend([
-            lambda: check_4_1_1_sql_auditing(sql_client, subscription_id),
-            lambda: check_4_1_2_sql_tde(sql_client, subscription_id),
-        ])
+        checks["database"].extend(
+            [
+                lambda: check_4_1_1_sql_auditing(sql_client, subscription_id),
+                lambda: check_4_1_2_sql_tde(sql_client, subscription_id),
+            ]
+        )
     if postgres_client is not None:
-        checks["database"].extend([
-            lambda: check_4_4_1_postgres_log_checkpoints(postgres_client, subscription_id),
-            lambda: check_4_4_2_postgres_ssl_required(postgres_client, subscription_id),
-        ])
+        checks["database"].extend(
+            [
+                lambda: check_4_4_1_postgres_log_checkpoints(postgres_client, subscription_id),
+                lambda: check_4_4_2_postgres_ssl_required(postgres_client, subscription_id),
+            ]
+        )
     if monitor_client is not None:
-        checks["logging"].extend([
-            lambda: check_5_1_2_activity_log_retention(monitor_client, subscription_id),
-            lambda: check_5_2_1_diagnostic_settings(monitor_client, subscription_id),
-        ])
+        checks["logging"].extend(
+            [
+                lambda: check_5_1_2_activity_log_retention(monitor_client, subscription_id),
+                lambda: check_5_2_1_diagnostic_settings(monitor_client, subscription_id),
+            ]
+        )
     if compute_client is not None:
-        checks["compute"].extend([
-            lambda: check_7_1_vm_os_disk_encryption(compute_client, subscription_id),
-            lambda: check_7_2_vm_managed_disks(compute_client, subscription_id),
-        ])
+        checks["compute"].extend(
+            [
+                lambda: check_7_1_vm_os_disk_encryption(compute_client, subscription_id),
+                lambda: check_7_2_vm_managed_disks(compute_client, subscription_id),
+            ]
+        )
     if keyvault_client is not None:
-        checks["keyvault"].extend([
-            lambda: check_8_1_keyvault_soft_delete(keyvault_client, subscription_id),
-            lambda: check_8_2_keyvault_purge_protection(keyvault_client, subscription_id),
-            lambda: check_8_4_keyvault_key_expiration(keyvault_client, _kv_keys_factory),
-            lambda: check_8_5_keyvault_secret_expiration(keyvault_client, _kv_secrets_factory),
-        ])
+        checks["keyvault"].extend(
+            [
+                lambda: check_8_1_keyvault_soft_delete(keyvault_client, subscription_id),
+                lambda: check_8_2_keyvault_purge_protection(keyvault_client, subscription_id),
+                lambda: check_8_4_keyvault_key_expiration(keyvault_client, _kv_keys_factory),
+                lambda: check_8_5_keyvault_secret_expiration(keyvault_client, _kv_secrets_factory),
+            ]
+        )
     if web_client is not None:
-        checks["appservice"].extend([
-            lambda: check_9_1_appservice_https_only(web_client, subscription_id),
-            lambda: check_9_3_appservice_min_tls(web_client, subscription_id),
-        ])
+        checks["appservice"].extend(
+            [
+                lambda: check_9_1_appservice_https_only(web_client, subscription_id),
+                lambda: check_9_3_appservice_min_tls(web_client, subscription_id),
+            ]
+        )
 
     sections_to_run = {section: checks[section]} if section and section in checks else checks
     for check_fns in sections_to_run.values():
@@ -1497,8 +1561,15 @@ def main():
     parser.add_argument(
         "--section",
         choices=[
-            "identity", "defender", "storage", "database", "logging",
-            "networking", "compute", "keyvault", "appservice",
+            "identity",
+            "defender",
+            "storage",
+            "database",
+            "logging",
+            "networking",
+            "compute",
+            "keyvault",
+            "appservice",
         ],
         help="Run specific section",
     )
@@ -1524,7 +1595,9 @@ def main():
     else:
         print_summary(findings)
 
-    critical_high_fails = [f for f in findings if f.status == "FAIL" and f.severity in ("CRITICAL", "HIGH")]
+    critical_high_fails = [
+        f for f in findings if f.status == "FAIL" and f.severity in ("CRITICAL", "HIGH")
+    ]
     sys.exit(1 if critical_high_fails else 0)
 
 

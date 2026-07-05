@@ -59,7 +59,15 @@ SUB_ID = "00000000-0000-0000-0000-000000000000"
 
 
 class TestStorageChecks:
-    def _account(self, name, *, https=True, public_blob=False, default_action="Deny", key_source="Microsoft.Keyvault"):
+    def _account(
+        self,
+        name,
+        *,
+        https=True,
+        public_blob=False,
+        default_action="Deny",
+        key_source="Microsoft.Keyvault",
+    ):
         a = MagicMock()
         a.name = name
         a.enable_https_traffic_only = https
@@ -72,14 +80,18 @@ class TestStorageChecks:
 
     def test_2_1_storage_cmk_passes(self):
         client = MagicMock()
-        client.storage_accounts.list.return_value = [self._account("ok", key_source="Microsoft.Keyvault")]
+        client.storage_accounts.list.return_value = [
+            self._account("ok", key_source="Microsoft.Keyvault")
+        ]
         f = check_2_1_storage_cmk(client, SUB_ID)
         assert f.control_id == "2.1"
         assert f.status == "PASS"
 
     def test_2_1_storage_cmk_fails(self):
         client = MagicMock()
-        client.storage_accounts.list.return_value = [self._account("bad", key_source="Microsoft.Storage")]
+        client.storage_accounts.list.return_value = [
+            self._account("bad", key_source="Microsoft.Storage")
+        ]
         f = check_2_1_storage_cmk(client, SUB_ID)
         assert f.status == "FAIL"
         assert "bad" in f.resources
@@ -150,20 +162,26 @@ class TestNetworkChecks:
 
     def test_4_1_open_ssh_fails(self):
         client = MagicMock()
-        client.network_security_groups.list_all.return_value = [self._nsg_with_rule("open", port="22", source="*")]
+        client.network_security_groups.list_all.return_value = [
+            self._nsg_with_rule("open", port="22", source="*")
+        ]
         f = check_4_1_no_unrestricted_ssh(client, SUB_ID)
         assert f.control_id == "4.1"
         assert f.status == "FAIL"
 
     def test_4_1_restricted_ssh_passes(self):
         client = MagicMock()
-        client.network_security_groups.list_all.return_value = [self._nsg_with_rule("ok", port="22", source="10.0.0.0/8")]
+        client.network_security_groups.list_all.return_value = [
+            self._nsg_with_rule("ok", port="22", source="10.0.0.0/8")
+        ]
         f = check_4_1_no_unrestricted_ssh(client, SUB_ID)
         assert f.status == "PASS"
 
     def test_4_2_open_rdp_fails(self):
         client = MagicMock()
-        client.network_security_groups.list_all.return_value = [self._nsg_with_rule("open", port="3389", source="*")]
+        client.network_security_groups.list_all.return_value = [
+            self._nsg_with_rule("open", port="3389", source="*")
+        ]
         f = check_4_2_no_unrestricted_rdp(client, SUB_ID)
         assert f.control_id == "4.2"
         assert f.status == "FAIL"
@@ -263,10 +281,7 @@ class TestFindingStructure:
 
 
 def _arm_id(rg: str, kind: str, name: str) -> str:
-    return (
-        f"/subscriptions/{SUB_ID}/resourceGroups/{rg}/providers/"
-        f"Microsoft.{kind}/{name}"
-    )
+    return f"/subscriptions/{SUB_ID}/resourceGroups/{rg}/providers/Microsoft.{kind}/{name}"
 
 
 class TestIdentityChecks:
@@ -282,7 +297,9 @@ class TestIdentityChecks:
 
     def test_1_5_guest_users_passes(self):
         client = MagicMock()
-        client.users.list.return_value = [MagicMock(user_principal_name="alice@example.com", user_type="Member")]
+        client.users.list.return_value = [
+            MagicMock(user_principal_name="alice@example.com", user_type="Member")
+        ]
         f = check_1_5_no_guest_users(client)
         assert f.status == "PASS"
 
@@ -385,7 +402,9 @@ class TestStorageExtras:
 
     def test_3_7_public_network_fail(self):
         client = MagicMock()
-        client.storage_accounts.list.return_value = [self._account("leak", public_network="Enabled")]
+        client.storage_accounts.list.return_value = [
+            self._account("leak", public_network="Enabled")
+        ]
         f = check_3_7_no_public_network_access(client, SUB_ID)
         assert f.control_id == "3.7"
         assert f.status == "FAIL"
@@ -523,20 +542,26 @@ def _nsg_with_rule_v2(name, *, port="22", source="*"):
 class TestNetworkExtras:
     def test_4_5_open_mssql_fails(self):
         client = MagicMock()
-        client.network_security_groups.list_all.return_value = [_nsg_with_rule_v2("open", port="1433", source="*")]
+        client.network_security_groups.list_all.return_value = [
+            _nsg_with_rule_v2("open", port="1433", source="*")
+        ]
         f = check_4_5_no_unrestricted_mssql(client, SUB_ID)
         assert f.control_id == "4.5"
         assert f.status == "FAIL"
 
     def test_4_5_restricted_mssql_passes(self):
         client = MagicMock()
-        client.network_security_groups.list_all.return_value = [_nsg_with_rule_v2("ok", port="1433", source="10.0.0.0/8")]
+        client.network_security_groups.list_all.return_value = [
+            _nsg_with_rule_v2("ok", port="1433", source="10.0.0.0/8")
+        ]
         f = check_4_5_no_unrestricted_mssql(client, SUB_ID)
         assert f.status == "PASS"
 
     def test_4_6_open_postgres_fails(self):
         client = MagicMock()
-        client.network_security_groups.list_all.return_value = [_nsg_with_rule_v2("open", port="5432", source="*")]
+        client.network_security_groups.list_all.return_value = [
+            _nsg_with_rule_v2("open", port="5432", source="*")
+        ]
         f = check_4_6_no_unrestricted_postgres(client, SUB_ID)
         assert f.control_id == "4.6"
         assert f.status == "FAIL"

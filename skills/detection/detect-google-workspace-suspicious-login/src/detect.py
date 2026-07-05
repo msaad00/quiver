@@ -231,7 +231,9 @@ def _build_finding(
     ]
     if ip:
         observables.append({"name": "src.ip", "type": "IP Address", "value": ip})
-    observables.extend({"name": "session.uid", "type": "Other", "value": uid} for uid in session_uids)
+    observables.extend(
+        {"name": "session.uid", "type": "Other", "value": uid} for uid in session_uids
+    )
 
     return {
         "schema_mode": "native",
@@ -342,7 +344,9 @@ def coverage_metadata() -> dict[str, Any]:
     }
 
 
-def detect(events: Iterable[dict[str, Any]], output_format: str = "ocsf") -> Iterable[dict[str, Any]]:
+def detect(
+    events: Iterable[dict[str, Any]], output_format: str = "ocsf"
+) -> Iterable[dict[str, Any]]:
     if output_format not in OUTPUT_FORMATS:
         raise ContractError(
             f"unsupported output_format `{output_format}`",
@@ -421,7 +425,11 @@ def detect(events: Iterable[dict[str, Any]], output_format: str = "ocsf") -> Ite
             event = item["event"]
             time_ms = _event_time(event)
 
-            failures = [failure for failure in failures if time_ms - _event_time(failure["event"]) <= WINDOW_MS]
+            failures = [
+                failure
+                for failure in failures
+                if time_ms - _event_time(failure["event"]) <= WINDOW_MS
+            ]
 
             if item["kind"] == "failure":
                 failures.append(item)
@@ -486,8 +494,12 @@ def _iter_input(paths: list[str]) -> Iterable[str]:
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Detect suspicious Google Workspace login patterns.")
-    parser.add_argument("paths", nargs="*", help="Input OCSF JSONL files. Reads stdin when omitted.")
+    parser = argparse.ArgumentParser(
+        description="Detect suspicious Google Workspace login patterns."
+    )
+    parser.add_argument(
+        "paths", nargs="*", help="Input OCSF JSONL files. Reads stdin when omitted."
+    )
     parser.add_argument("--output", help="Optional file path to write JSONL findings.")
     parser.add_argument(
         "--output-format",
@@ -506,7 +518,9 @@ def main(argv: list[str] | None = None) -> int:
         )
         findings = list(detect(events, output_format=args.output_format))
         findings_emitted = len(findings)
-        rendered = "\n".join(json.dumps(finding, sort_keys=True, separators=(",", ":")) for finding in findings)
+        rendered = "\n".join(
+            json.dumps(finding, sort_keys=True, separators=(",", ":")) for finding in findings
+        )
         if rendered:
             rendered += "\n"
 

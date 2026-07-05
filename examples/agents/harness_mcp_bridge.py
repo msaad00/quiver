@@ -12,22 +12,26 @@ import json
 from collections.abc import Callable
 from typing import Any, Mapping
 
-CALLER_CONTEXT_KEYS = frozenset({
-    "user_id",
-    "email",
-    "session_id",
-    "roles",
-    "allowed_skills",
-})
+CALLER_CONTEXT_KEYS = frozenset(
+    {
+        "user_id",
+        "email",
+        "session_id",
+        "roles",
+        "allowed_skills",
+    }
+)
 
-APPROVAL_CONTEXT_KEYS = frozenset({
-    "approver_id",
-    "approver_email",
-    "ticket_id",
-    "approval_timestamp",
-    "approver_ids",
-    "approver_emails",
-})
+APPROVAL_CONTEXT_KEYS = frozenset(
+    {
+        "approver_id",
+        "approver_email",
+        "ticket_id",
+        "approval_timestamp",
+        "approver_ids",
+        "approver_emails",
+    }
+)
 
 READ_ONLY_SKILLS = {
     "ingest-cloudtrail-ocsf",
@@ -78,7 +82,9 @@ def _validate_context(
 
 def _caller_context(raw: Mapping[str, Any] | None, allowed_skills: list[str]) -> dict[str, Any]:
     caller = _validate_context(raw, allowed_keys=CALLER_CONTEXT_KEYS, label="_caller_context") or {}
-    profile_allowed = {skill for skill in allowed_skills if isinstance(skill, str) and skill.strip()}
+    profile_allowed = {
+        skill for skill in allowed_skills if isinstance(skill, str) and skill.strip()
+    }
     raw_caller_allowed = caller.get("allowed_skills")
     if isinstance(raw_caller_allowed, str):
         caller_allowed = {part.strip() for part in raw_caller_allowed.split(",") if part.strip()}
@@ -133,12 +139,14 @@ def _remediation_manifest_input(state: Mapping[str, Any]) -> str:
             continue
         resource_uid = str(finding.get("resource_uid") or "")
         username = _finding_username(resource_uid)
-        rows.append({
-            "email": f"{username or 'user'}@example.invalid",
-            "recipient_account_id": _finding_account_id(resource_uid),
-            "iam_username": username or f"user-{index}",
-            "terminated_at": terminated_at,
-        })
+        rows.append(
+            {
+                "email": f"{username or 'user'}@example.invalid",
+                "recipient_account_id": _finding_account_id(resource_uid),
+                "iam_username": username or f"user-{index}",
+                "terminated_at": terminated_at,
+            }
+        )
     return "\n".join(_stable_json(row) for row in rows) + ("\n" if rows else "")
 
 
@@ -151,7 +159,9 @@ def _skill_arguments(skill: str, state: Mapping[str, Any]) -> dict[str, Any]:
             "output_format": "ocsf",
         }
     if skill in {"source-snowflake-query", "source-clickhouse-query", "source-databricks-query"}:
-        query = str(source_decision.get("query") or "SELECT payload FROM security.events_sink LIMIT 100")
+        query = str(
+            source_decision.get("query") or "SELECT payload FROM security.events_sink LIMIT 100"
+        )
         return {
             "args": ["--query", query],
             "input": "",
@@ -223,8 +233,7 @@ def build_mcp_call_plan(
     caller = _caller_context(state.get("caller_context"), effective_allowed)
     caller_allowed_set = set(caller.get("allowed_skills") or [])
     approval = _approval_context(
-        state.get("approval_context")
-        or (state.get("review_decision") or {}).get("approval")
+        state.get("approval_context") or (state.get("review_decision") or {}).get("approval")
     )
     plan: list[dict[str, Any]] = []
     for node in pipeline_contract.get("nodes") or []:
@@ -262,20 +271,22 @@ def build_mcp_call_plan(
                     caller_context=caller,
                     approval_context=approval if skill in REMEDIATION_SKILLS else None,
                 )
-            plan.append({
-                "node": node_name,
-                "agent_id": node.get("agent_id"),
-                "skill": skill,
-                "status": status,
-                "reason": reason,
-                "read_only": skill in READ_ONLY_SKILLS,
-                "write_capable": skill in REMEDIATION_SKILLS,
-                "requires_approval_context": skill in REMEDIATION_SKILLS,
-                "approval_context_attached": bool(request and skill in REMEDIATION_SKILLS),
-                "caller_allowed_skill_count": len(caller.get("allowed_skills") or []),
-                "transport": "mcp_stdio_jsonrpc",
-                "request": request,
-            })
+            plan.append(
+                {
+                    "node": node_name,
+                    "agent_id": node.get("agent_id"),
+                    "skill": skill,
+                    "status": status,
+                    "reason": reason,
+                    "read_only": skill in READ_ONLY_SKILLS,
+                    "write_capable": skill in REMEDIATION_SKILLS,
+                    "requires_approval_context": skill in REMEDIATION_SKILLS,
+                    "approval_context_attached": bool(request and skill in REMEDIATION_SKILLS),
+                    "caller_allowed_skill_count": len(caller.get("allowed_skills") or []),
+                    "transport": "mcp_stdio_jsonrpc",
+                    "request": request,
+                }
+            )
     return plan
 
 
@@ -297,7 +308,14 @@ def _execution_config(profile: Mapping[str, Any] | None) -> dict[str, Any]:
 def _jsonrpc_error_classification(error: Mapping[str, Any]) -> str:
     code = int(error.get("code") or 0)
     message = str(error.get("message") or "").lower()
-    retryable_markers = ("timeout", "rate limit", "temporarily unavailable", "try again", "503", "429")
+    retryable_markers = (
+        "timeout",
+        "rate limit",
+        "temporarily unavailable",
+        "try again",
+        "503",
+        "429",
+    )
     if code in {-32000, -32001, -32002} or any(marker in message for marker in retryable_markers):
         return "retryable"
     return "terminal"
@@ -330,82 +348,102 @@ def execute_mcp_call_plan(
             "write_capable": bool(call.get("write_capable")),
         }
         if call.get("status") != "planned":
-            results.append({
-                **base,
-                "status": "not_executed",
-                "reason": f"call plan status is {call.get('status')}",
-            })
+            results.append(
+                {
+                    **base,
+                    "status": "not_executed",
+                    "reason": f"call plan status is {call.get('status')}",
+                }
+            )
             continue
         if config["mode"] == "plan_only":
-            results.append({
-                **base,
-                "status": "skipped_plan_only",
-                "reason": "profile runtime.mcp_execution.mode is plan_only",
-            })
+            results.append(
+                {
+                    **base,
+                    "status": "skipped_plan_only",
+                    "reason": "profile runtime.mcp_execution.mode is plan_only",
+                }
+            )
             continue
         if not config["execute_planned_calls"]:
-            results.append({
-                **base,
-                "status": "blocked_execution_disabled",
-                "reason": "execute_planned_calls is false",
-            })
+            results.append(
+                {
+                    **base,
+                    "status": "blocked_execution_disabled",
+                    "reason": "execute_planned_calls is false",
+                }
+            )
             continue
         if config["max_calls"] and executed_count >= config["max_calls"]:
-            results.append({
-                **base,
-                "status": "blocked_max_calls",
-                "reason": "max_calls reached",
-            })
+            results.append(
+                {
+                    **base,
+                    "status": "blocked_max_calls",
+                    "reason": "max_calls reached",
+                }
+            )
             continue
         if call.get("write_capable") and not config["allow_write_calls"]:
-            results.append({
-                **base,
-                "status": "blocked_write_execution",
-                "reason": "write-capable MCP execution is disabled",
-            })
+            results.append(
+                {
+                    **base,
+                    "status": "blocked_write_execution",
+                    "reason": "write-capable MCP execution is disabled",
+                }
+            )
             continue
         if transport is None:
-            results.append({
-                **base,
-                "status": "blocked_no_transport",
-                "reason": "no operator-owned MCP transport supplied",
-            })
+            results.append(
+                {
+                    **base,
+                    "status": "blocked_no_transport",
+                    "reason": "no operator-owned MCP transport supplied",
+                }
+            )
             continue
         if not isinstance(request, dict) or request.get("method") != "tools/call":
-            results.append({
-                **base,
-                "status": "blocked_invalid_request",
-                "reason": "planned request is not a tools/call JSON-RPC object",
-            })
+            results.append(
+                {
+                    **base,
+                    "status": "blocked_invalid_request",
+                    "reason": "planned request is not a tools/call JSON-RPC object",
+                }
+            )
             continue
 
         try:
             response = dict(transport(request))
         except Exception as exc:  # pragma: no cover - covered by direct unit path
-            results.append({
-                **base,
-                "status": "transport_error",
-                "reason": exc.__class__.__name__,
-                "classification": "retryable",
-            })
+            results.append(
+                {
+                    **base,
+                    "status": "transport_error",
+                    "reason": exc.__class__.__name__,
+                    "classification": "retryable",
+                }
+            )
             continue
         executed_count += 1
         error = response.get("error")
         if isinstance(error, dict):
-            results.append({
-                **base,
-                "status": "api_error",
-                "reason": str(error.get("message") or "jsonrpc_error"),
-                "classification": _jsonrpc_error_classification(error),
-                "response_id": response.get("id"),
-            })
+            results.append(
+                {
+                    **base,
+                    "status": "api_error",
+                    "reason": str(error.get("message") or "jsonrpc_error"),
+                    "classification": _jsonrpc_error_classification(error),
+                    "response_id": response.get("id"),
+                }
+            )
         else:
-            results.append({
-                **base,
-                "status": "executed",
-                "reason": "operator transport returned JSON-RPC result",
-                "response_id": response.get("id"),
-            })
+            results.append(
+                {
+                    **base,
+                    "status": "executed",
+                    "reason": "operator transport returned JSON-RPC result",
+                    "response_id": response.get("id"),
+                }
+            )
 
     status_counts: dict[str, int] = {}
     for result in results:
@@ -421,7 +459,8 @@ def execute_mcp_call_plan(
         "planned_call_count": len(planned_calls),
         "executed_call_count": status_counts.get("executed", 0) + status_counts.get("api_error", 0),
         "write_executed_count": sum(
-            1 for result in results
+            1
+            for result in results
             if result.get("write_capable") and result.get("status") in {"executed", "api_error"}
         ),
         "status_counts": status_counts,

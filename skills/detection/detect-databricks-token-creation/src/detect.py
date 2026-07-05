@@ -229,12 +229,18 @@ def _build_native_finding(event: dict[str, Any]) -> dict[str, Any]:
         {"name": "actor.user.uid", "type": "User Name", "value": actor_uid},
     ]
     if actor_email:
-        observables.append({"name": "actor.user.email_addr", "type": "Email Address", "value": actor_email})
+        observables.append(
+            {"name": "actor.user.email_addr", "type": "Email Address", "value": actor_email}
+        )
     if workspace_id:
-        observables.append({"name": "databricks.workspace_id", "type": "Resource UID", "value": workspace_id})
+        observables.append(
+            {"name": "databricks.workspace_id", "type": "Resource UID", "value": workspace_id}
+        )
     observables.append({"name": "api.operation", "type": "Other", "value": TOKEN_CREATE_OPERATION})
     if token_id:
-        observables.append({"name": "databricks.token_id", "type": "Resource UID", "value": token_id})
+        observables.append(
+            {"name": "databricks.token_id", "type": "Resource UID", "value": token_id}
+        )
     if comment:
         observables.append({"name": "databricks.token_comment", "type": "Other", "value": comment})
     if lifetime is not None:
@@ -449,8 +455,12 @@ def main(argv: list[str] | None = None) -> int:
             "API Activity 6003 input."
         )
     )
-    parser.add_argument("input", nargs="?", help="OCSF 1.8 API Activity 6003 JSONL input. Defaults to stdin.")
-    parser.add_argument("--output", "-o", help="Detection Finding JSONL output. Defaults to stdout.")
+    parser.add_argument(
+        "input", nargs="?", help="OCSF 1.8 API Activity 6003 JSONL input. Defaults to stdin."
+    )
+    parser.add_argument(
+        "--output", "-o", help="Detection Finding JSONL output. Defaults to stdout."
+    )
     parser.add_argument(
         "--output-format",
         choices=OUTPUT_FORMATS,

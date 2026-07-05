@@ -222,8 +222,14 @@ class TestMetadata:
         metadata = coverage_metadata()
         assert metadata["providers"] == ("databricks",)
         assert MITRE_TECHNIQUE_UID in metadata["attack_coverage"]["databricks"]["techniques"]
-        assert "unityCatalog.CreateRecipient" in metadata["attack_coverage"]["databricks"]["anchor_operations"]
-        assert "unityCatalog.CreateShare" in metadata["attack_coverage"]["databricks"]["anchor_operations"]
+        assert (
+            "unityCatalog.CreateRecipient"
+            in metadata["attack_coverage"]["databricks"]["anchor_operations"]
+        )
+        assert (
+            "unityCatalog.CreateShare"
+            in metadata["attack_coverage"]["databricks"]["anchor_operations"]
+        )
         assert "ingest-databricks-audit-ocsf" in ACCEPTED_PRODUCERS
         assert OUTPUT_FORMATS == ("ocsf", "native")
         assert "unityCatalog.UpdateRecipient" in ANCHOR_OPERATIONS

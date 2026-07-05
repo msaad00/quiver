@@ -52,7 +52,13 @@ def _load_jsonl(path: Path) -> list[dict]:
 
 class TestInferActivity:
     def test_create_prefix(self):
-        for n in ("CreateUser", "CreateAccessKey", "RunInstances", "StartLogging", "IssueCertificate"):
+        for n in (
+            "CreateUser",
+            "CreateAccessKey",
+            "RunInstances",
+            "StartLogging",
+            "IssueCertificate",
+        ):
             assert infer_activity_id(n) == ACTIVITY_CREATE
 
     def test_read_prefix(self):
@@ -60,11 +66,23 @@ class TestInferActivity:
             assert infer_activity_id(n) == ACTIVITY_READ
 
     def test_update_prefix(self):
-        for n in ("UpdateRole", "PutBucketPolicy", "ModifyDBInstance", "AttachUserPolicy", "EnableMFA"):
+        for n in (
+            "UpdateRole",
+            "PutBucketPolicy",
+            "ModifyDBInstance",
+            "AttachUserPolicy",
+            "EnableMFA",
+        ):
             assert infer_activity_id(n) == ACTIVITY_UPDATE
 
     def test_delete_prefix(self):
-        for n in ("DeleteUser", "TerminateInstances", "RemoveTagsFromResource", "DetachRolePolicy", "RevokeSecurityGroupIngress"):
+        for n in (
+            "DeleteUser",
+            "TerminateInstances",
+            "RemoveTagsFromResource",
+            "DetachRolePolicy",
+            "RevokeSecurityGroupIngress",
+        ):
             assert infer_activity_id(n) == ACTIVITY_DELETE
 
     def test_unknown_falls_to_other(self):
@@ -157,7 +175,12 @@ class TestConvertEvent:
                     "type": "AssumedRole",
                     "principalId": "AROA:alice",
                     "accessKeyId": "ASIA1",
-                    "sessionContext": {"attributes": {"creationDate": "2026-04-10T04:00:00Z", "mfaAuthenticated": "true"}},
+                    "sessionContext": {
+                        "attributes": {
+                            "creationDate": "2026-04-10T04:00:00Z",
+                            "mfaAuthenticated": "true",
+                        }
+                    },
                 }
             )
         )
@@ -184,13 +207,22 @@ class TestConvertEvent:
         assert e["cloud"]["region"] == "us-east-1"
 
     def test_resources_projection(self):
-        e = convert_event(self._base_event(requestParameters={"userName": "bob", "policyArn": "arn:aws:iam::aws:policy/ReadOnlyAccess"}))
+        e = convert_event(
+            self._base_event(
+                requestParameters={
+                    "userName": "bob",
+                    "policyArn": "arn:aws:iam::aws:policy/ReadOnlyAccess",
+                }
+            )
+        )
         names = {r["name"] for r in e["resources"]}
         assert "bob" in names
         assert "arn:aws:iam::aws:policy/ReadOnlyAccess" in names
 
     def test_resources_skips_complex_values(self):
-        e = convert_event(self._base_event(requestParameters={"userName": "bob", "tags": [{"key": "env"}]}))
+        e = convert_event(
+            self._base_event(requestParameters={"userName": "bob", "tags": [{"key": "env"}]})
+        )
         # Only the scalar userName should make it into resources[]
         assert len(e["resources"]) == 1
         assert e["resources"][0]["name"] == "bob"
@@ -277,7 +309,9 @@ class TestGoldenFixture:
         produced = list(ingest(RAW_FIXTURE.read_text().splitlines()))
         expected = _load_jsonl(OCSF_FIXTURE)
         for p, e in zip(produced, expected):
-            assert p == e, f"event mismatch:\n  produced: {json.dumps(p, sort_keys=True)}\n  expected: {json.dumps(e, sort_keys=True)}"
+            assert p == e, (
+                f"event mismatch:\n  produced: {json.dumps(p, sort_keys=True)}\n  expected: {json.dumps(e, sort_keys=True)}"
+            )
 
     def test_fixture_has_all_four_activity_types(self):
         events = _load_jsonl(OCSF_FIXTURE)

@@ -172,18 +172,21 @@ class TestDetection:
 
     def test_non_github_event_is_ignored(self) -> None:
         excerpt = f"{REDACTION_MARKER} {HIGH_ENTROPY_B64}"
-        assert list(
-            detect(
-                [
-                    _event(
-                        uid="ev-other",
-                        time_ms=1_000,
-                        log_excerpt=excerpt,
-                        producer="ingest-cloudtrail-ocsf",
-                    )
-                ]
+        assert (
+            list(
+                detect(
+                    [
+                        _event(
+                            uid="ev-other",
+                            time_ms=1_000,
+                            log_excerpt=excerpt,
+                            producer="ingest-cloudtrail-ocsf",
+                        )
+                    ]
+                )
             )
-        ) == []
+            == []
+        )
 
     def test_duplicate_metadata_uid_does_not_inflate(self) -> None:
         excerpt = f"redacted: {REDACTION_MARKER} encoded: {HIGH_ENTROPY_B64}"
@@ -193,7 +196,9 @@ class TestDetection:
     def test_native_output_format(self) -> None:
         excerpt = f"redacted: {REDACTION_MARKER} encoded: {HIGH_ENTROPY_B64}"
         findings = list(
-            detect([_event(uid="ev-nat", time_ms=1_000, log_excerpt=excerpt)], output_format="native")
+            detect(
+                [_event(uid="ev-nat", time_ms=1_000, log_excerpt=excerpt)], output_format="native"
+            )
         )
         assert len(findings) == 1
         f = findings[0]

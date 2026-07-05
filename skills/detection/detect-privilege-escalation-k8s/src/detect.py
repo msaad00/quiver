@@ -270,7 +270,12 @@ def _render_ocsf_finding(native_finding: dict[str, Any]) -> dict[str, Any]:
                 "vendor_name": VENDOR_NAME,
                 "feature": {"name": SKILL_NAME},
             },
-            "labels": ["detection-engineering", "kubernetes", "privilege-escalation", native_finding["rule_name"]],
+            "labels": [
+                "detection-engineering",
+                "kubernetes",
+                "privilege-escalation",
+                native_finding["rule_name"],
+            ],
         },
         "finding_info": {
             "uid": native_finding["finding_uid"],
@@ -321,7 +326,11 @@ def rule1_secret_enumeration(events: list[dict[str, Any]]) -> Iterable[dict[str,
         secret_name = event["resource_name"]
 
         candidates = list_events.get((actor, namespace), [])
-        matching = [(time_ms, item) for time_ms, item in candidates if 0 < get_time - time_ms <= RULE1_WINDOW_MS]
+        matching = [
+            (time_ms, item)
+            for time_ms, item in candidates
+            if 0 < get_time - time_ms <= RULE1_WINDOW_MS
+        ]
         if not matching:
             continue
 
@@ -491,7 +500,9 @@ def rule4_token_self_grant(events: list[dict[str, Any]]) -> Iterable[dict[str, A
             continue
         resource_type = event["resource_type"]
         subresource = event["subresource"]
-        hit = (resource_type == "serviceaccounts" and subresource in ("token", "tokenrequest")) or resource_type == "tokenreviews"
+        hit = (
+            resource_type == "serviceaccounts" and subresource in ("token", "tokenrequest")
+        ) or resource_type == "tokenreviews"
         if not hit:
             continue
 
@@ -534,7 +545,9 @@ def rule4_token_self_grant(events: list[dict[str, Any]]) -> Iterable[dict[str, A
         )
 
 
-def detect(events: Iterable[dict[str, Any]], output_format: str = "ocsf") -> Iterable[dict[str, Any]]:
+def detect(
+    events: Iterable[dict[str, Any]], output_format: str = "ocsf"
+) -> Iterable[dict[str, Any]]:
     """Run all four rules over an event stream and yield all findings."""
     events_list = list(events)
     native_findings: list[dict[str, Any]] = []

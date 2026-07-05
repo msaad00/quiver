@@ -123,7 +123,9 @@ def check_1_1_no_privileged_gpu_pods(config: dict) -> Finding:
         section="runtime",
         severity="CRITICAL",
         status="FAIL" if privileged else "PASS",
-        detail=f"{len(privileged)} privileged GPU containers" if privileged else "No privileged GPU containers",
+        detail=f"{len(privileged)} privileged GPU containers"
+        if privileged
+        else "No privileged GPU containers",
         remediation="Remove privileged: true. GPU access should use device plugin (nvidia.com/gpu resource limits) not --privileged.",
         mitre_attack="T1611",
         nist_csf="PR.AC-4",
@@ -151,7 +153,9 @@ def check_1_2_gpu_device_plugin(config: dict) -> Finding:
         section="runtime",
         severity="HIGH",
         status="FAIL" if dev_mounts else "PASS",
-        detail=f"{len(dev_mounts)} pods with direct /dev/nvidia mounts" if dev_mounts else "All GPU access via device plugin",
+        detail=f"{len(dev_mounts)} pods with direct /dev/nvidia mounts"
+        if dev_mounts
+        else "All GPU access via device plugin",
         remediation="Use nvidia.com/gpu resource limits instead of hostPath /dev/nvidia* mounts",
         mitre_attack="T1611",
         nist_csf="PR.AC-4",
@@ -208,7 +212,9 @@ def check_2_1_driver_version(config: dict) -> Finding:
     for node in nodes:
         driver = node.get("driver_version", node.get("nvidia_driver", ""))
         if driver in _VULNERABLE_DRIVERS:
-            vulnerable.append(f"{node.get('name', 'unknown')}: {driver} ({_VULNERABLE_DRIVERS[driver]})")
+            vulnerable.append(
+                f"{node.get('name', 'unknown')}: {driver} ({_VULNERABLE_DRIVERS[driver]})"
+            )
     if not nodes:
         return Finding(
             check_id="GPU-2.1",
@@ -225,7 +231,9 @@ def check_2_1_driver_version(config: dict) -> Finding:
         section="driver",
         severity="CRITICAL",
         status="FAIL" if vulnerable else "PASS",
-        detail=f"{len(vulnerable)} nodes with vulnerable drivers" if vulnerable else "All drivers pass CVE check",
+        detail=f"{len(vulnerable)} nodes with vulnerable drivers"
+        if vulnerable
+        else "All drivers pass CVE check",
         remediation="Upgrade NVIDIA drivers to latest stable release. See https://nvidia.com/security",
         mitre_attack="T1203",
         nist_csf="ID.RA-1",
@@ -257,7 +265,9 @@ def check_2_2_cuda_version(config: dict) -> Finding:
         section="driver",
         severity="MEDIUM",
         status="FAIL" if old_cuda else "PASS",
-        detail=f"{len(old_cuda)} nodes with old CUDA" if old_cuda else f"All nodes meet CUDA {_MIN_CUDA_VERSION}+",
+        detail=f"{len(old_cuda)} nodes with old CUDA"
+        if old_cuda
+        else f"All nodes meet CUDA {_MIN_CUDA_VERSION}+",
         remediation=f"Upgrade CUDA toolkit to {_MIN_CUDA_VERSION}+",
         nist_csf="PR.IP-12",
         cis_control="7.4",
@@ -291,7 +301,9 @@ def check_3_1_infiniband_segmentation(config: dict) -> Finding:
         section="network",
         severity="HIGH",
         status="PASS" if tenant_isolated else "FAIL",
-        detail=f"{len(partitions)} IB partitions configured" if tenant_isolated else "InfiniBand not segmented by tenant",
+        detail=f"{len(partitions)} IB partitions configured"
+        if tenant_isolated
+        else "InfiniBand not segmented by tenant",
         remediation="Configure IB partition keys (pkeys) per tenant namespace to isolate RDMA traffic",
         mitre_attack="T1599",
         nist_csf="PR.AC-5",
@@ -322,7 +334,9 @@ def check_3_2_gpu_network_policy(config: dict) -> Finding:
         section="network",
         severity="HIGH",
         status="FAIL" if no_policy else "PASS",
-        detail=f"{len(no_policy)} GPU namespaces without NetworkPolicy" if no_policy else "All GPU namespaces have NetworkPolicy",
+        detail=f"{len(no_policy)} GPU namespaces without NetworkPolicy"
+        if no_policy
+        else "All GPU namespaces have NetworkPolicy",
         remediation="Apply default-deny NetworkPolicy to GPU namespaces. Allow only required ingress/egress.",
         mitre_attack="T1046",
         nist_csf="PR.AC-5",
@@ -353,7 +367,9 @@ def check_4_1_shm_size_limits(config: dict) -> Finding:
         section="storage",
         severity="MEDIUM",
         status="FAIL" if unlimited_shm else "PASS",
-        detail=f"{len(unlimited_shm)} pods with unlimited /dev/shm" if unlimited_shm else "All /dev/shm volumes have size limits",
+        detail=f"{len(unlimited_shm)} pods with unlimited /dev/shm"
+        if unlimited_shm
+        else "All /dev/shm volumes have size limits",
         remediation="Set sizeLimit on emptyDir medium: Memory volumes (e.g., 8Gi for training, 2Gi for inference)",
         nist_csf="PR.DS-4",
         resources=unlimited_shm,
@@ -363,7 +379,9 @@ def check_4_1_shm_size_limits(config: dict) -> Finding:
 def check_4_2_model_weights_encrypted(config: dict) -> Finding:
     """GPU-4.2 — Model weight storage encrypted at rest."""
     storage = config.get("storage", config.get("model_storage", {}))
-    encryption = storage.get("encryption_at_rest", storage.get("encrypted", storage.get("kms", False)))
+    encryption = storage.get(
+        "encryption_at_rest", storage.get("encrypted", storage.get("kms", False))
+    )
     volumes = storage.get("volumes", storage.get("persistent_volumes", []))
     unencrypted = []
     for v in volumes:
@@ -386,7 +404,9 @@ def check_4_2_model_weights_encrypted(config: dict) -> Finding:
         section="storage",
         severity="HIGH",
         status="FAIL" if unencrypted else "PASS",
-        detail=f"{len(unencrypted)} unencrypted model volumes" if unencrypted else "All model storage encrypted",
+        detail=f"{len(unencrypted)} unencrypted model volumes"
+        if unencrypted
+        else "All model storage encrypted",
         remediation="Enable KMS/CMEK encryption on all persistent volumes storing model weights",
         mitre_attack="T1530",
         nist_csf="PR.DS-1",
@@ -416,7 +436,9 @@ def check_5_1_namespace_isolation(config: dict) -> Finding:
         section="tenant",
         severity="HIGH",
         status="FAIL" if shared else "PASS",
-        detail=f"{len(shared)} shared GPU namespaces" if shared else "GPU namespaces are tenant-isolated",
+        detail=f"{len(shared)} shared GPU namespaces"
+        if shared
+        else "GPU namespaces are tenant-isolated",
         remediation="Assign dedicated namespaces per tenant. Use ResourceQuota to cap GPU allocation per namespace.",
         mitre_attack="T1078",
         nist_csf="PR.AC-4",
@@ -448,7 +470,9 @@ def check_5_2_resource_quotas(config: dict) -> Finding:
         section="tenant",
         severity="MEDIUM",
         status="FAIL" if no_quota else "PASS",
-        detail=f"{len(no_quota)} namespaces without GPU quota" if no_quota else "All namespaces have GPU quota",
+        detail=f"{len(no_quota)} namespaces without GPU quota"
+        if no_quota
+        else "All namespaces have GPU quota",
         remediation="Set ResourceQuota with nvidia.com/gpu limits per namespace",
         nist_csf="PR.DS-4",
         cis_control="13.6",
@@ -464,7 +488,9 @@ def check_5_2_resource_quotas(config: dict) -> Finding:
 def check_6_1_dcgm_monitoring(config: dict) -> Finding:
     """GPU-6.1 — DCGM or equivalent GPU monitoring enabled."""
     monitoring = config.get("monitoring", config.get("observability", {}))
-    dcgm = monitoring.get("dcgm", monitoring.get("gpu_metrics", monitoring.get("nvidia_dcgm", False)))
+    dcgm = monitoring.get(
+        "dcgm", monitoring.get("gpu_metrics", monitoring.get("nvidia_dcgm", False))
+    )
     return Finding(
         check_id="GPU-6.1",
         title="GPU monitoring (DCGM) enabled",
@@ -501,7 +527,11 @@ def check_6_2_audit_logging(config: dict) -> Finding:
 # ═══════════════════════════════════════════════════════════════════════════
 
 ALL_CHECKS = {
-    "runtime": [check_1_1_no_privileged_gpu_pods, check_1_2_gpu_device_plugin, check_1_3_no_host_ipc],
+    "runtime": [
+        check_1_1_no_privileged_gpu_pods,
+        check_1_2_gpu_device_plugin,
+        check_1_3_no_host_ipc,
+    ],
     "driver": [check_2_1_driver_version, check_2_2_cuda_version],
     "network": [check_3_1_infiniband_segmentation, check_3_2_gpu_network_policy],
     "storage": [check_4_1_shm_size_limits, check_4_2_model_weights_encrypted],
@@ -571,8 +601,12 @@ def load_config(path: str) -> dict:
 def main() -> None:
     parser = argparse.ArgumentParser(description="GPU Cluster Security Benchmark")
     parser.add_argument("config", help="Path to cluster config file (JSON/YAML)")
-    parser.add_argument("--section", choices=list(ALL_CHECKS.keys()), help="Run specific section only")
-    parser.add_argument("--output", choices=["console", "json"], default="console", help="Output format")
+    parser.add_argument(
+        "--section", choices=list(ALL_CHECKS.keys()), help="Run specific section only"
+    )
+    parser.add_argument(
+        "--output", choices=["console", "json"], default="console", help="Output format"
+    )
     parser.add_argument("--output-format", choices=list(OUTPUT_FORMATS), default="native")
     args = parser.parse_args()
 
@@ -595,7 +629,9 @@ def main() -> None:
     else:
         print_summary(findings)
 
-    critical_or_high_fails = sum(1 for f in findings if f.status == "FAIL" and f.severity in ("CRITICAL", "HIGH"))
+    critical_or_high_fails = sum(
+        1 for f in findings if f.status == "FAIL" and f.severity in ("CRITICAL", "HIGH")
+    )
     sys.exit(1 if critical_or_high_fails else 0)
 
 

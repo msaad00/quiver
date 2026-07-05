@@ -156,7 +156,10 @@ class TestConvert:
         assert out["metadata"]["product"]["feature"]["name"] == SKILL_NAME
         assert out["actor"]["user"]["name"] == "alice"
         assert out["src_endpoint"]["ip"] == "203.0.113.10"
-        assert out["unmapped"]["github"]["programmatic_access_type"] == "fine_grained_personal_access_token"
+        assert (
+            out["unmapped"]["github"]["programmatic_access_type"]
+            == "fine_grained_personal_access_token"
+        )
         assert out["unmapped"]["github"]["hashed_token"] == "deadbeef"
 
     def test_org_add_member_routes_to_user_access(self):
@@ -205,9 +208,7 @@ class TestConvert:
 class TestIterRawEvents:
     def test_array(self):
         events = list(
-            iter_raw_events(
-                [json.dumps([_event(_document_id="a"), _event(_document_id="b")])]
-            )
+            iter_raw_events([json.dumps([_event(_document_id="a"), _event(_document_id="b")])])
         )
         assert [e["_document_id"] for e in events] == ["a", "b"]
 
@@ -280,9 +281,7 @@ class TestUnmappedEventCounter:
     def test_unmapped_counts_unaffected_by_invalid_payloads(self):
         unmapped: dict[str, int] = {}
         events = [
-            json.dumps(
-                {"_document_id": "missing-ts", "action": "personal_access_token.create"}
-            ),
+            json.dumps({"_document_id": "missing-ts", "action": "personal_access_token.create"}),
             self._wrap("totally.fake.event"),
         ]
         list(ingest(events, unmapped_counts=unmapped))

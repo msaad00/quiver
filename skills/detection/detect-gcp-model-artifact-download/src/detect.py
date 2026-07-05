@@ -316,7 +316,9 @@ def _to_ocsf(native: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def detect(events: Iterable[dict[str, Any]], *, output_format: str = "ocsf") -> Iterator[dict[str, Any]]:
+def detect(
+    events: Iterable[dict[str, Any]], *, output_format: str = "ocsf"
+) -> Iterator[dict[str, Any]]:
     if output_format not in OUTPUT_FORMATS:
         raise ContractError(
             f"unsupported output_format `{output_format}`",
@@ -367,7 +369,9 @@ def _load_jsonl(stream: Iterable[str]) -> Iterator[dict[str, Any]]:
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Detect GCP model artifact downloads from GCS audit logs.")
+    parser = argparse.ArgumentParser(
+        description="Detect GCP model artifact downloads from GCS audit logs."
+    )
     parser.add_argument("input", nargs="?", help="JSONL input. Defaults to stdin.")
     parser.add_argument("--output", "-o", help="JSONL output. Defaults to stdout.")
     parser.add_argument("--output-format", choices=sorted(OUTPUT_FORMATS), default="ocsf")

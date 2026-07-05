@@ -18,9 +18,7 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 PRESETS_ROOT = REPO_ROOT / "presets"
 SCRIPT = REPO_ROOT / "scripts" / "validate_presets.py"
 
-spec = importlib.util.spec_from_file_location(
-    "cloud_security_validate_presets_test", SCRIPT
-)
+spec = importlib.util.spec_from_file_location("cloud_security_validate_presets_test", SCRIPT)
 assert spec and spec.loader
 MODULE = importlib.util.module_from_spec(spec)
 sys.modules[spec.name] = MODULE

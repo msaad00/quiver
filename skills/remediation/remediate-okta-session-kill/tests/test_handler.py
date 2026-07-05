@@ -135,7 +135,14 @@ class TestContract:
 
     def test_default_deny_patterns_cover_protected_principal_classes(self):
         as_text = " ".join(DEFAULT_DENY_PATTERNS).lower()
-        for required in ("admin", "service-account", "break-glass", "emergency", "root", "@okta.com"):
+        for required in (
+            "admin",
+            "service-account",
+            "break-glass",
+            "emergency",
+            "root",
+            "@okta.com",
+        ):
             assert required in as_text
 
 
@@ -189,25 +196,60 @@ class TestParseTargets:
 
 class TestDenyList:
     def test_admin_email_is_denied(self):
-        t = Target(user_uid="00u-1", user_name="admin@example.com", source_ips=(), session_uids=(), producer_skill="x", finding_uid="f")
+        t = Target(
+            user_uid="00u-1",
+            user_name="admin@example.com",
+            source_ips=(),
+            session_uids=(),
+            producer_skill="x",
+            finding_uid="f",
+        )
         denied, matched = is_protected(t, DEFAULT_DENY_PATTERNS)
         assert denied is True
         assert matched == "admin"
 
     def test_service_account_is_denied(self):
-        t = Target(user_uid="00u-2", user_name="service-account-ci@example.com", source_ips=(), session_uids=(), producer_skill="x", finding_uid="f")
+        t = Target(
+            user_uid="00u-2",
+            user_name="service-account-ci@example.com",
+            source_ips=(),
+            session_uids=(),
+            producer_skill="x",
+            finding_uid="f",
+        )
         assert is_protected(t, DEFAULT_DENY_PATTERNS)[0] is True
 
     def test_break_glass_is_denied(self):
-        t = Target(user_uid="00u-3", user_name="break-glass-oncall@example.com", source_ips=(), session_uids=(), producer_skill="x", finding_uid="f")
+        t = Target(
+            user_uid="00u-3",
+            user_name="break-glass-oncall@example.com",
+            source_ips=(),
+            session_uids=(),
+            producer_skill="x",
+            finding_uid="f",
+        )
         assert is_protected(t, DEFAULT_DENY_PATTERNS)[0] is True
 
     def test_okta_employee_is_denied(self):
-        t = Target(user_uid="00u-4", user_name="someone@okta.com", source_ips=(), session_uids=(), producer_skill="x", finding_uid="f")
+        t = Target(
+            user_uid="00u-4",
+            user_name="someone@okta.com",
+            source_ips=(),
+            session_uids=(),
+            producer_skill="x",
+            finding_uid="f",
+        )
         assert is_protected(t, DEFAULT_DENY_PATTERNS)[0] is True
 
     def test_regular_user_passes(self):
-        t = Target(user_uid="00u-5", user_name="alice@example.com", source_ips=(), session_uids=(), producer_skill="x", finding_uid="f")
+        t = Target(
+            user_uid="00u-5",
+            user_name="alice@example.com",
+            source_ips=(),
+            session_uids=(),
+            producer_skill="x",
+            finding_uid="f",
+        )
         assert is_protected(t, DEFAULT_DENY_PATTERNS)[0] is False
 
     def test_additional_patterns_from_env_file(self, tmp_path, monkeypatch):
@@ -222,7 +264,7 @@ class TestDenyList:
 
     def test_extra_file_cannot_remove_built_ins(self, tmp_path, monkeypatch):
         extra = tmp_path / "extra.json"
-        extra.write_text('[]')
+        extra.write_text("[]")
         monkeypatch.setenv("OKTA_SESSION_KILL_DENY_LIST_FILE", str(extra))
         patterns = load_deny_patterns()
         assert set(DEFAULT_DENY_PATTERNS).issubset(set(patterns))
@@ -543,7 +585,9 @@ class TestReverify:
 
     def test_reverify_verified_when_no_sessions_or_tokens(self):
         fake_okta = _FakeOkta()  # no sessions, no tokens
-        records = list(run([_finding()], apply=False, reverify=True, okta_client=fake_okta, audit=None))
+        records = list(
+            run([_finding()], apply=False, reverify=True, okta_client=fake_okta, audit=None)
+        )
         assert len(records) == 1
         rec = records[0]
         assert rec["record_type"] == "remediation_verification"
@@ -611,6 +655,7 @@ class TestReverify:
 
     def test_reverify_requires_okta_client(self):
         import pytest
+
         with pytest.raises(RuntimeError, match="reverify=True requires okta_client"):
             list(run([_finding()], apply=False, reverify=True, okta_client=None, audit=None))
 

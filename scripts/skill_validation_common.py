@@ -147,7 +147,9 @@ class SkillContract:
     def is_write_capable(self) -> bool:
         if self.frontmatter.get("capability", "").startswith("write-"):
             return True
-        return self.category == "remediation" or self.name.startswith(("remediate-", "sink-", "runner-"))
+        return self.category == "remediation" or self.name.startswith(
+            ("remediate-", "sink-", "runner-")
+        )
 
     @property
     def approval_model(self) -> str:

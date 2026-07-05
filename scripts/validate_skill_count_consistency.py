@@ -44,7 +44,11 @@ CLAIMS: list[Claim] = [
     # the layer-table count; dropped during the README polish (PR-A
     # README polish), so the layer-table claim above is now the single
     # source of truth in README.
-    (REPO_ROOT / "README.md", r"Closed-loop coverage matrix — \d+ of (\d+) shipped detections", "detection"),
+    (
+        REPO_ROOT / "README.md",
+        r"Closed-loop coverage matrix — \d+ of (\d+) shipped detections",
+        "detection",
+    ),
     # The L3 Detect mermaid claim was removed when both README mermaids were
     # replaced by docs/images/*.svg in #248 phase 1. Count-bearing SVG text and
     # descriptions are now checked directly because these visuals are source SVG.
@@ -252,9 +256,7 @@ LAYER_HINT_TO_METRIC = (
 
 # Substrings (matched on the line) that mark a count-claim as intentionally
 # decorative or example-only and exclude it from the scan. Add sparingly.
-ALLOWED_DRIFT_LINES: tuple[str, ...] = (
-    "<!-- skill-count-scan: ignore -->",
-)
+ALLOWED_DRIFT_LINES: tuple[str, ...] = ("<!-- skill-count-scan: ignore -->",)
 
 # Pattern: `<br/>N <something> skills|shipped|sinks` inside a mermaid node.
 # The `<br/>` prefix anchors us to flowchart node labels (single-line text in
@@ -276,16 +278,12 @@ def _count_ingest_only() -> int:
     """Count `ingest-*` skills under ingestion/, excluding `source-*` adapters.
     Mirrors the layer-table convention used in README and the architecture
     diagram (Ingest = 15 + Sources = 3 listed separately)."""
-    return sum(
-        1 for _ in (REPO_ROOT / "skills" / "ingestion").glob("ingest-*/SKILL.md")
-    )
+    return sum(1 for _ in (REPO_ROOT / "skills" / "ingestion").glob("ingest-*/SKILL.md"))
 
 
 def _count_sources() -> int:
     """Count `source-*` warehouse query adapters under ingestion/."""
-    return sum(
-        1 for _ in (REPO_ROOT / "skills" / "ingestion").glob("source-*/SKILL.md")
-    )
+    return sum(1 for _ in (REPO_ROOT / "skills" / "ingestion").glob("source-*/SKILL.md"))
 
 
 def _resolve_metric_for_line(line: str) -> str:
@@ -315,9 +313,7 @@ def _scan_drift(truth: dict[str, int]) -> list[str]:
     md_paths = sorted(
         p
         for p in REPO_ROOT.rglob("*.md")
-        if ".venv" not in p.parts
-        and "node_modules" not in p.parts
-        and ".claude" not in p.parts
+        if ".venv" not in p.parts and "node_modules" not in p.parts and ".claude" not in p.parts
     )
     for path in md_paths:
         try:
@@ -411,10 +407,7 @@ def main() -> int:
         print("Skill-count consistency check FAILED:\n")
         for err in errors:
             print(f"  - {err}")
-        print(
-            "\nOn-disk counts: "
-            + ", ".join(f"{k}={v}" for k, v in truth.items())
-        )
+        print("\nOn-disk counts: " + ", ".join(f"{k}={v}" for k, v in truth.items()))
         print(
             "\nFix: update the file(s) above OR, if the claim was intentionally reworded, "
             "update CLAIMS in scripts/validate_skill_count_consistency.py."

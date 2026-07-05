@@ -103,8 +103,20 @@ async def remediate_service_account(
 
     if dry_run:
         result.status = RemediationStatus.DRY_RUN
-        for i, action in enumerate(["disable_service_account", "delete_sa_keys", "remove_iam_bindings", "delete_service_account"], 1):
-            result.steps.append(RemediationStep(step_number=i, action=action, target=email, status=RemediationStatus.DRY_RUN))
+        for i, action in enumerate(
+            [
+                "disable_service_account",
+                "delete_sa_keys",
+                "remove_iam_bindings",
+                "delete_service_account",
+            ],
+            1,
+        ):
+            result.steps.append(
+                RemediationStep(
+                    step_number=i, action=action, target=email, status=RemediationStatus.DRY_RUN
+                )
+            )
         result.complete()
         return result
 
@@ -142,11 +154,20 @@ def _disable_service_account(client, sa_name: str, step: int) -> RemediationStep
 
         request = types.DisableServiceAccountRequest(name=sa_name)
         client.disable_service_account(request=request)
-        return RemediationStep(step_number=step, action="disable_service_account", target=sa_name, detail="Service account disabled")
+        return RemediationStep(
+            step_number=step,
+            action="disable_service_account",
+            target=sa_name,
+            detail="Service account disabled",
+        )
     except Exception as e:
         logger.warning("Failed to disable SA %s: %s", sa_name, e)
         return RemediationStep(
-            step_number=step, action="disable_service_account", target=sa_name, status=RemediationStatus.FAILED, error=str(e)
+            step_number=step,
+            action="disable_service_account",
+            target=sa_name,
+            status=RemediationStatus.FAILED,
+            error=str(e),
         )
 
 
@@ -176,7 +197,13 @@ def _delete_sa_keys(client, sa_name: str, step: int) -> RemediationStep:
         )
     except Exception as e:
         logger.warning("Failed to delete SA keys for %s: %s", sa_name, e)
-        return RemediationStep(step_number=step, action="delete_sa_keys", target=sa_name, status=RemediationStatus.FAILED, error=str(e))
+        return RemediationStep(
+            step_number=step,
+            action="delete_sa_keys",
+            target=sa_name,
+            status=RemediationStatus.FAILED,
+            error=str(e),
+        )
 
 
 def _remove_iam_bindings(principal: str, project_ids: list[str], step: int) -> RemediationStep:
@@ -217,7 +244,11 @@ def _remove_iam_bindings(principal: str, project_ids: list[str], step: int) -> R
     except Exception as e:
         logger.warning("Failed to remove IAM bindings for %s: %s", principal, e)
         return RemediationStep(
-            step_number=step, action="remove_iam_bindings", target=principal, status=RemediationStatus.FAILED, error=str(e)
+            step_number=step,
+            action="remove_iam_bindings",
+            target=principal,
+            status=RemediationStatus.FAILED,
+            error=str(e),
         )
 
 
@@ -237,7 +268,11 @@ def _delete_service_account(client, sa_name: str, step: int) -> RemediationStep:
     except Exception as e:
         logger.warning("Failed to delete SA %s: %s", sa_name, e)
         return RemediationStep(
-            step_number=step, action="delete_service_account", target=sa_name, status=RemediationStatus.FAILED, error=str(e)
+            step_number=step,
+            action="delete_service_account",
+            target=sa_name,
+            status=RemediationStatus.FAILED,
+            error=str(e),
         )
 
 
@@ -264,7 +299,11 @@ async def remediate_workspace_user(
     if dry_run:
         result.status = RemediationStatus.DRY_RUN
         for i, action in enumerate(["remove_iam_bindings", "delete_workspace_user"], 1):
-            result.steps.append(RemediationStep(step_number=i, action=action, target=email, status=RemediationStatus.DRY_RUN))
+            result.steps.append(
+                RemediationStep(
+                    step_number=i, action=action, target=email, status=RemediationStatus.DRY_RUN
+                )
+            )
         result.complete()
         return result
 
@@ -273,7 +312,12 @@ async def remediate_workspace_user(
         result.steps.append(_remove_iam_bindings(f"user:{email}", project_ids, step=1))
     else:
         result.steps.append(
-            RemediationStep(step_number=1, action="remove_iam_bindings", target=email, detail="No projects specified, skipped")
+            RemediationStep(
+                step_number=1,
+                action="remove_iam_bindings",
+                target=email,
+                detail="No projects specified, skipped",
+            )
         )
 
     # Step 2: Delete via Admin SDK (20-day soft delete)
@@ -299,5 +343,9 @@ def _delete_workspace_user(email: str, step: int) -> RemediationStep:
     except Exception as e:
         logger.warning("Failed to delete Workspace user %s: %s", email, e)
         return RemediationStep(
-            step_number=step, action="delete_workspace_user", target=email, status=RemediationStatus.FAILED, error=str(e)
+            step_number=step,
+            action="delete_workspace_user",
+            target=email,
+            status=RemediationStatus.FAILED,
+            error=str(e),
         )

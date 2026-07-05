@@ -149,9 +149,7 @@ class SkillsClient:
         Same guardrails the MCP wrapper enforces; same audit shape.
         """
         if self.allowed_skills and skill_name not in self.allowed_skills:
-            raise SkillNotAllowed(
-                f"skill `{skill_name}` is not in the configured allowlist"
-            )
+            raise SkillNotAllowed(f"skill `{skill_name}` is not in the configured allowlist")
         skill = self._tool_map.get(skill_name)
         if skill is None:
             raise SkillNotAllowed(f"unknown skill `{skill_name}`")
@@ -164,9 +162,7 @@ class SkillsClient:
             )
         if self._needs_approval(skill, args):
             if approval_context is None:
-                raise SkillCallRefused(
-                    f"skill `{skill_name}` requires an approval_context dict"
-                )
+                raise SkillCallRefused(f"skill `{skill_name}` requires an approval_context dict")
             min_approvers = skill.min_approvers or 0
             if min_approvers > _approval_count(approval_context):
                 raise SkillCallRefused(
@@ -187,9 +183,7 @@ class SkillsClient:
         sandbox_active = _sandbox.is_enabled()
         if sandbox_active:
             command = _sandbox.wrap_command(command, skill)
-        sandboxed = bool(
-            sandbox_active and command and command[0] in {"bwrap", "sandbox-exec"}
-        )
+        sandboxed = bool(sandbox_active and command and command[0] in {"bwrap", "sandbox-exec"})
         started = time.monotonic()
         try:
             completed = subprocess.run(
@@ -221,16 +215,28 @@ class SkillsClient:
     def _is_safe_write(self, skill: SkillSpec, args: list[str]) -> bool:
         if skill.read_only:
             return True
-        if skill.category == "remediation" and skill.entrypoint and skill.entrypoint.name == "handler.py":
+        if (
+            skill.category == "remediation"
+            and skill.entrypoint
+            and skill.entrypoint.name == "handler.py"
+        ):
             return "--apply" not in args
-        if skill.category == "evaluation" and skill.entrypoint and skill.entrypoint.name == "checks.py":
+        if (
+            skill.category == "evaluation"
+            and skill.entrypoint
+            and skill.entrypoint.name == "checks.py"
+        ):
             return "--apply" not in args
         return "--dry-run" in args
 
     def _needs_approval(self, skill: SkillSpec, args: list[str]) -> bool:
         if skill.read_only or not skill.approver_roles:
             return False
-        if skill.category == "evaluation" and skill.entrypoint and skill.entrypoint.name == "checks.py":
+        if (
+            skill.category == "evaluation"
+            and skill.entrypoint
+            and skill.entrypoint.name == "checks.py"
+        ):
             return "--apply" in args
         return True
 
@@ -264,7 +270,9 @@ class SkillsClient:
                     env[dst_key] = v
         return env
 
-    def _emit_audit(self, skill: SkillSpec, result: SkillResult, *, sandboxed: bool = False) -> None:
+    def _emit_audit(
+        self, skill: SkillSpec, result: SkillResult, *, sandboxed: bool = False
+    ) -> None:
         record = {
             "event": "skills_library_call",
             "timestamp": datetime.now(UTC)

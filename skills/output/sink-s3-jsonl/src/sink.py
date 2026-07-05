@@ -109,11 +109,7 @@ def _object_key(prefix: str, rows: list[PreparedRow], now: datetime | None = Non
     digest = hashlib.sha256(
         "\n".join(row.payload_json for row in rows).encode("utf-8")
     ).hexdigest()[:12]
-    return (
-        f"{prefix}/"
-        f"{moment:%Y/%m/%d}/"
-        f"{moment:%Y%m%dT%H%M%SZ}-{digest}.jsonl"
-    )
+    return f"{prefix}/{moment:%Y/%m/%d}/{moment:%Y%m%dT%H%M%SZ}-{digest}.jsonl"
 
 
 def _body(rows: list[PreparedRow]) -> bytes:
@@ -170,9 +166,13 @@ def _summary(
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Persist JSONL records into a new immutable S3 object.")
+    parser = argparse.ArgumentParser(
+        description="Persist JSONL records into a new immutable S3 object."
+    )
     parser.add_argument("--bucket", required=True, help="Target S3 bucket.")
-    parser.add_argument("--prefix", required=True, help="Target S3 key prefix for new immutable objects.")
+    parser.add_argument(
+        "--prefix", required=True, help="Target S3 key prefix for new immutable objects."
+    )
     parser.add_argument(
         "--output-format",
         choices=("native",),
@@ -180,8 +180,15 @@ def main(argv: list[str] | None = None) -> int:
         help="Declared output rendering mode for the sink result.",
     )
     mode = parser.add_mutually_exclusive_group()
-    mode.add_argument("--dry-run", dest="dry_run", action="store_true", help="Validate and summarize without writing.")
-    mode.add_argument("--apply", dest="dry_run", action="store_false", help="Write a new NDJSON object to S3.")
+    mode.add_argument(
+        "--dry-run",
+        dest="dry_run",
+        action="store_true",
+        help="Validate and summarize without writing.",
+    )
+    mode.add_argument(
+        "--apply", dest="dry_run", action="store_false", help="Write a new NDJSON object to S3."
+    )
     parser.set_defaults(dry_run=True)
     args = parser.parse_args(argv)
 

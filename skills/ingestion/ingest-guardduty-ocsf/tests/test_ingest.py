@@ -99,7 +99,9 @@ class TestParseThreatPurpose:
 
 class TestMapTypeToAttacks:
     def test_exact_match_with_sub_technique(self):
-        attacks = map_type_to_attacks("UnauthorizedAccess:IAMUser/InstanceCredentialExfiltration.OutsideAWS")
+        attacks = map_type_to_attacks(
+            "UnauthorizedAccess:IAMUser/InstanceCredentialExfiltration.OutsideAWS"
+        )
         assert len(attacks) == 1
         a = attacks[0]
         assert a["version"] == "v14"
@@ -221,7 +223,9 @@ class TestConvertFinding:
 
     def test_resource_projection_access_key(self):
         ev = convert_finding(_minimal_finding())
-        assert ev["resources"] == [{"type": "AccessKey", "uid": "AKIAUSERKEY", "name": "AKIAUSERKEY"}]
+        assert ev["resources"] == [
+            {"type": "AccessKey", "uid": "AKIAUSERKEY", "name": "AKIAUSERKEY"}
+        ]
 
     def test_resource_projection_instance(self):
         f = _minimal_finding(
@@ -267,7 +271,14 @@ class TestConvertFinding:
     def test_observables_present(self):
         ev = convert_finding(_minimal_finding())
         names = {o["name"] for o in ev["observables"]}
-        assert names == {"gd.finding_id", "gd.type", "gd.severity", "resource.type", "aws.account", "aws.region"}
+        assert names == {
+            "gd.finding_id",
+            "gd.type",
+            "gd.severity",
+            "resource.type",
+            "aws.account",
+            "aws.region",
+        }
 
     def test_evidence_raw_event_pointer(self):
         ev = convert_finding(_minimal_finding(gd_id="FID-001"))
@@ -325,7 +336,9 @@ class TestIterRawFindings:
         assert out[0]["Id"] == "FID-001"
 
     def test_findings_wrapper(self):
-        payload = json.dumps({"Findings": [_minimal_finding(gd_id="A"), _minimal_finding(gd_id="B")]})
+        payload = json.dumps(
+            {"Findings": [_minimal_finding(gd_id="A"), _minimal_finding(gd_id="B")]}
+        )
         out = list(iter_raw_findings([payload]))
         assert [x["Id"] for x in out] == ["A", "B"]
 
@@ -346,7 +359,11 @@ class TestIterRawFindings:
     def test_ndjson_multiple_lines(self):
         # Line-by-line parse kicks in when the full blob isn't a single JSON value
         # (an empty line between two JSON objects triggers this).
-        lines = [json.dumps(_minimal_finding(gd_id="N1")), "", json.dumps(_minimal_finding(gd_id="N2"))]
+        lines = [
+            json.dumps(_minimal_finding(gd_id="N1")),
+            "",
+            json.dumps(_minimal_finding(gd_id="N2")),
+        ]
         out = list(iter_raw_findings(lines))
         assert {x["Id"] for x in out} == {"N1", "N2"}
 
@@ -377,7 +394,9 @@ class TestIngestEndToEnd:
         ]
         out = list(ingest(lines))
         assert len(out) == 2
-        assert {o["finding_info"]["uid"] for o in out} == {"det-gd-" + o["finding_info"]["uid"].removeprefix("det-gd-") for o in out}
+        assert {o["finding_info"]["uid"] for o in out} == {
+            "det-gd-" + o["finding_info"]["uid"].removeprefix("det-gd-") for o in out
+        }
 
     def test_native_output_mode_emits_enriched_findings(self):
         lines = [

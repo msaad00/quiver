@@ -117,7 +117,9 @@ class TestWriteAndMain:
         assert result["would_write_records"] == 1
 
     def test_main_defaults_to_dry_run(self, monkeypatch, capsys):
-        monkeypatch.setattr(_SINK.sys, "stdin", io.StringIO('{"schema_mode":"native","event_uid":"evt-1"}\n'))
+        monkeypatch.setattr(
+            _SINK.sys, "stdin", io.StringIO('{"schema_mode":"native","event_uid":"evt-1"}\n')
+        )
         monkeypatch.setattr(
             _SINK,
             "_object_key",

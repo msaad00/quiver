@@ -69,7 +69,9 @@ def check_1_1_no_gmail_accounts(crm_client, project_id: str) -> Finding:
             section="iam",
             severity="HIGH",
             status="FAIL" if gmail_members else "PASS",
-            detail=f"{len(gmail_members)} personal Gmail accounts in IAM" if gmail_members else "No personal Gmail accounts",
+            detail=f"{len(gmail_members)} personal Gmail accounts in IAM"
+            if gmail_members
+            else "No personal Gmail accounts",
             nist_csf="PR.AC-1",
             resources=gmail_members,
         )
@@ -92,7 +94,11 @@ def check_1_3_no_sa_keys(iam_client, project_id: str) -> Finding:
         service_accounts = list(iam_client.list_service_accounts(request=request))
         sas_with_keys = []
         for sa in service_accounts:
-            keys = list(iam_client.list_service_account_keys(request={"name": sa.name, "key_types": ["USER_MANAGED"]}))
+            keys = list(
+                iam_client.list_service_account_keys(
+                    request={"name": sa.name, "key_types": ["USER_MANAGED"]}
+                )
+            )
             if keys:
                 sas_with_keys.append(f"{sa.email} ({len(keys)} keys)")
         return Finding(
@@ -101,7 +107,9 @@ def check_1_3_no_sa_keys(iam_client, project_id: str) -> Finding:
             section="iam",
             severity="HIGH",
             status="FAIL" if sas_with_keys else "PASS",
-            detail=f"{len(sas_with_keys)} SAs with user-managed keys" if sas_with_keys else "No user-managed keys found",
+            detail=f"{len(sas_with_keys)} SAs with user-managed keys"
+            if sas_with_keys
+            else "No user-managed keys found",
             nist_csf="PR.AC-1",
             resources=sas_with_keys,
         )
@@ -125,7 +133,11 @@ def check_1_4_sa_key_rotation(iam_client, project_id: str) -> Finding:
         service_accounts = list(iam_client.list_service_accounts(request=request))
         old_keys = []
         for sa in service_accounts:
-            keys = list(iam_client.list_service_account_keys(request={"name": sa.name, "key_types": ["USER_MANAGED"]}))
+            keys = list(
+                iam_client.list_service_account_keys(
+                    request={"name": sa.name, "key_types": ["USER_MANAGED"]}
+                )
+            )
             for key in keys:
                 created = key.valid_after_time
                 if created and (now - created.replace(tzinfo=timezone.utc)).days > 90:
@@ -136,7 +148,9 @@ def check_1_4_sa_key_rotation(iam_client, project_id: str) -> Finding:
             section="iam",
             severity="MEDIUM",
             status="FAIL" if old_keys else "PASS",
-            detail=f"{len(old_keys)} keys older than 90 days" if old_keys else "All keys within 90 days",
+            detail=f"{len(old_keys)} keys older than 90 days"
+            if old_keys
+            else "All keys within 90 days",
             nist_csf="PR.AC-1",
             resources=old_keys,
         )
@@ -165,7 +179,10 @@ def check_2_3_no_public_buckets(storage_client, project_id: str) -> Finding:
         for bucket in buckets:
             policy = bucket.get_iam_policy(requested_policy_version=3)
             for binding in policy.bindings:
-                if "allUsers" in binding["members"] or "allAuthenticatedUsers" in binding["members"]:
+                if (
+                    "allUsers" in binding["members"]
+                    or "allAuthenticatedUsers" in binding["members"]
+                ):
                     public_buckets.append(f"{bucket.name} -> {binding['role']}")
         return Finding(
             control_id="2.3",
@@ -173,7 +190,9 @@ def check_2_3_no_public_buckets(storage_client, project_id: str) -> Finding:
             section="storage",
             severity="CRITICAL",
             status="FAIL" if public_buckets else "PASS",
-            detail=f"{len(public_buckets)} public bucket bindings" if public_buckets else "No public buckets",
+            detail=f"{len(public_buckets)} public bucket bindings"
+            if public_buckets
+            else "No public buckets",
             nist_csf="PR.AC-3",
             resources=public_buckets,
         )
@@ -203,7 +222,9 @@ def check_2_1_uniform_access(storage_client, project_id: str) -> Finding:
             section="storage",
             severity="HIGH",
             status="FAIL" if legacy_acl else "PASS",
-            detail=f"{len(legacy_acl)} buckets with legacy ACL" if legacy_acl else "All buckets use uniform access",
+            detail=f"{len(legacy_acl)} buckets with legacy ACL"
+            if legacy_acl
+            else "All buckets use uniform access",
             nist_csf="PR.AC-3",
             resources=legacy_acl,
         )
@@ -277,7 +298,9 @@ def check_3_1_audit_logging_all_services(crm_client, project_id: str) -> Finding
             section="logging",
             severity="HIGH",
             status="FAIL" if details else "PASS",
-            detail="; ".join(details) if details else "Admin Read, Data Read, and Data Write enabled for allServices",
+            detail="; ".join(details)
+            if details
+            else "Admin Read, Data Read, and Data Write enabled for allServices",
             nist_csf="DE.AE-3",
             resources=missing + exemptions,
         )
@@ -303,14 +326,18 @@ def check_4_1_default_network_deleted(network_client, project_id: str) -> Findin
     try:
         request = {"project": project_id}
         networks = list(network_client.list(request=request))
-        default_networks = [network.name for network in networks if getattr(network, "name", "") == "default"]
+        default_networks = [
+            network.name for network in networks if getattr(network, "name", "") == "default"
+        ]
         return Finding(
             control_id="4.1",
             title="Default network deleted",
             section="networking",
             severity="HIGH",
             status="FAIL" if default_networks else "PASS",
-            detail="Default VPC network still exists" if default_networks else "Default VPC network not present",
+            detail="Default VPC network still exists"
+            if default_networks
+            else "Default VPC network not present",
             nist_csf="PR.AC-5",
             resources=default_networks,
         )
@@ -344,14 +371,18 @@ def check_4_2_no_unrestricted_ssh_rdp(compute_client, project_id: str) -> Findin
                     else:
                         ports.append(int(p))
                 if (22 in ports or 3389 in ports) and "0.0.0.0/0" in (rule.source_ranges or []):
-                    open_rules.append(f"{rule.name}: {allowed.ip_protocol}/{','.join(allowed.ports or [])}")
+                    open_rules.append(
+                        f"{rule.name}: {allowed.ip_protocol}/{','.join(allowed.ports or [])}"
+                    )
         return Finding(
             control_id="4.2",
             title="No unrestricted SSH/RDP",
             section="networking",
             severity="HIGH",
             status="FAIL" if open_rules else "PASS",
-            detail=f"{len(open_rules)} rules allow 0.0.0.0/0 on SSH/RDP" if open_rules else "No unrestricted SSH/RDP",
+            detail=f"{len(open_rules)} rules allow 0.0.0.0/0 on SSH/RDP"
+            if open_rules
+            else "No unrestricted SSH/RDP",
             nist_csf="PR.AC-5",
             resources=open_rules,
         )
@@ -375,14 +406,18 @@ def check_4_3_vpc_flow_logs(compute_client, project_id: str) -> Finding:
         for region_subnets in compute_client.aggregated_list(request=request):
             for subnet in region_subnets.subnetworks or []:
                 subnets.append(subnet)
-        no_logs = [s.name for s in subnets if not getattr(s, "log_config", None) or not s.log_config.enable]
+        no_logs = [
+            s.name for s in subnets if not getattr(s, "log_config", None) or not s.log_config.enable
+        ]
         return Finding(
             control_id="4.3",
             title="VPC flow logs on all subnets",
             section="networking",
             severity="MEDIUM",
             status="FAIL" if no_logs else "PASS",
-            detail=f"{len(no_logs)} subnets without flow logs" if no_logs else "All subnets have flow logs",
+            detail=f"{len(no_logs)} subnets without flow logs"
+            if no_logs
+            else "All subnets have flow logs",
             nist_csf="DE.CM-1",
             resources=no_logs,
         )
@@ -413,7 +448,9 @@ def check_4_4_private_google_access(compute_client, project_id: str) -> Finding:
             section="networking",
             severity="MEDIUM",
             status="FAIL" if missing_pga else "PASS",
-            detail=f"{len(missing_pga)} subnets without Private Google Access" if missing_pga else "All subnets enable Private Google Access",
+            detail=f"{len(missing_pga)} subnets without Private Google Access"
+            if missing_pga
+            else "All subnets enable Private Google Access",
             nist_csf="PR.AC-5",
             resources=missing_pga,
         )
@@ -582,12 +619,16 @@ def check_1_12_kms_keys_not_public(kms_client, project_id: str) -> Finding:
             kms_client.list_key_rings(request={"parent": f"projects/{project_id}/locations/-"})
         )
         for ring in locations:
-            ring_name = getattr(ring, "name", None) or (ring.get("name") if isinstance(ring, dict) else "")
+            ring_name = getattr(ring, "name", None) or (
+                ring.get("name") if isinstance(ring, dict) else ""
+            )
             if not ring_name:
                 continue
             keys = list(kms_client.list_crypto_keys(request={"parent": ring_name}))
             for key in keys:
-                key_name = getattr(key, "name", None) or (key.get("name") if isinstance(key, dict) else "")
+                key_name = getattr(key, "name", None) or (
+                    key.get("name") if isinstance(key, dict) else ""
+                )
                 policy = kms_client.get_iam_policy(request={"resource": key_name})
                 for binding in getattr(policy, "bindings", []) or []:
                     members = getattr(binding, "members", None)
@@ -626,7 +667,9 @@ def check_1_12_kms_keys_not_public(kms_client, project_id: str) -> Finding:
 def check_1_13_api_keys_restricted(apikeys_client, project_id: str) -> Finding:
     """CIS 1.13 — API keys carry application + API restrictions."""
     try:
-        keys = list(apikeys_client.list_keys(request={"parent": f"projects/{project_id}/locations/global"}))
+        keys = list(
+            apikeys_client.list_keys(request={"parent": f"projects/{project_id}/locations/global"})
+        )
         unrestricted: list[str] = []
         for key in keys:
             name = getattr(key, "name", None) or (key.get("name") if isinstance(key, dict) else "")
@@ -644,9 +687,10 @@ def check_1_13_api_keys_restricted(apikeys_client, project_id: str) -> Finding:
             if api_targets is None and isinstance(restrictions, dict):
                 api_targets = restrictions.get("api_targets")
             has_app_restrictions = any(
-                bool(getattr(restrictions, attr, None) or (
-                    restrictions.get(attr) if isinstance(restrictions, dict) else None
-                ))
+                bool(
+                    getattr(restrictions, attr, None)
+                    or (restrictions.get(attr) if isinstance(restrictions, dict) else None)
+                )
                 for attr in (
                     "browser_key_restrictions",
                     "server_key_restrictions",
@@ -1372,7 +1416,11 @@ def check_7_2_bigquery_default_cmek(bq_client, project_id: str) -> Finding:
 
 
 def _status_symbol(status: str) -> str:
-    return {"PASS": "\033[92m✓\033[0m", "FAIL": "\033[91m✗\033[0m", "ERROR": "\033[90m?\033[0m"}.get(status, "?")
+    return {
+        "PASS": "\033[92m✓\033[0m",
+        "FAIL": "\033[91m✗\033[0m",
+        "ERROR": "\033[90m?\033[0m",
+    }.get(status, "?")
 
 
 def _try_import(module_path: str, attr: str | None = None):
@@ -1549,7 +1597,9 @@ def main():
     else:
         print_summary(findings)
 
-    critical_high_fails = [f for f in findings if f.status == "FAIL" and f.severity in ("CRITICAL", "HIGH")]
+    critical_high_fails = [
+        f for f in findings if f.status == "FAIL" and f.severity in ("CRITICAL", "HIGH")
+    ]
     sys.exit(1 if critical_high_fails else 0)
 
 

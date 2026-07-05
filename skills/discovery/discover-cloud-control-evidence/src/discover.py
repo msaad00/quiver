@@ -40,7 +40,16 @@ SECRET_KEYWORDS = (
 PUBLIC_CIDRS = {"0.0.0.0/0", "::/0", "*", "internet", "any"}
 AI_SERVICES = {"ai-foundry", "azure-ml", "bedrock", "sagemaker", "vertex-ai"}
 AI_ENDPOINT_KINDS = {"deployment", "endpoint", "inference-endpoint"}
-AI_GOVERNANCE_KINDS = {"ai-guardrail", "dataset", "guardrail", "model", "model-package", "training-job", "vector-index", "vector-store"}
+AI_GOVERNANCE_KINDS = {
+    "ai-guardrail",
+    "dataset",
+    "guardrail",
+    "model",
+    "model-package",
+    "training-job",
+    "vector-index",
+    "vector-store",
+}
 SEGMENTATION_KINDS = {"network-policy", "firewall-rule"}
 AI_RMF_CONTROL_FOCUS = {
     "ai-rmf.govern.ai-service-governance": "GOVERN",
@@ -130,7 +139,9 @@ def _time_to_epoch_ms(value: str | None) -> int:
         return 0
 
 
-def _asset(provider: str, service: str, kind: str, identifier: str | None, **kwargs: Any) -> dict[str, Any]:
+def _asset(
+    provider: str, service: str, kind: str, identifier: str | None, **kwargs: Any
+) -> dict[str, Any]:
     if not _string(identifier):
         raise ValueError(f"{provider}:{service}:{kind} asset is missing an identifier")
     return _clean(
@@ -181,7 +192,9 @@ def _aws_assets(snapshot: dict[str, Any]) -> list[dict[str, Any]]:
             )
         )
     for bucket in s3.get("buckets", []):
-        encrypted = _bool(bucket.get("encrypted")) or bool(bucket.get("kms_key_id") or bucket.get("encryption"))
+        encrypted = _bool(bucket.get("encrypted")) or bool(
+            bucket.get("kms_key_id") or bucket.get("encryption")
+        )
         assets.append(
             _asset(
                 "aws",
@@ -295,8 +308,10 @@ def _aws_assets(snapshot: dict[str, Any]) -> list[dict[str, Any]]:
                 "training-job",
                 job.get("TrainingJobArn") or job.get("TrainingJobName"),
                 name=job.get("TrainingJobName"),
-                encrypted=_bool(job.get("VolumeKmsKeyId")) or _bool(job.get("OutputDataConfig", {}).get("KmsKeyId")),
-                logged=_bool(job.get("EnableNetworkIsolation")) or _bool(job.get("EnableInterContainerTrafficEncryption")),
+                encrypted=_bool(job.get("VolumeKmsKeyId"))
+                or _bool(job.get("OutputDataConfig", {}).get("KmsKeyId")),
+                logged=_bool(job.get("EnableNetworkIsolation"))
+                or _bool(job.get("EnableInterContainerTrafficEncryption")),
             )
         )
     for dataset in sagemaker.get("datasets", []):
@@ -319,7 +334,8 @@ def _aws_assets(snapshot: dict[str, Any]) -> list[dict[str, Any]]:
                 endpoint.get("EndpointArn") or endpoint.get("EndpointName"),
                 name=endpoint.get("EndpointName"),
                 public=_bool(endpoint.get("public")),
-                encrypted=_bool(endpoint.get("KmsKeyId")) or _bool(endpoint.get("DataCaptureConfig", {}).get("KmsKeyId")),
+                encrypted=_bool(endpoint.get("KmsKeyId"))
+                or _bool(endpoint.get("DataCaptureConfig", {}).get("KmsKeyId")),
                 logged=_bool(endpoint.get("DataCaptureConfig", {}).get("EnableCapture")),
             )
         )
@@ -601,8 +617,10 @@ def _azure_assets(snapshot: dict[str, Any]) -> list[dict[str, Any]]:
                 deployment.get("id") or deployment.get("name"),
                 name=deployment.get("name"),
                 public=_bool(deployment.get("public")),
-                encrypted=_bool(deployment.get("cmk_enabled")) or _bool(deployment.get("encrypted")),
-                logged=_bool(deployment.get("diagnostic_logging")) or _bool(deployment.get("logging_enabled")),
+                encrypted=_bool(deployment.get("cmk_enabled"))
+                or _bool(deployment.get("encrypted")),
+                logged=_bool(deployment.get("diagnostic_logging"))
+                or _bool(deployment.get("logging_enabled")),
             )
         )
     for project in ai_foundry.get("projects", []):
@@ -613,7 +631,8 @@ def _azure_assets(snapshot: dict[str, Any]) -> list[dict[str, Any]]:
                 "runtime",
                 project.get("id") or project.get("name"),
                 name=project.get("name"),
-                logged=_bool(project.get("diagnostic_logging")) or _bool(project.get("logging_enabled")),
+                logged=_bool(project.get("diagnostic_logging"))
+                or _bool(project.get("logging_enabled")),
             )
         )
     for model in ai_foundry.get("models", []):
@@ -656,9 +675,11 @@ def _azure_assets(snapshot: dict[str, Any]) -> list[dict[str, Any]]:
                 "endpoint",
                 endpoint.get("id") or endpoint.get("name"),
                 name=endpoint.get("name"),
-                public=_bool(endpoint.get("public")) or _bool(endpoint.get("public_network_access")),
+                public=_bool(endpoint.get("public"))
+                or _bool(endpoint.get("public_network_access")),
                 encrypted=_bool(endpoint.get("cmk_enabled")) or _bool(endpoint.get("encrypted")),
-                logged=_bool(endpoint.get("app_insights_enabled")) or _bool(endpoint.get("logging_enabled")),
+                logged=_bool(endpoint.get("app_insights_enabled"))
+                or _bool(endpoint.get("logging_enabled")),
             )
         )
     for deployment in azure_ml.get("deployments", []):
@@ -714,7 +735,8 @@ def _summaries(normalized: dict[str, Any]) -> dict[str, Any]:
     identity_assets = [
         asset
         for asset in assets
-        if asset["kind"] in {"user", "role", "service-account", "service-principal", "managed-identity"}
+        if asset["kind"]
+        in {"user", "role", "service-account", "service-principal", "managed-identity"}
     ]
     public_assets = [asset for asset in assets if _bool(asset.get("public"))]
     encrypted_assets = [asset for asset in assets if _bool(asset.get("encrypted"))]
@@ -731,11 +753,19 @@ def _summaries(normalized: dict[str, Any]) -> dict[str, Any]:
         provider_assets = [asset for asset in assets if asset["provider"] == provider]
         provider_surface_counts[provider] = {
             "asset_count": len(provider_assets),
-            "public_exposure_assets": sum(1 for asset in provider_assets if _bool(asset.get("public"))),
+            "public_exposure_assets": sum(
+                1 for asset in provider_assets if _bool(asset.get("public"))
+            ),
             "logging_assets": sum(1 for asset in provider_assets if _bool(asset.get("logged"))),
-            "encrypted_assets": sum(1 for asset in provider_assets if _bool(asset.get("encrypted"))),
-            "key_management_assets": sum(1 for asset in provider_assets if asset["kind"] in {"key", "key-vault"}),
-            "segmentation_assets": sum(1 for asset in provider_assets if asset["kind"] in SEGMENTATION_KINDS),
+            "encrypted_assets": sum(
+                1 for asset in provider_assets if _bool(asset.get("encrypted"))
+            ),
+            "key_management_assets": sum(
+                1 for asset in provider_assets if asset["kind"] in {"key", "key-vault"}
+            ),
+            "segmentation_assets": sum(
+                1 for asset in provider_assets if asset["kind"] in SEGMENTATION_KINDS
+            ),
         }
 
     return {
@@ -809,7 +839,8 @@ def _controls_for(framework: str, normalized: dict[str, Any]) -> list[dict[str, 
     identities = [
         asset
         for asset in assets
-        if asset["kind"] in {"user", "role", "service-account", "service-principal", "managed-identity"}
+        if asset["kind"]
+        in {"user", "role", "service-account", "service-principal", "managed-identity"}
     ]
     public_assets = [asset for asset in assets if _bool(asset.get("public"))]
     encrypted_assets = [asset for asset in assets if _bool(asset.get("encrypted"))]
@@ -835,7 +866,11 @@ def _controls_for(framework: str, normalized: dict[str, Any]) -> list[dict[str, 
                 "External exposure evidence",
                 "Inventory-backed evidence for public endpoints, public IPs, and permissive network controls.",
                 _sample(public_assets),
-                [] if public_assets else ["No explicit external exposure inventory was present in the supplied snapshot."],
+                []
+                if public_assets
+                else [
+                    "No explicit external exposure inventory was present in the supplied snapshot."
+                ],
             ),
             _control(
                 framework,
@@ -843,7 +878,9 @@ def _controls_for(framework: str, normalized: dict[str, Any]) -> list[dict[str, 
                 "Encryption and key-management evidence",
                 "Inventory-backed evidence for encrypted assets and key-management surfaces.",
                 _sample(encrypted_assets + key_assets),
-                [] if encrypted_assets or key_assets else [
+                []
+                if encrypted_assets or key_assets
+                else [
                     "No encryption or key-management inventory was present in the supplied snapshot."
                 ],
             ),
@@ -853,7 +890,9 @@ def _controls_for(framework: str, normalized: dict[str, Any]) -> list[dict[str, 
                 "Audit logging evidence",
                 "Inventory-backed evidence for CloudTrail, audit logs, diagnostic settings, or equivalent logging surfaces.",
                 _sample(logging_assets),
-                [] if logging_assets else ["No logging inventory was present in the supplied snapshot."],
+                []
+                if logging_assets
+                else ["No logging inventory was present in the supplied snapshot."],
             ),
             _control(
                 framework,
@@ -861,7 +900,11 @@ def _controls_for(framework: str, normalized: dict[str, Any]) -> list[dict[str, 
                 "AI service surface evidence",
                 "Inventory-backed evidence for model endpoints, deployments, and AI-facing service surfaces across AWS, GCP, and Azure.",
                 _sample(ai_endpoint_assets),
-                [] if ai_endpoint_assets else ["No AI endpoint or deployment inventory was present in the supplied snapshot."],
+                []
+                if ai_endpoint_assets
+                else [
+                    "No AI endpoint or deployment inventory was present in the supplied snapshot."
+                ],
             ),
             _control(
                 framework,
@@ -869,7 +912,9 @@ def _controls_for(framework: str, normalized: dict[str, Any]) -> list[dict[str, 
                 "AI governance and data-path evidence",
                 "Inventory-backed evidence for models, datasets, vector stores, training jobs, and guardrails associated with AI services.",
                 _sample(ai_governance_assets),
-                [] if ai_governance_assets else ["No AI governance inventory was present in the supplied snapshot."],
+                []
+                if ai_governance_assets
+                else ["No AI governance inventory was present in the supplied snapshot."],
             ),
         ]
 
@@ -881,8 +926,12 @@ def _controls_for(framework: str, normalized: dict[str, Any]) -> list[dict[str, 
                 "AI governance surface evidence",
                 "Inventory-backed evidence for guardrails, models, datasets, vector stores, and training paths that contribute to AI governance scope.",
                 _sample(ai_governance_assets),
-                [] if ai_governance_assets else ["No AI governance inventory was present in the supplied snapshot."],
-                framework_mappings={"nist_ai_rmf": AI_RMF_CONTROL_FOCUS["ai-rmf.govern.ai-service-governance"]},
+                []
+                if ai_governance_assets
+                else ["No AI governance inventory was present in the supplied snapshot."],
+                framework_mappings={
+                    "nist_ai_rmf": AI_RMF_CONTROL_FOCUS["ai-rmf.govern.ai-service-governance"]
+                },
             ),
             _control(
                 framework,
@@ -890,17 +939,28 @@ def _controls_for(framework: str, normalized: dict[str, Any]) -> list[dict[str, 
                 "AI system inventory evidence",
                 "Inventory-backed evidence for AI endpoints, deployments, models, datasets, and supporting cloud providers.",
                 _sample(ai_assets),
-                [] if ai_assets else ["No AI system inventory was present in the supplied snapshot."],
-                framework_mappings={"nist_ai_rmf": AI_RMF_CONTROL_FOCUS["ai-rmf.map.ai-system-inventory"]},
+                []
+                if ai_assets
+                else ["No AI system inventory was present in the supplied snapshot."],
+                framework_mappings={
+                    "nist_ai_rmf": AI_RMF_CONTROL_FOCUS["ai-rmf.map.ai-system-inventory"]
+                },
             ),
             _control(
                 framework,
                 "ai-rmf.measure.ai-logging-and-monitoring",
                 "AI logging and monitoring evidence",
                 "Inventory-backed evidence for endpoint logging, audit trails, and diagnostic surfaces supporting AI monitoring.",
-                _sample(logging_assets + [asset for asset in ai_endpoint_assets if _bool(asset.get("logged"))]),
-                [] if logging_assets else ["No logging inventory was present in the supplied snapshot."],
-                framework_mappings={"nist_ai_rmf": AI_RMF_CONTROL_FOCUS["ai-rmf.measure.ai-logging-and-monitoring"]},
+                _sample(
+                    logging_assets
+                    + [asset for asset in ai_endpoint_assets if _bool(asset.get("logged"))]
+                ),
+                []
+                if logging_assets
+                else ["No logging inventory was present in the supplied snapshot."],
+                framework_mappings={
+                    "nist_ai_rmf": AI_RMF_CONTROL_FOCUS["ai-rmf.measure.ai-logging-and-monitoring"]
+                },
             ),
             _control(
                 framework,
@@ -909,13 +969,23 @@ def _controls_for(framework: str, normalized: dict[str, Any]) -> list[dict[str, 
                 "Inventory-backed evidence for private AI endpoints, encryption, and guardrail surfaces that support AI risk treatment.",
                 _sample(
                     [asset for asset in ai_endpoint_assets if not _bool(asset.get("public"))]
-                    + [asset for asset in ai_governance_assets if asset.get("kind") in {"ai-guardrail", "guardrail"}]
+                    + [
+                        asset
+                        for asset in ai_governance_assets
+                        if asset.get("kind") in {"ai-guardrail", "guardrail"}
+                    ]
                     + encrypted_assets
                 ),
-                [] if ai_endpoint_assets or ai_governance_assets or encrypted_assets else [
+                []
+                if ai_endpoint_assets or ai_governance_assets or encrypted_assets
+                else [
                     "No AI safeguard, private endpoint, or encryption inventory was present in the supplied snapshot."
                 ],
-                framework_mappings={"nist_ai_rmf": AI_RMF_CONTROL_FOCUS["ai-rmf.manage.ai-safeguards-and-network-boundaries"]},
+                framework_mappings={
+                    "nist_ai_rmf": AI_RMF_CONTROL_FOCUS[
+                        "ai-rmf.manage.ai-safeguards-and-network-boundaries"
+                    ]
+                },
             ),
         ]
 
@@ -934,7 +1004,9 @@ def _controls_for(framework: str, normalized: dict[str, Any]) -> list[dict[str, 
             "External surface evidence",
             "Inventory-backed evidence for public assets and permissive network controls.",
             _sample(public_assets),
-            [] if public_assets else ["No explicit public-surface inventory was present in the supplied snapshot."],
+            []
+            if public_assets
+            else ["No explicit public-surface inventory was present in the supplied snapshot."],
         ),
         _control(
             framework,
@@ -942,7 +1014,9 @@ def _controls_for(framework: str, normalized: dict[str, Any]) -> list[dict[str, 
             "Data protection evidence",
             "Inventory-backed evidence for encryption-enabled resources and key-management systems.",
             _sample(encrypted_assets + key_assets),
-            [] if encrypted_assets or key_assets else [
+            []
+            if encrypted_assets or key_assets
+            else [
                 "No encryption or key-management inventory was present in the supplied snapshot."
             ],
         ),
@@ -952,7 +1026,9 @@ def _controls_for(framework: str, normalized: dict[str, Any]) -> list[dict[str, 
             "Logging and monitoring evidence",
             "Inventory-backed evidence for audit logging and diagnostic coverage.",
             _sample(logging_assets),
-            [] if logging_assets else ["No logging inventory was present in the supplied snapshot."],
+            []
+            if logging_assets
+            else ["No logging inventory was present in the supplied snapshot."],
         ),
         _control(
             framework,
@@ -960,7 +1036,9 @@ def _controls_for(framework: str, normalized: dict[str, Any]) -> list[dict[str, 
             "AI service surface evidence",
             "Inventory-backed evidence for model-serving endpoints, AI deployments, and externally reachable AI service surfaces.",
             _sample(ai_endpoint_assets),
-            [] if ai_endpoint_assets else ["No AI endpoint or deployment inventory was present in the supplied snapshot."],
+            []
+            if ai_endpoint_assets
+            else ["No AI endpoint or deployment inventory was present in the supplied snapshot."],
         ),
         _control(
             framework,
@@ -968,7 +1046,9 @@ def _controls_for(framework: str, normalized: dict[str, Any]) -> list[dict[str, 
             "AI governance and monitoring evidence",
             "Inventory-backed evidence for models, datasets, vector stores, training jobs, and guardrail surfaces associated with AI services.",
             _sample(ai_governance_assets),
-            [] if ai_governance_assets else ["No AI governance inventory was present in the supplied snapshot."],
+            []
+            if ai_governance_assets
+            else ["No AI governance inventory was present in the supplied snapshot."],
         ),
     ]
 
@@ -976,7 +1056,9 @@ def _controls_for(framework: str, normalized: dict[str, Any]) -> list[dict[str, 
 def build_evidence(document: dict[str, Any], frameworks: list[str] | None = None) -> dict[str, Any]:
     normalized = normalize_inventory(document)
     selected = _normalize_frameworks(frameworks)
-    controls = [control for framework in selected for control in _controls_for(framework, normalized)]
+    controls = [
+        control for framework in selected for control in _controls_for(framework, normalized)
+    ]
     summary = _summaries(normalized)
 
     evidence_key = {

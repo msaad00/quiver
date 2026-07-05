@@ -127,7 +127,10 @@ def _target_key_resource(event: dict[str, Any]) -> str:
         resource_type = str(resource.get("type") or "").lower()
         if not name or "/keys/" not in name:
             continue
-        if resource_type in {"service_account_key", "serviceaccountkey"} or "/serviceAccounts/" in name:
+        if (
+            resource_type in {"service_account_key", "serviceaccountkey"}
+            or "/serviceAccounts/" in name
+        ):
             return name.strip("/")
     return ""
 
@@ -138,16 +141,22 @@ def _key_id(key_resource: str) -> str:
     return key_resource.rsplit("/keys/", 1)[1].strip("/")
 
 
-def _finding_uid(event_uid: str, target_sa: str, key_resource: str, actor_name: str, time_ms: int) -> str:
+def _finding_uid(
+    event_uid: str, target_sa: str, key_resource: str, actor_name: str, time_ms: int
+) -> str:
     material = f"{SKILL_NAME}|{event_uid}|{target_sa}|{key_resource}|{actor_name}|{time_ms}"
     return f"gsakc-{hashlib.sha256(material.encode('utf-8')).hexdigest()[:16]}"
 
 
-def _build_native_finding(*, event: dict[str, Any], target_service_account: str, target_key_resource: str) -> dict[str, Any]:
+def _build_native_finding(
+    *, event: dict[str, Any], target_service_account: str, target_key_resource: str
+) -> dict[str, Any]:
     time_ms = _time_ms(event)
     event_uid = _event_uid(event)
     actor_name = _actor_name(event)
-    finding_uid = _finding_uid(event_uid, target_service_account, target_key_resource, actor_name, time_ms)
+    finding_uid = _finding_uid(
+        event_uid, target_service_account, target_key_resource, actor_name, time_ms
+    )
     return {
         "schema_mode": "native",
         "canonical_schema_version": CANONICAL_VERSION,
@@ -190,7 +199,9 @@ def _to_ocsf(native: dict[str, Any]) -> dict[str, Any]:
             {"name": "target.key_resource", "type": "Other", "value": native["target_key_resource"]}
         )
     if native["target_key_id"]:
-        observables.append({"name": "target.key_id", "type": "Other", "value": native["target_key_id"]})
+        observables.append(
+            {"name": "target.key_id", "type": "Other", "value": native["target_key_id"]}
+        )
     if native["region"]:
         observables.append({"name": "region", "type": "Other", "value": native["region"]})
     if native["src_ip"]:
@@ -316,7 +327,9 @@ def _iter_jsonl(path: str | None) -> Iterator[dict[str, Any]]:
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Detect GCP service-account key creation from audit logs.")
+    parser = argparse.ArgumentParser(
+        description="Detect GCP service-account key creation from audit logs."
+    )
     parser.add_argument("input", nargs="?", help="Optional JSONL input file. Defaults to stdin.")
     parser.add_argument(
         "--output-format",

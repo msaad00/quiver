@@ -332,9 +332,11 @@ def _build_canonical_record(record: dict[str, str]) -> dict[str, Any] | None:
         "start_time_ms": start_ms,
         "end_time_ms": end_ms,
         "activity_id": activity_id,
-        "activity_name": {ACTIVITY_TRAFFIC: "traffic", ACTIVITY_DENIED: "denied", ACTIVITY_UNKNOWN: "unknown"}.get(
-            activity_id, "unknown"
-        ),
+        "activity_name": {
+            ACTIVITY_TRAFFIC: "traffic",
+            ACTIVITY_DENIED: "denied",
+            ACTIVITY_UNKNOWN: "unknown",
+        }.get(activity_id, "unknown"),
         "status_id": STATUS_SUCCESS,
         "status": "success",
         "src": _src_endpoint(record),
@@ -470,10 +472,17 @@ def ingest(lines: Iterable[str], output_format: str = "ocsf") -> Iterable[dict[s
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Convert AWS VPC Flow Logs (v5) to OCSF 1.8 Network Activity JSONL.")
+    parser = argparse.ArgumentParser(
+        description="Convert AWS VPC Flow Logs (v5) to OCSF 1.8 Network Activity JSONL."
+    )
     parser.add_argument("input", nargs="?", help="Input flow log file. Defaults to stdin.")
     parser.add_argument("--output", "-o", help="Output JSONL file. Defaults to stdout.")
-    parser.add_argument("--output-format", choices=("ocsf", "native"), default="ocsf", help="Render OCSF network activity or the native enriched network-flow shape.")
+    parser.add_argument(
+        "--output-format",
+        choices=("ocsf", "native"),
+        default="ocsf",
+        help="Render OCSF network activity or the native enriched network-flow shape.",
+    )
     args = parser.parse_args(argv)
 
     in_stream = sys.stdin if not args.input else open(args.input, "r", encoding="utf-8")

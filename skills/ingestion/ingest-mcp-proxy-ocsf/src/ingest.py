@@ -222,11 +222,19 @@ def convert_event(raw: dict[str, Any], output_format: str = "ocsf") -> Iterable[
         tools = (raw.get("body") or {}).get("tools") or []
         if not tools:
             canonical = _build_canonical_event(raw, ACTIVITY_CREATE)
-            yield _render_native_event(canonical) if output_format == "native" else _render_ocsf_event(canonical)
+            yield (
+                _render_native_event(canonical)
+                if output_format == "native"
+                else _render_ocsf_event(canonical)
+            )
             return
         for tool in tools:
             canonical = _with_tool(_build_canonical_event(raw, ACTIVITY_CREATE), tool)
-            yield _render_native_event(canonical) if output_format == "native" else _render_ocsf_event(canonical)
+            yield (
+                _render_native_event(canonical)
+                if output_format == "native"
+                else _render_ocsf_event(canonical)
+            )
         return
 
     if method == "tools/call" and direction == "request":
@@ -237,13 +245,19 @@ def convert_event(raw: dict[str, Any], output_format: str = "ocsf") -> Iterable[
             # declaration. The detector pairs the call to the last-seen
             # fingerprint in the same session.
             event["tool"] = {"name": called_name}
-        yield _render_native_event(event) if output_format == "native" else _render_ocsf_event(event)
+        yield (
+            _render_native_event(event) if output_format == "native" else _render_ocsf_event(event)
+        )
         return
 
     # Anything else — emit a base event so the downstream pipeline stays
     # aware of activity on the session.
     canonical = _build_canonical_event(raw, ACTIVITY_UNKNOWN)
-    yield _render_native_event(canonical) if output_format == "native" else _render_ocsf_event(canonical)
+    yield (
+        _render_native_event(canonical)
+        if output_format == "native"
+        else _render_ocsf_event(canonical)
+    )
 
 
 # ---------------------------------------------------------------------------

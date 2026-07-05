@@ -93,7 +93,9 @@ class TestStorageChecks:
         bucket = MagicMock()
         bucket.name = "private-bucket"
         policy = MagicMock()
-        policy.bindings = [{"role": "roles/storage.objectViewer", "members": ["user:admin@company.com"]}]
+        policy.bindings = [
+            {"role": "roles/storage.objectViewer", "members": ["user:admin@company.com"]}
+        ]
         bucket.get_iam_policy.return_value = policy
         mock_storage.list_buckets.return_value = [bucket]
 
@@ -309,7 +311,7 @@ class TestLoggingMonitoring:
     def test_2_4_metric_present_passes(self):
         client = MagicMock()
         m = MagicMock()
-        m.filter = "protoPayload.methodName=\"SetIamPolicy\""
+        m.filter = 'protoPayload.methodName="SetIamPolicy"'
         client.list_log_metrics.return_value = [m]
         assert _CHECKS.check_2_4_log_metric_project_ownership(client, "p").status == "PASS"
 
@@ -321,7 +323,7 @@ class TestLoggingMonitoring:
     def test_2_7_vpc_metric_present_passes(self):
         client = MagicMock()
         m = MagicMock()
-        m.filter = "resource.type=\"compute.networks\""
+        m.filter = 'resource.type="compute.networks"'
         client.list_log_metrics.return_value = [m]
         assert _CHECKS.check_2_7_log_metric_vpc_changes(client, "p").status == "PASS"
 

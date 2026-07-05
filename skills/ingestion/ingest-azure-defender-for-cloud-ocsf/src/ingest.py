@@ -110,7 +110,12 @@ def _resource_id(alert: dict[str, Any]) -> str:
 def _build_canonical_alert(alert: dict[str, Any]) -> dict[str, Any]:
     props = alert.get("properties") or {}
     alert_id = str(alert.get("id") or alert.get("name") or "")
-    title = str(props.get("alertDisplayName") or props.get("displayName") or alert.get("name") or "Defender for Cloud alert")
+    title = str(
+        props.get("alertDisplayName")
+        or props.get("displayName")
+        or alert.get("name")
+        or "Defender for Cloud alert"
+    )
     description = str(props.get("description") or title)
     severity_label = str(props.get("severity") or "Informational")
     resource_id = _resource_id(alert)
@@ -164,7 +169,9 @@ def _build_canonical_alert(alert: dict[str, Any]) -> dict[str, Any]:
             "kind": "azure.defender-for-cloud",
             "alert_id": alert_id,
             "compromised_entity": compromised_entity,
-            "remediation_steps": remediation_steps if isinstance(remediation_steps, list) else [str(remediation_steps)],
+            "remediation_steps": remediation_steps
+            if isinstance(remediation_steps, list)
+            else [str(remediation_steps)],
         },
         "compliance": {
             "status": str(compliance.get("status") or ""),
@@ -196,11 +203,19 @@ def _build_observables(canonical: dict[str, Any]) -> list[dict[str, Any]]:
     ]
     if canonical["compliance"]["status"]:
         observables.append(
-            {"name": "defender.compliance_status", "type": "Other", "value": canonical["compliance"]["status"]}
+            {
+                "name": "defender.compliance_status",
+                "type": "Other",
+                "value": canonical["compliance"]["status"],
+            }
         )
     if canonical["compliance"]["control_id"]:
         observables.append(
-            {"name": "defender.compliance_control", "type": "Other", "value": canonical["compliance"]["control_id"]}
+            {
+                "name": "defender.compliance_control",
+                "type": "Other",
+                "value": canonical["compliance"]["control_id"],
+            }
         )
     return observables
 
@@ -225,7 +240,13 @@ def _render_ocsf_alert(canonical: dict[str, Any]) -> dict[str, Any]:
                 "vendor_name": VENDOR_NAME,
                 "feature": {"name": SKILL_NAME},
             },
-            "labels": ["detection-engineering", "azure", "defender-for-cloud", "ingest", "passthrough"],
+            "labels": [
+                "detection-engineering",
+                "azure",
+                "defender-for-cloud",
+                "ingest",
+                "passthrough",
+            ],
         },
         "finding_info": {
             "uid": canonical["finding_uid"],
@@ -277,7 +298,10 @@ def iter_raw_alerts(stream: Iterable[str]) -> Iterable[dict[str, Any]]:
             try:
                 obj = json.loads(line)
             except json.JSONDecodeError as exc:
-                print(f"[{SKILL_NAME}] skipping line {lineno}: json parse failed: {exc}", file=sys.stderr)
+                print(
+                    f"[{SKILL_NAME}] skipping line {lineno}: json parse failed: {exc}",
+                    file=sys.stderr,
+                )
                 continue
             if isinstance(obj, dict):
                 if isinstance(obj.get("value"), list):
@@ -313,7 +337,9 @@ def ingest(stream: Iterable[str], *, output_format: str = "ocsf") -> Iterable[di
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Convert Azure Defender for Cloud alerts to OCSF 1.8 Detection Finding JSONL.")
+    parser = argparse.ArgumentParser(
+        description="Convert Azure Defender for Cloud alerts to OCSF 1.8 Detection Finding JSONL."
+    )
     parser.add_argument("input", nargs="?", help="Input JSON or JSONL file. Defaults to stdin.")
     parser.add_argument("--output", "-o", help="Output JSONL file. Defaults to stdout.")
     parser.add_argument(

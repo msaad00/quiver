@@ -92,7 +92,7 @@ class TestNormalizeQuery:
             raise AssertionError("expected ValueError")
 
     def test_allows_keyword_inside_string_literal(self):
-        assert _normalize_query("SELECT \"delete\" AS sample") == "SELECT \"delete\" AS sample"
+        assert _normalize_query('SELECT "delete" AS sample') == 'SELECT "delete" AS sample'
 
     def test_rejects_refresh_statement(self):
         try:

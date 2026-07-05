@@ -57,7 +57,11 @@ def _alert(**property_overrides) -> dict:
         "status": "Active",
     }
     props.update(property_overrides)
-    return {"id": "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Security/alerts/alert-1", "name": "alert-1", "properties": props}
+    return {
+        "id": "/subscriptions/00000000-0000-0000-0000-000000000000/providers/Microsoft.Security/alerts/alert-1",
+        "name": "alert-1",
+        "properties": props,
+    }
 
 
 class TestSeverity:

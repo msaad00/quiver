@@ -181,7 +181,10 @@ def _scope_reason(scopes: list[str]) -> str:
 
 
 def _is_relevant(event: dict[str, Any], allowlist: frozenset[str]) -> tuple[bool, str]:
-    if event.get("class_uid") != ACCOUNT_CHANGE_CLASS_UID and event.get("record_type") != "account_change":
+    if (
+        event.get("class_uid") != ACCOUNT_CHANGE_CLASS_UID
+        and event.get("record_type") != "account_change"
+    ):
         return False, ""
     if _producer(event) != WORKSPACE_INGEST_SKILL:
         return False, ""
@@ -227,7 +230,9 @@ def _build_native_finding(event: dict[str, Any], reason: str) -> dict[str, Any]:
         {"name": "workspace.oauth.client_id", "type": "Resource UID", "value": client_id},
     ]
     if app_name:
-        observables.append({"name": "workspace.oauth.app_name", "type": "Resource Name", "value": app_name})
+        observables.append(
+            {"name": "workspace.oauth.app_name", "type": "Resource Name", "value": app_name}
+        )
     for scope in scopes:
         observables.append({"name": "workspace.oauth.scope", "type": "Other", "value": scope})
 
@@ -319,7 +324,13 @@ def iter_records(stream: Iterable[str]) -> Iterable[dict[str, Any]]:
         try:
             obj = json.loads(line)
         except json.JSONDecodeError as exc:
-            emit_stderr_event(SKILL_NAME, level="warning", event="json_parse_failed", message=str(exc), line=lineno)
+            emit_stderr_event(
+                SKILL_NAME,
+                level="warning",
+                event="json_parse_failed",
+                message=str(exc),
+                line=lineno,
+            )
             continue
         if isinstance(obj, dict):
             yield obj
@@ -340,7 +351,9 @@ def detect(stream: Iterable[str], output_format: str = "ocsf") -> list[dict[str,
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Detect Google Workspace OAuth grants with high-risk scopes.")
+    parser = argparse.ArgumentParser(
+        description="Detect Google Workspace OAuth grants with high-risk scopes."
+    )
     parser.add_argument("input", nargs="?", help="Input OCSF/native JSONL. Defaults to stdin.")
     parser.add_argument("--output", "-o", help="Output JSONL file. Defaults to stdout.")
     parser.add_argument("--output-format", choices=OUTPUT_FORMATS, default="ocsf")

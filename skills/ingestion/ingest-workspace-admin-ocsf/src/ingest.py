@@ -57,9 +57,27 @@ SEVERITY_LOW = 2
 SUPPORTED_APPLICATIONS = {"login", "admin", "token"}
 
 LOGIN_EVENTS = {
-    "login_success": (AUTH_CLASS_UID, AUTH_CLASS_NAME, AUTH_ACTIVITY_LOGON, STATUS_SUCCESS, SEVERITY_INFORMATIONAL),
-    "login_failure": (AUTH_CLASS_UID, AUTH_CLASS_NAME, AUTH_ACTIVITY_LOGON, STATUS_FAILURE, SEVERITY_LOW),
-    "logout": (AUTH_CLASS_UID, AUTH_CLASS_NAME, AUTH_ACTIVITY_LOGOFF, STATUS_SUCCESS, SEVERITY_INFORMATIONAL),
+    "login_success": (
+        AUTH_CLASS_UID,
+        AUTH_CLASS_NAME,
+        AUTH_ACTIVITY_LOGON,
+        STATUS_SUCCESS,
+        SEVERITY_INFORMATIONAL,
+    ),
+    "login_failure": (
+        AUTH_CLASS_UID,
+        AUTH_CLASS_NAME,
+        AUTH_ACTIVITY_LOGON,
+        STATUS_FAILURE,
+        SEVERITY_LOW,
+    ),
+    "logout": (
+        AUTH_CLASS_UID,
+        AUTH_CLASS_NAME,
+        AUTH_ACTIVITY_LOGOFF,
+        STATUS_SUCCESS,
+        SEVERITY_INFORMATIONAL,
+    ),
     "2sv_enroll": (
         ACCOUNT_CHANGE_CLASS_UID,
         ACCOUNT_CHANGE_CLASS_NAME,
@@ -152,14 +170,28 @@ def _event_name(event: dict[str, Any]) -> str:
     return str(event.get("name") or "").strip()
 
 
-def _classify(application: str, event_name: str, params: dict[str, Any]) -> tuple[int, str, int, int, int] | None:
+def _classify(
+    application: str, event_name: str, params: dict[str, Any]
+) -> tuple[int, str, int, int, int] | None:
     if application == "login" and event_name in LOGIN_EVENTS:
         return LOGIN_EVENTS[event_name]
     if application == "token" and event_name in TOKEN_EVENTS:
         activity_id, status_id, severity_id = TOKEN_EVENTS[event_name]
-        return ACCOUNT_CHANGE_CLASS_UID, ACCOUNT_CHANGE_CLASS_NAME, activity_id, status_id, severity_id
+        return (
+            ACCOUNT_CHANGE_CLASS_UID,
+            ACCOUNT_CHANGE_CLASS_NAME,
+            activity_id,
+            status_id,
+            severity_id,
+        )
     if application == "admin" and _is_admin_role_grant_event(event_name, params):
-        return ACCOUNT_CHANGE_CLASS_UID, ACCOUNT_CHANGE_CLASS_NAME, ACCOUNT_CHANGE_CREATE, STATUS_SUCCESS, SEVERITY_LOW
+        return (
+            ACCOUNT_CHANGE_CLASS_UID,
+            ACCOUNT_CHANGE_CLASS_NAME,
+            ACCOUNT_CHANGE_CREATE,
+            STATUS_SUCCESS,
+            SEVERITY_LOW,
+        )
     return None
 
 
@@ -167,7 +199,9 @@ def _is_admin_role_grant_event(event_name: str, params: dict[str, Any]) -> bool:
     if event_name in ADMIN_ROLE_GRANT_EVENTS:
         return True
     upper_name = event_name.upper()
-    if "ROLE" in upper_name and any(term in upper_name for term in ("ASSIGN", "GRANT", "ADD", "CREATE")):
+    if "ROLE" in upper_name and any(
+        term in upper_name for term in ("ASSIGN", "GRANT", "ADD", "CREATE")
+    ):
         return True
     keys = {key.lower() for key in params}
     return bool({"role_name", "role_id", "role_assignment_id", "assigned_to"} & keys) and bool(
@@ -176,7 +210,9 @@ def _is_admin_role_grant_event(event_name: str, params: dict[str, Any]) -> bool:
 
 
 def _status_name(status_id: int) -> str:
-    return {STATUS_SUCCESS: "success", STATUS_FAILURE: "failure", STATUS_UNKNOWN: "unknown"}.get(status_id, "unknown")
+    return {STATUS_SUCCESS: "success", STATUS_FAILURE: "failure", STATUS_UNKNOWN: "unknown"}.get(
+        status_id, "unknown"
+    )
 
 
 def _severity_name(severity_id: int) -> str:
@@ -257,7 +293,9 @@ def _resources(application: str, params: dict[str, Any]) -> list[dict[str, Any]]
     return []
 
 
-def _message(application: str, event_name: str, params: dict[str, Any], activity: dict[str, Any]) -> str:
+def _message(
+    application: str, event_name: str, params: dict[str, Any], activity: dict[str, Any]
+) -> str:
     actor = _as_dict(activity.get("actor")).get("email") or "user"
     if application == "token":
         app_name = params.get("app_name") or params.get("client_id") or "OAuth client"
@@ -270,8 +308,15 @@ def _message(application: str, event_name: str, params: dict[str, Any], activity
         verb = verbs.get(event_name, event_name)
         return f"{actor} {verb} access to {app_name}"
     if application == "admin":
-        role = params.get("role_name") or params.get("role") or params.get("role_id") or "admin role"
-        assignee = params.get("assigned_to") or params.get("target_user") or params.get("email") or "principal"
+        role = (
+            params.get("role_name") or params.get("role") or params.get("role_id") or "admin role"
+        )
+        assignee = (
+            params.get("assigned_to")
+            or params.get("target_user")
+            or params.get("email")
+            or "principal"
+        )
         return f"{actor} granted {role} to {assignee}"
     return f"{actor} {event_name}"
 
@@ -284,7 +329,9 @@ def _metadata_uid(activity: dict[str, Any], event_name: str) -> str:
         "uniqueQualifier": identity.get("uniqueQualifier"),
         "event": event_name,
     }
-    return hashlib.sha256(json.dumps(stable, sort_keys=True, separators=(",", ":")).encode("utf-8")).hexdigest()
+    return hashlib.sha256(
+        json.dumps(stable, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    ).hexdigest()
 
 
 def validate_activity(activity: dict[str, Any]) -> tuple[bool, str]:
@@ -406,7 +453,15 @@ def _render_ocsf_event(canonical: dict[str, Any]) -> dict[str, Any]:
             }
         },
     }
-    for field in ("actor", "user", "src_endpoint", "session", "resources", "message", "status_detail"):
+    for field in (
+        "actor",
+        "user",
+        "src_endpoint",
+        "session",
+        "resources",
+        "message",
+        "status_detail",
+    ):
         if canonical.get(field):
             out[field] = canonical[field]
     return out
@@ -419,7 +474,9 @@ def _render_native_event(canonical: dict[str, Any]) -> dict[str, Any]:
     return native
 
 
-def convert_activity_event(activity: dict[str, Any], event: dict[str, Any], output_format: str = "ocsf") -> dict[str, Any]:
+def convert_activity_event(
+    activity: dict[str, Any], event: dict[str, Any], output_format: str = "ocsf"
+) -> dict[str, Any]:
     canonical = _build_canonical_event(activity, event)
     if output_format == "native":
         return _render_native_event(canonical)

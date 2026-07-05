@@ -144,7 +144,10 @@ class TestMcpServer:
                     "jsonrpc": "2.0",
                     "id": 3,
                     "method": "tools/call",
-                    "params": {"name": "ingest-cloudtrail-ocsf", "arguments": {"input": raw_cloudtrail}},
+                    "params": {
+                        "name": "ingest-cloudtrail-ocsf",
+                        "arguments": {"input": raw_cloudtrail},
+                    },
                 },
             )
             ingest_response = _read_message(proc)
@@ -163,7 +166,10 @@ class TestMcpServer:
                     "jsonrpc": "2.0",
                     "id": 4,
                     "method": "tools/call",
-                    "params": {"name": "detect-lateral-movement", "arguments": {"input": detect_input}},
+                    "params": {
+                        "name": "detect-lateral-movement",
+                        "arguments": {"input": detect_input},
+                    },
                 },
             )
             detect_response = _read_message(proc)

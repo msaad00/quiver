@@ -39,7 +39,14 @@ from checks import (  # noqa: E402
 
 class TestPodSecurity:
     def test_privileged_pod_fails(self):
-        config = {"pods": [{"name": "bad", "containers": [{"name": "c1", "securityContext": {"privileged": True}}]}]}
+        config = {
+            "pods": [
+                {
+                    "name": "bad",
+                    "containers": [{"name": "c1", "securityContext": {"privileged": True}}],
+                }
+            ]
+        }
         findings = run_benchmark(config, section="pod_security")
         priv = next(f for f in findings if f.check_id == "K8S-1.1")
         assert priv.status == "FAIL"
@@ -50,7 +57,13 @@ class TestPodSecurity:
                 {
                     "name": "good",
                     "containers": [
-                        {"name": "c1", "securityContext": {"privileged": False, "capabilities": {"drop": ["ALL"]}}},
+                        {
+                            "name": "c1",
+                            "securityContext": {
+                                "privileged": False,
+                                "capabilities": {"drop": ["ALL"]},
+                            },
+                        },
                     ],
                 }
             ]
@@ -76,7 +89,11 @@ class TestRBAC:
     def test_cluster_admin_default_fails(self):
         config = {
             "cluster_role_bindings": [
-                {"name": "bad-binding", "roleRef": {"name": "cluster-admin"}, "subjects": [{"name": "default", "namespace": "default"}]}
+                {
+                    "name": "bad-binding",
+                    "roleRef": {"name": "cluster-admin"},
+                    "subjects": [{"name": "default", "namespace": "default"}],
+                }
             ]
         }
         findings = run_benchmark(config, section="rbac")
@@ -84,7 +101,11 @@ class TestRBAC:
         assert admin.status == "FAIL"
 
     def test_wildcard_permissions_fails(self):
-        config = {"cluster_roles": [{"name": "too-broad", "rules": [{"verbs": ["*"], "resources": ["*"]}]}]}
+        config = {
+            "cluster_roles": [
+                {"name": "too-broad", "rules": [{"verbs": ["*"], "resources": ["*"]}]}
+            ]
+        }
         findings = run_benchmark(config, section="rbac")
         wc = next(f for f in findings if f.check_id == "K8S-2.2")
         assert wc.status == "FAIL"
@@ -97,7 +118,11 @@ class TestNetwork:
         assert findings[0].status == "FAIL"
 
     def test_deny_policy_passes(self):
-        config = {"namespaces": [{"name": "production", "network_policies": [{"name": "default-deny-ingress"}]}]}
+        config = {
+            "namespaces": [
+                {"name": "production", "network_policies": [{"name": "default-deny-ingress"}]}
+            ]
+        }
         findings = run_benchmark(config, section="network")
         assert findings[0].status == "PASS"
 
@@ -109,7 +134,17 @@ class TestSecrets:
                 {
                     "name": "app",
                     "containers": [
-                        {"name": "c1", "env": [{"name": "DB_PASS", "valueFrom": {"secretKeyRef": {"name": "db", "key": "password"}}}]}
+                        {
+                            "name": "c1",
+                            "env": [
+                                {
+                                    "name": "DB_PASS",
+                                    "valueFrom": {
+                                        "secretKeyRef": {"name": "db", "key": "password"}
+                                    },
+                                }
+                            ],
+                        }
                     ],
                 }
             ]
@@ -127,12 +162,18 @@ class TestSecrets:
 
 class TestImages:
     def test_latest_tag_fails(self):
-        config = {"pods": [{"name": "app", "containers": [{"name": "c1", "image": "nginx:latest"}]}]}
+        config = {
+            "pods": [{"name": "app", "containers": [{"name": "c1", "image": "nginx:latest"}]}]
+        }
         findings = run_benchmark(config, section="images")
         assert findings[0].status == "FAIL"
 
     def test_pinned_tag_passes(self):
-        config = {"pods": [{"name": "app", "containers": [{"name": "c1", "image": "nginx:1.25.3-alpine"}]}]}
+        config = {
+            "pods": [
+                {"name": "app", "containers": [{"name": "c1", "image": "nginx:1.25.3-alpine"}]}
+            ]
+        }
         findings = run_benchmark(config, section="images")
         assert findings[0].status == "PASS"
 
@@ -212,7 +253,13 @@ class TestEmptyInput:
 @pytest.mark.parametrize(
     "malformed_config",
     [
-        {"pods": None, "namespaces": None, "cluster_role_bindings": None, "cluster_roles": None, "api_server": None},
+        {
+            "pods": None,
+            "namespaces": None,
+            "cluster_role_bindings": None,
+            "cluster_roles": None,
+            "api_server": None,
+        },
         {"pods": "not-a-list"},
         {"pods": [None, 42, "string"]},
         {"pods": [{}]},
@@ -265,8 +312,14 @@ class TestPartialPass:
     def test_privileged_partial(self):
         config = {
             "pods": [
-                {"name": "good", "containers": [{"name": "c", "securityContext": {"privileged": False}}]},
-                {"name": "bad", "containers": [{"name": "c", "securityContext": {"privileged": True}}]},
+                {
+                    "name": "good",
+                    "containers": [{"name": "c", "securityContext": {"privileged": False}}],
+                },
+                {
+                    "name": "bad",
+                    "containers": [{"name": "c", "securityContext": {"privileged": True}}],
+                },
             ]
         }
         f = check_1_1_no_privileged_pods(config)
@@ -306,11 +359,15 @@ class TestPartialPass:
             "pods": [
                 {
                     "name": "good",
-                    "containers": [{"name": "c", "securityContext": {"capabilities": {"drop": ["ALL"]}}}],
+                    "containers": [
+                        {"name": "c", "securityContext": {"capabilities": {"drop": ["ALL"]}}}
+                    ],
                 },
                 {
                     "name": "bad",
-                    "containers": [{"name": "c", "securityContext": {"capabilities": {"drop": ["NET_RAW"]}}}],
+                    "containers": [
+                        {"name": "c", "securityContext": {"capabilities": {"drop": ["NET_RAW"]}}}
+                    ],
                 },
             ]
         }
@@ -356,7 +413,10 @@ class TestPartialPass:
                         {
                             "name": "c",
                             "env": [
-                                {"name": "DB_PASS", "valueFrom": {"secretKeyRef": {"name": "db", "key": "pass"}}}
+                                {
+                                    "name": "DB_PASS",
+                                    "valueFrom": {"secretKeyRef": {"name": "db", "key": "pass"}},
+                                }
                             ],
                         }
                     ],
@@ -448,7 +508,11 @@ def test_multi_resource_happy_path_all_pass():
             {"name": "staging", "network_policies": [{"name": "default-deny-all"}]},
         ],
         "cluster_role_bindings": [
-            {"name": "team-readonly", "roleRef": {"name": "view"}, "subjects": [{"name": "team", "namespace": "production"}]},
+            {
+                "name": "team-readonly",
+                "roleRef": {"name": "view"},
+                "subjects": [{"name": "team", "namespace": "production"}],
+            },
         ],
         "cluster_roles": [
             {"name": "view", "rules": [{"verbs": ["get", "list"], "resources": ["pods"]}]},

@@ -252,7 +252,11 @@ def _finding_product(event: dict[str, Any]) -> str:
 
 
 def _finding_uid(event: dict[str, Any]) -> str:
-    return str((event.get("finding_info") or {}).get("uid") or (event.get("metadata") or {}).get("uid") or "")
+    return str(
+        (event.get("finding_info") or {}).get("uid")
+        or (event.get("metadata") or {}).get("uid")
+        or ""
+    )
 
 
 def _observable_value(event: dict[str, Any], *names: str) -> str:
@@ -295,7 +299,9 @@ def _target_from_event(event: dict[str, Any]) -> Target | None:
     )
 
 
-def parse_targets(events: Iterable[dict[str, Any]]) -> Iterator[tuple[Target | None, dict[str, Any]]]:
+def parse_targets(
+    events: Iterable[dict[str, Any]],
+) -> Iterator[tuple[Target | None, dict[str, Any]]]:
     for event in events:
         yield _target_from_event(event), event
 
@@ -359,7 +365,9 @@ def check_apply_gate() -> tuple[bool, str]:
     return True, ""
 
 
-def _quarantine_entry(target: Target, *, incident_id: str, approvers: tuple[str, ...]) -> dict[str, Any]:
+def _quarantine_entry(
+    target: Target, *, incident_id: str, approvers: tuple[str, ...]
+) -> dict[str, Any]:
     """Structured quarantine record the MCP client reads to filter its tool list."""
     return {
         "schema_mode": "native",
@@ -380,7 +388,12 @@ def _quarantine_entry(target: Target, *, incident_id: str, approvers: tuple[str,
 
 
 def _plan_record(
-    target: Target, *, status: str, detail: str | None, dry_run: bool, entry: dict[str, Any] | None = None
+    target: Target,
+    *,
+    status: str,
+    detail: str | None,
+    dry_run: bool,
+    entry: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     return {
         "schema_mode": "native",
@@ -458,7 +471,9 @@ def quarantine_tool(
             incident_id=incident_id,
             approvers=approvers,
         )
-        record = _plan_record(target, status=STATUS_FAILURE, detail=str(exc), dry_run=False, entry=entry)
+        record = _plan_record(
+            target, status=STATUS_FAILURE, detail=str(exc), dry_run=False, entry=entry
+        )
         record["audit"] = first_audit
         return record
 
@@ -495,12 +510,16 @@ def reverify_target(
     """Re-verify the tool is still on the quarantine list. Emits one
     `remediation_verification` record always; on DRIFT also emits an OCSF
     Detection Finding via the shared `_shared/remediation_verifier.py` contract."""
-    checked_at_ms = now_ms if now_ms is not None else int(datetime.now(timezone.utc).timestamp() * 1000)
+    checked_at_ms = (
+        now_ms if now_ms is not None else int(datetime.now(timezone.utc).timestamp() * 1000)
+    )
     remediated_at_ms_resolved = remediated_at_ms if remediated_at_ms is not None else checked_at_ms
 
     reference = RemediationReference(
         remediation_skill=SKILL_NAME,
-        remediation_action_uid=_deterministic_uid("quarantine", target.tool_name, target.session_uid),
+        remediation_action_uid=_deterministic_uid(
+            "quarantine", target.tool_name, target.session_uid
+        ),
         target_provider="MCP",
         target_identifier=target.tool_name,
         original_finding_uid=target.finding_uid,
@@ -519,7 +538,9 @@ def reverify_target(
             actual_state="quarantine store unreadable; cannot determine state",
             detail=str(exc),
         )
-        record = build_verification_record(reference=reference, result=result, verifier_skill=SKILL_NAME)
+        record = build_verification_record(
+            reference=reference, result=result, verifier_skill=SKILL_NAME
+        )
         record["target"] = {
             "provider": "MCP",
             "tool_name": target.tool_name,
@@ -546,7 +567,9 @@ def reverify_target(
             detail=f"tool `{target.tool_name}` is no longer quarantined",
         )
 
-    record = build_verification_record(reference=reference, result=result, verifier_skill=SKILL_NAME)
+    record = build_verification_record(
+        reference=reference, result=result, verifier_skill=SKILL_NAME
+    )
     record["target"] = {
         "provider": "MCP",
         "tool_name": target.tool_name,

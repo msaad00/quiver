@@ -32,7 +32,9 @@ def _record(event_type: str = "ReportExport") -> dict[str, object]:
 
 
 def test_ingests_json_wrapper_as_application_activity() -> None:
-    records = list(ingest_mod.ingest(StringIO(json.dumps({"records": [_record()]})), output_format="ocsf"))
+    records = list(
+        ingest_mod.ingest(StringIO(json.dumps({"records": [_record()]})), output_format="ocsf")
+    )
 
     assert len(records) == 1
     event = records[0]

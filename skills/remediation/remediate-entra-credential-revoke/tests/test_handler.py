@@ -84,7 +84,9 @@ class _FakeAudit:
 @dataclass
 class _FakeGraph:
     sps: dict[str, dict] = field(default_factory=dict)  # object_id → {accountEnabled: bool}
-    applications: dict[str, dict] = field(default_factory=dict)  # object_id → {appId: str, displayName: str}
+    applications: dict[str, dict] = field(
+        default_factory=dict
+    )  # object_id → {appId: str, displayName: str}
     service_principals_by_app_id: dict[str, list[dict]] = field(default_factory=dict)
     keys: dict[str, list[dict]] = field(default_factory=dict)
     passwords: dict[str, list[dict]] = field(default_factory=dict)
@@ -167,8 +169,13 @@ def test_default_protected_name_prefixes_cover_critical_classes():
 
 def _t(**overrides) -> Target:
     base = dict(
-        object_id="oid-1", display_name="rogue", target_type="ServicePrincipal",
-        actor="x", api_operation="y", rule="z", producer_skill="detect-entra-credential-addition",
+        object_id="oid-1",
+        display_name="rogue",
+        target_type="ServicePrincipal",
+        actor="x",
+        api_operation="y",
+        rule="z",
+        producer_skill="detect-entra-credential-addition",
         finding_uid="f-1",
     )
     base.update(overrides)
@@ -230,7 +237,16 @@ def test_check_apply_gate_requires_both_envs(monkeypatch):
 
 def test_parse_targets_accepts_both_entra_producers():
     add = next(parse_targets([_finding(producer="detect-entra-credential-addition")]))[0]
-    grant = next(parse_targets([_finding(producer="detect-entra-role-grant-escalation", rule="entra-role-grant-escalation")]))[0]
+    grant = next(
+        parse_targets(
+            [
+                _finding(
+                    producer="detect-entra-role-grant-escalation",
+                    rule="entra-role-grant-escalation",
+                )
+            ]
+        )
+    )[0]
     assert add is not None and add.producer_skill == "detect-entra-credential-addition"
     assert grant is not None and grant.producer_skill == "detect-entra-role-grant-escalation"
 
@@ -288,7 +304,9 @@ def test_run_skips_unsupported_target_type():
 
 
 def test_run_skips_protected_name_prefix_in_dry_run():
-    records = list(run([_finding(display_name="break-glass-incident-app")], graph_client=_FakeGraph()))
+    records = list(
+        run([_finding(display_name="break-glass-incident-app")], graph_client=_FakeGraph())
+    )
     assert records[0]["status"] == STATUS_WOULD_VIOLATE_PROTECTED
     assert "break-glass" in records[0]["status_detail"]
 
@@ -323,7 +341,9 @@ def test_run_apply_disables_and_emits_triage_with_dual_audit():
         sps={"11111111-1111-1111-1111-111111111111": {"accountEnabled": True}},
         keys={"11111111-1111-1111-1111-111111111111": [{"keyId": "k-1"}, {"keyId": "k-2"}]},
         passwords={"11111111-1111-1111-1111-111111111111": [{"keyId": "p-1"}]},
-        role_assignments={"11111111-1111-1111-1111-111111111111": [{"id": "ra-1", "appRoleId": "role-x"}]},
+        role_assignments={
+            "11111111-1111-1111-1111-111111111111": [{"id": "ra-1", "appRoleId": "role-x"}]
+        },
         oauth_grants={"11111111-1111-1111-1111-111111111111": []},
     )
     records = list(
@@ -437,6 +457,7 @@ def test_run_apply_application_target_resolves_backing_service_principal():
 
 def test_run_apply_requires_audit_writer():
     import pytest
+
     with pytest.raises(ValueError, match="audit writer is required"):
         list(
             run(

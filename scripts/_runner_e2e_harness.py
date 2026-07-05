@@ -443,11 +443,7 @@ def run_mcp_sse_scenario(samples: int) -> dict[str, Any]:
     # `tools/call` writes an audit record). We still get one chain entry
     # from `bearer_key_rotated` at boot — so the chain assertion is
     # "exit 0 from verify_audit_chain AND >=1 record landed".
-    status = (
-        "ok"
-        if failures == 0 and audit_chain_verified and audit_count >= 1
-        else "fail"
-    )
+    status = "ok" if failures == 0 and audit_chain_verified and audit_count >= 1 else "fail"
     return {
         "runner": "mcp-sse",
         "scenario": scenario,
@@ -458,9 +454,7 @@ def run_mcp_sse_scenario(samples: int) -> dict[str, Any]:
         "audit_records": audit_count,
         "audit_chain_verified": audit_chain_verified,
         "audit_chain_exit": audit_chain_exit,
-        "audit_chain_status": (
-            "ok_chain_verified_ping_and_tools_list_are_auditless_by_design"
-        ),
+        "audit_chain_status": ("ok_chain_verified_ping_and_tools_list_are_auditless_by_design"),
         "sink_arrival_count": valid_payloads,
         "sink_status": "ok_response_payload_shape_verified",
         "captured_at": _now_iso(),
@@ -519,9 +513,7 @@ def run_aws_cloud_runner_scenario(samples: int) -> dict[str, Any]:
     object_body = (raw_lines[0] + "\n").encode("utf-8")
 
     handler_path = REPO_ROOT / "runners" / "aws-s3-sqs-detect" / "src" / "ingest_handler.py"
-    spec = importlib.util.spec_from_file_location(
-        "aws_ingest_handler_e2e", handler_path
-    )
+    spec = importlib.util.spec_from_file_location("aws_ingest_handler_e2e", handler_path)
     assert spec is not None and spec.loader is not None
     handler_mod = importlib.util.module_from_spec(spec)
     sys.modules["aws_ingest_handler_e2e"] = handler_mod
@@ -586,9 +578,7 @@ def run_aws_cloud_runner_scenario(samples: int) -> dict[str, Any]:
                     break
                 sink_arrivals += len(messages)
                 for msg in messages:
-                    sqs.delete_message(
-                        QueueUrl=queue_url, ReceiptHandle=msg["ReceiptHandle"]
-                    )
+                    sqs.delete_message(QueueUrl=queue_url, ReceiptHandle=msg["ReceiptHandle"])
         finally:
             os.environ.clear()
             os.environ.update(prev_env)

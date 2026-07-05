@@ -161,13 +161,17 @@ def step_pre_disable(clients: GcpClients, entry: dict, actions: list) -> None:
         clients.admin_directory.users().update(
             userKey=principal_id, body={"suspended": True}
         ).execute()
-        actions.append({"action": "suspend_workspace_user", "target": principal_id, "timestamp": _now()})
+        actions.append(
+            {"action": "suspend_workspace_user", "target": principal_id, "timestamp": _now()}
+        )
         return
 
     project_id = entry.get("project_ids", [None])[0] or principal_id.split("@")[1].split(".")[0]
     name = f"projects/{project_id}/serviceAccounts/{principal_id}"
     clients.iam.projects().serviceAccounts().disable(name=name).execute()
-    actions.append({"action": "disable_service_account", "target": principal_id, "timestamp": _now()})
+    actions.append(
+        {"action": "disable_service_account", "target": principal_id, "timestamp": _now()}
+    )
 
 
 # ── Step 2: revoke OAuth refresh tokens ─────────────────────────────
@@ -176,7 +180,12 @@ def step_pre_disable(clients: GcpClients, entry: dict, actions: list) -> None:
 def step_revoke_oauth_tokens(clients: GcpClients, entry: dict, actions: list) -> None:
     if entry["principal_type"] != "workspace_user":
         actions.append(
-            {"action": "revoke_oauth_tokens", "target": entry["principal_id"], "timestamp": _now(), "skipped": "n/a-for-service-account"}
+            {
+                "action": "revoke_oauth_tokens",
+                "target": entry["principal_id"],
+                "timestamp": _now(),
+                "skipped": "n/a-for-service-account",
+            }
         )
         return
 
@@ -232,7 +241,9 @@ def step_delete_ssh_keys(clients: GcpClients, entry: dict, actions: list) -> Non
                     "items": new_items,
                 },
             ).execute()
-    actions.append({"action": "delete_ssh_keys", "target": user, "count": removed_total, "timestamp": _now()})
+    actions.append(
+        {"action": "delete_ssh_keys", "target": user, "count": removed_total, "timestamp": _now()}
+    )
 
 
 # ── Step 4: remove user from Cloud Identity / Workspace groups ──────
@@ -240,14 +251,26 @@ def step_delete_ssh_keys(clients: GcpClients, entry: dict, actions: list) -> Non
 
 def step_remove_from_groups(clients: GcpClients, entry: dict, actions: list) -> None:
     if entry["principal_type"] != "workspace_user":
-        actions.append({"action": "remove_from_groups", "target": entry["principal_id"], "timestamp": _now(), "skipped": "n/a-for-service-account"})
+        actions.append(
+            {
+                "action": "remove_from_groups",
+                "target": entry["principal_id"],
+                "timestamp": _now(),
+                "skipped": "n/a-for-service-account",
+            }
+        )
         return
 
     user = entry["principal_id"]
     parent_query = f"member_key_id == '{user}' && 'cloudidentity.googleapis.com/groups.discussion_forum' in labels"
-    response = clients.cloud_identity.groups().memberships().searchTransitiveMemberships(
-        parent="groups/-", query=parent_query
-    ).execute() if hasattr(clients.cloud_identity.groups().memberships(), "searchTransitiveMemberships") else {}
+    response = (
+        clients.cloud_identity.groups()
+        .memberships()
+        .searchTransitiveMemberships(parent="groups/-", query=parent_query)
+        .execute()
+        if hasattr(clients.cloud_identity.groups().memberships(), "searchTransitiveMemberships")
+        else {}
+    )
     memberships = response.get("memberships", []) or []
     removed = 0
     for member in memberships:
@@ -259,7 +282,9 @@ def step_remove_from_groups(clients: GcpClients, entry: dict, actions: list) -> 
         clients.cloud_identity.groups().memberships().delete(name=name).execute()
         removed += 1
         _ = member_name  # kept for log readability
-    actions.append({"action": "remove_from_groups", "target": user, "count": removed, "timestamp": _now()})
+    actions.append(
+        {"action": "remove_from_groups", "target": user, "count": removed, "timestamp": _now()}
+    )
 
 
 # ── Step 5: detach project-level IAM bindings ───────────────────────
@@ -291,7 +316,9 @@ def step_detach_project_iam(clients: GcpClients, entry: dict, actions: list) -> 
                 resource=resource, body={"policy": new_policy}
             ).execute()
             total += removed
-    actions.append({"action": "detach_project_iam", "target": member, "count": total, "timestamp": _now()})
+    actions.append(
+        {"action": "detach_project_iam", "target": member, "count": total, "timestamp": _now()}
+    )
 
 
 # ── Step 6: detach folder-level IAM bindings ────────────────────────
@@ -309,7 +336,9 @@ def step_detach_folder_iam(clients: GcpClients, entry: dict, actions: list) -> N
                 resource=resource, body={"policy": new_policy}
             ).execute()
             total += removed
-    actions.append({"action": "detach_folder_iam", "target": member, "count": total, "timestamp": _now()})
+    actions.append(
+        {"action": "detach_folder_iam", "target": member, "count": total, "timestamp": _now()}
+    )
 
 
 # ── Step 7: detach org-level IAM bindings ───────────────────────────
@@ -325,7 +354,9 @@ def step_detach_org_iam(clients: GcpClients, entry: dict, actions: list) -> None
         clients.crm.organizations().setIamPolicy(
             resource=resource, body={"policy": new_policy}
         ).execute()
-    actions.append({"action": "detach_org_iam", "target": member, "count": removed, "timestamp": _now()})
+    actions.append(
+        {"action": "detach_org_iam", "target": member, "count": removed, "timestamp": _now()}
+    )
 
 
 # ── Step 8: detach BigQuery dataset-level IAM ───────────────────────
@@ -342,9 +373,12 @@ def step_detach_bigquery_iam(clients: GcpClients, entry: dict, actions: list) ->
             dataset_id = ds.get("datasetReference", {}).get("datasetId")
             if not dataset_id:
                 continue
-            full = clients.bigquery.datasets().get(
-                projectId=project_id, datasetId=dataset_id
-            ).execute() or {}
+            full = (
+                clients.bigquery.datasets()
+                .get(projectId=project_id, datasetId=dataset_id)
+                .execute()
+                or {}
+            )
             access = full.get("access", []) or []
             new_access = []
             removed_here = 0
@@ -434,7 +468,9 @@ def step_emit_audit_log(clients: GcpClients, entry: dict, actions: list) -> None
         ]
     }
     clients.logging.entries().write(body=body).execute()
-    actions.append({"action": "emit_audit_log", "target": entry["principal_id"], "timestamp": _now()})
+    actions.append(
+        {"action": "emit_audit_log", "target": entry["principal_id"], "timestamp": _now()}
+    )
 
 
 # ── Step 11: final disable / delete ─────────────────────────────────
@@ -445,7 +481,9 @@ def step_final_disable_or_delete(clients: GcpClients, entry: dict, actions: list
     if entry["principal_type"] == "workspace_user":
         # 20-day soft delete window
         clients.admin_directory.users().delete(userKey=principal_id).execute()
-        actions.append({"action": "delete_workspace_user", "target": principal_id, "timestamp": _now()})
+        actions.append(
+            {"action": "delete_workspace_user", "target": principal_id, "timestamp": _now()}
+        )
         return
 
     project_id = entry.get("project_ids", [None])[0] or principal_id.split("@")[1].split(".")[0]
@@ -458,7 +496,9 @@ def step_final_disable_or_delete(clients: GcpClients, entry: dict, actions: list
         clients.iam.projects().serviceAccounts().keys().delete(name=key["name"]).execute()
     # 30-day soft delete window
     clients.iam.projects().serviceAccounts().delete(name=name).execute()
-    actions.append({"action": "delete_service_account", "target": principal_id, "timestamp": _now()})
+    actions.append(
+        {"action": "delete_service_account", "target": principal_id, "timestamp": _now()}
+    )
 
 
 # ── Public step registry ────────────────────────────────────────────

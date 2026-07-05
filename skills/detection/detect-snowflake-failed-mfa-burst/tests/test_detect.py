@@ -106,7 +106,9 @@ class TestDetection:
         assert finding["severity_id"] == SEVERITY_HIGH
         assert finding["metadata"]["product"]["feature"]["name"] == SKILL_NAME
         assert finding["metadata"]["uid"] == finding["finding_info"]["uid"]
-        technique_uids = {attack["technique"]["uid"] for attack in finding["finding_info"]["attacks"]}
+        technique_uids = {
+            attack["technique"]["uid"] for attack in finding["finding_info"]["attacks"]
+        }
         assert MITRE_TECHNIQUE_UID in technique_uids
         assert MITRE_SECONDARY_TECHNIQUE_UID in technique_uids
         assert OWASP_FINDING_TYPE in finding["finding_info"]["types"]

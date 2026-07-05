@@ -89,22 +89,22 @@ ACCEPTED_OPERATIONS = frozenset(
 # Default risky ports — admin / database / cache / search surfaces. Same
 # list as the AWS detector so operators see uniform behaviour across clouds.
 DEFAULT_RISKY_PORTS = (
-    22,     # SSH
-    23,     # Telnet
-    135,    # MSRPC
-    445,    # SMB
-    1433,   # MSSQL
-    1521,   # Oracle
-    2049,   # NFS
-    3306,   # MySQL
-    3389,   # RDP
-    5432,   # Postgres
-    5984,   # CouchDB
-    6379,   # Redis
-    8086,   # InfluxDB
-    9042,   # Cassandra
-    9092,   # Kafka
-    9200,   # Elasticsearch
+    22,  # SSH
+    23,  # Telnet
+    135,  # MSRPC
+    445,  # SMB
+    1433,  # MSSQL
+    1521,  # Oracle
+    2049,  # NFS
+    3306,  # MySQL
+    3389,  # RDP
+    5432,  # Postgres
+    5984,  # CouchDB
+    6379,  # Redis
+    8086,  # InfluxDB
+    9042,  # Cassandra
+    9092,  # Kafka
+    9200,  # Elasticsearch
     11211,  # Memcached
     27017,  # MongoDB
 )
@@ -415,7 +415,9 @@ def detect(
         producer = _producer(event)
         if producer not in ACCEPTED_PRODUCERS:
             emit_stderr_event(
-                SKILL_NAME, level="warning", event="wrong_source",
+                SKILL_NAME,
+                level="warning",
+                event="wrong_source",
                 message=f"skipping event from non-gcp-audit producer `{producer}`",
             )
             continue
@@ -444,7 +446,9 @@ def detect(
         fw_name = _firewall_name(event, request)
         if not fw_name:
             emit_stderr_event(
-                SKILL_NAME, level="warning", event="no_firewall_name",
+                SKILL_NAME,
+                level="warning",
+                event="no_firewall_name",
                 message="firewalls.insert/patch finding missing rule name; skipping",
             )
             continue
@@ -456,8 +460,11 @@ def detect(
             if not overlaps:
                 continue
             native = _build_native_finding(
-                event=event, fw_name=fw_name, network=network,
-                public_cidrs_hit=public_hits, risky_ports_hit=port_hits,
+                event=event,
+                fw_name=fw_name,
+                network=network,
+                public_cidrs_hit=public_hits,
+                risky_ports_hit=port_hits,
                 allowed_entry=allowed_entry,
             )
             yield native if output_format == "native" else _to_ocsf(native)
@@ -472,8 +479,11 @@ def load_jsonl(stream: Iterable[str]) -> Iterable[dict[str, Any]]:
             obj = json.loads(line)
         except json.JSONDecodeError as exc:
             emit_stderr_event(
-                SKILL_NAME, level="warning", event="json_parse_failed",
-                message=f"skipping line {lineno}: json parse failed: {exc}", line=lineno,
+                SKILL_NAME,
+                level="warning",
+                event="json_parse_failed",
+                message=f"skipping line {lineno}: json parse failed: {exc}",
+                line=lineno,
             )
             continue
         if isinstance(obj, dict):
@@ -487,11 +497,15 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("input", nargs="?", help="JSONL input. Defaults to stdin.")
     parser.add_argument("--output", "-o", help="JSONL output. Defaults to stdout.")
     parser.add_argument(
-        "--output-format", choices=sorted(OUTPUT_FORMATS), default="ocsf",
+        "--output-format",
+        choices=sorted(OUTPUT_FORMATS),
+        default="ocsf",
         help="Emit OCSF Detection Finding (default) or native projection.",
     )
     parser.add_argument(
-        "--input-format", choices=("ocsf",), default="ocsf",
+        "--input-format",
+        choices=("ocsf",),
+        default="ocsf",
         help="Only OCSF input is accepted; reserved for forward compatibility.",
     )
     args = parser.parse_args(argv)

@@ -61,7 +61,10 @@ def test_fires_on_model_safetensors_get_object():
     attacks = finding["finding_info"]["attacks"]
     assert any(item["technique"]["uid"] == "T1530" for item in attacks)
     assert any(item["technique"]["uid"] == "AML.T0035" for item in attacks)
-    assert any(obs["name"] == "object.key" and obs["value"].endswith("model.safetensors") for obs in finding["observables"])
+    assert any(
+        obs["name"] == "object.key" and obs["value"].endswith("model.safetensors")
+        for obs in finding["observables"]
+    )
 
 
 def test_native_output_includes_bucket_key_and_match():
@@ -86,7 +89,11 @@ def test_native_output_includes_bucket_key_and_match():
 def test_non_model_object_is_ignored():
     findings = list(
         MODULE.detect(
-            [_event(resource_name="projects/_/buckets/model-artifacts-prod/objects/reports/quarterly.csv")]
+            [
+                _event(
+                    resource_name="projects/_/buckets/model-artifacts-prod/objects/reports/quarterly.csv"
+                )
+            ]
         )
     )
     assert findings == []
@@ -108,6 +115,8 @@ def test_wrong_source_is_ignored():
 
 
 def test_missing_bucket_or_key_is_skipped(capsys):
-    findings = list(MODULE.detect([_event(resource_name="projects/_/buckets/model-artifacts-prod")]))
+    findings = list(
+        MODULE.detect([_event(resource_name="projects/_/buckets/model-artifacts-prod")])
+    )
     assert findings == []
     assert "missing bucket or object context" in capsys.readouterr().err

@@ -76,7 +76,11 @@ def test_detects_multiple_signal_groups():
         }
     )
     findings = list(detect([event], output_format="native"))
-    assert findings[0]["matched_signals"] == ["approval-evasion", "guardrail-bypass", "user-concealment"]
+    assert findings[0]["matched_signals"] == [
+        "approval-evasion",
+        "guardrail-bypass",
+        "user-concealment",
+    ]
 
 
 def test_skips_non_matching_response():

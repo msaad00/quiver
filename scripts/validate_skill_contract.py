@@ -37,9 +37,13 @@ def main() -> int:
             if not (skill.skill_dir / required).exists():
                 errors.append(f"{rel}: missing required path `{required}`")
 
-        frontmatter_keys = extract_frontmatter_keys(extract_frontmatter(skill.skill_dir / "SKILL.md"))
+        frontmatter_keys = extract_frontmatter_keys(
+            extract_frontmatter(skill.skill_dir / "SKILL.md")
+        )
         order_positions = {key: idx for idx, key in enumerate(FRONTMATTER_KEY_ORDER)}
-        present_positions = [order_positions[key] for key in frontmatter_keys if key in order_positions]
+        present_positions = [
+            order_positions[key] for key in frontmatter_keys if key in order_positions
+        ]
         if present_positions != sorted(present_positions):
             errors.append(f"{rel}: frontmatter fields must follow canonical order")
 
@@ -67,14 +71,18 @@ def main() -> int:
             errors.append(f"{rel}: invalid approval_model `{skill.approval_model}`")
 
         if skill.execution_modes:
-            unknown_modes = [mode for mode in skill.execution_modes if mode not in EXECUTION_MODE_VALUES]
+            unknown_modes = [
+                mode for mode in skill.execution_modes if mode not in EXECUTION_MODE_VALUES
+            ]
             if unknown_modes:
                 errors.append(f"{rel}: invalid execution_modes {unknown_modes}")
         elif skill.frontmatter.get("execution_modes"):
             errors.append(f"{rel}: execution_modes must not be empty")
 
         if skill.side_effects:
-            unknown_effects = [effect for effect in skill.side_effects if effect not in SIDE_EFFECT_VALUES]
+            unknown_effects = [
+                effect for effect in skill.side_effects if effect not in SIDE_EFFECT_VALUES
+            ]
             if unknown_effects:
                 errors.append(f"{rel}: invalid side_effects {unknown_effects}")
             if "none" in skill.side_effects and skill.side_effects != ("none",):
@@ -83,22 +91,30 @@ def main() -> int:
             errors.append(f"{rel}: side_effects must not be empty")
 
         input_formats = skill.frontmatter.get("input_formats")
-        parsed_input_formats = tuple(
-            part.strip() for part in input_formats.split(",") if part.strip()
-        ) if input_formats else ()
+        parsed_input_formats = (
+            tuple(part.strip() for part in input_formats.split(",") if part.strip())
+            if input_formats
+            else ()
+        )
         if parsed_input_formats:
-            unknown_input_formats = [mode for mode in parsed_input_formats if mode not in INPUT_FORMAT_VALUES]
+            unknown_input_formats = [
+                mode for mode in parsed_input_formats if mode not in INPUT_FORMAT_VALUES
+            ]
             if unknown_input_formats:
                 errors.append(f"{rel}: invalid input_formats {unknown_input_formats}")
         elif input_formats:
             errors.append(f"{rel}: input_formats must not be empty")
 
         output_formats = skill.frontmatter.get("output_formats")
-        parsed_output_formats = tuple(
-            part.strip() for part in output_formats.split(",") if part.strip()
-        ) if output_formats else ()
+        parsed_output_formats = (
+            tuple(part.strip() for part in output_formats.split(",") if part.strip())
+            if output_formats
+            else ()
+        )
         if parsed_output_formats:
-            unknown_output_formats = [mode for mode in parsed_output_formats if mode not in OUTPUT_FORMAT_VALUES]
+            unknown_output_formats = [
+                mode for mode in parsed_output_formats if mode not in OUTPUT_FORMAT_VALUES
+            ]
             if unknown_output_formats:
                 errors.append(f"{rel}: invalid output_formats {unknown_output_formats}")
         elif output_formats:
@@ -112,9 +128,11 @@ def main() -> int:
             errors.append(f"{rel}: concurrency_safety must not be empty")
 
         network_egress = skill.frontmatter.get("network_egress")
-        parsed_network_egress = tuple(
-            part.strip() for part in network_egress.split(",") if part.strip()
-        ) if network_egress else ()
+        parsed_network_egress = (
+            tuple(part.strip() for part in network_egress.split(",") if part.strip())
+            if network_egress
+            else ()
+        )
         if parsed_network_egress:
             invalid_network_egress = [
                 host for host in parsed_network_egress if not NETWORK_EGRESS_RE.fullmatch(host)
@@ -126,7 +144,9 @@ def main() -> int:
 
         if skill.is_write_capable:
             if skill.approval_model != "human_required":
-                errors.append(f"{rel}: write-capable skills must set approval_model to `human_required`")
+                errors.append(
+                    f"{rel}: write-capable skills must set approval_model to `human_required`"
+                )
             if not skill.side_effects or skill.side_effects == ("none",):
                 errors.append(f"{rel}: write-capable skills must declare concrete side_effects")
             min_approvers = skill.frontmatter.get("min_approvers")

@@ -148,9 +148,27 @@ class TestDetection:
 
     def test_failure_burst_followed_by_success_fires(self):
         events = [
-            _event(uid="evt-1", event_name="login_failure", time_ms=1000, status_id=2, status_detail="login_failure_invalid_password"),
-            _event(uid="evt-2", event_name="login_failure", time_ms=2000, status_id=2, status_detail="login_failure_invalid_password"),
-            _event(uid="evt-3", event_name="login_failure", time_ms=3000, status_id=2, status_detail="login_failure_invalid_password"),
+            _event(
+                uid="evt-1",
+                event_name="login_failure",
+                time_ms=1000,
+                status_id=2,
+                status_detail="login_failure_invalid_password",
+            ),
+            _event(
+                uid="evt-2",
+                event_name="login_failure",
+                time_ms=2000,
+                status_id=2,
+                status_detail="login_failure_invalid_password",
+            ),
+            _event(
+                uid="evt-3",
+                event_name="login_failure",
+                time_ms=3000,
+                status_id=2,
+                status_detail="login_failure_invalid_password",
+            ),
             _event(uid="evt-4", event_name="login_success", time_ms=4000),
         ]
         findings = list(detect(events))
@@ -187,9 +205,23 @@ class TestDetection:
 
     def test_different_ip_does_not_join_same_user(self):
         events = [
-            _event(uid="evt-1", event_name="login_failure", time_ms=1000, status_id=2, ip="198.51.100.21"),
-            _event(uid="evt-2", event_name="login_failure", time_ms=2000, status_id=2, ip="198.51.100.21"),
-            _event(uid="evt-3", event_name="login_failure", time_ms=3000, status_id=2, ip="203.0.113.9"),
+            _event(
+                uid="evt-1",
+                event_name="login_failure",
+                time_ms=1000,
+                status_id=2,
+                ip="198.51.100.21",
+            ),
+            _event(
+                uid="evt-2",
+                event_name="login_failure",
+                time_ms=2000,
+                status_id=2,
+                ip="198.51.100.21",
+            ),
+            _event(
+                uid="evt-3", event_name="login_failure", time_ms=3000, status_id=2, ip="203.0.113.9"
+            ),
             _event(uid="evt-4", event_name="login_success", time_ms=4000, ip="203.0.113.9"),
         ]
         assert list(detect(events)) == []
@@ -199,7 +231,9 @@ class TestDetection:
         assert findings == _load(EXPECTED)
 
     def test_native_input_can_emit_native_finding(self):
-        events = [_native_event(uid="evt-1", event_name="login_success", time_ms=1000, suspicious=True)]
+        events = [
+            _native_event(uid="evt-1", event_name="login_success", time_ms=1000, suspicious=True)
+        ]
         findings = list(detect(events, output_format="native"))
         assert OUTPUT_FORMATS == ("ocsf", "native")
         assert len(findings) == 1
@@ -210,7 +244,9 @@ class TestDetection:
         assert "class_uid" not in finding
 
     def test_native_input_can_emit_ocsf_finding(self):
-        events = [_native_event(uid="evt-1", event_name="login_success", time_ms=1000, suspicious=True)]
+        events = [
+            _native_event(uid="evt-1", event_name="login_success", time_ms=1000, suspicious=True)
+        ]
         findings = list(detect(events, output_format="ocsf"))
         assert len(findings) == 1
         assert findings[0]["class_uid"] == FINDING_CLASS_UID

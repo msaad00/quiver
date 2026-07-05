@@ -56,9 +56,7 @@ StepFn = Callable[[Any, str, dict[str, Any], list[dict[str, Any]]], None]
 
 def remediation_steps(*, hard_delete: bool) -> tuple[tuple[str, StepFn], ...]:
     """Return the ordered (name, callable) tuple. `hard_delete` rewires step 11."""
-    final_step: StepFn = (
-        _final_delete_user_hard if hard_delete else _final_delete_user_soft
-    )
+    final_step: StepFn = _final_delete_user_hard if hard_delete else _final_delete_user_soft
     return (
         ("disable_user", _disable_user),
         ("revoke_signin_sessions", _revoke_signin_sessions),
@@ -88,7 +86,9 @@ def _record(actions: list[dict[str, Any]], *, action: str, target: str, **extra:
 # ── Step 1 ─────────────────────────────────────────────────────────────────
 
 
-def _disable_user(client: Any, object_id: str, _entry: dict[str, Any], actions: list[dict[str, Any]]) -> None:
+def _disable_user(
+    client: Any, object_id: str, _entry: dict[str, Any], actions: list[dict[str, Any]]
+) -> None:
     """PATCH /users/{id} {"accountEnabled": false}."""
     client.disable_user(object_id=object_id)
     _record(actions, action="disable_user", target=object_id)
@@ -97,7 +97,9 @@ def _disable_user(client: Any, object_id: str, _entry: dict[str, Any], actions: 
 # ── Step 2 ─────────────────────────────────────────────────────────────────
 
 
-def _revoke_signin_sessions(client: Any, object_id: str, _entry: dict[str, Any], actions: list[dict[str, Any]]) -> None:
+def _revoke_signin_sessions(
+    client: Any, object_id: str, _entry: dict[str, Any], actions: list[dict[str, Any]]
+) -> None:
     """POST /users/{id}/revokeSignInSessions."""
     client.revoke_signin_sessions(object_id=object_id)
     _record(actions, action="revoke_signin_sessions", target=object_id)
@@ -106,7 +108,9 @@ def _revoke_signin_sessions(client: Any, object_id: str, _entry: dict[str, Any],
 # ── Step 3 ─────────────────────────────────────────────────────────────────
 
 
-def _delete_oauth2_grants(client: Any, object_id: str, _entry: dict[str, Any], actions: list[dict[str, Any]]) -> None:
+def _delete_oauth2_grants(
+    client: Any, object_id: str, _entry: dict[str, Any], actions: list[dict[str, Any]]
+) -> None:
     """DELETE /oauth2PermissionGrants/{id} for each grant whose principalId == userId."""
     for grant in client.list_oauth2_permission_grants(principal_id=object_id):
         grant_id = str(grant.get("id") or "")
@@ -119,7 +123,9 @@ def _delete_oauth2_grants(client: Any, object_id: str, _entry: dict[str, Any], a
 # ── Step 4 ─────────────────────────────────────────────────────────────────
 
 
-def _remove_from_groups(client: Any, object_id: str, _entry: dict[str, Any], actions: list[dict[str, Any]]) -> None:
+def _remove_from_groups(
+    client: Any, object_id: str, _entry: dict[str, Any], actions: list[dict[str, Any]]
+) -> None:
     """DELETE /groups/{id}/members/{userId}/$ref for every group the user is in."""
     for group in client.list_user_groups(object_id=object_id):
         group_id = str(group.get("id") or "")
@@ -166,7 +172,9 @@ def _detach_subscription_role_assignments(
     client: Any, object_id: str, _entry: dict[str, Any], actions: list[dict[str, Any]]
 ) -> None:
     """DELETE /providers/Microsoft.Authorization/roleAssignments/{id} at subscription scope."""
-    for assignment in client.list_role_assignments(scope_type="subscription", principal_id=object_id):
+    for assignment in client.list_role_assignments(
+        scope_type="subscription", principal_id=object_id
+    ):
         assignment_id = str(assignment.get("id") or "")
         scope = str(assignment.get("scope") or "")
         if not assignment_id:
@@ -188,7 +196,9 @@ def _detach_managementgroup_and_resourcegroup_role_assignments(
 ) -> None:
     """Same API as step 7 but at management-group + resource-group scopes."""
     for scope_type in ("management_group", "resource_group"):
-        for assignment in client.list_role_assignments(scope_type=scope_type, principal_id=object_id):
+        for assignment in client.list_role_assignments(
+            scope_type=scope_type, principal_id=object_id
+        ):
             assignment_id = str(assignment.get("id") or "")
             scope = str(assignment.get("scope") or "")
             if not assignment_id:
@@ -209,7 +219,9 @@ def _detach_assigned_licenses(
     client: Any, object_id: str, _entry: dict[str, Any], actions: list[dict[str, Any]]
 ) -> None:
     """POST /users/{id}/assignLicense with removeLicenses=[<sku-ids>]."""
-    sku_ids = [str(lic.get("skuId") or "") for lic in client.list_user_licenses(object_id=object_id)]
+    sku_ids = [
+        str(lic.get("skuId") or "") for lic in client.list_user_licenses(object_id=object_id)
+    ]
     sku_ids = [s for s in sku_ids if s]
     if not sku_ids:
         return

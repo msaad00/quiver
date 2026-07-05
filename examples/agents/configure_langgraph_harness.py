@@ -70,12 +70,16 @@ def _assert_no_secret_material(payload: Any, *, path: str) -> None:
         for key, value in payload.items():
             key_text = str(key)
             if SECRET_FIELD_RE.search(key_text):
-                raise ValueError(f"{path}.{key_text} must not contain passwords, PATs, tokens, or secrets")
+                raise ValueError(
+                    f"{path}.{key_text} must not contain passwords, PATs, tokens, or secrets"
+                )
             _assert_no_secret_material(value, path=f"{path}.{key_text}")
     elif isinstance(payload, list):
         for index, value in enumerate(payload):
             _assert_no_secret_material(value, path=f"{path}[{index}]")
-    elif isinstance(payload, str) and (SECRET_FIELD_RE.search(payload) or SECRET_VALUE_RE.search(payload)):
+    elif isinstance(payload, str) and (
+        SECRET_FIELD_RE.search(payload) or SECRET_VALUE_RE.search(payload)
+    ):
         raise ValueError(f"{path} must not contain password, PAT, token, or secret material")
 
 
@@ -166,7 +170,9 @@ def build_profile(args: argparse.Namespace) -> dict[str, Any]:
             "agent_id": "remediation-planner",
             "requires_human_approval": True,
             "privilege_boundary": "dry_run_write_planning",
-            "skill_scope": [ALLOWED_SKILLS_REMEDIATION] if ROLE_DEFAULTS[role]["include_remediation"] else [],
+            "skill_scope": [ALLOWED_SKILLS_REMEDIATION]
+            if ROLE_DEFAULTS[role]["include_remediation"]
+            else [],
         },
     ]
     profile = {
@@ -250,8 +256,12 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--user-id")
     parser.add_argument("--session-id")
     parser.add_argument("--roles")
-    parser.add_argument("--cloud-hint", action="append", default=[], help="provider=credential-hint")
-    parser.add_argument("--allowed-skill", action="append", default=[], help="additional known example skill")
+    parser.add_argument(
+        "--cloud-hint", action="append", default=[], help="provider=credential-hint"
+    )
+    parser.add_argument(
+        "--allowed-skill", action="append", default=[], help="additional known example skill"
+    )
     parser.add_argument(
         "--data-source-mode",
         choices=["raw-ingest", "security-lake-replay"],
@@ -270,7 +280,9 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         default="ocsf",
         help="Shape returned by the lake replay query",
     )
-    parser.add_argument("--lake-query", help="Read-only SELECT/WITH/SHOW/DESCRIBE query for lake replay")
+    parser.add_argument(
+        "--lake-query", help="Read-only SELECT/WITH/SHOW/DESCRIBE query for lake replay"
+    )
     parser.add_argument(
         "--mcp-execution-mode",
         choices=["plan_only", "operator_stdio"],
@@ -301,7 +313,9 @@ def main(argv: list[str] | None = None) -> int:
         sys.stderr.write(f"error: {exc}\n")
         return 2
     args.output_profile.parent.mkdir(parents=True, exist_ok=True)
-    args.output_profile.write_text(json.dumps(profile, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    args.output_profile.write_text(
+        json.dumps(profile, indent=2, sort_keys=True) + "\n", encoding="utf-8"
+    )
     write_dotenv(
         profile_path=args.output_profile,
         env_path=args.output_env,
@@ -309,15 +323,20 @@ def main(argv: list[str] | None = None) -> int:
         provider=args.llm_provider,
         model=args.llm_model,
     )
-    print(json.dumps({
-        "profile": str(args.output_profile),
-        "env": str(args.output_env),
-        "profile_id": profile["profile_id"],
-        "role": args.role,
-        "allowed_skills": profile["allowed_skills"],
-        "approval_required": True,
-        "secrets_written": False,
-    }, indent=2))
+    print(
+        json.dumps(
+            {
+                "profile": str(args.output_profile),
+                "env": str(args.output_env),
+                "profile_id": profile["profile_id"],
+                "role": args.role,
+                "allowed_skills": profile["allowed_skills"],
+                "approval_required": True,
+                "secrets_written": False,
+            },
+            indent=2,
+        )
+    )
     return 0
 
 

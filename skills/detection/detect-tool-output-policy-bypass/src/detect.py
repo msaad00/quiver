@@ -214,9 +214,13 @@ def _fingerprint(text: str) -> str:
     return "sha256:" + hashlib.sha256(text.encode("utf-8")).hexdigest()
 
 
-def _finding_uid(session_uid: str, tool_name: str, event_uid: str, matched_signals: list[str]) -> str:
+def _finding_uid(
+    session_uid: str, tool_name: str, event_uid: str, matched_signals: list[str]
+) -> str:
     material = f"{session_uid}|{tool_name}|{event_uid}|{'|'.join(sorted(matched_signals))}"
-    return f"det-tool-output-policy-bypass-{hashlib.sha256(material.encode('utf-8')).hexdigest()[:16]}"
+    return (
+        f"det-tool-output-policy-bypass-{hashlib.sha256(material.encode('utf-8')).hexdigest()[:16]}"
+    )
 
 
 def _build_native_finding(event: dict[str, Any]) -> dict[str, Any]:
@@ -339,14 +343,21 @@ def _render_ocsf_finding(native_finding: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def detect(events: Iterable[dict[str, Any]], *, output_format: str = "ocsf") -> Iterable[dict[str, Any]]:
+def detect(
+    events: Iterable[dict[str, Any]], *, output_format: str = "ocsf"
+) -> Iterable[dict[str, Any]]:
     if output_format not in OUTPUT_FORMATS:
         raise ValueError(f"unsupported output_format: {output_format}")
 
     warned_non_mcp = False
     for event in events:
         normalized = _normalize_event(event)
-        if normalized and normalized["source_skill"] and normalized["source_skill"] != INGEST_SKILL and not warned_non_mcp:
+        if (
+            normalized
+            and normalized["source_skill"]
+            and normalized["source_skill"] != INGEST_SKILL
+            and not warned_non_mcp
+        ):
             warned_non_mcp = True
             emit_stderr_event(
                 SKILL_NAME,
@@ -380,8 +391,12 @@ def _iter_json_lines(paths: list[str]) -> Iterable[dict[str, Any]]:
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Detect policy-bypass language in MCP tool-call responses.")
-    parser.add_argument("paths", nargs="*", help="Optional JSONL input paths; reads stdin when omitted.")
+    parser = argparse.ArgumentParser(
+        description="Detect policy-bypass language in MCP tool-call responses."
+    )
+    parser.add_argument(
+        "paths", nargs="*", help="Optional JSONL input paths; reads stdin when omitted."
+    )
     parser.add_argument("--output-format", default="ocsf", choices=OUTPUT_FORMATS)
     args = parser.parse_args(argv)
 

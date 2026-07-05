@@ -72,7 +72,9 @@ def test_skips_within_grace_period():
 def test_skips_already_deleted():
     out = parser_handler._validate_entries(
         [_entry(user_deleted=True)],
-        storage_account="a", container="b", blob_name="c",
+        storage_account="a",
+        container="b",
+        blob_name="c",
         graph_client=_StubGraph(),
     )
     assert out["validation_summary"]["validated_count"] == 0
@@ -88,7 +90,9 @@ def test_rehire_with_signin_after_rehire_date_skips():
                 user_last_signin_at="2026-04-01T00:00:00Z",
             )
         ],
-        storage_account="a", container="b", blob_name="c",
+        storage_account="a",
+        container="b",
+        blob_name="c",
         graph_client=_StubGraph(present_object_ids=[OBJECT_ID]),
     )
     assert out["validation_summary"]["validated_count"] == 0
@@ -105,7 +109,9 @@ def test_rehire_with_idle_user_remediates():
                 user_last_signin_at="2025-12-01T00:00:00Z",  # older than rehire date
             )
         ],
-        storage_account="a", container="b", blob_name="c",
+        storage_account="a",
+        container="b",
+        blob_name="c",
         graph_client=_StubGraph(present_object_ids=[OBJECT_ID]),
     )
     assert out["validation_summary"]["validated_count"] == 1
@@ -114,17 +120,23 @@ def test_rehire_with_idle_user_remediates():
 def test_skips_invalid_object_id():
     out = parser_handler._validate_entries(
         [_entry(object_id="not-a-guid")],
-        storage_account="a", container="b", blob_name="c",
+        storage_account="a",
+        container="b",
+        blob_name="c",
         graph_client=_StubGraph(),
     )
     assert out["validation_summary"]["validated_count"] == 0
-    assert any("Invalid Entra ObjectId" in s["reason"] for s in out["validation_summary"]["skipped"])
+    assert any(
+        "Invalid Entra ObjectId" in s["reason"] for s in out["validation_summary"]["skipped"]
+    )
 
 
 def test_skips_when_user_not_in_tenant():
     out = parser_handler._validate_entries(
         [_entry()],
-        storage_account="a", container="b", blob_name="c",
+        storage_account="a",
+        container="b",
+        blob_name="c",
         graph_client=_StubGraph(present_object_ids=[]),
     )
     assert out["validation_summary"]["validated_count"] == 0
@@ -140,7 +152,9 @@ def test_cli_dry_run_reads_local_manifest(tmp_path):
     manifest_path = tmp_path / "manifest.json"
     manifest_path.write_text(
         '{"entries":['
-        + '{"upn":"a@b.example","object_id":"' + OBJECT_ID + '","terminated_at":"2025-01-01T00:00:00Z"}'
+        + '{"upn":"a@b.example","object_id":"'
+        + OBJECT_ID
+        + '","terminated_at":"2025-01-01T00:00:00Z"}'
         + "]}",
         encoding="utf-8",
     )

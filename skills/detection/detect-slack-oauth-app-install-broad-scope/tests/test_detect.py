@@ -97,7 +97,10 @@ class TestDetection:
         assert finding["metadata"]["product"]["feature"]["name"] == SKILL_NAME
         assert finding["finding_info"]["attacks"][0]["technique"]["uid"] == MITRE_TECHNIQUE_UID
         assert OWASP_FINDING_TYPE in finding["finding_info"]["types"]
-        assert "chat:write" in finding["evidence"]["broad_scope_reason"] or "files:read" in finding["evidence"]["broad_scope_reason"]
+        assert (
+            "chat:write" in finding["evidence"]["broad_scope_reason"]
+            or "files:read" in finding["evidence"]["broad_scope_reason"]
+        )
 
     def test_wildcard_scope_fires(self) -> None:
         findings = list(detect([_event(uid="b2", scopes=["*:write"])]))

@@ -125,7 +125,9 @@ def _build_canonical_finding(finding: dict[str, Any]) -> dict[str, Any]:
         "first_seen_time_ms": event_time,
         "last_seen_time_ms": event_time,
         "attacks": [],
-        "resources": [{"name": resource_name, "type": finding_class or "scc-finding"}] if resource_name else [],
+        "resources": [{"name": resource_name, "type": finding_class or "scc-finding"}]
+        if resource_name
+        else [],
         "cloud": {"provider": "GCP"},
         "source": {
             "kind": "gcp.security-command-center",
@@ -139,7 +141,9 @@ def _build_canonical_finding(finding: dict[str, Any]) -> dict[str, Any]:
             "events_observed": 1,
             "first_seen_time": event_time,
             "last_seen_time": event_time,
-            "raw_events": [{"uid": str(finding.get("name") or ""), "product": "gcp-security-command-center"}],
+            "raw_events": [
+                {"uid": str(finding.get("name") or ""), "product": "gcp-security-command-center"}
+            ],
         },
     }
     if project:
@@ -153,7 +157,11 @@ def _build_observables(canonical: dict[str, Any]) -> list[dict[str, Any]]:
         {"name": "scc.state", "type": "Other", "value": canonical["source"]["state"]},
         {"name": "scc.category", "type": "Other", "value": canonical["source"]["category"]},
         {"name": "scc.severity", "type": "Other", "value": canonical["severity"]},
-        {"name": "scc.finding_class", "type": "Other", "value": canonical["source"]["finding_class"]},
+        {
+            "name": "scc.finding_class",
+            "type": "Other",
+            "value": canonical["source"]["finding_class"],
+        },
     ]
 
 
@@ -224,7 +232,10 @@ def iter_raw_findings(stream: Iterable[str]) -> Iterable[dict[str, Any]]:
             try:
                 obj = json.loads(line)
             except json.JSONDecodeError as exc:
-                print(f"[{SKILL_NAME}] skipping line {lineno}: json parse failed: {exc}", file=sys.stderr)
+                print(
+                    f"[{SKILL_NAME}] skipping line {lineno}: json parse failed: {exc}",
+                    file=sys.stderr,
+                )
                 continue
             if isinstance(obj, dict):
                 if isinstance(obj.get("finding"), dict):
@@ -265,10 +276,17 @@ def ingest(stream: Iterable[str], output_format: str = "ocsf") -> Iterable[dict[
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Convert GCP SCC findings to OCSF 1.8 Detection Finding JSONL.")
+    parser = argparse.ArgumentParser(
+        description="Convert GCP SCC findings to OCSF 1.8 Detection Finding JSONL."
+    )
     parser.add_argument("input", nargs="?", help="Input JSON or JSONL file. Defaults to stdin.")
     parser.add_argument("--output", "-o", help="Output JSONL file. Defaults to stdout.")
-    parser.add_argument("--output-format", choices=("ocsf", "native"), default="ocsf", help="Output shape. Defaults to ocsf.")
+    parser.add_argument(
+        "--output-format",
+        choices=("ocsf", "native"),
+        default="ocsf",
+        help="Output shape. Defaults to ocsf.",
+    )
     args = parser.parse_args(argv)
 
     in_stream = sys.stdin if not args.input else open(args.input, "r", encoding="utf-8")

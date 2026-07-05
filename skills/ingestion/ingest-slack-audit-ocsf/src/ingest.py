@@ -284,7 +284,9 @@ def _unmapped_payload(event: dict[str, Any]) -> dict[str, Any]:
     details = event.get("details") or {}
     payload: dict[str, Any] = {
         "action": event.get("action"),
-        "entity_type": (event.get("entity") or {}).get("type") if isinstance(event.get("entity"), dict) else None,
+        "entity_type": (event.get("entity") or {}).get("type")
+        if isinstance(event.get("entity"), dict)
+        else None,
     }
     workspace = _workspace(event)
     if workspace:
@@ -330,10 +332,18 @@ def _metadata_uid(event: dict[str, Any]) -> str:
     stable = {
         "date_create": event.get("date_create", ""),
         "action": event.get("action", ""),
-        "actorId": ((event.get("actor") or {}).get("user") or {}).get("id", "") if isinstance(event.get("actor"), dict) else "",
-        "entityId": ((event.get("entity") or {}).get((event.get("entity") or {}).get("type") or "") or {}).get("id", "") if isinstance(event.get("entity"), dict) else "",
+        "actorId": ((event.get("actor") or {}).get("user") or {}).get("id", "")
+        if isinstance(event.get("actor"), dict)
+        else "",
+        "entityId": (
+            (event.get("entity") or {}).get((event.get("entity") or {}).get("type") or "") or {}
+        ).get("id", "")
+        if isinstance(event.get("entity"), dict)
+        else "",
     }
-    return hashlib.sha256(json.dumps(stable, sort_keys=True, separators=(",", ":")).encode("utf-8")).hexdigest()
+    return hashlib.sha256(
+        json.dumps(stable, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    ).hexdigest()
 
 
 def _record_type(class_uid: int) -> str:
@@ -350,7 +360,9 @@ def _category(class_uid: int) -> tuple[int, str]:
     return CATEGORY_IAM_UID, CATEGORY_IAM_NAME
 
 
-def _build_canonical_event(event: dict[str, Any], class_uid: int, activity_id: int) -> dict[str, Any]:
+def _build_canonical_event(
+    event: dict[str, Any], class_uid: int, activity_id: int
+) -> dict[str, Any]:
     canonical: dict[str, Any] = {
         "schema_mode": "canonical",
         "canonical_schema_version": CANONICAL_VERSION,
@@ -567,7 +579,9 @@ def ingest(
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Convert raw Slack Audit Logs API JSON to OCSF or native JSONL.")
+    parser = argparse.ArgumentParser(
+        description="Convert raw Slack Audit Logs API JSON to OCSF or native JSONL."
+    )
     parser.add_argument("input", nargs="?", help="Input JSON/JSONL file. Defaults to stdin.")
     parser.add_argument("--output", "-o", help="Output JSONL file. Defaults to stdout.")
     parser.add_argument(
@@ -583,7 +597,9 @@ def main(argv: list[str] | None = None) -> int:
 
     unmapped_counts: dict[str, int] = {}
     try:
-        for event in ingest(in_stream, output_format=args.output_format, unmapped_counts=unmapped_counts):
+        for event in ingest(
+            in_stream, output_format=args.output_format, unmapped_counts=unmapped_counts
+        ):
             out_stream.write(json.dumps(event, separators=(",", ":")) + "\n")
     finally:
         if args.input:

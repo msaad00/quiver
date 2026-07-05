@@ -84,7 +84,14 @@ class TestInsertAndMain:
         assert fake.calls == [
             {
                 "table": "security.findings_sink",
-                "data": [['{"event_uid":"evt-1","finding_uid":"f-1","schema_mode":"native"}', "native", "evt-1", "f-1"]],
+                "data": [
+                    [
+                        '{"event_uid":"evt-1","finding_uid":"f-1","schema_mode":"native"}',
+                        "native",
+                        "evt-1",
+                        "f-1",
+                    ]
+                ],
                 "column_names": ["payload", "schema_mode", "event_uid", "finding_uid"],
             }
         ]
@@ -97,7 +104,9 @@ class TestInsertAndMain:
         try:
             _SINK._insert_rows(
                 "security.findings_sink",
-                _prepare_rows(['{"schema_mode":"native","event_uid":"evt-1","finding_uid":"f-1"}\n']),
+                _prepare_rows(
+                    ['{"schema_mode":"native","event_uid":"evt-1","finding_uid":"f-1"}\n']
+                ),
             )
         except RuntimeError as exc:
             assert "insert failed" in str(exc)
@@ -115,7 +124,9 @@ class TestInsertAndMain:
         assert result["would_insert_records"] == 1
 
     def test_main_defaults_to_dry_run(self, monkeypatch, capsys):
-        monkeypatch.setattr(_SINK.sys, "stdin", io.StringIO('{"schema_mode":"native","event_uid":"evt-1"}\n'))
+        monkeypatch.setattr(
+            _SINK.sys, "stdin", io.StringIO('{"schema_mode":"native","event_uid":"evt-1"}\n')
+        )
 
         exit_code = main(["--table", "security.findings_sink"])
 

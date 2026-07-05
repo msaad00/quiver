@@ -119,8 +119,14 @@ def test_protected_namespace_matches_exact_and_prefix():
 
 
 def test_protected_binding_matches_system_prefix():
-    assert is_protected_binding("system:masters", DEFAULT_DENY_BINDING_PREFIXES) == (True, "system:")
-    assert is_protected_binding("System:Public-Info-Viewer", DEFAULT_DENY_BINDING_PREFIXES) == (True, "system:")
+    assert is_protected_binding("system:masters", DEFAULT_DENY_BINDING_PREFIXES) == (
+        True,
+        "system:",
+    )
+    assert is_protected_binding("System:Public-Info-Viewer", DEFAULT_DENY_BINDING_PREFIXES) == (
+        True,
+        "system:",
+    )
     assert is_protected_binding("attacker-grant", DEFAULT_DENY_BINDING_PREFIXES) == (False, "")
     assert is_protected_binding("", DEFAULT_DENY_BINDING_PREFIXES) == (False, "")
 
@@ -207,26 +213,38 @@ def test_run_dry_run_emits_plan_for_namespaced_binding():
     assert rec["dry_run"] is True
     assert rec["target"]["binding_type"] == "rolebindings"
     assert rec["target"]["binding_name"] == "attacker-grant"
-    assert rec["actions"][0]["endpoint"].startswith("DELETE /apis/rbac.authorization.k8s.io/v1/namespaces/payments/rolebindings/attacker-grant")
+    assert rec["actions"][0]["endpoint"].startswith(
+        "DELETE /apis/rbac.authorization.k8s.io/v1/namespaces/payments/rolebindings/attacker-grant"
+    )
 
 
 def test_run_dry_run_emits_plan_for_cluster_binding():
     records = list(
         run(
-            [_finding(binding_type="clusterrolebindings", binding_name="attacker-cluster-grant", namespace="")],
+            [
+                _finding(
+                    binding_type="clusterrolebindings",
+                    binding_name="attacker-cluster-grant",
+                    namespace="",
+                )
+            ],
             kube_client=_FakeKube(),
         )
     )
     rec = records[0]
     assert rec["status"] == STATUS_PLANNED
-    assert rec["actions"][0]["endpoint"].startswith("DELETE /apis/rbac.authorization.k8s.io/v1/clusterrolebindings/attacker-cluster-grant")
+    assert rec["actions"][0]["endpoint"].startswith(
+        "DELETE /apis/rbac.authorization.k8s.io/v1/clusterrolebindings/attacker-cluster-grant"
+    )
 
 
 # ----------------- run: skip paths -----------------
 
 
 def test_run_skips_finding_without_binding_pointer():
-    records = list(run([_finding(omit_binding=True, rule="r1-secret-enum")], kube_client=_FakeKube()))
+    records = list(
+        run([_finding(omit_binding=True, rule="r1-secret-enum")], kube_client=_FakeKube())
+    )
     rec = records[0]
     assert rec["status"] == STATUS_SKIPPED_NO_BINDING
     assert rec["actions"] == []
@@ -278,7 +296,13 @@ def test_run_does_not_check_namespace_for_cluster_bindings_in_protected_ns():
     handles cluster-scoped protection via the system: prefix)."""
     records = list(
         run(
-            [_finding(binding_type="clusterrolebindings", binding_name="custom-cluster-grant", namespace="kube-system")],
+            [
+                _finding(
+                    binding_type="clusterrolebindings",
+                    binding_name="custom-cluster-grant",
+                    namespace="kube-system",
+                )
+            ],
             kube_client=_FakeKube(),
         )
     )
@@ -291,7 +315,9 @@ def test_run_does_not_check_namespace_for_cluster_bindings_in_protected_ns():
 
 def test_run_apply_revokes_namespaced_binding_with_dual_audit():
     audit = _FakeAudit()
-    kube = _FakeKube(role_bindings={("payments", "attacker-grant"): {"metadata": {"name": "attacker-grant"}}})
+    kube = _FakeKube(
+        role_bindings={("payments", "attacker-grant"): {"metadata": {"name": "attacker-grant"}}}
+    )
     records = list(
         run(
             [_finding()],
@@ -322,10 +348,20 @@ def test_run_apply_revokes_namespaced_binding_with_dual_audit():
 
 def test_run_apply_revokes_cluster_binding():
     audit = _FakeAudit()
-    kube = _FakeKube(cluster_role_bindings={"attacker-cluster-grant": {"metadata": {"name": "attacker-cluster-grant"}}})
+    kube = _FakeKube(
+        cluster_role_bindings={
+            "attacker-cluster-grant": {"metadata": {"name": "attacker-cluster-grant"}}
+        }
+    )
     records = list(
         run(
-            [_finding(binding_type="clusterrolebindings", binding_name="attacker-cluster-grant", namespace="")],
+            [
+                _finding(
+                    binding_type="clusterrolebindings",
+                    binding_name="attacker-cluster-grant",
+                    namespace="",
+                )
+            ],
             kube_client=kube,
             apply=True,
             audit=audit,
@@ -385,7 +421,9 @@ def test_run_apply_requires_audit_writer():
 
 def test_run_apply_skips_cluster_outside_allow_list():
     audit = _FakeAudit()
-    kube = _FakeKube(role_bindings={("payments", "attacker-grant"): {"metadata": {"name": "attacker-grant"}}})
+    kube = _FakeKube(
+        role_bindings={("payments", "attacker-grant"): {"metadata": {"name": "attacker-grant"}}}
+    )
     records = list(
         run(
             [_finding()],
@@ -425,7 +463,11 @@ def test_run_reverify_reports_drift_when_binding_still_present():
     records = list(
         run(
             [_finding()],
-            kube_client=_FakeKube(role_bindings={("payments", "attacker-grant"): {"metadata": {"name": "attacker-grant"}}}),
+            kube_client=_FakeKube(
+                role_bindings={
+                    ("payments", "attacker-grant"): {"metadata": {"name": "attacker-grant"}}
+                }
+            ),
             reverify=True,
         )
     )
@@ -437,7 +479,13 @@ def test_run_reverify_reports_drift_when_binding_still_present():
 def test_run_reverify_handles_cluster_binding():
     records = list(
         run(
-            [_finding(binding_type="clusterrolebindings", binding_name="attacker-cluster-grant", namespace="")],
+            [
+                _finding(
+                    binding_type="clusterrolebindings",
+                    binding_name="attacker-cluster-grant",
+                    namespace="",
+                )
+            ],
             kube_client=_FakeKube(cluster_role_bindings={}),
             reverify=True,
         )

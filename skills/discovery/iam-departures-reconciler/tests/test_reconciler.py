@@ -140,7 +140,9 @@ class TestDepartureRecord:
         assert r1.record_hash == r2.record_hash
 
     def test_record_hash_changes_on_different_data(self):
-        assert _make_record(email="a@co.com").record_hash != _make_record(email="b@co.com").record_hash
+        assert (
+            _make_record(email="a@co.com").record_hash != _make_record(email="b@co.com").record_hash
+        )
 
     def test_to_dict_serializable(self):
         d = _make_record().to_dict()
@@ -168,13 +170,17 @@ class TestChangeDetector:
         s3 = MagicMock()
         detector = ChangeDetector(s3, "my-bucket")
         expected_hash = detector.compute_hash(records)
-        s3.get_object.return_value = {"Body": MagicMock(read=MagicMock(return_value=expected_hash.encode()))}
+        s3.get_object.return_value = {
+            "Body": MagicMock(read=MagicMock(return_value=expected_hash.encode()))
+        }
         changed, _ = detector.has_changed(records)
         assert changed is False
 
     def test_different_data_changed(self):
         s3 = MagicMock()
-        s3.get_object.return_value = {"Body": MagicMock(read=MagicMock(return_value=b"old_hash_value_here"))}
+        s3.get_object.return_value = {
+            "Body": MagicMock(read=MagicMock(return_value=b"old_hash_value_here"))
+        }
         detector = ChangeDetector(s3, "my-bucket")
         changed, _ = detector.has_changed([_make_record()])
         assert changed is True
@@ -309,12 +315,15 @@ class TestWorkdayRedaction:
         httpx = pytest.importorskip("httpx")
         from reconciler import sources
 
-        with patch.dict(os.environ, {
-            "WORKDAY_API_URL": "https://example.com/report",
-            "WORKDAY_CLIENT_ID": "cid",
-            "WORKDAY_CLIENT_SECRET": "topsecret-password-9999",
-            "WORKDAY_TOKEN_URL": "https://example.com/token",
-        }):
+        with patch.dict(
+            os.environ,
+            {
+                "WORKDAY_API_URL": "https://example.com/report",
+                "WORKDAY_CLIENT_ID": "cid",
+                "WORKDAY_CLIENT_SECRET": "topsecret-password-9999",
+                "WORKDAY_TOKEN_URL": "https://example.com/token",
+            },
+        ):
             source = sources.WorkdayAPISource()
 
         # Simulate a 401 with a "leaky" body that echoes the credential.
@@ -335,12 +344,15 @@ class TestWorkdayRedaction:
         httpx = pytest.importorskip("httpx")
         from reconciler import sources
 
-        with patch.dict(os.environ, {
-            "WORKDAY_API_URL": "https://example.com/report",
-            "WORKDAY_CLIENT_ID": "cid",
-            "WORKDAY_CLIENT_SECRET": "secret",
-            "WORKDAY_TOKEN_URL": "https://example.com/token",
-        }):
+        with patch.dict(
+            os.environ,
+            {
+                "WORKDAY_API_URL": "https://example.com/report",
+                "WORKDAY_CLIENT_ID": "cid",
+                "WORKDAY_CLIENT_SECRET": "secret",
+                "WORKDAY_TOKEN_URL": "https://example.com/token",
+            },
+        ):
             source = sources.WorkdayAPISource()
 
         class _FakeConnectError(httpx.HTTPError):

@@ -117,7 +117,9 @@ def test_fallback_warning_emitted_once_per_reason(monkeypatch, capsys):
 def test_bwrap_prefix_when_enabled(monkeypatch, tmp_path):
     monkeypatch.setenv(SB.SANDBOX_ENV, "1")
     monkeypatch.setattr(SB.sys, "platform", "linux")
-    monkeypatch.setattr(SB.shutil, "which", lambda name: f"/usr/bin/{name}" if name == "bwrap" else None)
+    monkeypatch.setattr(
+        SB.shutil, "which", lambda name: f"/usr/bin/{name}" if name == "bwrap" else None
+    )
     skill = _FakeSkill(network_egress=("api.example.com",))
     cmd = ["python", "skills/foo/src/detect.py"]
     wrapped = SB.wrap_command(cmd, skill, repo_root=tmp_path)
@@ -126,7 +128,7 @@ def test_bwrap_prefix_when_enabled(monkeypatch, tmp_path):
     assert "--share-net" in wrapped
     assert "--unshare-net" not in wrapped
     # Original command lives after the `--` terminator.
-    assert wrapped[-len(cmd):] == cmd
+    assert wrapped[-len(cmd) :] == cmd
     assert wrapped[-len(cmd) - 1] == "--"
     # Repo binding present.
     assert "--bind" in wrapped
@@ -136,7 +138,9 @@ def test_bwrap_prefix_when_enabled(monkeypatch, tmp_path):
 def test_bwrap_unshare_net_when_egress_empty(monkeypatch, tmp_path):
     monkeypatch.setenv(SB.SANDBOX_ENV, "on")
     monkeypatch.setattr(SB.sys, "platform", "linux")
-    monkeypatch.setattr(SB.shutil, "which", lambda name: f"/usr/bin/{name}" if name == "bwrap" else None)
+    monkeypatch.setattr(
+        SB.shutil, "which", lambda name: f"/usr/bin/{name}" if name == "bwrap" else None
+    )
     skill = _FakeSkill(network_egress=())
     wrapped = SB.wrap_command(["python", "src/x.py"], skill, repo_root=tmp_path)
     assert "--unshare-net" in wrapped
@@ -150,7 +154,8 @@ def test_sandbox_exec_prefix_when_enabled(monkeypatch, tmp_path):
     monkeypatch.setenv(SB.SANDBOX_ENV, "yes")
     monkeypatch.setattr(SB.sys, "platform", "darwin")
     monkeypatch.setattr(
-        SB.shutil, "which",
+        SB.shutil,
+        "which",
         lambda name: f"/usr/bin/{name}" if name == "sandbox-exec" else None,
     )
     skill = _FakeSkill(network_egress=("login.microsoftonline.com",))
@@ -173,7 +178,8 @@ def test_sandbox_exec_denies_network_when_egress_empty(monkeypatch, tmp_path):
     monkeypatch.setenv(SB.SANDBOX_ENV, "on")
     monkeypatch.setattr(SB.sys, "platform", "darwin")
     monkeypatch.setattr(
-        SB.shutil, "which",
+        SB.shutil,
+        "which",
         lambda name: f"/usr/bin/{name}" if name == "sandbox-exec" else None,
     )
     skill = _FakeSkill(network_egress=())

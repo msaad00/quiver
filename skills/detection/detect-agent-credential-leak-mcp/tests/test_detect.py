@@ -34,7 +34,9 @@ def _load(path: Path) -> list[dict[str, Any]]:
     return [json.loads(line) for line in path.read_text().splitlines() if line.strip()]
 
 
-def _ev(session: str, tool: str, body: Any, time_ms: int, *, source_skill: str = "ingest-mcp-proxy-ocsf") -> dict:
+def _ev(
+    session: str, tool: str, body: Any, time_ms: int, *, source_skill: str = "ingest-mcp-proxy-ocsf"
+) -> dict:
     return {
         "schema_mode": "native",
         "canonical_schema_version": CANONICAL_VERSION,
@@ -76,7 +78,12 @@ class TestNormalize:
             "class_uid": APPLICATION_ACTIVITY_UID,
             "time": TEST_TIME_MS,
             "metadata": {"uid": "evt-1", "product": {"feature": {"name": "ingest-mcp-proxy-ocsf"}}},
-            "mcp": {"session_uid": "s1", "method": "tools/call", "direction": "response", "tool": {"name": "query_db"}},
+            "mcp": {
+                "session_uid": "s1",
+                "method": "tools/call",
+                "direction": "response",
+                "tool": {"name": "query_db"},
+            },
             "body": {"text": "ghp_abcdefghijklmnopqrstuvwxyz1234567890"},
         }
         normalized = _normalize_event(event)
@@ -86,17 +93,30 @@ class TestNormalize:
 
 class TestFilter:
     def test_ignores_wrong_source(self):
-        assert _credential_leak_event(
-            _ev("s1", "tool", {"token": "ghp_abcdefghijklmnopqrstuvwxyz1234567890"}, TEST_TIME_MS, source_skill="other")
-        ) is None
+        assert (
+            _credential_leak_event(
+                _ev(
+                    "s1",
+                    "tool",
+                    {"token": "ghp_abcdefghijklmnopqrstuvwxyz1234567890"},
+                    TEST_TIME_MS,
+                    source_skill="other",
+                )
+            )
+            is None
+        )
 
     def test_ignores_wrong_method(self):
-        event = _ev("s1", "tool", {"token": "ghp_abcdefghijklmnopqrstuvwxyz1234567890"}, TEST_TIME_MS)
+        event = _ev(
+            "s1", "tool", {"token": "ghp_abcdefghijklmnopqrstuvwxyz1234567890"}, TEST_TIME_MS
+        )
         event["method"] = "tools/list"
         assert _credential_leak_event(event) is None
 
     def test_accepts_leaking_response(self):
-        event = _credential_leak_event(_ev("s1", "tool", {"token": "ghp_abcdefghijklmnopqrstuvwxyz1234567890"}, TEST_TIME_MS))
+        event = _credential_leak_event(
+            _ev("s1", "tool", {"token": "ghp_abcdefghijklmnopqrstuvwxyz1234567890"}, TEST_TIME_MS)
+        )
         assert event is not None
         assert event["matches"][0]["signal"] == "github-token"
 
@@ -109,14 +129,27 @@ class TestDetect:
         assert list(detect([_ev("s1", "tool", {"text": "all good"}, TEST_TIME_MS)])) == []
 
     def test_leaking_response_fires(self):
-        findings = list(detect([_ev("s1", "tool", {"token": "ghp_abcdefghijklmnopqrstuvwxyz1234567890"}, TEST_TIME_MS)]))
+        findings = list(
+            detect(
+                [
+                    _ev(
+                        "s1",
+                        "tool",
+                        {"token": "ghp_abcdefghijklmnopqrstuvwxyz1234567890"},
+                        TEST_TIME_MS,
+                    )
+                ]
+            )
+        )
         assert len(findings) == 1
         finding = findings[0]
         assert finding["class_uid"] == FINDING_CLASS_UID
         assert "mcp-credential-exposure" in finding["finding_info"]["types"]
 
     def test_deterministic_finding_uid(self):
-        event = _ev("s1", "tool", {"token": "ghp_abcdefghijklmnopqrstuvwxyz1234567890"}, TEST_TIME_MS)
+        event = _ev(
+            "s1", "tool", {"token": "ghp_abcdefghijklmnopqrstuvwxyz1234567890"}, TEST_TIME_MS
+        )
         first = list(detect([event]))[0]["finding_info"]["uid"]
         second = list(detect([event]))[0]["finding_info"]["uid"]
         assert first == second
@@ -124,7 +157,14 @@ class TestDetect:
     def test_native_output_keeps_masked_matches_only(self):
         findings = list(
             detect(
-                [_ev("s1", "tool", {"token": "ghp_abcdefghijklmnopqrstuvwxyz1234567890"}, TEST_TIME_MS)],
+                [
+                    _ev(
+                        "s1",
+                        "tool",
+                        {"token": "ghp_abcdefghijklmnopqrstuvwxyz1234567890"},
+                        TEST_TIME_MS,
+                    )
+                ],
                 output_format="native",
             )
         )

@@ -11,7 +11,7 @@ except ModuleNotFoundError:  # pragma: no cover - exercised only on Python <3.11
         "error: validate_dependency_consistency.py requires Python 3.11+ "
         "(stdlib `tomllib`). Detected Python "
         f"{sys.version_info.major}.{sys.version_info.minor}. "
-        "See pyproject.toml `requires-python = \">=3.11\"`.\n"
+        'See pyproject.toml `requires-python = ">=3.11"`.\n'
     )
     sys.exit(2)
 
@@ -120,9 +120,7 @@ def _iter_python_files(*roots: Path, exclude: frozenset[Path] = frozenset()) -> 
                 paths.append(root)
             continue
         if root.exists():
-            paths.extend(
-                p for p in sorted(root.rglob("*.py")) if p not in exclude
-            )
+            paths.extend(p for p in sorted(root.rglob("*.py")) if p not in exclude)
     return paths
 
 
@@ -175,9 +173,7 @@ def main() -> int:
     raw_groups = _load_raw_groups()
 
     runtime_required = _required_packages(
-        _iter_python_files(
-            *RUNTIME_ROOTS, exclude=TEST_HARNESS_FILES_INSIDE_RUNTIME_ROOTS
-        )
+        _iter_python_files(*RUNTIME_ROOTS, exclude=TEST_HARNESS_FILES_INSIDE_RUNTIME_ROOTS)
     )
     runtime_declared = set().union(
         _resolve_group("aws", raw_groups),
@@ -202,7 +198,9 @@ def main() -> int:
     dev_declared = _resolve_group("dev", raw_groups)
     for package in sorted(test_required & {"pytest", "moto"}):
         if package not in dev_declared:
-            errors.append(f"pyproject.toml: test import requires `{package}` in the dev dependency group")
+            errors.append(
+                f"pyproject.toml: test import requires `{package}` in the dev dependency group"
+            )
 
     if errors:
         print("Dependency consistency validation failed:", file=sys.stderr)

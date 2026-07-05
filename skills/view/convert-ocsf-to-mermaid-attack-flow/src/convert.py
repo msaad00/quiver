@@ -107,7 +107,10 @@ def extract_target(finding: dict[str, Any]) -> tuple[str, str]:
     # K8s priv-esc rules
     if "secret.name" in obs_by_name:
         ns = obs_by_name.get("namespace", "")
-        return (f"secret/{ns}/{obs_by_name['secret.name']}", f"secret · {ns}/{obs_by_name['secret.name']}")
+        return (
+            f"secret/{ns}/{obs_by_name['secret.name']}",
+            f"secret · {ns}/{obs_by_name['secret.name']}",
+        )
     if "pod.name" in obs_by_name:
         ns = obs_by_name.get("namespace", "")
         return (f"pod/{ns}/{obs_by_name['pod.name']}", f"pod · {ns}/{obs_by_name['pod.name']}")
@@ -129,7 +132,10 @@ def extract_target(finding: dict[str, Any]) -> tuple[str, str]:
     # MCP rules
     if "tool.name" in obs_by_name:
         sess = obs_by_name.get("session.uid", "")
-        return (f"mcp-tool/{sess}/{obs_by_name['tool.name']}", f"mcp tool · {obs_by_name['tool.name']}")
+        return (
+            f"mcp-tool/{sess}/{obs_by_name['tool.name']}",
+            f"mcp tool · {obs_by_name['tool.name']}",
+        )
 
     # Fallback: first non-actor *.name observable
     for obs in obs_list:
@@ -285,10 +291,16 @@ def load_jsonl(stream: Iterable[str]) -> Iterable[dict[str, Any]]:
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Convert OCSF Detection Findings to a Mermaid attack flow.")
+    parser = argparse.ArgumentParser(
+        description="Convert OCSF Detection Findings to a Mermaid attack flow."
+    )
     parser.add_argument("input", nargs="?", help="OCSF JSONL input. Defaults to stdin.")
     parser.add_argument("--output", "-o", help="Mermaid output file. Defaults to stdout.")
-    parser.add_argument("--fenced", action="store_true", help="Wrap output in ```mermaid ... ``` fences for direct Markdown embedding.")
+    parser.add_argument(
+        "--fenced",
+        action="store_true",
+        help="Wrap output in ```mermaid ... ``` fences for direct Markdown embedding.",
+    )
     args = parser.parse_args(argv)
 
     in_stream = sys.stdin if not args.input else open(args.input, "r", encoding="utf-8")

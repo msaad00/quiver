@@ -165,9 +165,7 @@ def _authorized_subs() -> frozenset[str]:
 def _finding_uid(
     *, resource_uid: str, target_subscription: str, source_subscription: str, time_ms: int
 ) -> str:
-    material = (
-        f"{SKILL_NAME}|{resource_uid}|{target_subscription}|{source_subscription}|{time_ms}"
-    )
+    material = f"{SKILL_NAME}|{resource_uid}|{target_subscription}|{source_subscription}|{time_ms}"
     return f"azpe-{hashlib.sha256(material.encode('utf-8')).hexdigest()[:16]}"
 
 
@@ -398,10 +396,7 @@ def detect(
             target_subscription = _extract_subscription(link_id)
             if not target_subscription:
                 continue
-            if (
-                source_subscription
-                and target_subscription == source_subscription
-            ):
+            if source_subscription and target_subscription == source_subscription:
                 # same-subscription private link is the documented happy path
                 continue
             if target_subscription in seen_targets:

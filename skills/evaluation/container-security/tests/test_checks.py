@@ -106,7 +106,11 @@ class TestRuntime:
         assert lim.status == "FAIL"
 
     def test_with_limits_passes(self):
-        config = {"containers": [{"name": "app", "resources": {"limits": {"cpu": "1", "memory": "512Mi"}}}]}
+        config = {
+            "containers": [
+                {"name": "app", "resources": {"limits": {"cpu": "1", "memory": "512Mi"}}}
+            ]
+        }
         findings = run_benchmark(config, section="runtime")
         lim = next(f for f in findings if f.check_id == "CTR-3.2")
         assert lim.status == "PASS"
@@ -114,7 +118,10 @@ class TestRuntime:
 
 class TestRunner:
     def test_run_all(self):
-        config = {"images": [{"name": "app", "user": "1000", "base_image": "python:3.11-alpine"}], "containers": []}
+        config = {
+            "images": [{"name": "app", "user": "1000", "base_image": "python:3.11-alpine"}],
+            "containers": [],
+        }
         findings = run_benchmark(config)
         assert len(findings) == 8
         assert all(isinstance(f, Finding) for f in findings)
@@ -188,7 +195,14 @@ class TestEmptyInput:
         {"images": [{}]},  # image dict missing every field
         {"images": [{"name": None, "base_image": None, "env": None}]},
     ],
-    ids=["images-None", "containers-None", "images-string", "images-mixed-junk", "image-bare", "image-Nones"],
+    ids=[
+        "images-None",
+        "containers-None",
+        "images-string",
+        "images-mixed-junk",
+        "image-bare",
+        "image-Nones",
+    ],
 )
 class TestMalformedPayload:
     """Axis 2: malformed input must not crash; the check returns a structured Finding."""
@@ -276,7 +290,10 @@ class TestPartialPass:
     def test_resource_limits_partial(self):
         config = {
             "containers": [
-                {"name": "constrained", "resources": {"limits": {"cpu": "500m", "memory": "256Mi"}}},
+                {
+                    "name": "constrained",
+                    "resources": {"limits": {"cpu": "500m", "memory": "256Mi"}},
+                },
                 {"name": "unbounded", "resources": {}},
             ]
         }

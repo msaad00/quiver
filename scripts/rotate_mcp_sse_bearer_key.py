@@ -150,8 +150,7 @@ def _retire_expired(
     expired = [
         (i, e)
         for i, e in enumerate(entries)
-        if _parse_iso(e.get("expires")) is not None
-        and _parse_iso(e.get("expires")) <= now  # type: ignore[operator]
+        if _parse_iso(e.get("expires")) is not None and _parse_iso(e.get("expires")) <= now  # type: ignore[operator]
     ]
     if not expired:
         return entries, []
@@ -220,9 +219,7 @@ def main(argv: list[str] | None = None) -> int:
 
     existing_kids = {e.get("kid") for e in entries if isinstance(e.get("kid"), str)}
     if new_kid in existing_kids:
-        sys.stderr.write(
-            f"error: kid {new_kid!r} already exists; pick another with --kid.\n"
-        )
+        sys.stderr.write(f"error: kid {new_kid!r} already exists; pick another with --kid.\n")
         return 1
 
     new_entry: dict[str, Any] = {
@@ -237,11 +234,7 @@ def main(argv: list[str] | None = None) -> int:
     entries, retired_kids = _retire_expired(entries, now, args.retire_oldest_expired)
 
     # Refuse to write a file that resolves to zero usable keys.
-    usable = [
-        e
-        for e in entries
-        if not _is_expired(e, now)
-    ]
+    usable = [e for e in entries if not _is_expired(e, now)]
     if not usable:
         sys.stderr.write(
             "error: resulting keyset is empty (every entry expired). "
@@ -260,17 +253,14 @@ def main(argv: list[str] | None = None) -> int:
         "─" * 72 + "\n"
         "  NEW BEARER KEY GENERATED — capture it now.\n"
         "  This secret is NOT recoverable from logs or the audit chain.\n"
-        "  Distribute through the same channel as the file itself.\n"
-        + "─" * 72 + "\n"
+        "  Distribute through the same channel as the file itself.\n" + "─" * 72 + "\n"
         f"  kid:     {new_kid}\n"
         f"  expires: {new_entry.get('expires', '(none)')}\n"
     )
     if retired_kids:
         sys.stderr.write(f"  retired: {', '.join(retired_kids)}\n")
     sys.stderr.write(
-        "─" * 72 + "\n"
-        "  Reload the running listener:  kill -HUP <pid>\n"
-        + "─" * 72 + "\n"
+        "─" * 72 + "\n  Reload the running listener:  kill -HUP <pid>\n" + "─" * 72 + "\n"
     )
     sys.stderr.flush()
     # The new secret goes on stdout alone so a `--quiet > /dev/null`

@@ -73,7 +73,15 @@ KIND_ALIASES = {
     "training-jobs": "training-job",
     "training_pipelines": "training-job",
 }
-UNPINNED_VERSION_MARKERS = {"latest", "main", "master", "stable", "prod", "production", "unspecified"}
+UNPINNED_VERSION_MARKERS = {
+    "latest",
+    "main",
+    "master",
+    "stable",
+    "prod",
+    "production",
+    "unspecified",
+}
 TRUSTED_REGISTRY_HOST_SUFFIXES = (
     "huggingface.co",
     "hf.co",
@@ -191,7 +199,9 @@ def _normalize_assets(document: dict[str, Any]) -> list[dict[str, Any]]:
         assets.extend(_normalize_azure(document))
 
     if not assets:
-        raise ValueError("inventory must include `assets[]` or at least one supported provider snapshot")
+        raise ValueError(
+            "inventory must include `assets[]` or at least one supported provider snapshot"
+        )
 
     deduped: dict[str, dict[str, Any]] = {}
     for asset in assets:
@@ -397,7 +407,11 @@ def _normalize_gcp(document: dict[str, Any]) -> list[dict[str, Any]]:
                 id=index_endpoint.get("name"),
                 name=index_endpoint.get("displayName") or index_endpoint.get("name"),
                 region=index_endpoint.get("region"),
-                dependencies=[item.get("index") for item in index_endpoint.get("deployedIndexes", []) if item.get("index")],
+                dependencies=[
+                    item.get("index")
+                    for item in index_endpoint.get("deployedIndexes", [])
+                    if item.get("index")
+                ],
                 labels=index_endpoint.get("labels"),
             )
         )
@@ -433,7 +447,9 @@ def _normalize_azure(document: dict[str, Any]) -> list[dict[str, Any]]:
                 id=endpoint.get("id") or endpoint.get("name"),
                 name=endpoint.get("name"),
                 status=endpoint.get("provisioning_state") or endpoint.get("auth_mode"),
-                dependencies=[deployment.get("id") for deployment in endpoint.get("deployments", [])],
+                dependencies=[
+                    deployment.get("id") for deployment in endpoint.get("deployments", [])
+                ],
                 labels=endpoint.get("tags"),
             )
         )
@@ -506,7 +522,17 @@ def _normalize_azure(document: dict[str, Any]) -> list[dict[str, Any]]:
 
 def _property_items(asset: dict[str, Any]) -> list[dict[str, str]]:
     props: dict[str, str] = {}
-    for key in ("provider", "service", "kind", "region", "framework", "runtime", "status", "sensitivity", "owner"):
+    for key in (
+        "provider",
+        "service",
+        "kind",
+        "region",
+        "framework",
+        "runtime",
+        "status",
+        "sensitivity",
+        "owner",
+    ):
         value = _string(asset.get(key))
         if value:
             props[f"cloud-security:{key}"] = value
@@ -516,7 +542,9 @@ def _property_items(asset: dict[str, Any]) -> list[dict[str, str]]:
         if isinstance(mapping, dict):
             for key, value in mapping.items():
                 if _secret_like(key):
-                    _warn(f"dropped secret-like property `{key}` from asset `{asset.get('name') or asset.get('id')}`")
+                    _warn(
+                        f"dropped secret-like property `{key}` from asset `{asset.get('name') or asset.get('id')}`"
+                    )
                     continue
                 rendered = _string(value)
                 if rendered:
@@ -562,7 +590,14 @@ def _registry_candidates(asset: dict[str, Any]) -> list[str]:
         if not isinstance(mapping, dict):
             continue
         for key, value in mapping.items():
-            if "registry" in key.lower() or key.lower() in {"image", "image_uri", "model_uri", "source_uri", "repository", "uri"}:
+            if "registry" in key.lower() or key.lower() in {
+                "image",
+                "image_uri",
+                "model_uri",
+                "source_uri",
+                "repository",
+                "uri",
+            }:
                 rendered = _string(value)
                 if rendered:
                     candidates.append(rendered)
@@ -611,7 +646,12 @@ def _has_provenance(asset: dict[str, Any]) -> bool:
             continue
         for key, value in mapping.items():
             lowered = key.lower()
-            if lowered in keys or "provenance" in lowered or "attestation" in lowered or "sigstore" in lowered:
+            if (
+                lowered in keys
+                or "provenance" in lowered
+                or "attestation" in lowered
+                or "sigstore" in lowered
+            ):
                 if isinstance(value, bool) and value:
                     return True
                 if _string(value):
@@ -642,7 +682,9 @@ def _license_values(asset: dict[str, Any]) -> list[str]:
     return values
 
 
-def build_policy_findings(document: dict[str, Any], *, output_format: str = "ocsf") -> list[dict[str, Any]]:
+def build_policy_findings(
+    document: dict[str, Any], *, output_format: str = "ocsf"
+) -> list[dict[str, Any]]:
     assets = _normalize_assets(document)
     findings: list[PolicyFinding] = []
 
@@ -760,13 +802,17 @@ def _to_service(asset: dict[str, Any]) -> dict[str, Any]:
             "name": _string(asset.get("name")) or _string(asset.get("id")),
             "group": f"{asset['provider']}/{asset['service']}",
             "description": _string(asset.get("description")),
-            "endpoints": [_string(asset.get("endpoint_url"))] if _string(asset.get("endpoint_url")) else None,
+            "endpoints": [_string(asset.get("endpoint_url"))]
+            if _string(asset.get("endpoint_url"))
+            else None,
             "properties": _property_items(asset),
         }
     )
 
 
-def _metadata_properties(document: dict[str, Any], assets: list[dict[str, Any]]) -> list[dict[str, str]]:
+def _metadata_properties(
+    document: dict[str, Any], assets: list[dict[str, Any]]
+) -> list[dict[str, str]]:
     counts: defaultdict[str, int] = defaultdict(int)
     for asset in assets:
         counts[f"cloud-security:count.{asset['provider']}.{asset['kind']}"] += 1
@@ -838,8 +884,12 @@ def build_bom(document: dict[str, Any]) -> dict[str, Any]:
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Generate a deterministic AI BOM from AI asset inventory snapshots.")
-    parser.add_argument("input", nargs="?", help="Path to the inventory JSON file. Reads stdin when omitted.")
+    parser = argparse.ArgumentParser(
+        description="Generate a deterministic AI BOM from AI asset inventory snapshots."
+    )
+    parser.add_argument(
+        "input", nargs="?", help="Path to the inventory JSON file. Reads stdin when omitted."
+    )
     parser.add_argument("-o", "--output", help="Write BOM JSON to this path instead of stdout.")
     parser.add_argument("--pretty", action="store_true", help="Pretty-print the BOM JSON.")
     parser.add_argument(
@@ -868,11 +918,15 @@ def main(argv: list[str] | None = None) -> int:
         return 1
 
     if args.policy_findings_output:
-        policy_payload = "".join(json.dumps(record, separators=(",", ":")) + "\n" for record in policy_findings)
+        policy_payload = "".join(
+            json.dumps(record, separators=(",", ":")) + "\n" for record in policy_findings
+        )
         Path(args.policy_findings_output).write_text(policy_payload)
 
     if args.emit_policy_findings:
-        payload = "".join(json.dumps(record, separators=(",", ":")) + "\n" for record in policy_findings)
+        payload = "".join(
+            json.dumps(record, separators=(",", ":")) + "\n" for record in policy_findings
+        )
     else:
         payload = json.dumps(bom, indent=2 if args.pretty else None, sort_keys=args.pretty)
         if args.pretty:

@@ -137,7 +137,9 @@ def test_remove_directory_role_memberships_iterates():
     client.user_directory_roles = [{"id": "role-a"}]
     actions: list[dict] = []
     steps._remove_directory_role_memberships(client, OBJECT_ID, {}, actions)
-    assert any(c[0] == "remove_directory_role_member" and c[1]["role_id"] == "role-a" for c in client.calls)
+    assert any(
+        c[0] == "remove_directory_role_member" and c[1]["role_id"] == "role-a" for c in client.calls
+    )
 
 
 def test_delete_app_role_assignments_iterates():

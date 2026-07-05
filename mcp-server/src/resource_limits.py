@@ -74,14 +74,10 @@ def from_env(timeout_seconds: int, env: dict[str, str] | None = None) -> Resourc
         max_bytes=_read_int_env("CLOUD_SECURITY_SKILL_MAX_BYTES", DEFAULT_MAX_BYTES)
         if (src.get("CLOUD_SECURITY_SKILL_MAX_BYTES") or "").strip()
         else DEFAULT_MAX_BYTES,
-        max_file_bytes=_read_int_env(
-            "CLOUD_SECURITY_SKILL_MAX_FILE_BYTES", DEFAULT_MAX_FILE_BYTES
-        )
+        max_file_bytes=_read_int_env("CLOUD_SECURITY_SKILL_MAX_FILE_BYTES", DEFAULT_MAX_FILE_BYTES)
         if (src.get("CLOUD_SECURITY_SKILL_MAX_FILE_BYTES") or "").strip()
         else DEFAULT_MAX_FILE_BYTES,
-        max_processes=_read_int_env(
-            "CLOUD_SECURITY_SKILL_MAX_PROCESSES", DEFAULT_MAX_PROCESSES
-        )
+        max_processes=_read_int_env("CLOUD_SECURITY_SKILL_MAX_PROCESSES", DEFAULT_MAX_PROCESSES)
         if (src.get("CLOUD_SECURITY_SKILL_MAX_PROCESSES") or "").strip()
         else DEFAULT_MAX_PROCESSES,
         cpu_seconds=max(timeout_seconds + CPU_LIMIT_GRACE_SECONDS, 1),
@@ -130,6 +126,8 @@ def apply_in_child(limits: ResourceLimits) -> None:
 
 def make_preexec(limits: ResourceLimits) -> Callable[[], None]:
     """Build a closure suitable for `subprocess.run(preexec_fn=...)`."""
+
     def _preexec() -> None:  # pragma: no cover - exercised in subprocess
         apply_in_child(limits)
+
     return _preexec

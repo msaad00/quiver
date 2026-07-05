@@ -164,7 +164,10 @@ ATTACK_COVERAGE = {
 }
 
 # RFC1918 private ranges + CGNAT shared-address range
-_PRIVATE_NETWORKS = tuple(ipaddress.ip_network(cidr) for cidr in ("10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16", "100.64.0.0/10"))
+_PRIVATE_NETWORKS = tuple(
+    ipaddress.ip_network(cidr)
+    for cidr in ("10.0.0.0/8", "172.16.0.0/12", "192.168.0.0/16", "100.64.0.0/10")
+)
 
 
 # ---------------------------------------------------------------------------
@@ -222,7 +225,10 @@ def _is_azure_entra_pivot(service: str, operation: str) -> bool:
     ):
         return True
 
-    return operation_norm.startswith("POST /APPLICATIONS/") and "FEDERATEDIDENTITYCREDENTIALS" in operation_compact
+    return (
+        operation_norm.startswith("POST /APPLICATIONS/")
+        and "FEDERATEDIDENTITYCREDENTIALS" in operation_compact
+    )
 
 
 def _safe_int(value: Any) -> int:
@@ -246,7 +252,9 @@ def _normalize_native_event(event: dict[str, Any]) -> dict[str, Any] | None:
         "source_format": "native",
         "event_kind": record_type,
         "provider": str(event.get("provider") or event.get("cloud_provider") or "").upper(),
-        "account_uid": str(event.get("account_uid") or event.get("cloud_account_uid") or event.get("account") or ""),
+        "account_uid": str(
+            event.get("account_uid") or event.get("cloud_account_uid") or event.get("account") or ""
+        ),
         "time_ms": _safe_int(event.get("time_ms") or event.get("time") or event.get("event_time")),
         "session_uid": str(
             event.get("session_uid")
@@ -283,7 +291,7 @@ def _normalize_ocsf_event(event: dict[str, Any]) -> dict[str, Any] | None:
         return {
             "source_format": "ocsf",
             "event_kind": "api_activity",
-            "provider": ((((event.get("cloud") or {}).get("provider")) or "")).upper(),
+            "provider": (((event.get("cloud") or {}).get("provider")) or "").upper(),
             "account_uid": ((((event.get("cloud") or {}).get("account")) or {}).get("uid")) or "",
             "time_ms": _safe_int(event.get("time")),
             "session_uid": (((event.get("actor") or {}).get("session") or {}).get("uid")) or "",
@@ -304,7 +312,7 @@ def _normalize_ocsf_event(event: dict[str, Any]) -> dict[str, Any] | None:
         return {
             "source_format": "ocsf",
             "event_kind": "network_activity",
-            "provider": ((((event.get("cloud") or {}).get("provider")) or "")).upper(),
+            "provider": (((event.get("cloud") or {}).get("provider")) or "").upper(),
             "account_uid": ((((event.get("cloud") or {}).get("account")) or {}).get("uid")) or "",
             "time_ms": _safe_int(event.get("time")),
             "session_uid": "",
@@ -482,7 +490,12 @@ def _render_ocsf_finding(native_finding: dict[str, Any]) -> dict[str, Any]:
                 "vendor_name": REPO_VENDOR,
                 "feature": {"name": SKILL_NAME},
             },
-            "labels": ["detection-engineering", provider_code.lower(), "lateral-movement", "multi-source"],
+            "labels": [
+                "detection-engineering",
+                provider_code.lower(),
+                "lateral-movement",
+                "multi-source",
+            ],
         },
         "finding_info": {
             "uid": native_finding["finding_uid"],
@@ -510,13 +523,29 @@ def _render_ocsf_finding(native_finding: dict[str, Any]) -> dict[str, Any]:
             {"name": "cloud.account", "type": "Other", "value": native_finding["account_uid"]},
             {"name": "session.uid", "type": "Other", "value": native_finding["session_uid"]},
             {"name": "actor.name", "type": "Other", "value": native_finding["actor_name"]},
-            {"name": "anchor.operation", "type": "Other", "value": native_finding["anchor_operation"]},
-            {"name": "src.instance_uid", "type": "Other", "value": native_finding["src_instance_uid"]},
+            {
+                "name": "anchor.operation",
+                "type": "Other",
+                "value": native_finding["anchor_operation"],
+            },
+            {
+                "name": "src.instance_uid",
+                "type": "Other",
+                "value": native_finding["src_instance_uid"],
+            },
             {"name": "src.ip", "type": "Other", "value": native_finding["src_ip"]},
             {"name": "dst.ip", "type": "Other", "value": native_finding["dst_ip"]},
             {"name": "dst.port", "type": "Other", "value": str(native_finding["dst_port"] or "")},
-            {"name": "traffic.bytes", "type": "Other", "value": str(native_finding["traffic_bytes"])},
-            {"name": "window.seconds", "type": "Other", "value": str(native_finding["window_seconds"])},
+            {
+                "name": "traffic.bytes",
+                "type": "Other",
+                "value": str(native_finding["traffic_bytes"]),
+            },
+            {
+                "name": "window.seconds",
+                "type": "Other",
+                "value": str(native_finding["window_seconds"]),
+            },
             {"name": "rule", "type": "Other", "value": native_finding["rule_name"]},
         ],
         "evidence": {
@@ -534,14 +563,19 @@ def _render_ocsf_finding(native_finding: dict[str, Any]) -> dict[str, Any]:
 
 
 def _is_candidate_flow(event: dict[str, Any]) -> bool:
-    if event["event_kind"] != "network_activity" or int(event["activity_id"]) != NET_ACTIVITY_ACCEPT:
+    if (
+        event["event_kind"] != "network_activity"
+        or int(event["activity_id"]) != NET_ACTIVITY_ACCEPT
+    ):
         return False
     if _safe_int(event["traffic_bytes"]) < _min_bytes():
         return False
     return is_rfc1918(str(event["dst_ip"]))
 
 
-def _index_candidate_flows(flows: Iterable[dict[str, Any]]) -> dict[str, dict[str, dict[tuple[str, int | None], dict[str, Any]]]]:
+def _index_candidate_flows(
+    flows: Iterable[dict[str, Any]],
+) -> dict[str, dict[str, dict[tuple[str, int | None], dict[str, Any]]]]:
     indexed: dict[str, dict[str, dict[tuple[str, int | None], dict[str, Any]]]] = {}
     for flow in flows:
         provider = str(flow["provider"])
@@ -600,13 +634,17 @@ def _find_earliest_flow_in_window(
     return flows[index]
 
 
-def detect(events: Iterable[dict[str, Any]], output_format: str = "ocsf") -> Iterable[dict[str, Any]]:
+def detect(
+    events: Iterable[dict[str, Any]], output_format: str = "ocsf"
+) -> Iterable[dict[str, Any]]:
     """Walk a merged stream. Yield one finding per (session, dst) pair.
 
     Deterministic output order: findings are yielded in anchor-event-time
     order (then by dst IP and port as tiebreaker).
     """
-    events_list = [normalized for event in events if (normalized := _normalize_event(event)) is not None]
+    events_list = [
+        normalized for event in events if (normalized := _normalize_event(event)) is not None
+    ]
     identity_anchors: list[dict[str, Any]] = []
     candidate_flows: list[dict[str, Any]] = []
     for ev in events_list:
@@ -628,7 +666,9 @@ def detect(events: Iterable[dict[str, Any]], output_format: str = "ocsf") -> Ite
         anchor_account = str(anchor["account_uid"])
         session = str(anchor["session_uid"])
 
-        for account_bucket in _iter_matching_flow_buckets(indexed_flows, anchor_provider, anchor_account):
+        for account_bucket in _iter_matching_flow_buckets(
+            indexed_flows, anchor_provider, anchor_account
+        ):
             for (dst, dst_port), flow_bucket in account_bucket.items():
                 dedup_key = f"{anchor_provider}|{session}|{dst}|{dst_port}"
                 if dedup_key in seen:
@@ -638,15 +678,38 @@ def detect(events: Iterable[dict[str, Any]], output_format: str = "ocsf") -> Ite
                     continue
                 seen.add(dedup_key)
                 native_finding = _build_native_finding(anchor_event=anchor, flow_event=flow)
-                findings.append(_render_ocsf_finding(native_finding) if output_format == "ocsf" else native_finding)
+                findings.append(
+                    _render_ocsf_finding(native_finding)
+                    if output_format == "ocsf"
+                    else native_finding
+                )
 
     # Final deterministic ordering by anchor time, dst ip, dst port
     findings.sort(
         key=lambda f: (
-            str(f.get("provider") or next((o["value"] for o in f.get("observables", []) if o["name"] == "cloud.provider"), "")),
-            str(f.get("session_uid") or next((o["value"] for o in f.get("observables", []) if o["name"] == "session.uid"), "")),
-            str(f.get("dst_ip") or next((o["value"] for o in f.get("observables", []) if o["name"] == "dst.ip"), "")),
-            str(f.get("dst_port") or next((o["value"] for o in f.get("observables", []) if o["name"] == "dst.port"), "")),
+            str(
+                f.get("provider")
+                or next(
+                    (o["value"] for o in f.get("observables", []) if o["name"] == "cloud.provider"),
+                    "",
+                )
+            ),
+            str(
+                f.get("session_uid")
+                or next(
+                    (o["value"] for o in f.get("observables", []) if o["name"] == "session.uid"), ""
+                )
+            ),
+            str(
+                f.get("dst_ip")
+                or next((o["value"] for o in f.get("observables", []) if o["name"] == "dst.ip"), "")
+            ),
+            str(
+                f.get("dst_port")
+                or next(
+                    (o["value"] for o in f.get("observables", []) if o["name"] == "dst.port"), ""
+                )
+            ),
         )
     )
     yield from findings
@@ -699,10 +762,21 @@ def load_jsonl(stream: Iterable[str]) -> Iterable[dict[str, Any]]:
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Detect cloud lateral movement (API Activity + Network Activity join).")
-    parser.add_argument("input", nargs="?", help="Merged native or OCSF JSONL input. Defaults to stdin.")
-    parser.add_argument("--output", "-o", help="Detection Finding JSONL output. Defaults to stdout.")
-    parser.add_argument("--output-format", choices=OUTPUT_FORMATS, default="ocsf", help="Render OCSF detection findings or the native detection-finding shape.")
+    parser = argparse.ArgumentParser(
+        description="Detect cloud lateral movement (API Activity + Network Activity join)."
+    )
+    parser.add_argument(
+        "input", nargs="?", help="Merged native or OCSF JSONL input. Defaults to stdin."
+    )
+    parser.add_argument(
+        "--output", "-o", help="Detection Finding JSONL output. Defaults to stdout."
+    )
+    parser.add_argument(
+        "--output-format",
+        choices=OUTPUT_FORMATS,
+        default="ocsf",
+        help="Render OCSF detection findings or the native detection-finding shape.",
+    )
     args = parser.parse_args(argv)
 
     in_stream = sys.stdin if not args.input else open(args.input, "r", encoding="utf-8")

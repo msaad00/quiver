@@ -105,7 +105,9 @@ def _cloud(entry: dict[str, Any], payload: dict[str, Any]) -> dict[str, Any]:
     src_vpc = payload.get("src_vpc") or {}
     dst_vpc = payload.get("dest_vpc") or {}
     resource_labels = ((entry.get("resource") or {}).get("labels")) or {}
-    project_id = src_vpc.get("project_id") or dst_vpc.get("project_id") or resource_labels.get("project_id")
+    project_id = (
+        src_vpc.get("project_id") or dst_vpc.get("project_id") or resource_labels.get("project_id")
+    )
     region = (
         ((payload.get("src_instance") or {}).get("region"))
         or ((payload.get("dest_instance") or {}).get("region"))
@@ -180,7 +182,9 @@ def _connection_info(connection: dict[str, Any], payload: dict[str, Any]) -> dic
     elif reporter == "DEST":
         info["direction"] = "ingress"
 
-    if boundary := ((payload.get("src_vpc") or {}).get("vpc_name")) or ((payload.get("dest_vpc") or {}).get("vpc_name")):
+    if boundary := ((payload.get("src_vpc") or {}).get("vpc_name")) or (
+        (payload.get("dest_vpc") or {}).get("vpc_name")
+    ):
         info["boundary"] = boundary
 
     return info
@@ -195,11 +199,20 @@ def _build_canonical_record(entry: dict[str, Any]) -> dict[str, Any] | None:
     activity_id = activity_id_for_disposition(payload.get("disposition"))
     start_ms = parse_ts_ms(payload.get("start_time"))
     end_ms = parse_ts_ms(payload.get("end_time"))
-    event_time = end_ms or start_ms or parse_ts_ms(entry.get("timestamp")) or int(datetime.now(timezone.utc).timestamp() * 1000)
+    event_time = (
+        end_ms
+        or start_ms
+        or parse_ts_ms(entry.get("timestamp"))
+        or int(datetime.now(timezone.utc).timestamp() * 1000)
+    )
     event_uid = hashlib.sha256(
         json.dumps(
             {
-                "project_id": (((payload.get("src_vpc") or {}).get("project_id")) or ((payload.get("dest_vpc") or {}).get("project_id")) or (((entry.get("resource") or {}).get("labels")) or {}).get("project_id", "")),
+                "project_id": (
+                    ((payload.get("src_vpc") or {}).get("project_id"))
+                    or ((payload.get("dest_vpc") or {}).get("project_id"))
+                    or (((entry.get("resource") or {}).get("labels")) or {}).get("project_id", "")
+                ),
                 "start_time": payload.get("start_time", ""),
                 "end_time": payload.get("end_time", ""),
                 "src_ip": connection.get("src_ip", ""),
@@ -228,9 +241,11 @@ def _build_canonical_record(entry: dict[str, Any]) -> dict[str, Any] | None:
         "start_time_ms": start_ms,
         "end_time_ms": end_ms,
         "activity_id": activity_id,
-        "activity_name": {ACTIVITY_TRAFFIC: "traffic", ACTIVITY_DENIED: "denied", ACTIVITY_UNKNOWN: "unknown"}.get(
-            activity_id, "unknown"
-        ),
+        "activity_name": {
+            ACTIVITY_TRAFFIC: "traffic",
+            ACTIVITY_DENIED: "denied",
+            ACTIVITY_UNKNOWN: "unknown",
+        }.get(activity_id, "unknown"),
         "status_id": STATUS_SUCCESS,
         "status": "success",
         "src": _endpoint(connection, "src", payload),
@@ -317,7 +332,10 @@ def iter_raw_entries(stream: Iterable[str]) -> Iterable[dict[str, Any]]:
             try:
                 obj = json.loads(line)
             except json.JSONDecodeError as exc:
-                print(f"[{SKILL_NAME}] skipping line {lineno}: json parse failed: {exc}", file=sys.stderr)
+                print(
+                    f"[{SKILL_NAME}] skipping line {lineno}: json parse failed: {exc}",
+                    file=sys.stderr,
+                )
                 continue
             if isinstance(obj, dict):
                 yield obj
@@ -344,7 +362,9 @@ def ingest(stream: Iterable[str], *, output_format: str = "ocsf") -> Iterable[di
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Convert GCP VPC Flow Logs to OCSF 1.8 Network Activity JSONL.")
+    parser = argparse.ArgumentParser(
+        description="Convert GCP VPC Flow Logs to OCSF 1.8 Network Activity JSONL."
+    )
     parser.add_argument("input", nargs="?", help="Input JSON or JSONL file. Defaults to stdin.")
     parser.add_argument("--output", "-o", help="Output JSONL file. Defaults to stdout.")
     parser.add_argument(

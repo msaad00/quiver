@@ -68,7 +68,13 @@ def _parse_positive_int_env(name: str, default: int) -> int:
     try:
         value = int(raw)
     except ValueError:
-        emit_stderr_event(SKILL_NAME, level="warning", event="invalid_env_int", message=f"{name} must be an integer", env_var=name)
+        emit_stderr_event(
+            SKILL_NAME,
+            level="warning",
+            event="invalid_env_int",
+            message=f"{name} must be an integer",
+            env_var=name,
+        )
         return default
     return value if value > 0 else default
 
@@ -157,13 +163,20 @@ def _src_ip(event: dict[str, Any]) -> str:
 
 
 def _is_salesforce_event(event: dict[str, Any]) -> bool:
-    if event.get("class_uid") != APP_ACTIVITY_CLASS_UID and event.get("record_type") != "application_activity":
+    if (
+        event.get("class_uid") != APP_ACTIVITY_CLASS_UID
+        and event.get("record_type") != "application_activity"
+    ):
         return False
     return _producer(event) == SALESFORCE_INGEST_SKILL
 
 
 def _is_large_export(event: dict[str, Any], min_rows: int, min_bytes: int) -> bool:
-    return _is_salesforce_event(event) and _family(event) == "export" and (_rows(event) >= min_rows or _bytes(event) >= min_bytes)
+    return (
+        _is_salesforce_event(event)
+        and _family(event) == "export"
+        and (_rows(event) >= min_rows or _bytes(event) >= min_bytes)
+    )
 
 
 def _is_logout(event: dict[str, Any]) -> bool:
@@ -176,12 +189,20 @@ def _correlation_key(event: dict[str, Any]) -> str:
 
 
 def _finding_uid(export_event: dict[str, Any], logout_event: dict[str, Any]) -> str:
-    material = f"{_metadata_uid(export_event)}|{_metadata_uid(logout_event)}|{_actor_id(export_event)}"
+    material = (
+        f"{_metadata_uid(export_event)}|{_metadata_uid(logout_event)}|{_actor_id(export_event)}"
+    )
     digest = hashlib.sha256(material.encode("utf-8")).hexdigest()[:16]
     return f"det-salesforce-bulk-export-{digest}"
 
 
-def _build_native_finding(export_event: dict[str, Any], logout_event: dict[str, Any], window_minutes: int, min_rows: int, min_bytes: int) -> dict[str, Any]:
+def _build_native_finding(
+    export_event: dict[str, Any],
+    logout_event: dict[str, Any],
+    window_minutes: int,
+    min_rows: int,
+    min_bytes: int,
+) -> dict[str, Any]:
     time_ms = _event_time(logout_event) or _event_time(export_event) or _now_ms()
     finding_uid = _finding_uid(export_event, logout_event)
     actor_uid = _actor_id(export_event)
@@ -203,7 +224,9 @@ def _build_native_finding(export_event: dict[str, Any], logout_event: dict[str, 
         {"name": "salesforce.bytes", "type": "Counter", "value": str(byte_count)},
     ]
     if client_name:
-        observables.append({"name": "salesforce.client_name", "type": "Process Name", "value": client_name})
+        observables.append(
+            {"name": "salesforce.client_name", "type": "Process Name", "value": client_name}
+        )
     if src_ip:
         observables.append({"name": "src.ip", "type": "IP Address", "value": src_ip})
 
@@ -299,7 +322,13 @@ def iter_records(stream: Iterable[str]) -> Iterable[dict[str, Any]]:
         try:
             obj = json.loads(line)
         except json.JSONDecodeError as exc:
-            emit_stderr_event(SKILL_NAME, level="warning", event="json_parse_failed", message=str(exc), line=lineno)
+            emit_stderr_event(
+                SKILL_NAME,
+                level="warning",
+                event="json_parse_failed",
+                message=str(exc),
+                line=lineno,
+            )
             continue
         if isinstance(obj, dict):
             yield obj
@@ -330,13 +359,19 @@ def detect(stream: Iterable[str], output_format: str = "ocsf") -> list[dict[str,
         for export_event in exports_by_key.get(key, []):
             export_time = _event_time(export_event) or logout_time
             if 0 <= logout_time - export_time <= window_ms:
-                native = _build_native_finding(export_event, event, window_minutes, min_rows, min_bytes)
-                findings.append(native if output_format == "native" else _render_ocsf_finding(native))
+                native = _build_native_finding(
+                    export_event, event, window_minutes, min_rows, min_bytes
+                )
+                findings.append(
+                    native if output_format == "native" else _render_ocsf_finding(native)
+                )
     return findings
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Detect Salesforce bulk export followed by session close.")
+    parser = argparse.ArgumentParser(
+        description="Detect Salesforce bulk export followed by session close."
+    )
     parser.add_argument("input", nargs="?", help="Input OCSF/native JSONL. Defaults to stdin.")
     parser.add_argument("--output", "-o", help="Output JSONL file. Defaults to stdout.")
     parser.add_argument("--output-format", choices=OUTPUT_FORMATS, default="ocsf")

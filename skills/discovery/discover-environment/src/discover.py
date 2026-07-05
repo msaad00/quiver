@@ -132,7 +132,11 @@ MITRE_ATTACK_MAP: dict[str, list[dict[str, str]]] = {
     ],
     "iam_role": [
         {"technique": "T1078.004", "name": "Valid Accounts: Cloud", "tactic": "Initial Access"},
-        {"technique": "T1548.005", "name": "Abuse Elevation Control: Temp Elevated Access", "tactic": "Privilege Escalation"},
+        {
+            "technique": "T1548.005",
+            "name": "Abuse Elevation Control: Temp Elevated Access",
+            "tactic": "Privilege Escalation",
+        },
     ],
     "s3_bucket": [
         {"technique": "T1530", "name": "Data from Cloud Storage", "tactic": "Collection"},
@@ -140,20 +144,32 @@ MITRE_ATTACK_MAP: dict[str, list[dict[str, str]]] = {
     ],
     "lambda_function": [
         {"technique": "T1648", "name": "Serverless Execution", "tactic": "Execution"},
-        {"technique": "T1195.002", "name": "Supply Chain: Software Supply Chain", "tactic": "Initial Access"},
+        {
+            "technique": "T1195.002",
+            "name": "Supply Chain: Software Supply Chain",
+            "tactic": "Initial Access",
+        },
     ],
     "ec2_instance": [
         {"technique": "T1078.004", "name": "Valid Accounts: Cloud", "tactic": "Initial Access"},
         {"technique": "T1610", "name": "Deploy Container", "tactic": "Defense Evasion"},
     ],
     "security_group": [
-        {"technique": "T1562.007", "name": "Impair Defenses: Disable or Modify Cloud Firewall", "tactic": "Defense Evasion"},
+        {
+            "technique": "T1562.007",
+            "name": "Impair Defenses: Disable or Modify Cloud Firewall",
+            "tactic": "Defense Evasion",
+        },
     ],
     "vpc": [
         {"technique": "T1599", "name": "Network Boundary Bridging", "tactic": "Defense Evasion"},
     ],
     "kms_key": [
-        {"technique": "T1552.004", "name": "Unsecured Credentials: Cloud Instance Metadata", "tactic": "Credential Access"},
+        {
+            "technique": "T1552.004",
+            "name": "Unsecured Credentials: Cloud Instance Metadata",
+            "tactic": "Credential Access",
+        },
     ],
 }
 
@@ -364,7 +380,11 @@ def discover_aws(region: str = "us-east-1", profile: str | None = None) -> Envir
                         "last_modified": fn.get("LastModified", ""),
                     },
                     compliance_tags=tags,
-                    dimensions={"cloud_provider": "aws", "surface": "compute", "ecosystem": _runtime_to_ecosystem(runtime)},
+                    dimensions={
+                        "cloud_provider": "aws",
+                        "surface": "compute",
+                        "ecosystem": _runtime_to_ecosystem(runtime),
+                    },
                 )
             )
             # Lambda → IAM Role edge
@@ -469,7 +489,10 @@ def discover_gcp(project: str) -> EnvironmentGraph:
     try:
         from google.cloud import resourcemanager_v3  # noqa: F401
     except ImportError:
-        print("Error: google-cloud-resource-manager required. Install with: pip install google-cloud-resource-manager", file=sys.stderr)
+        print(
+            "Error: google-cloud-resource-manager required. Install with: pip install google-cloud-resource-manager",
+            file=sys.stderr,
+        )
         sys.exit(1)
 
     graph = EnvironmentGraph(provider="gcp", region=project)
@@ -553,7 +576,10 @@ def discover_azure(subscription_id: str) -> EnvironmentGraph:
     try:
         from azure.identity import DefaultAzureCredential
     except ImportError:
-        print("Error: azure-identity required. Install with: pip install azure-identity azure-mgmt-resource", file=sys.stderr)
+        print(
+            "Error: azure-identity required. Install with: pip install azure-identity azure-mgmt-resource",
+            file=sys.stderr,
+        )
         sys.exit(1)
 
     graph = EnvironmentGraph(provider="azure", region=subscription_id)
@@ -607,7 +633,11 @@ def discover_azure(subscription_id: str) -> EnvironmentGraph:
                         id=res_id,
                         entity_type="cloud_resource",
                         label=resource_name,
-                        attributes={"type": resource.type, "location": resource.location, "kind": resource.kind or ""},
+                        attributes={
+                            "type": resource.type,
+                            "location": resource.location,
+                            "kind": resource.kind or "",
+                        },
                         dimensions={"cloud_provider": "azure", "surface": res_type},
                     )
                 )
@@ -718,7 +748,9 @@ def _get_mitre_tags(entity_type: str) -> list[str]:
 def _add_mitre_edges(graph: EnvironmentGraph) -> None:
     """Add MITRE ATT&CK/ATLAS technique edges to relevant nodes."""
     for node in graph.nodes:
-        techniques = MITRE_ATTACK_MAP.get(node.entity_type, []) + MITRE_ATLAS_MAP.get(node.entity_type, [])
+        techniques = MITRE_ATTACK_MAP.get(node.entity_type, []) + MITRE_ATLAS_MAP.get(
+            node.entity_type, []
+        )
         for tech in techniques:
             tech_id = f"mitre:{tech['technique']}"
             # Add technique node if not present
@@ -729,7 +761,10 @@ def _add_mitre_edges(graph: EnvironmentGraph) -> None:
                         id=tech_id,
                         entity_type="vulnerability",
                         label=f"{tech['technique']}: {tech['name']}",
-                        attributes={"tactic": tech["tactic"], "framework": "ATT&CK" if tech["technique"].startswith("T") else "ATLAS"},
+                        attributes={
+                            "tactic": tech["tactic"],
+                            "framework": "ATT&CK" if tech["technique"].startswith("T") else "ATLAS",
+                        },
                         compliance_tags=[f"MITRE-{tech['technique']}"],
                     )
                 )
@@ -749,19 +784,25 @@ def _build_cloud_object(graph: EnvironmentGraph) -> dict[str, Any] | None:
 
     cloud: dict[str, Any] = {"provider": graph.provider}
     if graph.provider == "aws":
-        account_node = next((node for node in graph.nodes if node.id.startswith("aws:account:")), None)
+        account_node = next(
+            (node for node in graph.nodes if node.id.startswith("aws:account:")), None
+        )
         if account_node:
             account_id = account_node.attributes.get("account_id")
             if account_id:
                 cloud["account"] = {"uid": str(account_id), "name": f"AWS Account {account_id}"}
     elif graph.provider == "gcp":
-        project_node = next((node for node in graph.nodes if node.id.startswith("gcp:project:")), None)
+        project_node = next(
+            (node for node in graph.nodes if node.id.startswith("gcp:project:")), None
+        )
         if project_node:
             project_uid = project_node.id.split(":", 2)[-1]
             cloud["project_uid"] = project_uid
             cloud["account"] = {"uid": project_uid, "name": project_node.label}
     elif graph.provider == "azure":
-        subscription_node = next((node for node in graph.nodes if node.id.startswith("azure:subscription:")), None)
+        subscription_node = next(
+            (node for node in graph.nodes if node.id.startswith("azure:subscription:")), None
+        )
         if subscription_node:
             subscription_uid = subscription_node.id.split(":", 2)[-1]
             cloud["account"] = {"uid": subscription_uid, "name": subscription_node.label}
@@ -801,8 +842,7 @@ def _metadata_uid(graph: EnvironmentGraph, inventory_nodes: list[GraphNode]) -> 
             "discovered_at": graph.discovered_at,
             "nodes": sorted(node.id for node in inventory_nodes),
             "edges": sorted(
-                f"{edge.source}->{edge.relationship}->{edge.target}"
-                for edge in graph.edges
+                f"{edge.source}->{edge.relationship}->{edge.target}" for edge in graph.edges
             ),
         },
         sort_keys=True,
@@ -859,8 +899,14 @@ def to_ocsf_cloud_resources_inventory(graph: EnvironmentGraph) -> dict[str, Any]
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Cloud Environment Discovery — map infrastructure to security graph")
-    parser.add_argument("provider", choices=["aws", "gcp", "azure", "config"], help="Cloud provider or 'config' for static file")
+    parser = argparse.ArgumentParser(
+        description="Cloud Environment Discovery — map infrastructure to security graph"
+    )
+    parser.add_argument(
+        "provider",
+        choices=["aws", "gcp", "azure", "config"],
+        help="Cloud provider or 'config' for static file",
+    )
     parser.add_argument("--region", default="us-east-1", help="AWS region (default: us-east-1)")
     parser.add_argument("--project", help="GCP project ID")
     parser.add_argument("--subscription-id", help="Azure subscription ID")
@@ -902,7 +948,10 @@ def main() -> None:
 
     if args.output:
         Path(args.output).write_text(result)
-        print(f"Graph written to {args.output} ({len(graph.nodes)} nodes, {len(graph.edges)} edges)", file=sys.stderr)
+        print(
+            f"Graph written to {args.output} ({len(graph.nodes)} nodes, {len(graph.edges)} edges)",
+            file=sys.stderr,
+        )
     else:
         print(result)
 

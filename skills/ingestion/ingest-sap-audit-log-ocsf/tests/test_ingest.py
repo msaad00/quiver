@@ -31,7 +31,11 @@ def _record(message: str = "User SAP* successful logon with profile SAP_ALL") ->
 
 
 def test_ingests_json_wrapper_as_application_activity() -> None:
-    records = list(ingest_mod.ingest(StringIO(json.dumps({"SecurityAuditLog": [_record()]})), output_format="ocsf"))
+    records = list(
+        ingest_mod.ingest(
+            StringIO(json.dumps({"SecurityAuditLog": [_record()]})), output_format="ocsf"
+        )
+    )
 
     assert len(records) == 1
     event = records[0]
@@ -74,7 +78,10 @@ def test_skips_invalid_record() -> None:
 
 def test_cli_outputs_jsonl(tmp_path: Path) -> None:
     src = tmp_path / "sap-sal.json"
-    src.write_text(json.dumps({"records": [_record("Transaction SU01 started by SAP* with SAP_ALL")]}), encoding="utf-8")
+    src.write_text(
+        json.dumps({"records": [_record("Transaction SU01 started by SAP* with SAP_ALL")]}),
+        encoding="utf-8",
+    )
 
     result = subprocess.run(
         [sys.executable, str(MODULE_PATH), str(src)],

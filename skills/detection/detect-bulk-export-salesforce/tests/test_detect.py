@@ -25,7 +25,13 @@ def _event(family: str, rows: int = 25000, minutes: int = 0) -> dict[str, object
             "uid": f"evt-{family}-{minutes}",
             "product": {"feature": {"name": "ingest-salesforce-event-mon-ocsf"}},
         },
-        "actor": {"user": {"uid": "005xx000001", "email_addr": "analyst@example.com", "name": "analyst@example.com"}},
+        "actor": {
+            "user": {
+                "uid": "005xx000001",
+                "email_addr": "analyst@example.com",
+                "name": "analyst@example.com",
+            }
+        },
         "src_endpoint": {"ip": "198.51.100.20"},
         "session": {"uid": "sess-1"},
         "unmapped": {
@@ -43,7 +49,9 @@ def _event(family: str, rows: int = 25000, minutes: int = 0) -> dict[str, object
 
 def test_detects_large_export_followed_by_logout(monkeypatch) -> None:
     monkeypatch.setenv("SALESFORCE_BULK_EXPORT_MIN_ROWS", "1000")
-    stream = json.dumps(_event("export")) + "\n" + json.dumps(_event("logout", rows=0, minutes=5)) + "\n"
+    stream = (
+        json.dumps(_event("export")) + "\n" + json.dumps(_event("logout", rows=0, minutes=5)) + "\n"
+    )
 
     findings = detect_mod.detect(StringIO(stream), output_format="native")
 
@@ -55,14 +63,22 @@ def test_detects_large_export_followed_by_logout(monkeypatch) -> None:
 def test_ignores_approved_export_user(monkeypatch) -> None:
     monkeypatch.setenv("SALESFORCE_BULK_EXPORT_MIN_ROWS", "1000")
     monkeypatch.setenv("SALESFORCE_APPROVED_EXPORT_USERS", "005xx000001")
-    stream = json.dumps(_event("export")) + "\n" + json.dumps(_event("logout", rows=0, minutes=5)) + "\n"
+    stream = (
+        json.dumps(_event("export")) + "\n" + json.dumps(_event("logout", rows=0, minutes=5)) + "\n"
+    )
 
     assert detect_mod.detect(StringIO(stream), output_format="native") == []
 
 
 def test_cli_outputs_ocsf(tmp_path: Path) -> None:
     src = tmp_path / "events.jsonl"
-    src.write_text(json.dumps(_event("export")) + "\n" + json.dumps(_event("logout", rows=0, minutes=5)) + "\n", encoding="utf-8")
+    src.write_text(
+        json.dumps(_event("export"))
+        + "\n"
+        + json.dumps(_event("logout", rows=0, minutes=5))
+        + "\n",
+        encoding="utf-8",
+    )
 
     result = subprocess.run(
         [sys.executable, str(MODULE_PATH), str(src)],

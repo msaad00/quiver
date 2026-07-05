@@ -16,7 +16,9 @@ from skills._shared.errors import ContractError  # noqa: E402
 
 THIS = Path(__file__).resolve().parent
 SRC = THIS.parent / "src" / "detect.py"
-SPEC = importlib.util.spec_from_file_location("detect_gcp_service_account_key_creation_under_test", SRC)
+SPEC = importlib.util.spec_from_file_location(
+    "detect_gcp_service_account_key_creation_under_test", SRC
+)
 assert SPEC and SPEC.loader
 MODULE = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(MODULE)
@@ -80,14 +82,18 @@ def test_fires_on_create_service_account_key():
     assert attack["sub_technique_uid"] == SUBTECHNIQUE_UID
     assert finding["finding_info"]["title"] == "GCP service account key created"
     assert any(
-        obs["name"] == "target.name" and obs["value"] == "sa-deploy@my-project.iam.gserviceaccount.com"
+        obs["name"] == "target.name"
+        and obs["value"] == "sa-deploy@my-project.iam.gserviceaccount.com"
         for obs in finding["observables"]
     )
 
 
 def test_native_output_contains_target_service_account():
     findings = list(
-        detect([_event(target_service_account="sa-ci@my-project.iam.gserviceaccount.com")], output_format="native")
+        detect(
+            [_event(target_service_account="sa-ci@my-project.iam.gserviceaccount.com")],
+            output_format="native",
+        )
     )
     finding = findings[0]
     assert finding["schema_mode"] == "native"
@@ -96,7 +102,9 @@ def test_native_output_contains_target_service_account():
 
 
 def test_native_output_contains_created_key_resource_when_present():
-    key_resource = "projects/-/serviceAccounts/sa-ci@my-project.iam.gserviceaccount.com/keys/key-123"
+    key_resource = (
+        "projects/-/serviceAccounts/sa-ci@my-project.iam.gserviceaccount.com/keys/key-123"
+    )
     finding = list(
         detect(
             [
@@ -113,15 +121,21 @@ def test_native_output_contains_created_key_resource_when_present():
 
 
 def test_ocsf_output_contains_created_key_evidence_when_present():
-    key_resource = "projects/-/serviceAccounts/sa-deploy@my-project.iam.gserviceaccount.com/keys/key-123"
+    key_resource = (
+        "projects/-/serviceAccounts/sa-deploy@my-project.iam.gserviceaccount.com/keys/key-123"
+    )
     finding = list(detect([_event(target_key_resource=key_resource)]))[0]
 
     assert finding["evidence"]["target_key_resource"] == key_resource
     assert finding["evidence"]["target_key_id"] == "key-123"
     assert any(
-        obs["name"] == "target.key_resource" and obs["value"] == key_resource for obs in finding["observables"]
+        obs["name"] == "target.key_resource" and obs["value"] == key_resource
+        for obs in finding["observables"]
     )
-    assert any(obs["name"] == "target.key_id" and obs["value"] == "key-123" for obs in finding["observables"])
+    assert any(
+        obs["name"] == "target.key_id" and obs["value"] == "key-123"
+        for obs in finding["observables"]
+    )
 
 
 def test_skips_failed_event():
@@ -154,7 +168,12 @@ def test_accepts_raw_service_account_resource_name_without_prefix():
             [
                 {
                     **_event(),
-                    "resources": [{"name": "sa-deploy@my-project.iam.gserviceaccount.com", "type": "service_account"}],
+                    "resources": [
+                        {
+                            "name": "sa-deploy@my-project.iam.gserviceaccount.com",
+                            "type": "service_account",
+                        }
+                    ],
                 }
             ]
         )

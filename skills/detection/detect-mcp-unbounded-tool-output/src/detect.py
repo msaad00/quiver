@@ -99,12 +99,10 @@ def _normalize_event(event: dict[str, Any]) -> dict[str, Any] | None:
             return None
         unmapped_mcp = _unmapped_mcp(event)
         mcp = event.get("mcp") or {}
-        session_uid = str(mcp.get("session_uid") or unmapped_mcp.get("session_uid") or "sess-unknown")
-        tool_name = str(
-            unmapped_mcp.get("tool_name")
-            or (mcp.get("tool") or {}).get("name")
-            or ""
+        session_uid = str(
+            mcp.get("session_uid") or unmapped_mcp.get("session_uid") or "sess-unknown"
         )
+        tool_name = str(unmapped_mcp.get("tool_name") or (mcp.get("tool") or {}).get("name") or "")
         if not tool_name:
             return None
         response_bytes = _safe_int(unmapped_mcp.get("response_size_bytes"))
@@ -131,10 +129,7 @@ def _normalize_event(event: dict[str, Any]) -> dict[str, Any] | None:
     raw_tool = event.get("tool")
     native_tool: dict[str, Any] = raw_tool if isinstance(raw_tool, dict) else {}
     tool_name = str(
-        native_tool.get("name")
-        or event.get("tool_name")
-        or unmapped_mcp.get("tool_name")
-        or ""
+        native_tool.get("name") or event.get("tool_name") or unmapped_mcp.get("tool_name") or ""
     )
     if not tool_name:
         return None
@@ -293,10 +288,16 @@ def detect(
     if output_format not in OUTPUT_FORMATS:
         raise ValueError(f"unsupported output_format `{output_format}`")
 
-    bytes_thr = bytes_threshold_override if bytes_threshold_override is not None else bytes_threshold()
-    lines_thr = lines_threshold_override if lines_threshold_override is not None else lines_threshold()
+    bytes_thr = (
+        bytes_threshold_override if bytes_threshold_override is not None else bytes_threshold()
+    )
+    lines_thr = (
+        lines_threshold_override if lines_threshold_override is not None else lines_threshold()
+    )
     repeat_thr = (
-        repeated_breach_override if repeated_breach_override is not None else repeated_breach_threshold()
+        repeated_breach_override
+        if repeated_breach_override is not None
+        else repeated_breach_threshold()
     )
 
     normalized: list[dict[str, Any]] = []
@@ -311,10 +312,7 @@ def detect(
     state: dict[tuple[str, str], dict[str, int]] = {}
 
     for event in normalized:
-        breached = (
-            event["response_bytes"] > bytes_thr
-            or event["response_lines"] > lines_thr
-        )
+        breached = event["response_bytes"] > bytes_thr or event["response_lines"] > lines_thr
         if not breached:
             continue
         key = (event["session_uid"], event["tool_name"])
@@ -360,7 +358,9 @@ def load_jsonl(stream: Iterable[str]) -> Iterable[dict[str, Any]]:
         try:
             obj = json.loads(line)
         except json.JSONDecodeError as exc:
-            print(f"[{SKILL_NAME}] skipping line {lineno}: json parse failed: {exc}", file=sys.stderr)
+            print(
+                f"[{SKILL_NAME}] skipping line {lineno}: json parse failed: {exc}", file=sys.stderr
+            )
             continue
         if isinstance(obj, dict):
             yield obj

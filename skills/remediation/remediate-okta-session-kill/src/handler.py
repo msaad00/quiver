@@ -290,7 +290,11 @@ def _finding_product(event: dict[str, Any]) -> str:
 
 
 def _finding_uid(event: dict[str, Any]) -> str:
-    return str((event.get("finding_info") or {}).get("uid") or (event.get("metadata") or {}).get("uid") or "")
+    return str(
+        (event.get("finding_info") or {}).get("uid")
+        or (event.get("metadata") or {}).get("uid")
+        or ""
+    )
 
 
 def _observable_value(event: dict[str, Any], name: str) -> str:
@@ -440,7 +444,9 @@ def _step_endpoint(step: str, user_uid: str) -> str:
 
 def plan_actions(target: Target) -> list[ActionResult]:
     return [
-        ActionResult(step=step, endpoint=_step_endpoint(step, target.user_uid), status=STATUS_PLANNED)
+        ActionResult(
+            step=step, endpoint=_step_endpoint(step, target.user_uid), status=STATUS_PLANNED
+        )
         for step in CONTAINMENT_STEPS
     ]
 
@@ -495,7 +501,9 @@ def apply_actions(
         audit_refs[f"{step}_after_row_uid"] = post["row_uid"]
         audit_refs[f"{step}_after_s3_evidence_uri"] = post["s3_evidence_uri"]
 
-        results.append(ActionResult(step=step, endpoint=endpoint, status=final_status, detail=detail))
+        results.append(
+            ActionResult(step=step, endpoint=endpoint, status=final_status, detail=detail)
+        )
         if final_status == STATUS_FAILURE:
             # Stop on failure. Later steps won't run without fresh operator intent.
             break
@@ -522,7 +530,9 @@ def reverify_target(
     the audit row; we use the verification time as the proxy and note
     within_sla=True. A future PR can wire DynamoDB lookup to populate this.
     """
-    checked_at_ms = now_ms if now_ms is not None else int(datetime.now(timezone.utc).timestamp() * 1000)
+    checked_at_ms = (
+        now_ms if now_ms is not None else int(datetime.now(timezone.utc).timestamp() * 1000)
+    )
     remediated_at_ms_resolved = remediated_at_ms if remediated_at_ms is not None else checked_at_ms
 
     reference = RemediationReference(
@@ -549,7 +559,9 @@ def reverify_target(
             actual_state="okta API call raised; cannot determine state",
             detail=str(exc),
         )
-        record = build_verification_record(reference=reference, result=result, verifier_skill=SKILL_NAME)
+        record = build_verification_record(
+            reference=reference, result=result, verifier_skill=SKILL_NAME
+        )
         record["target"] = {
             "provider": "Okta",
             "user_uid": target.user_uid,
@@ -559,9 +571,7 @@ def reverify_target(
 
     drift = bool(sessions) or bool(tokens)
     if drift:
-        actual = (
-            f"sessions={len(sessions)} oauth_tokens={len(tokens)} (expected 0/0)"
-        )
+        actual = f"sessions={len(sessions)} oauth_tokens={len(tokens)} (expected 0/0)"
         result = VerificationResult(
             status=VerificationStatus.DRIFT,
             checked_at_ms=checked_at_ms,
@@ -580,7 +590,9 @@ def reverify_target(
             detail="session-kill confirmed",
         )
 
-    record = build_verification_record(reference=reference, result=result, verifier_skill=SKILL_NAME)
+    record = build_verification_record(
+        reference=reference, result=result, verifier_skill=SKILL_NAME
+    )
     record["target"] = {
         "provider": "Okta",
         "user_uid": target.user_uid,
@@ -661,9 +673,7 @@ def run(
 
         # --apply branch
         if okta_client is None or audit is None:
-            raise RuntimeError(
-                "apply=True requires both okta_client and audit to be provided"
-            )
+            raise RuntimeError("apply=True requires both okta_client and audit to be provided")
         if not normalized_org_url:
             raise RuntimeError("apply=True requires org_url to be provided")
         if not resolved_allowed_org_urls:
@@ -680,9 +690,7 @@ def run(
             approver=approver,
         )
         overall_status = (
-            STATUS_SUCCESS
-            if all(r.status == STATUS_SUCCESS for r in results)
-            else STATUS_FAILURE
+            STATUS_SUCCESS if all(r.status == STATUS_SUCCESS for r in results) else STATUS_FAILURE
         )
         yield _render_record(
             target=target,
@@ -797,7 +805,9 @@ def _build_production_clients() -> tuple[OktaClient, AuditWriter]:
 
     return (
         HttpxOktaClient(org_url=org_url, api_token=api_token),
-        DualAuditWriter(dynamodb_table=dynamodb_table, s3_bucket=s3_bucket, kms_key_arn=kms_key_arn),
+        DualAuditWriter(
+            dynamodb_table=dynamodb_table, s3_bucket=s3_bucket, kms_key_arn=kms_key_arn
+        ),
     )
 
 

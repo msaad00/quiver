@@ -69,9 +69,7 @@ def test_fires_on_sql_union_select_in_query():
     f = findings[0]
     assert f["class_uid"] == 2004
     assert f["finding_info"]["attacks"][0]["technique_uid"] == "T1190"
-    assert any(
-        o["name"] == "injection.family" and o["value"] == "sql" for o in f["observables"]
-    )
+    assert any(o["name"] == "injection.family" and o["value"] == "sql" for o in f["observables"])
 
 
 def test_fires_on_or_1_equals_1():
@@ -89,7 +87,9 @@ def test_fires_on_or_1_equals_1():
 def test_fires_on_command_substitution_in_body():
     findings = list(detect([_http_event(method="POST", body="name=$(whoami)")]))
     assert any(
-        o["name"] == "injection.family" and o["value"] == "command" for f in findings for o in f["observables"]
+        o["name"] == "injection.family" and o["value"] == "command"
+        for f in findings
+        for o in f["observables"]
     )
     assert any(
         o["name"] == "injection.matched_surface" and o["value"] == "body"
@@ -101,21 +101,27 @@ def test_fires_on_command_substitution_in_body():
 def test_fires_on_ldap_wildcard_bypass():
     findings = list(detect([_http_event(query_string="filter=(|(uid=*")]))
     assert any(
-        o["name"] == "injection.family" and o["value"] == "ldap" for f in findings for o in f["observables"]
+        o["name"] == "injection.family" and o["value"] == "ldap"
+        for f in findings
+        for o in f["observables"]
     )
 
 
 def test_fires_on_nosql_ne_operator_in_body():
     findings = list(detect([_http_event(method="POST", body={"username": {"$ne": ""}})]))
     assert any(
-        o["name"] == "injection.family" and o["value"] == "nosql" for f in findings for o in f["observables"]
+        o["name"] == "injection.family" and o["value"] == "nosql"
+        for f in findings
+        for o in f["observables"]
     )
 
 
 def test_fires_on_template_injection_in_query():
     findings = list(detect([_http_event(query_string="name={{ 7*7 }}")]))
     assert any(
-        o["name"] == "injection.family" and o["value"] == "template" for f in findings for o in f["observables"]
+        o["name"] == "injection.family" and o["value"] == "template"
+        for f in findings
+        for o in f["observables"]
     )
 
 
@@ -149,7 +155,10 @@ def test_payload_excerpt_is_redacted_when_long():
     long_payload = "id=1 UNION SELECT " + "X" * 200
     findings = list(detect([_http_event(query_string=long_payload)]))
     excerpt = next(
-        o["value"] for f in findings for o in f["observables"] if o["name"] == "injection.payload_excerpt"
+        o["value"]
+        for f in findings
+        for o in f["observables"]
+        if o["name"] == "injection.payload_excerpt"
     )
     assert len(excerpt) <= PAYLOAD_EXCERPT_LEN + len("...")
 

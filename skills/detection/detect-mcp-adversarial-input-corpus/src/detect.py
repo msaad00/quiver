@@ -184,7 +184,9 @@ def _normalize_event(event: dict[str, Any]) -> dict[str, Any] | None:
             return None
         mcp = event.get("mcp") or {}
         unmapped_mcp = _unmapped_mcp(event)
-        session_uid = str(mcp.get("session_uid") or unmapped_mcp.get("session_uid") or "sess-unknown")
+        session_uid = str(
+            mcp.get("session_uid") or unmapped_mcp.get("session_uid") or "sess-unknown"
+        )
         request_uid = str(
             mcp.get("request_uid")
             or unmapped_mcp.get("request_uid")
@@ -214,8 +216,10 @@ def _normalize_event(event: dict[str, Any]) -> dict[str, Any] | None:
     # On native, the prompt may live at the top-level too.
     extra_prompt = event.get("prompt")
     scan_targets = _scan_strings(unmapped_mcp)
-    if isinstance(extra_prompt, str) and extra_prompt and not any(
-        label == "prompt" for label, _ in scan_targets
+    if (
+        isinstance(extra_prompt, str)
+        and extra_prompt
+        and not any(label == "prompt" for label, _ in scan_targets)
     ):
         scan_targets.append(("prompt", extra_prompt))
     if not scan_targets:
@@ -400,7 +404,9 @@ def load_jsonl(stream: Iterable[str]) -> Iterable[dict[str, Any]]:
         try:
             obj = json.loads(line)
         except json.JSONDecodeError as exc:
-            print(f"[{SKILL_NAME}] skipping line {lineno}: json parse failed: {exc}", file=sys.stderr)
+            print(
+                f"[{SKILL_NAME}] skipping line {lineno}: json parse failed: {exc}", file=sys.stderr
+            )
             continue
         if isinstance(obj, dict):
             yield obj

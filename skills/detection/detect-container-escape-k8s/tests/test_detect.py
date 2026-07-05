@@ -54,7 +54,11 @@ def _event(
     request_object: object | None = None,
     response_object: object | None = None,
 ) -> dict:
-    resource: dict[str, object] = {"type": resource_type, "name": resource_name, "namespace": namespace}
+    resource: dict[str, object] = {
+        "type": resource_type,
+        "name": resource_name,
+        "namespace": namespace,
+    }
     if subresource:
         resource["subresource"] = subresource
     event: dict[str, object] = {
@@ -86,7 +90,11 @@ def _native_event(
     request_object: object | None = None,
     response_object: object | None = None,
 ) -> dict:
-    resource: dict[str, object] = {"type": resource_type, "name": resource_name, "namespace": namespace}
+    resource: dict[str, object] = {
+        "type": resource_type,
+        "name": resource_name,
+        "namespace": namespace,
+    }
     if subresource:
         resource["subresource"] = subresource
     event: dict[str, object] = {
@@ -155,12 +163,20 @@ class TestPatchSignalExtraction:
                 ],
             }
         }
-        assert _find_risky_settings(payload) == ["capability=CAP_SYS_ADMIN", "hostPID=true", "privileged=true"]
+        assert _find_risky_settings(payload) == [
+            "capability=CAP_SYS_ADMIN",
+            "hostPID=true",
+            "privileged=true",
+        ]
 
     def test_extracts_risky_settings_from_json_patch(self):
         payload = [
             {"op": "add", "path": "/spec/containers/0/securityContext/privileged", "value": True},
-            {"op": "add", "path": "/spec/containers/0/securityContext/capabilities/add", "value": ["CAP_SYS_PTRACE"]},
+            {
+                "op": "add",
+                "path": "/spec/containers/0/securityContext/capabilities/add",
+                "value": ["CAP_SYS_PTRACE"],
+            },
         ]
         assert _find_risky_settings(payload) == ["capability=CAP_SYS_PTRACE", "privileged=true"]
 
@@ -257,7 +273,10 @@ class TestRule2HostPathInjection:
                                 "template": {
                                     "spec": {
                                         "volumes": [
-                                            {"name": "host-root", "hostPath": {"path": "/var/lib/containerd"}}
+                                            {
+                                                "name": "host-root",
+                                                "hostPath": {"path": "/var/lib/containerd"},
+                                            }
                                         ]
                                     }
                                 }
@@ -277,7 +296,11 @@ class TestRule2HostPathInjection:
                 [
                     _event(
                         request_object={
-                            "spec": {"volumes": [{"name": "cache", "hostPath": {"path": "/var/cache/app"}}]}
+                            "spec": {
+                                "volumes": [
+                                    {"name": "cache", "hostPath": {"path": "/var/cache/app"}}
+                                ]
+                            }
                         }
                     )
                 ]
@@ -303,7 +326,9 @@ class TestRule3EphemeralContainer:
         assert findings[0]["severity_id"] == SEVERITY_HIGH
 
     def test_plain_pod_patch_without_ephemeralcontainers_does_not_fire(self):
-        findings = list(rule3_ephemeral_container_creation([_event(request_object={"spec": {"hostPID": True}})]))
+        findings = list(
+            rule3_ephemeral_container_creation([_event(request_object={"spec": {"hostPID": True}})])
+        )
         assert findings == []
 
 

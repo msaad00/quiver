@@ -65,7 +65,10 @@ class _FakeConnection:
 
 class TestNormalizeTableName:
     def test_accepts_database_schema_table(self):
-        assert _normalize_table_name("security_db.ops.findings_sink") == '"security_db"."ops"."findings_sink"'
+        assert (
+            _normalize_table_name("security_db.ops.findings_sink")
+            == '"security_db"."ops"."findings_sink"'
+        )
 
     def test_rejects_invalid_identifier(self):
         try:
@@ -115,7 +118,12 @@ class TestInsertAndMain:
         assert "PARSE_JSON(%s)" in fake.cursor_instance.executemany_sql
         assert "INSERT INTO" in fake.cursor_instance.executemany_sql
         assert fake.cursor_instance.executemany_params == [
-            ('{"event_uid":"evt-1","finding_uid":"f-1","schema_mode":"native"}', "native", "evt-1", "f-1")
+            (
+                '{"event_uid":"evt-1","finding_uid":"f-1","schema_mode":"native"}',
+                "native",
+                "evt-1",
+                "f-1",
+            )
         ]
         assert fake.commit_called is True
         assert fake.rollback_called is False
@@ -129,7 +137,9 @@ class TestInsertAndMain:
         try:
             _SINK._insert_rows(
                 '"security_db"."ops"."findings_sink"',
-                _prepare_rows(['{"schema_mode":"native","event_uid":"evt-1","finding_uid":"f-1"}\n']),
+                _prepare_rows(
+                    ['{"schema_mode":"native","event_uid":"evt-1","finding_uid":"f-1"}\n']
+                ),
             )
         except RuntimeError as exc:
             assert "insert failed" in str(exc)
@@ -151,7 +161,9 @@ class TestInsertAndMain:
         assert result["inserted_records"] == 0
 
     def test_main_defaults_to_dry_run(self, monkeypatch, capsys):
-        monkeypatch.setattr(_SINK.sys, "stdin", io.StringIO('{"schema_mode":"native","event_uid":"evt-1"}\n'))
+        monkeypatch.setattr(
+            _SINK.sys, "stdin", io.StringIO('{"schema_mode":"native","event_uid":"evt-1"}\n')
+        )
 
         exit_code = main(["--table", "security_db.ops.findings_sink"])
 

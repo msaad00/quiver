@@ -47,12 +47,16 @@ def _assert_no_secret_material(payload: Any, *, path: str) -> None:
         for key, value in payload.items():
             key_text = str(key)
             if SECRET_FIELD_RE.search(key_text):
-                raise ValueError(f"{path}.{key_text} must not contain passwords, PATs, tokens, or secrets")
+                raise ValueError(
+                    f"{path}.{key_text} must not contain passwords, PATs, tokens, or secrets"
+                )
             _assert_no_secret_material(value, path=f"{path}.{key_text}")
     elif isinstance(payload, list):
         for index, value in enumerate(payload):
             _assert_no_secret_material(value, path=f"{path}[{index}]")
-    elif isinstance(payload, str) and (SECRET_FIELD_RE.search(payload) or SECRET_VALUE_RE.search(payload)):
+    elif isinstance(payload, str) and (
+        SECRET_FIELD_RE.search(payload) or SECRET_VALUE_RE.search(payload)
+    ):
         raise ValueError(f"{path} must not contain password, PAT, token, or secret material")
 
 
@@ -83,7 +87,9 @@ def _load_raw_events(path: Path | None) -> tuple[Mapping[str, Any], ...] | None:
     if isinstance(payload, dict):
         payload = [payload]
     if not isinstance(payload, list) or not all(isinstance(item, dict) for item in payload):
-        raise ValueError("--raw-events must be a JSON object, JSON array of objects, or JSONL objects")
+        raise ValueError(
+            "--raw-events must be a JSON object, JSON array of objects, or JSONL objects"
+        )
     return tuple(payload)
 
 
@@ -139,9 +145,13 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         help="Run through compiled LangGraph StateGraph instead of the deterministic mirror",
     )
     parser.add_argument("--checkpoint", type=Path, help="Write a replay checkpoint artifact")
-    parser.add_argument("--replay-checkpoint", type=Path, help="Replay a checkpoint without running nodes")
+    parser.add_argument(
+        "--replay-checkpoint", type=Path, help="Replay a checkpoint without running nodes"
+    )
     parser.add_argument("--output", type=Path, help="Optional JSON summary output path")
-    parser.add_argument("--no-check", action="store_true", help="Emit summary even if wrapper validation fails")
+    parser.add_argument(
+        "--no-check", action="store_true", help="Emit summary even if wrapper validation fails"
+    )
     parser.add_argument(
         "--approval-context",
         help="JSON object or path with approver_id, ticket_id, and approval_timestamp",
@@ -151,7 +161,9 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         action="store_true",
         help="Populate demo approval context for HITL-gated dry-run planning",
     )
-    parser.add_argument("--approver", default="operator@example.com", help="Approver identity for --approve")
+    parser.add_argument(
+        "--approver", default="operator@example.com", help="Approver identity for --approve"
+    )
     parser.add_argument("--ticket", default="SEC-LANGGRAPH-1", help="Ticket id for --approve")
     parser.add_argument(
         "--clear-approval-env",

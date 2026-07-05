@@ -200,7 +200,9 @@ def _emit_audit_event(event: dict[str, Any]) -> None:
         sink.write_file(record)
 
 
-def _error_response(request_id: Any, code: int, message: str, data: Any | None = None) -> dict[str, Any]:
+def _error_response(
+    request_id: Any, code: int, message: str, data: Any | None = None
+) -> dict[str, Any]:
     err: dict[str, Any] = {"code": code, "message": message}
     if data is not None:
         err["data"] = data
@@ -263,22 +265,26 @@ def _validate_output_format(raw_output_format: Any) -> str | None:
     return raw_output_format
 
 
-_CALLER_CONTEXT_KEYS = frozenset({
-    "user_id",
-    "email",
-    "session_id",
-    "roles",
-    "allowed_skills",
-})
+_CALLER_CONTEXT_KEYS = frozenset(
+    {
+        "user_id",
+        "email",
+        "session_id",
+        "roles",
+        "allowed_skills",
+    }
+)
 
-_APPROVAL_CONTEXT_KEYS = frozenset({
-    "approver_id",
-    "approver_email",
-    "ticket_id",
-    "approval_timestamp",
-    "approver_ids",
-    "approver_emails",
-})
+_APPROVAL_CONTEXT_KEYS = frozenset(
+    {
+        "approver_id",
+        "approver_email",
+        "ticket_id",
+        "approval_timestamp",
+        "approver_ids",
+        "approver_emails",
+    }
+)
 
 _CONTEXT_ALLOWED_KEYS = {
     "_caller_context": _CALLER_CONTEXT_KEYS,
@@ -400,7 +406,11 @@ def _is_safe_write_invocation(skill: SkillSpec, args: list[str]) -> bool:
     """
     if skill.read_only:
         return True
-    if skill.category == "remediation" and skill.entrypoint and skill.entrypoint.name == "handler.py":
+    if (
+        skill.category == "remediation"
+        and skill.entrypoint
+        and skill.entrypoint.name == "handler.py"
+    ):
         return "--apply" not in args
     if skill.category == "evaluation" and skill.entrypoint and skill.entrypoint.name == "checks.py":
         return "--apply" not in args
@@ -452,7 +462,9 @@ def _call_tool(
         "output_format": output_format or "default",
         "args_hash": _stable_hash(args),
         "args_count": len(args),
-        "input_sha256": hashlib.sha256(stdin_text.encode("utf-8")).hexdigest() if stdin_text else "",
+        "input_sha256": hashlib.sha256(stdin_text.encode("utf-8")).hexdigest()
+        if stdin_text
+        else "",
         "input_length": len(stdin_text),
         "caller_context_provided": caller_context is not None,
         "approval_context_provided": approval_context is not None,
@@ -474,7 +486,9 @@ def _call_tool(
             )
         if _requires_approval_context(skill, args) and approval_context is None:
             raise ValueError("write-capable tools with approver_roles require `_approval_context`")
-        if _requires_approval_context(skill, args) and (skill.min_approvers or 0) > _approval_count(approval_context):
+        if _requires_approval_context(skill, args) and (skill.min_approvers or 0) > _approval_count(
+            approval_context
+        ):
             raise ValueError(
                 f"tool `{skill.name}` requires at least {skill.min_approvers} approver(s) in `_approval_context`"
             )
@@ -528,9 +542,7 @@ def _call_tool(
         audit_event["sandboxed"] = bool(
             sandbox_active and command and command[0] in {"bwrap", "sandbox-exec"}
         )
-        worker_mode_used = (
-            worker_pool.is_enabled() and supports_worker_mode(skill)
-        )
+        worker_mode_used = worker_pool.is_enabled() and supports_worker_mode(skill)
         audit_event["worker_mode_used"] = worker_mode_used
         completed: Any
         if worker_mode_used:
@@ -621,7 +633,9 @@ def _handle_request(
     if method == "tools/list":
         params = message.get("params") or {}
         if not isinstance(params, dict):
-            return _error_response(request_id, -32602, "`tools/list` params must be an object when present")
+            return _error_response(
+                request_id, -32602, "`tools/list` params must be an object when present"
+            )
         try:
             caller_context = _validate_context(params.get("_caller_context"), "_caller_context")
         except ValueError as exc:

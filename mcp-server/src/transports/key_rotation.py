@@ -181,9 +181,7 @@ def _load_keys_from_env(value: str) -> list[_Key]:
         secret = part.strip()
         if not secret:
             continue
-        keys.append(
-            _Key(kid=f"env-{index}", secret=secret, issued=None, expires=None)
-        )
+        keys.append(_Key(kid=f"env-{index}", secret=secret, issued=None, expires=None))
     return keys
 
 
@@ -242,9 +240,7 @@ class KeyStore:
         now = self._clock()
         usable = [k for k in new_keys if not k.is_expired(now)]
         if not usable:
-            raise EmptyKeyStoreError(
-                f"keys file {self._file_path} resolved to 0 usable keys"
-            )
+            raise EmptyKeyStoreError(f"keys file {self._file_path} resolved to 0 usable keys")
         with self._lock:
             previous_kids = {k.kid for k in self._keys}
             new_kids = {k.kid for k in new_keys}
@@ -297,9 +293,7 @@ class KeyStore:
         try:
             self._reload(reason="sighup", source="file")
         except Exception as exc:  # noqa: BLE001
-            sys.stderr.write(
-                f"[mcp-sse] SIGHUP reload failed: {exc!s}; keeping previous keys\n"
-            )
+            sys.stderr.write(f"[mcp-sse] SIGHUP reload failed: {exc!s}; keeping previous keys\n")
             sys.stderr.flush()
 
     # ---------------------------------------------------------------
@@ -372,9 +366,7 @@ class KeyStore:
             # The supervisor will see the rotation succeeded on the
             # next request; the audit gap is logged here so a SIEM
             # tail can flag it.
-            sys.stderr.write(
-                f"[mcp-sse] failed to emit bearer_key_rotated audit: {exc!s}\n"
-            )
+            sys.stderr.write(f"[mcp-sse] failed to emit bearer_key_rotated audit: {exc!s}\n")
             sys.stderr.flush()
 
 

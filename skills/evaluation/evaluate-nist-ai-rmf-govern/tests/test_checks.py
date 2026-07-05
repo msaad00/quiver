@@ -59,10 +59,7 @@ def _full_entry(*, coverage: float = 1.0) -> dict[str, object]:
 
 def _all_passing_manifest() -> dict[str, object]:
     return {
-        "subcategories": {
-            sub_id: _full_entry()
-            for sub_id, _, _, _ in IMPLEMENTED_SUBCATEGORIES
-        }
+        "subcategories": {sub_id: _full_entry() for sub_id, _, _, _ in IMPLEMENTED_SUBCATEGORIES}
     }
 
 
@@ -237,9 +234,7 @@ class TestOcsfProjection:
         assert sample["category_uid"] == 2
         assert sample["metadata"]["product"]["feature"]["name"] == SKILL_NAME
         # OCSF requirements must carry the subcategory ID
-        assert any(
-            req.startswith("GOVERN:") for req in sample["compliance"]["requirements"]
-        )
+        assert any(req.startswith("GOVERN:") for req in sample["compliance"]["requirements"])
 
     def test_failing_finding_has_failure_status_id(self):
         findings = run_benchmark({}, now=NOW)

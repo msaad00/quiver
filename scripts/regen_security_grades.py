@@ -201,7 +201,11 @@ def run_bandit() -> dict[str, Any]:
     _run(cmd)
     data: dict[str, Any]
     try:
-        data = json.loads(output.read_text()) if output.exists() else {"results": [], "metrics": {"_totals": {}}}
+        data = (
+            json.loads(output.read_text())
+            if output.exists()
+            else {"results": [], "metrics": {"_totals": {}}}
+        )
     except (json.JSONDecodeError, OSError):
         data = {"results": [], "metrics": {"_totals": {}}}
 
@@ -381,7 +385,9 @@ def render(parts: dict[str, dict[str, Any]]) -> str:
     out.append(f"- Scanned: {b.get('loc', '?'):,} lines of code")
     out.append(f"- **HIGH severity: {b.get('high', '?')}**")
     out.append(f"- **MEDIUM severity: {b.get('medium', '?')}**")
-    out.append(f"- **LOW severity: {b.get('low', '?')}** (informational; most are subprocess / exception-handler patterns expected in a security-skills repo)")
+    out.append(
+        f"- **LOW severity: {b.get('low', '?')}** (informational; most are subprocess / exception-handler patterns expected in a security-skills repo)"
+    )
     if b.get("test_id_distribution"):
         out.append("")
         out.append("Top test IDs by count:")
@@ -392,7 +398,9 @@ def render(parts: dict[str, dict[str, Any]]) -> str:
     # --- validators detail ---
     out.append("## In-repo validators — trust contract")
     out.append("")
-    out.append(f"{v.get('passed', '?')} of {v.get('total', '?')} passing. Each one is a CI gate; drift fails closed.")
+    out.append(
+        f"{v.get('passed', '?')} of {v.get('total', '?')} passing. Each one is a CI gate; drift fails closed."
+    )
     out.append("")
     out.append("| Validator | Status |")
     out.append("|---|---|")
@@ -412,7 +420,9 @@ def render(parts: dict[str, dict[str, Any]]) -> str:
             fixes = ", ".join(f.get("fix_versions", []) or ["—"])
             out.append(f"| {f['package']} | {f['version']} | {f['id']} | {fixes} |")
         out.append("")
-        out.append("**Action:** bump direct deps where a fix exists; document indirect / installer-only paths.")
+        out.append(
+            "**Action:** bump direct deps where a fix exists; document indirect / installer-only paths."
+        )
     out.append("")
 
     # --- agent-bom skills scan detail ---
@@ -424,17 +434,29 @@ def render(parts: dict[str, dict[str, Any]]) -> str:
     else:
         s = a.get("summary", {})
         out.append(f"- Files scanned: **{s.get('files_scanned', '?')}**")
-        out.append(f"- Credential env vars referenced (count, not leaked): **{s.get('credential_env_vars', '?')}**")
-        out.append(f"- Packages found: **{s.get('packages_found', '?')}** · MCP servers found: **{s.get('servers_found', '?')}**")
+        out.append(
+            f"- Credential env vars referenced (count, not leaked): **{s.get('credential_env_vars', '?')}**"
+        )
+        out.append(
+            f"- Packages found: **{s.get('packages_found', '?')}** · MCP servers found: **{s.get('servers_found', '?')}**"
+        )
         out.append("")
         out.append("### Trust categories (level distribution per file × category axis)")
         out.append("")
         out.append("| Category | pass | info | warn | fail |")
         out.append("|---|---:|---:|---:|---:|")
-        cat_axes = ["credentials", "purpose_capability", "instruction_scope", "install_mechanism", "persistence_privilege"]
+        cat_axes = [
+            "credentials",
+            "purpose_capability",
+            "instruction_scope",
+            "install_mechanism",
+            "persistence_privilege",
+        ]
         levels = a.get("category_levels", {})
         for axis in cat_axes:
-            row = [axis] + [str(levels.get((axis, lv), 0)) for lv in ("pass", "info", "warn", "fail")]
+            row = [axis] + [
+                str(levels.get((axis, lv), 0)) for lv in ("pass", "info", "warn", "fail")
+            ]
             out.append("| " + " | ".join(row) + " |")
         out.append("")
         out.append("### Provenance status")
@@ -518,7 +540,10 @@ def main(argv: list[str] | None = None) -> int:
         existing_norm = timestamp_re.sub("> {{TIMESTAMP}}", existing)
         rendered_norm = timestamp_re.sub("> {{TIMESTAMP}}", rendered)
         if existing_norm != rendered_norm:
-            print("SECURITY_GRADES.md is out of sync. Re-run: python scripts/regen_security_grades.py", file=sys.stderr)
+            print(
+                "SECURITY_GRADES.md is out of sync. Re-run: python scripts/regen_security_grades.py",
+                file=sys.stderr,
+            )
             return 1
         print("SECURITY_GRADES.md is in sync.")
         return 0

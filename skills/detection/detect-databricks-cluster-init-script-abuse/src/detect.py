@@ -63,9 +63,7 @@ ACCEPTED_PRODUCERS = frozenset(
 ANCHOR_OPERATIONS = frozenset({"clusters.create", "clusters.edit"})
 
 ALLOWED_PATHS_ENV = "DATABRICKS_INIT_SCRIPT_ALLOWED_PATHS"
-DEFAULT_ALLOWED_PATHS = (
-    r"^(dbfs:/databricks/init/|s3://databricks-workspace-[a-z0-9-]+-internal/)"
-)
+DEFAULT_ALLOWED_PATHS = r"^(dbfs:/databricks/init/|s3://databricks-workspace-[a-z0-9-]+-internal/)"
 
 UNSAFE_SHELL_PATTERN = re.compile(r"\b(curl|wget|http|https|nc|netcat)\b", re.IGNORECASE)
 
@@ -246,15 +244,25 @@ def _build_native_finding(
     if actor_name and actor_name != actor_uid:
         observables.append({"name": "actor.user.name", "type": "User Name", "value": actor_name})
     if workspace_id:
-        observables.append({"name": "databricks.workspace_id", "type": "Resource UID", "value": workspace_id})
+        observables.append(
+            {"name": "databricks.workspace_id", "type": "Resource UID", "value": workspace_id}
+        )
     if cluster_id:
-        observables.append({"name": "databricks.cluster_id", "type": "Resource UID", "value": cluster_id})
+        observables.append(
+            {"name": "databricks.cluster_id", "type": "Resource UID", "value": cluster_id}
+        )
     if cluster_name:
-        observables.append({"name": "databricks.cluster_name", "type": "Other", "value": cluster_name})
+        observables.append(
+            {"name": "databricks.cluster_name", "type": "Other", "value": cluster_name}
+        )
     observables.append({"name": "api.operation", "type": "Other", "value": operation})
-    observables.append({"name": "databricks.init_script_destination", "type": "URL String", "value": destination})
+    observables.append(
+        {"name": "databricks.init_script_destination", "type": "URL String", "value": destination}
+    )
     for reason in reasons:
-        observables.append({"name": "databricks.init_script_violation", "type": "Other", "value": reason})
+        observables.append(
+            {"name": "databricks.init_script_violation", "type": "Other", "value": reason}
+        )
 
     evidence: dict[str, Any] = {
         "events_observed": 1,
@@ -281,9 +289,7 @@ def _build_native_finding(
         "severity_id": SEVERITY_HIGH,
         "status": "success",
         "status_id": STATUS_SUCCESS,
-        "title": (
-            f"Databricks cluster init script points to unsafe destination '{destination}'"
-        ),
+        "title": (f"Databricks cluster init script points to unsafe destination '{destination}'"),
         "description": description,
         "finding_types": ["databricks-cluster-init-script-abuse", OWASP_FINDING_TYPE],
         "first_seen_time_ms": time_ms,
@@ -378,9 +384,7 @@ def coverage_metadata() -> dict[str, Any]:
     }
 
 
-def _classify_destination(
-    destination: str, allowed_pattern: re.Pattern[str]
-) -> list[str]:
+def _classify_destination(destination: str, allowed_pattern: re.Pattern[str]) -> list[str]:
     reasons: list[str] = []
     if not allowed_pattern.match(destination):
         reasons.append("destination outside DATABRICKS_INIT_SCRIPT_ALLOWED_PATHS")
@@ -466,13 +470,18 @@ def load_jsonl(stream: Iterable[str]) -> Iterator[dict[str, Any]]:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         description=(
-            "Detect Databricks cluster init-script abuse from OCSF 1.8 API Activity "
-            "6003 input."
+            "Detect Databricks cluster init-script abuse from OCSF 1.8 API Activity 6003 input."
         )
     )
-    parser.add_argument("input", nargs="?", help="OCSF 1.8 API Activity 6003 JSONL input. Defaults to stdin.")
-    parser.add_argument("--output", "-o", help="Detection Finding JSONL output. Defaults to stdout.")
-    parser.add_argument("--output-format", choices=OUTPUT_FORMATS, default="ocsf", help="Output format.")
+    parser.add_argument(
+        "input", nargs="?", help="OCSF 1.8 API Activity 6003 JSONL input. Defaults to stdin."
+    )
+    parser.add_argument(
+        "--output", "-o", help="Detection Finding JSONL output. Defaults to stdout."
+    )
+    parser.add_argument(
+        "--output-format", choices=OUTPUT_FORMATS, default="ocsf", help="Output format."
+    )
     args = parser.parse_args(argv)
 
     in_stream = sys.stdin if not args.input else open(args.input, "r", encoding="utf-8")

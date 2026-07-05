@@ -273,9 +273,7 @@ def _build_native_finding(
     description = (
         f"Databricks principal '{granter_name or granter}' granted admin privilege "
         f"to '{grantee}' (group '{group or 'unknown'}', operation '{operation}') in "
-        f"workspace '{workspace_id or 'unknown'}'. "
-        + " · ".join(reasons)
-        + "."
+        f"workspace '{workspace_id or 'unknown'}'. " + " · ".join(reasons) + "."
     )
 
     observables: list[dict[str, Any]] = [
@@ -285,13 +283,17 @@ def _build_native_finding(
     if granter_name and granter_name != granter:
         observables.append({"name": "actor.user.name", "type": "User Name", "value": granter_name})
     if workspace_id:
-        observables.append({"name": "databricks.workspace_id", "type": "Resource UID", "value": workspace_id})
+        observables.append(
+            {"name": "databricks.workspace_id", "type": "Resource UID", "value": workspace_id}
+        )
     observables.append({"name": "api.operation", "type": "Other", "value": operation})
     if grantee:
         observables.append({"name": "databricks.grantee", "type": "User Name", "value": grantee})
     if group:
         observables.append({"name": "databricks.group_name", "type": "Other", "value": group})
-    observables.append({"name": "databricks.event_utc_hour", "type": "Other", "value": str(event_hour)})
+    observables.append(
+        {"name": "databricks.event_utc_hour", "type": "Other", "value": str(event_hour)}
+    )
 
     evidence: dict[str, Any] = {
         "events_observed": 1,
@@ -323,9 +325,7 @@ def _build_native_finding(
         "severity_id": SEVERITY_HIGH,
         "status": "success",
         "status_id": STATUS_SUCCESS,
-        "title": (
-            f"Databricks admin privilege granted to '{grantee}' outside change window"
-        ),
+        "title": (f"Databricks admin privilege granted to '{grantee}' outside change window"),
         "description": description,
         "finding_types": ["databricks-workspace-admin-grant", OWASP_FINDING_TYPE],
         "first_seen_time_ms": time_ms,
@@ -541,9 +541,15 @@ def main(argv: list[str] | None = None) -> int:
             "window from OCSF 1.8 API Activity 6003 input."
         )
     )
-    parser.add_argument("input", nargs="?", help="OCSF 1.8 API Activity 6003 JSONL input. Defaults to stdin.")
-    parser.add_argument("--output", "-o", help="Detection Finding JSONL output. Defaults to stdout.")
-    parser.add_argument("--output-format", choices=OUTPUT_FORMATS, default="ocsf", help="Output format.")
+    parser.add_argument(
+        "input", nargs="?", help="OCSF 1.8 API Activity 6003 JSONL input. Defaults to stdin."
+    )
+    parser.add_argument(
+        "--output", "-o", help="Detection Finding JSONL output. Defaults to stdout."
+    )
+    parser.add_argument(
+        "--output-format", choices=OUTPUT_FORMATS, default="ocsf", help="Output format."
+    )
     args = parser.parse_args(argv)
 
     in_stream = sys.stdin if not args.input else open(args.input, "r", encoding="utf-8")

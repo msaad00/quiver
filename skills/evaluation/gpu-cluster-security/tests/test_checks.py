@@ -30,7 +30,13 @@ from checks import (
 class TestRuntimeIsolation:
     def test_1_1_privileged_gpu_fails(self):
         config = {
-            "pods": [{"name": "training-gpu", "security_context": {"privileged": True}, "resources": {"limits": {"nvidia.com/gpu": 8}}}]
+            "pods": [
+                {
+                    "name": "training-gpu",
+                    "security_context": {"privileged": True},
+                    "resources": {"limits": {"nvidia.com/gpu": 8}},
+                }
+            ]
         }
         f = check_1_1_no_privileged_gpu_pods(config)
         assert f.status == "FAIL"
@@ -38,13 +44,21 @@ class TestRuntimeIsolation:
 
     def test_1_1_non_privileged_passes(self):
         config = {
-            "pods": [{"name": "training-gpu", "security_context": {"privileged": False}, "resources": {"limits": {"nvidia.com/gpu": 8}}}]
+            "pods": [
+                {
+                    "name": "training-gpu",
+                    "security_context": {"privileged": False},
+                    "resources": {"limits": {"nvidia.com/gpu": 8}},
+                }
+            ]
         }
         f = check_1_1_no_privileged_gpu_pods(config)
         assert f.status == "PASS"
 
     def test_1_2_dev_mount_fails(self):
-        config = {"pods": [{"name": "gpu-pod", "volumes": [{"hostPath": {"path": "/dev/nvidia0"}}]}]}
+        config = {
+            "pods": [{"name": "gpu-pod", "volumes": [{"hostPath": {"path": "/dev/nvidia0"}}]}]
+        }
         f = check_1_2_gpu_device_plugin(config)
         assert f.status == "FAIL"
 
@@ -93,7 +107,11 @@ class TestDriverSecurity:
 
 class TestNetworkSegmentation:
     def test_3_1_ib_segmented_passes(self):
-        config = {"network": {"infiniband": {"partitions": ["tenant-a", "tenant-b"], "tenant_isolation": True}}}
+        config = {
+            "network": {
+                "infiniband": {"partitions": ["tenant-a", "tenant-b"], "tenant_isolation": True}
+            }
+        }
         f = check_3_1_infiniband_segmentation(config)
         assert f.status == "PASS"
 
@@ -112,19 +130,37 @@ class TestNetworkSegmentation:
         assert f.status == "FAIL"
 
     def test_3_2_with_policy_passes(self):
-        config = {"namespaces": [{"name": "gpu-training", "network_policies": [{"name": "default-deny"}]}]}
+        config = {
+            "namespaces": [{"name": "gpu-training", "network_policies": [{"name": "default-deny"}]}]
+        }
         f = check_3_2_gpu_network_policy(config)
         assert f.status == "PASS"
 
 
 class TestStorage:
     def test_4_1_unlimited_shm_fails(self):
-        config = {"pods": [{"name": "training", "volumes": [{"name": "dshm", "emptyDir": {"medium": "Memory"}}]}]}
+        config = {
+            "pods": [
+                {
+                    "name": "training",
+                    "volumes": [{"name": "dshm", "emptyDir": {"medium": "Memory"}}],
+                }
+            ]
+        }
         f = check_4_1_shm_size_limits(config)
         assert f.status == "FAIL"
 
     def test_4_1_limited_shm_passes(self):
-        config = {"pods": [{"name": "training", "volumes": [{"name": "dshm", "emptyDir": {"medium": "Memory", "sizeLimit": "8Gi"}}]}]}
+        config = {
+            "pods": [
+                {
+                    "name": "training",
+                    "volumes": [
+                        {"name": "dshm", "emptyDir": {"medium": "Memory", "sizeLimit": "8Gi"}}
+                    ],
+                }
+            ]
+        }
         f = check_4_1_shm_size_limits(config)
         assert f.status == "PASS"
 
@@ -134,7 +170,12 @@ class TestStorage:
         assert f.status == "FAIL"
 
     def test_4_2_encrypted_passes(self):
-        config = {"storage": {"encryption_at_rest": True, "volumes": [{"name": "model-weights", "encrypted": True}]}}
+        config = {
+            "storage": {
+                "encryption_at_rest": True,
+                "volumes": [{"name": "model-weights", "encrypted": True}],
+            }
+        }
         f = check_4_2_model_weights_encrypted(config)
         assert f.status == "PASS"
 
@@ -186,7 +227,13 @@ class TestBenchmarkRunner:
         config = {
             "pods": [{"name": "gpu", "security_context": {}, "volumes": []}],
             "nodes": [{"name": "n1", "driver_version": "550.54.14", "cuda_version": "12.4"}],
-            "namespaces": [{"name": "gpu-ns", "network_policies": [{"name": "deny"}], "resource_quota": {"nvidia.com/gpu": 4}}],
+            "namespaces": [
+                {
+                    "name": "gpu-ns",
+                    "network_policies": [{"name": "deny"}],
+                    "resource_quota": {"nvidia.com/gpu": 4},
+                }
+            ],
         }
         findings = run_benchmark(config)
         assert len(findings) == 13
@@ -198,7 +245,15 @@ class TestBenchmarkRunner:
         assert len(findings) == 3
 
     def test_findings_have_compliance(self):
-        config = {"pods": [{"name": "gpu", "security_context": {"privileged": True}, "resources": {"limits": {"nvidia.com/gpu": 1}}}]}
+        config = {
+            "pods": [
+                {
+                    "name": "gpu",
+                    "security_context": {"privileged": True},
+                    "resources": {"limits": {"nvidia.com/gpu": 1}},
+                }
+            ]
+        }
         findings = run_benchmark(config, section="runtime")
         for f in findings:
             assert f.nist_csf, f"{f.check_id} missing NIST CSF"

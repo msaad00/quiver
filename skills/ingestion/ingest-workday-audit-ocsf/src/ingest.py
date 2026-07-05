@@ -81,8 +81,25 @@ ACTOR_KEYS = (
 )
 
 WORKER_ID_KEYS = ("worker_id", "workerId", "employee_id", "employeeId", "worker")
-WORKER_EMAIL_KEYS = ("worker_email", "workerEmail", "email", "email_address", "emailAddress", "primary_email", "primaryEmail")
-EFFECTIVE_TIME_KEYS = ("effective_at", "effectiveAt", "effective_date", "effectiveDate", "event_time", "eventTime", "timestamp", "time")
+WORKER_EMAIL_KEYS = (
+    "worker_email",
+    "workerEmail",
+    "email",
+    "email_address",
+    "emailAddress",
+    "primary_email",
+    "primaryEmail",
+)
+EFFECTIVE_TIME_KEYS = (
+    "effective_at",
+    "effectiveAt",
+    "effective_date",
+    "effectiveDate",
+    "event_time",
+    "eventTime",
+    "timestamp",
+    "time",
+)
 TERMINATION_TIME_KEYS = ("termination_date", "terminationDate", "terminated_at", "terminatedAt")
 REHIRE_TIME_KEYS = ("rehire_date", "rehireDate", "rehired_at", "rehiredAt")
 
@@ -143,16 +160,31 @@ def _contains_any(text: str, terms: tuple[str, ...]) -> bool:
 
 def _event_family(record: dict[str, Any]) -> str:
     name = _event_name(record)
-    status_text = _flatten_label(_first(record, ("employment_status", "employmentStatus", "status"))).lower()
-    reason = _flatten_label(_first(record, ("reason", "termination_reason", "terminationReason"))).lower()
+    status_text = _flatten_label(
+        _first(record, ("employment_status", "employmentStatus", "status"))
+    ).lower()
+    reason = _flatten_label(
+        _first(record, ("reason", "termination_reason", "terminationReason"))
+    ).lower()
     joined = " ".join(part for part in (name, status_text, reason) if part)
-    if _contains_any(joined, ("termination", "terminate employee", "end employment", "employee terminated", "worker terminated")):
+    if _contains_any(
+        joined,
+        (
+            "termination",
+            "terminate employee",
+            "end employment",
+            "employee terminated",
+            "worker terminated",
+        ),
+    ):
         return "termination"
     if _contains_any(joined, ("rehire", "re hire", "return from termination")):
         return "rehire"
     if _contains_any(joined, ("hire", "new worker", "employee hire", "worker hire")):
         return "hire"
-    if _contains_any(joined, ("worker change", "job change", "position change", "employment change")):
+    if _contains_any(
+        joined, ("worker change", "job change", "position change", "employment change")
+    ):
         return "worker_change"
     return "account_change"
 
@@ -168,7 +200,9 @@ def _activity_id(family: str) -> int:
 
 
 def _status_id(record: dict[str, Any]) -> int:
-    text = _flatten_label(_first(record, ("status", "result", "outcome", "event_status", "eventStatus"))).lower()
+    text = _flatten_label(
+        _first(record, ("status", "result", "outcome", "event_status", "eventStatus"))
+    ).lower()
     if not text:
         return STATUS_SUCCESS
     if any(term in text for term in ("fail", "error", "denied", "cancel", "rescinded")):
@@ -179,7 +213,9 @@ def _status_id(record: dict[str, Any]) -> int:
 
 
 def _status_name(status_id: int) -> str:
-    return {STATUS_SUCCESS: "success", STATUS_FAILURE: "failure", STATUS_UNKNOWN: "unknown"}.get(status_id, "unknown")
+    return {STATUS_SUCCESS: "success", STATUS_FAILURE: "failure", STATUS_UNKNOWN: "unknown"}.get(
+        status_id, "unknown"
+    )
 
 
 def _severity_id(family: str, status_id: int) -> int:
@@ -202,7 +238,9 @@ def _actor(record: dict[str, Any]) -> dict[str, Any]:
     raw = _first(record, ACTOR_KEYS)
     raw_dict = _as_dict(raw)
     name = _flatten_label(raw)
-    uid = _flatten_label(_first(raw_dict, ("id", "uid", "worker_id", "workerId", "user_id", "userId")))
+    uid = _flatten_label(
+        _first(raw_dict, ("id", "uid", "worker_id", "workerId", "user_id", "userId"))
+    )
     email = _flatten_label(_first(raw_dict, WORKER_EMAIL_KEYS))
     if not email and "@" in name:
         email = name
@@ -219,9 +257,14 @@ def _actor(record: dict[str, Any]) -> dict[str, Any]:
 
 def _worker_user(record: dict[str, Any]) -> dict[str, Any]:
     worker = _as_dict(record.get("worker")) or _as_dict(record.get("employee"))
-    uid = _flatten_label(_first(record, WORKER_ID_KEYS) or _first(worker, WORKER_ID_KEYS + ("id", "uid")))
+    uid = _flatten_label(
+        _first(record, WORKER_ID_KEYS) or _first(worker, WORKER_ID_KEYS + ("id", "uid"))
+    )
     email = _flatten_label(_first(record, WORKER_EMAIL_KEYS) or _first(worker, WORKER_EMAIL_KEYS))
-    name = _flatten_label(_first(record, ("worker_name", "workerName", "employee_name", "employeeName", "name")) or _first(worker, ("name", "displayName", "descriptor")))
+    name = _flatten_label(
+        _first(record, ("worker_name", "workerName", "employee_name", "employeeName", "name"))
+        or _first(worker, ("name", "displayName", "descriptor"))
+    )
     user: dict[str, Any] = {}
     if uid:
         user["uid"] = uid
@@ -254,13 +297,21 @@ def _stable_uid(record: dict[str, Any], family: str) -> str:
     material = {
         "event_name": _event_name(record),
         "family": family,
-        "worker": _flatten_label(_first(record, WORKER_ID_KEYS) or _first(record, WORKER_EMAIL_KEYS)),
-        "effective": _flatten_label(_first(record, EFFECTIVE_TIME_KEYS) or _first(record, TERMINATION_TIME_KEYS)),
-        "source_id": _flatten_label(_first(record, ("id", "uid", "event_id", "eventId", "transaction_id", "transactionId"))),
+        "worker": _flatten_label(
+            _first(record, WORKER_ID_KEYS) or _first(record, WORKER_EMAIL_KEYS)
+        ),
+        "effective": _flatten_label(
+            _first(record, EFFECTIVE_TIME_KEYS) or _first(record, TERMINATION_TIME_KEYS)
+        ),
+        "source_id": _flatten_label(
+            _first(record, ("id", "uid", "event_id", "eventId", "transaction_id", "transactionId"))
+        ),
     }
     if not any(material.values()):
         material["raw"] = json.dumps(record, sort_keys=True, separators=(",", ":"), default=str)
-    return hashlib.sha256(json.dumps(material, sort_keys=True, separators=(",", ":"), default=str).encode("utf-8")).hexdigest()
+    return hashlib.sha256(
+        json.dumps(material, sort_keys=True, separators=(",", ":"), default=str).encode("utf-8")
+    ).hexdigest()
 
 
 def _workday_unmapped(record: dict[str, Any], family: str) -> dict[str, Any]:
@@ -272,9 +323,23 @@ def _workday_unmapped(record: dict[str, Any], family: str) -> dict[str, Any]:
         "effective_at": _flatten_label(_first(record, EFFECTIVE_TIME_KEYS)),
         "termination_date": _flatten_label(_first(record, TERMINATION_TIME_KEYS)),
         "rehire_date": _flatten_label(_first(record, REHIRE_TIME_KEYS)),
-        "business_process": _flatten_label(_first(record, ("business_process", "businessProcess", "business_process_type", "businessProcessType"))),
-        "supervisory_org": _flatten_label(_first(record, ("supervisory_org", "supervisoryOrg", "organization"))),
-        "reason": _flatten_label(_first(record, ("reason", "termination_reason", "terminationReason"))),
+        "business_process": _flatten_label(
+            _first(
+                record,
+                (
+                    "business_process",
+                    "businessProcess",
+                    "business_process_type",
+                    "businessProcessType",
+                ),
+            )
+        ),
+        "supervisory_org": _flatten_label(
+            _first(record, ("supervisory_org", "supervisoryOrg", "organization"))
+        ),
+        "reason": _flatten_label(
+            _first(record, ("reason", "termination_reason", "terminationReason"))
+        ),
         "raw": record,
     }
 
@@ -282,7 +347,9 @@ def _workday_unmapped(record: dict[str, Any], family: str) -> dict[str, Any]:
 def validate_record(record: dict[str, Any]) -> tuple[bool, str]:
     if not isinstance(record, dict):
         return False, "not a dict"
-    if not (_event_name(record) or _first(record, WORKER_ID_KEYS) or _first(record, WORKER_EMAIL_KEYS)):
+    if not (
+        _event_name(record) or _first(record, WORKER_ID_KEYS) or _first(record, WORKER_EMAIL_KEYS)
+    ):
         return False, "missing event name and worker identifiers"
     return True, ""
 
@@ -291,7 +358,11 @@ def _build_canonical_event(record: dict[str, Any]) -> dict[str, Any]:
     family = _event_family(record)
     status_id = _status_id(record)
     severity_id = _severity_id(family, status_id)
-    time_source = _first(record, EFFECTIVE_TIME_KEYS) or _first(record, TERMINATION_TIME_KEYS) or _first(record, REHIRE_TIME_KEYS)
+    time_source = (
+        _first(record, EFFECTIVE_TIME_KEYS)
+        or _first(record, TERMINATION_TIME_KEYS)
+        or _first(record, REHIRE_TIME_KEYS)
+    )
     event_uid = _stable_uid(record, family)
     event_name = _event_name(record) or family
 
@@ -323,7 +394,9 @@ def _build_canonical_event(record: dict[str, Any]) -> dict[str, Any]:
         if value:
             out[key] = value
     user = out.get("user") or {}
-    out["message"] = f"Workday {family.replace('_', ' ')} event for {user.get('email_addr') or user.get('uid') or 'worker'}"
+    out["message"] = (
+        f"Workday {family.replace('_', ' ')} event for {user.get('email_addr') or user.get('uid') or 'worker'}"
+    )
     return out
 
 
@@ -413,7 +486,13 @@ def iter_raw_records(stream: Iterable[str]) -> Iterable[dict[str, Any]]:
         try:
             obj = json.loads(line)
         except json.JSONDecodeError as exc:
-            emit_stderr_event(SKILL_NAME, level="warning", event="json_parse_failed", message=str(exc), line=lineno)
+            emit_stderr_event(
+                SKILL_NAME,
+                level="warning",
+                event="json_parse_failed",
+                message=str(exc),
+                line=lineno,
+            )
             continue
         yield from _yield_wrapped(obj)
 
@@ -424,16 +503,30 @@ def ingest(stream: Iterable[str], output_format: str = "ocsf") -> Iterable[dict[
     for record in iter_raw_records(stream):
         ok, reason = validate_record(record)
         if not ok:
-            emit_stderr_event(SKILL_NAME, level="warning", event="invalid_record", message=f"skipping record: {reason}", reason=reason)
+            emit_stderr_event(
+                SKILL_NAME,
+                level="warning",
+                event="invalid_record",
+                message=f"skipping record: {reason}",
+                reason=reason,
+            )
             continue
         try:
             yield convert_record(record, output_format=output_format)
         except Exception as exc:
-            emit_stderr_event(SKILL_NAME, level="warning", event="convert_error", message=f"skipping record: {exc}", error=str(exc))
+            emit_stderr_event(
+                SKILL_NAME,
+                level="warning",
+                event="convert_error",
+                message=f"skipping record: {exc}",
+                error=str(exc),
+            )
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Convert Workday audit/report exports to OCSF Account Change events.")
+    parser = argparse.ArgumentParser(
+        description="Convert Workday audit/report exports to OCSF Account Change events."
+    )
     parser.add_argument("input", nargs="?", help="Input JSON/JSONL file. Defaults to stdin.")
     parser.add_argument("--output", "-o", help="Output JSONL file. Defaults to stdout.")
     parser.add_argument("--output-format", choices=OUTPUT_FORMATS, default="ocsf")

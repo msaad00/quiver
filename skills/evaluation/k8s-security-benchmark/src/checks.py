@@ -125,7 +125,9 @@ def check_1_1_no_privileged_pods(config: dict) -> Finding:
         section="pod_security",
         severity="CRITICAL",
         status="FAIL" if privileged else "PASS",
-        detail=f"{len(privileged)} privileged containers" if privileged else "No privileged containers",
+        detail=f"{len(privileged)} privileged containers"
+        if privileged
+        else "No privileged containers",
         remediation="Remove privileged: true. Use specific capabilities instead.",
         cis_k8s="5.2.1",
         nist_csf="PR.AC-4",
@@ -188,7 +190,9 @@ def check_1_4_drop_all_capabilities(config: dict) -> Finding:
         section="pod_security",
         severity="MEDIUM",
         status="FAIL" if no_drop else "PASS",
-        detail=f"{len(no_drop)} containers not dropping ALL" if no_drop else "All containers drop ALL capabilities",
+        detail=f"{len(no_drop)} containers not dropping ALL"
+        if no_drop
+        else "All containers drop ALL capabilities",
         remediation="Add securityContext.capabilities.drop: ['ALL'] to every container.",
         cis_k8s="5.2.7",
         nist_csf="PR.AC-4",
@@ -221,7 +225,9 @@ def check_2_1_no_cluster_admin_default(config: dict) -> Finding:
         section="rbac",
         severity="CRITICAL",
         status="FAIL" if dangerous else "PASS",
-        detail=f"{len(dangerous)} bindings give cluster-admin to default/system" if dangerous else "No dangerous cluster-admin bindings",
+        detail=f"{len(dangerous)} bindings give cluster-admin to default/system"
+        if dangerous
+        else "No dangerous cluster-admin bindings",
         remediation="Remove cluster-admin bindings from default service accounts. Use scoped roles.",
         cis_k8s="5.1.1",
         nist_csf="PR.AC-4",
@@ -252,7 +258,9 @@ def check_2_2_no_wildcard_permissions(config: dict) -> Finding:
         section="rbac",
         severity="HIGH",
         status="FAIL" if wildcard else "PASS",
-        detail=f"{len(set(wildcard))} roles with wildcard" if wildcard else "No wildcard permissions",
+        detail=f"{len(set(wildcard))} roles with wildcard"
+        if wildcard
+        else "No wildcard permissions",
         remediation="Replace * verbs/resources with explicit least-privilege lists.",
         cis_k8s="5.1.3",
         nist_csf="PR.AC-4",
@@ -274,8 +282,7 @@ def check_3_1_default_deny(config: dict) -> Finding:
             continue
         policies = _safe_list(ns.get("network_policies"))
         has_deny = any(
-            isinstance(p, dict) and "deny" in str(p.get("name", "")).lower()
-            for p in policies
+            isinstance(p, dict) and "deny" in str(p.get("name", "")).lower() for p in policies
         )
         if not has_deny and not policies:
             no_deny.append(ns.get("name", "unknown"))
@@ -285,7 +292,9 @@ def check_3_1_default_deny(config: dict) -> Finding:
         section="network",
         severity="HIGH",
         status="FAIL" if no_deny else "PASS",
-        detail=f"{len(no_deny)} namespaces without default deny" if no_deny else "All namespaces have deny policy",
+        detail=f"{len(no_deny)} namespaces without default deny"
+        if no_deny
+        else "All namespaces have deny policy",
         remediation="Apply a default-deny NetworkPolicy to every namespace.",
         cis_k8s="5.3.2",
         nist_csf="PR.AC-5",
@@ -309,16 +318,16 @@ def check_4_1_no_env_secrets(config: dict) -> Finding:
                     continue
                 value_from = _safe_dict(env.get("valueFrom"))
                 if value_from.get("secretKeyRef"):
-                    env_secrets.append(
-                        f"{pod.get('name', 'unknown')}:{env.get('name', 'unknown')}"
-                    )
+                    env_secrets.append(f"{pod.get('name', 'unknown')}:{env.get('name', 'unknown')}")
     return Finding(
         check_id="K8S-4.1",
         title="Secrets not via env vars",
         section="secrets",
         severity="MEDIUM",
         status="FAIL" if env_secrets else "PASS",
-        detail=f"{len(env_secrets)} secrets exposed via env" if env_secrets else "No secrets in environment variables",
+        detail=f"{len(env_secrets)} secrets exposed via env"
+        if env_secrets
+        else "No secrets in environment variables",
         remediation="Mount secrets as volumes instead of env vars. Env vars appear in logs and process listings.",
         cis_k8s="5.4.1",
         nist_csf="PR.DS-5",
@@ -329,14 +338,18 @@ def check_4_1_no_env_secrets(config: dict) -> Finding:
 def check_4_2_secrets_encrypted_etcd(config: dict) -> Finding:
     """K8S-4.2 — Secrets encryption at rest configured."""
     api_server = _safe_dict(config.get("api_server")) if isinstance(config, dict) else {}
-    encryption = api_server.get("encryption_config") or api_server.get("encryption-provider-config", "")
+    encryption = api_server.get("encryption_config") or api_server.get(
+        "encryption-provider-config", ""
+    )
     return Finding(
         check_id="K8S-4.2",
         title="Secrets encrypted at rest (etcd)",
         section="secrets",
         severity="HIGH",
         status="PASS" if encryption else "FAIL",
-        detail="Encryption provider configured" if encryption else "No encryption-at-rest for secrets in etcd",
+        detail="Encryption provider configured"
+        if encryption
+        else "No encryption-at-rest for secrets in etcd",
         remediation="Configure EncryptionConfiguration with aescbc or kms provider.",
         cis_k8s="5.4.2",
         nist_csf="PR.DS-1",
@@ -366,7 +379,9 @@ def check_5_1_no_latest_tag(config: dict) -> Finding:
         section="images",
         severity="MEDIUM",
         status="FAIL" if latest else "PASS",
-        detail=f"{len(latest)} containers using :latest" if latest else "All images pinned to specific tags",
+        detail=f"{len(latest)} containers using :latest"
+        if latest
+        else "All images pinned to specific tags",
         remediation="Pin images to SHA digests or semantic version tags. Never use :latest.",
         cis_k8s="5.5.1",
         nist_csf="PR.DS-6",
@@ -379,7 +394,12 @@ def check_5_1_no_latest_tag(config: dict) -> Finding:
 # ═══════════════════════════════════════════════════════════════════════════
 
 ALL_CHECKS = {
-    "pod_security": [check_1_1_no_privileged_pods, check_1_2_no_host_pid, check_1_3_no_host_network, check_1_4_drop_all_capabilities],
+    "pod_security": [
+        check_1_1_no_privileged_pods,
+        check_1_2_no_host_pid,
+        check_1_3_no_host_network,
+        check_1_4_drop_all_capabilities,
+    ],
     "rbac": [check_2_1_no_cluster_admin_default, check_2_2_no_wildcard_permissions],
     "network": [check_3_1_default_deny],
     "secrets": [check_4_1_no_env_secrets, check_4_2_secrets_encrypted_etcd],
@@ -445,7 +465,9 @@ def main() -> None:
         print(json.dumps(rendered, indent=2))
     else:
         print_summary(findings)
-    sys.exit(1 if any(f.status == "FAIL" and f.severity in ("CRITICAL", "HIGH") for f in findings) else 0)
+    sys.exit(
+        1 if any(f.status == "FAIL" and f.severity in ("CRITICAL", "HIGH") for f in findings) else 0
+    )
 
 
 if __name__ == "__main__":

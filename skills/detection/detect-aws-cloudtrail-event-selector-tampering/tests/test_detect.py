@@ -119,9 +119,7 @@ class TestStructuralSignals:
     def test_management_events_disabled_fires(self) -> None:
         params = {
             "trailName": TRAIL_NAME,
-            "eventSelectors": [
-                {"IncludeManagementEvents": False, "ReadWriteType": "All"}
-            ],
+            "eventSelectors": [{"IncludeManagementEvents": False, "ReadWriteType": "All"}],
         }
         findings = list(detect([_event(request_parameters=params)]))
         assert len(findings) == 1
@@ -130,9 +128,7 @@ class TestStructuralSignals:
     def test_read_write_type_none_fires(self) -> None:
         params = {
             "trailName": TRAIL_NAME,
-            "eventSelectors": [
-                {"IncludeManagementEvents": True, "ReadWriteType": "None"}
-            ],
+            "eventSelectors": [{"IncludeManagementEvents": True, "ReadWriteType": "None"}],
         }
         findings = list(detect([_event(request_parameters=params)]))
         assert len(findings) == 1
@@ -144,9 +140,7 @@ class TestStructuralSignals:
             "isMultiRegionTrail": False,
             "previousIsMultiRegionTrail": True,
         }
-        findings = list(
-            detect([_event(operation="UpdateTrail", request_parameters=params)])
-        )
+        findings = list(detect([_event(operation="UpdateTrail", request_parameters=params)]))
         assert len(findings) == 1
         assert findings[0]["evidence"]["signal_kind"] == SIGNAL_MULTI_REGION
 
@@ -154,17 +148,13 @@ class TestStructuralSignals:
         # Without `previousIsMultiRegionTrail` we cannot prove the trail was
         # multi-region before, so the detector deliberately stays silent.
         params = {"name": TRAIL_NAME, "isMultiRegionTrail": False}
-        findings = list(
-            detect([_event(operation="UpdateTrail", request_parameters=params)])
-        )
+        findings = list(detect([_event(operation="UpdateTrail", request_parameters=params)]))
         assert findings == []
 
     def test_normal_selectors_do_not_fire(self) -> None:
         params = {
             "trailName": TRAIL_NAME,
-            "eventSelectors": [
-                {"IncludeManagementEvents": True, "ReadWriteType": "All"}
-            ],
+            "eventSelectors": [{"IncludeManagementEvents": True, "ReadWriteType": "All"}],
         }
         findings = list(detect([_event(request_parameters=params)]))
         assert findings == []
@@ -220,27 +210,22 @@ class TestDiffContext:
         # ingester surfaces a diff under `event_selector_change`.
         params = {
             "trailName": TRAIL_NAME,
-            "eventSelectors": [
-                {"IncludeManagementEvents": True, "ReadWriteType": "All"}
-            ],
+            "eventSelectors": [{"IncludeManagementEvents": True, "ReadWriteType": "All"}],
         }
         change = {
             "removed_data_resources": [
                 {"Type": "AWS::S3::Object", "Values": ["arn:aws:s3:::sensitive-bucket/"]}
             ]
         }
-        findings = list(
-            detect(
-                [_event(request_parameters=params, event_selector_change=change)]
-            )
-        )
+        findings = list(detect([_event(request_parameters=params, event_selector_change=change)]))
         assert len(findings) == 1
         f = findings[0]
         assert f["evidence"]["signal_kind"] == SIGNAL_DATA_RESOURCES
         assert f["evidence"]["signal_provenance"] == "diff_context"
-        assert f["evidence"]["signal_evidence"]["removed_data_resources"][0][
-            "Type"
-        ] == "AWS::S3::Object"
+        assert (
+            f["evidence"]["signal_evidence"]["removed_data_resources"][0]["Type"]
+            == "AWS::S3::Object"
+        )
 
 
 class TestSchemaModeDiscriminator:

@@ -142,9 +142,7 @@ def _event_selector_change(event: dict[str, Any]) -> dict[str, Any]:
     return change if isinstance(change, dict) else {}
 
 
-def _trail_identifier(
-    event: dict[str, Any], params: dict[str, Any]
-) -> tuple[str, str]:
+def _trail_identifier(event: dict[str, Any], params: dict[str, Any]) -> tuple[str, str]:
     name = str(params.get("trailName") or params.get("name") or "")
     arn = ""
     for resource in event.get("resources") or []:
@@ -202,9 +200,7 @@ def _truthy_true(value: Any) -> bool:
     return False
 
 
-def _structural_signals(
-    *, operation: str, params: dict[str, Any]
-) -> list[dict[str, Any]]:
+def _structural_signals(*, operation: str, params: dict[str, Any]) -> list[dict[str, Any]]:
     """Return the structural-signal entries proven by this single event."""
     signals: list[dict[str, Any]] = []
     selectors, present = _event_selectors(params)
@@ -226,9 +222,7 @@ def _structural_signals(
                 signals.append(
                     {
                         "kind": SIGNAL_MGMT_DISABLED,
-                        "summary": (
-                            f"selector[{idx}] has IncludeManagementEvents=false"
-                        ),
+                        "summary": (f"selector[{idx}] has IncludeManagementEvents=false"),
                         "evidence_payload": {
                             "selector_index": idx,
                             "IncludeManagementEvents": False,
@@ -240,9 +234,7 @@ def _structural_signals(
                 signals.append(
                     {
                         "kind": SIGNAL_RW_NONE,
-                        "summary": (
-                            f"selector[{idx}] has ReadWriteType='None'"
-                        ),
+                        "summary": (f"selector[{idx}] has ReadWriteType='None'"),
                         "evidence_payload": {
                             "selector_index": idx,
                             "ReadWriteType": "None",
@@ -269,9 +261,7 @@ def _structural_signals(
             signals.append(
                 {
                     "kind": SIGNAL_MULTI_REGION,
-                    "summary": (
-                        "UpdateTrail collapsed IsMultiRegionTrail from true to false"
-                    ),
+                    "summary": ("UpdateTrail collapsed IsMultiRegionTrail from true to false"),
                     "evidence_payload": {
                         "IsMultiRegionTrail": False,
                         "previousIsMultiRegionTrail": True,
@@ -314,9 +304,7 @@ def _finding_uid(
     signal_kind: str,
     time_ms: int,
 ) -> str:
-    material = (
-        f"{SKILL_NAME}|{trail_arn or trail_name}|{account_uid}|{signal_kind}|{time_ms}"
-    )
+    material = f"{SKILL_NAME}|{trail_arn or trail_name}|{account_uid}|{signal_kind}|{time_ms}"
     return f"ctest-{hashlib.sha256(material.encode('utf-8')).hexdigest()[:16]}"
 
 
@@ -332,9 +320,7 @@ def _build_native_finding(
 ) -> dict[str, Any]:
     time_ms = int(event.get("time") or datetime.now(timezone.utc).timestamp() * 1000)
     event_uid = str((event.get("metadata") or {}).get("uid") or "")
-    signal_provenance = (
-        "diff_context" if signal["kind"] == SIGNAL_DATA_RESOURCES else "structural"
-    )
+    signal_provenance = "diff_context" if signal["kind"] == SIGNAL_DATA_RESOURCES else "structural"
     finding_uid = _finding_uid(
         trail_name=trail_name,
         trail_arn=trail_arn,
@@ -503,8 +489,7 @@ def detect(
                 level="warning",
                 event="missing_request_parameters",
                 message=(
-                    f"{operation} event has no `unmapped.cloudtrail.request_parameters`; "
-                    "skipping"
+                    f"{operation} event has no `unmapped.cloudtrail.request_parameters`; skipping"
                 ),
             )
             continue

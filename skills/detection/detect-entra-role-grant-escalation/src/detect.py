@@ -108,8 +108,12 @@ def _normalize_event(event: dict[str, Any]) -> dict[str, Any] | None:
             "provider": str(((event.get("cloud") or {}).get("provider")) or ""),
             "status_id": _safe_int(event.get("status_id")),
             "operation": str(((event.get("api") or {}).get("operation")) or ""),
-            "service_name": str((((event.get("api") or {}).get("service")) or {}).get("name") or ""),
-            "correlation_uid": str((((event.get("api") or {}).get("request")) or {}).get("uid") or ""),
+            "service_name": str(
+                (((event.get("api") or {}).get("service")) or {}).get("name") or ""
+            ),
+            "correlation_uid": str(
+                (((event.get("api") or {}).get("request")) or {}).get("uid") or ""
+            ),
             "actor": ((event.get("actor") or {}).get("user")) or {},
             "src_endpoint": event.get("src_endpoint") or {},
             "resources": _resource_list(event),
@@ -297,7 +301,12 @@ def coverage_metadata() -> dict[str, Any]:
     return {
         "frameworks": ("OCSF 1.8.0", "MITRE ATT&CK v14"),
         "providers": ("azure", "entra", "microsoft-graph"),
-        "asset_classes": ("identities", "applications", "service-principals", "app-role-assignments"),
+        "asset_classes": (
+            "identities",
+            "applications",
+            "service-principals",
+            "app-role-assignments",
+        ),
         "attack_coverage": {
             "azure": {
                 "principal_types": ["applications", "service-principals"],
@@ -308,7 +317,9 @@ def coverage_metadata() -> dict[str, Any]:
     }
 
 
-def detect(events: Iterable[dict[str, Any]], output_format: str = "ocsf") -> Iterable[dict[str, Any]]:
+def detect(
+    events: Iterable[dict[str, Any]], output_format: str = "ocsf"
+) -> Iterable[dict[str, Any]]:
     if output_format not in OUTPUT_FORMATS:
         raise ContractError(
             f"unsupported output_format: {output_format}",
@@ -347,7 +358,9 @@ def load_jsonl(stream: Iterable[str]) -> Iterable[dict[str, Any]]:
         try:
             obj = json.loads(line)
         except json.JSONDecodeError as exc:
-            print(f"[{SKILL_NAME}] skipping line {lineno}: json parse failed: {exc}", file=sys.stderr)
+            print(
+                f"[{SKILL_NAME}] skipping line {lineno}: json parse failed: {exc}", file=sys.stderr
+            )
             continue
         if isinstance(obj, dict):
             yield obj
@@ -360,8 +373,12 @@ def main(argv: list[str] | None = None) -> int:
         description="Detect Entra app-role assignments that escalate service-principal access."
     )
     parser.add_argument("input", nargs="?", help="Input JSONL. Defaults to stdin.")
-    parser.add_argument("--output", "-o", help="Detection Finding JSONL output. Defaults to stdout.")
-    parser.add_argument("--output-format", choices=OUTPUT_FORMATS, default="ocsf", help="Output format.")
+    parser.add_argument(
+        "--output", "-o", help="Detection Finding JSONL output. Defaults to stdout."
+    )
+    parser.add_argument(
+        "--output-format", choices=OUTPUT_FORMATS, default="ocsf", help="Output format."
+    )
     args = parser.parse_args(argv)
 
     in_stream = sys.stdin if not args.input else open(args.input, "r", encoding="utf-8")
