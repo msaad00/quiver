@@ -76,7 +76,7 @@ mcp-sse = [
 #   uv sync --group dev --group webhook --group http-runtime
 #   uv sync --group dev --group mcp-sse --group http-runtime
 http-runtime = [
-  "uvicorn[standard]>=0.30,<1",
+  "uvicorn[standard]>=0.50.0,<1",
 ]
 langgraph = [
   "langgraph>=1.2,<2",
