@@ -34,7 +34,7 @@ _log = get_logger(__name__, skill="detect-snowflake-bulk-data-egress", layer="de
 SKILL_NAME = "detect-snowflake-bulk-data-egress"
 OCSF_VERSION = "1.8.0"
 CANONICAL_VERSION = "2026-04"
-REPO_NAME = "quiver"
+REPO_NAME = "cloud-ai-security-skills"
 
 OUTPUT_FORMATS = ("ocsf", "native")
 

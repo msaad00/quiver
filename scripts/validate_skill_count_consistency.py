@@ -30,25 +30,16 @@ Claim = tuple[Path, str, str]
 
 CLAIMS: list[Claim] = [
     # README.md claims
-    (REPO_ROOT / "README.md", r"(\d+) shipped skill bundles", "total"),
-    (REPO_ROOT / "README.md", r"\*\*Total: (\d+) shipped skills", "total"),
-    (REPO_ROOT / "README.md", r"\| \*\*Ingest\*\* \| (\d+) \|", "ingest_only"),
-    (REPO_ROOT / "README.md", r"\| \*\*Discover\*\* \| (\d+) \|", "discovery"),
-    (REPO_ROOT / "README.md", r"\| \*\*Detect\*\* \| (\d+) \|", "detection"),
-    (REPO_ROOT / "README.md", r"\| \*\*Evaluate\*\* \| (\d+) \|", "evaluation"),
-    (REPO_ROOT / "README.md", r"\| \*\*Remediate\*\* \| (\d+) \|", "remediation"),
-    (REPO_ROOT / "README.md", r"\| \*\*View\*\* \| (\d+) \|", "view"),
-    (REPO_ROOT / "README.md", r"\| \*\*Output\*\* \| (\d+) \|", "output"),
-    (REPO_ROOT / "README.md", r"\| \*\*Sources\*\* \| (\d+) \|", "sources"),
-    # The legacy '| **Detect** | N detectors' row was a second copy of
-    # the layer-table count; dropped during the README polish (PR-A
-    # README polish), so the layer-table claim above is now the single
-    # source of truth in README.
-    (
-        REPO_ROOT / "README.md",
-        r"Closed-loop coverage matrix — \d+ of (\d+) shipped detections",
-        "detection",
-    ),
+    (REPO_ROOT / "README.md", r"(\d+) deterministic security skills", "total"),
+    (REPO_ROOT / "README.md", r"\*\*(\d+) shipped skills\.\*\*", "total"),
+    (REPO_ROOT / "README.md", r"\| Ingest \| (\d+) \|", "ingest_only"),
+    (REPO_ROOT / "README.md", r"\| Discover \| (\d+) \|", "discovery"),
+    (REPO_ROOT / "README.md", r"\| Detect \| (\d+) \|", "detection"),
+    (REPO_ROOT / "README.md", r"\| Evaluate \| (\d+) \|", "evaluation"),
+    (REPO_ROOT / "README.md", r"\| Remediate \| (\d+) \|", "remediation"),
+    (REPO_ROOT / "README.md", r"\| View \| (\d+) \|", "view"),
+    (REPO_ROOT / "README.md", r"\| Output \| (\d+) \|", "output"),
+    (REPO_ROOT / "README.md", r"\| Sources \| (\d+) \|", "sources"),
     # The L3 Detect mermaid claim was removed when both README mermaids were
     # replaced by docs/images/*.svg in #248 phase 1. Count-bearing SVG text and
     # descriptions are now checked directly because these visuals are source SVG.
@@ -163,48 +154,8 @@ CLAIMS: list[Claim] = [
     ),
     (
         REPO_ROOT / "docs" / "images" / "hero-banner.svg",
-        r"(\d+) shipped skill bundles",
+        r"(\d+) skills",
         "total",
-    ),
-    (
-        REPO_ROOT / "docs" / "images" / "hero-banner.svg",
-        r"current shipped layer counts: (\d+) ingest",
-        "ingest_only",
-    ),
-    (
-        REPO_ROOT / "docs" / "images" / "hero-banner.svg",
-        r"\d+ ingest, (\d+) discover",
-        "discovery",
-    ),
-    (
-        REPO_ROOT / "docs" / "images" / "hero-banner.svg",
-        r"\d+ discover, (\d+) detect",
-        "detection",
-    ),
-    (
-        REPO_ROOT / "docs" / "images" / "hero-banner.svg",
-        r"\d+ detect, (\d+) evaluate",
-        "evaluation",
-    ),
-    (
-        REPO_ROOT / "docs" / "images" / "hero-banner.svg",
-        r"\d+ evaluate, (\d+) remediate",
-        "remediation",
-    ),
-    (
-        REPO_ROOT / "docs" / "images" / "hero-banner.svg",
-        r"\d+ remediate, (\d+) view",
-        "view",
-    ),
-    (
-        REPO_ROOT / "docs" / "images" / "hero-banner.svg",
-        r"\d+ view, (\d+) output",
-        "output",
-    ),
-    (
-        REPO_ROOT / "docs" / "images" / "hero-banner.svg",
-        r"\d+ output, and (\d+) source adapters",
-        "sources",
     ),
     (
         REPO_ROOT / "docs" / "images" / "coverage-matrix.svg",

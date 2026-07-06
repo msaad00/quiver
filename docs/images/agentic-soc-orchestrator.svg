@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1600" height="820" viewBox="0 0 1600 820" role="img" aria-labelledby="title desc">
-  <title id="title">Optional agentic SOC orchestrator over quiver</title>
-  <desc id="desc">Architecture diagram showing LangGraph or LangChain as an optional orchestration layer over deterministic quiver APIs and MCP tools. The workflow covers data source selection, ingest or lake replay, normalize, enrich, correlate, confidence, MITRE CVSS EPSS KEV mapping, bounded LLM triage, analyst review, dry-run remediation, retry or escalation, audit, and eval write-back with non-bypassable trust rails.</desc>
+  <title id="title">Optional agentic SOC orchestrator</title>
+  <desc id="desc">LangGraph owns multi-step workflow state and HITL routing. LangChain is optional LLM adapter glue. cloud-ai-security-skills owns deterministic skills, schemas, trust rails, and audit.</desc>
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
       <stop offset="0" stop-color="#06101f"/>
@@ -42,7 +42,7 @@
 
   <g class="font">
     <text x="64" y="64" class="h1">Agentic SOC Orchestrator</text>
-    <text x="64" y="94" class="sub">LangGraph or LangChain owns workflow state and model choice; quiver owns facts, policy, confidence, audit, and write gates.</text>
+    <text x="64" y="94" class="sub">LangGraph owns workflow state and branches. LangChain is optional model glue. Skills own facts, policy, confidence, audit, and write gates.</text>
 
     <rect x="64" y="130" width="1472" height="144" rx="22" fill="#0b1830" stroke="#2563eb"/>
     <text x="94" y="166" class="eyebrow" fill="#93c5fd">Optional workflow and agent layer</text>

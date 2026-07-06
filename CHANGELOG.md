@@ -12,6 +12,19 @@ The format is loosely based on Keep a Changelog.
 
 ## [Unreleased]
 
+### README and visuals — less clutter, real vendor marks
+
+- Reverted the **display name** to **Cloud AI Security Skills** (`cloud-ai-security-skills`
+  in OCSF product metadata and `pyproject.toml`). The GitHub repo slug stays
+  `quiver` (redirects from the old name still work).
+- Replaced the crowded hero banner with a minimal layout: title, one-line value
+  prop, four stats, and eight **Simple Icons** (CC0) vendor marks — including
+  the real Snowflake and ClickHouse paths, not placeholder glyphs.
+- Slimmed the README: shorter quickstart, collapsed lake hero walls into doc
+  links, and added a clear **LangGraph vs LangChain vs skills** table.
+- Clarified orchestration diagram copy: LangGraph owns workflow state; LangChain
+  is optional adapter glue; skills own trust rails.
+
 ### Rebrand: the project is now Quiver
 
 The repository renamed from `cloud-ai-security-skills` to `quiver` — a quiver

@@ -78,16 +78,16 @@ def main() -> int:
     architecture = REPO_ROOT / "ARCHITECTURE.md"
 
     candidates: list[str | None] = [
-        check(readme, r"(\d+)\s+shipped skill bundles", total, "README total"),
-        check(readme, r"Total:\s+(\d+)\s+shipped skills", total, "README total (table footer)"),
-        check(readme, r"\*\*Ingest\*\*\s+\|\s+(\d+)", layers["ingestion"], "README ingest"),
-        check(readme, r"\*\*Discover\*\*\s+\|\s+(\d+)", layers["discovery"], "README discover"),
-        check(readme, r"\*\*Detect\*\*\s+\|\s+(\d+)", layers["detection"], "README detect"),
-        check(readme, r"\*\*Evaluate\*\*\s+\|\s+(\d+)", layers["evaluation"], "README evaluate"),
-        check(readme, r"\*\*Remediate\*\*\s+\|\s+(\d+)", layers["remediation"], "README remediate"),
-        check(readme, r"\*\*View\*\*\s+\|\s+(\d+)", layers["view"], "README view"),
-        check(readme, r"\*\*Output\*\*\s+\|\s+(\d+)", layers["output"], "README output"),
-        check(readme, r"\*\*Sources\*\*\s+\|\s+(\d+)", layers["sources"], "README sources"),
+        check(readme, r"(\d+)\s+deterministic security skills", total, "README total"),
+        check(readme, r"\*\*(\d+)\s+shipped skills\.\*\*", total, "README total (footer)"),
+        check(readme, r"\| Ingest \| (\d+) \|", layers["ingestion"], "README ingest"),
+        check(readme, r"\| Discover \| (\d+) \|", layers["discovery"], "README discover"),
+        check(readme, r"\| Detect \| (\d+) \|", layers["detection"], "README detect"),
+        check(readme, r"\| Evaluate \| (\d+) \|", layers["evaluation"], "README evaluate"),
+        check(readme, r"\| Remediate \| (\d+) \|", layers["remediation"], "README remediate"),
+        check(readme, r"\| View \| (\d+) \|", layers["view"], "README view"),
+        check(readme, r"\| Output \| (\d+) \|", layers["output"], "README output"),
+        check(readme, r"\| Sources \| (\d+) \|", layers["sources"], "README sources"),
         check(skill_index, r"The same (\d+) skill bundles", total, "SKILL_INDEX total"),
         check(
             agents,

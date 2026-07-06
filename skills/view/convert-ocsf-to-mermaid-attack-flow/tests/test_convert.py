@@ -49,7 +49,7 @@ def _finding(
         "metadata": {
             "version": "1.8.0",
             "product": {
-                "name": "quiver",
+                "name": "cloud-ai-security-skills",
                 "feature": {"name": detector},
             },
         },

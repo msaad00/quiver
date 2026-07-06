@@ -47,7 +47,7 @@ SKILL_NAME = "detect-web-broken-access-control"
 LAYER = "detection"
 CANONICAL_VERSION = "2026-04"
 OCSF_VERSION = "1.8.0"
-REPO_NAME = "quiver"
+REPO_NAME = "cloud-ai-security-skills"
 
 log = get_logger(__name__, skill=SKILL_NAME, layer=LAYER)
 

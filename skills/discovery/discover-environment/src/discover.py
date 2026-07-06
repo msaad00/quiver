@@ -873,7 +873,7 @@ def to_ocsf_cloud_resources_inventory(graph: EnvironmentGraph) -> dict[str, Any]
             "version": "1.8.0",
             "uid": _metadata_uid(graph, inventory_nodes),
             "product": {
-                "name": "quiver",
+                "name": "cloud-ai-security-skills",
                 "vendor_name": VENDOR_NAME,
                 "feature": {"name": "discover-environment"},
             },

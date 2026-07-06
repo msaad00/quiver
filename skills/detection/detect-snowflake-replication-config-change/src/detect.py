@@ -35,7 +35,7 @@ _log = get_logger(__name__, skill="detect-snowflake-replication-config-change", 
 SKILL_NAME = "detect-snowflake-replication-config-change"
 OCSF_VERSION = "1.8.0"
 CANONICAL_VERSION = "2026-04"
-REPO_NAME = "quiver"
+REPO_NAME = "cloud-ai-security-skills"
 
 OUTPUT_FORMATS = ("ocsf", "native")
 

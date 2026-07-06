@@ -155,7 +155,7 @@ def _metadata(event_uid: str, labels: list[str]) -> dict[str, Any]:
         "version": OCSF_VERSION,
         "uid": event_uid,
         "product": {
-            "name": "quiver",
+            "name": "cloud-ai-security-skills",
             "vendor_name": VENDOR_NAME,
             "feature": {"name": SKILL_NAME},
         },
@@ -325,7 +325,7 @@ def _render_config_ocsf(canonical: dict[str, Any]) -> dict[str, Any]:
             "version": OCSF_VERSION,
             "uid": canonical["event_uid"],
             "product": {
-                "name": "quiver",
+                "name": "cloud-ai-security-skills",
                 "vendor_name": VENDOR_NAME,
                 "feature": {"name": SKILL_NAME},
             },
@@ -380,7 +380,7 @@ def _render_compliance_ocsf(canonical: dict[str, Any]) -> dict[str, Any]:
             "version": OCSF_VERSION,
             "uid": canonical["event_uid"],
             "product": {
-                "name": "quiver",
+                "name": "cloud-ai-security-skills",
                 "vendor_name": VENDOR_NAME,
                 "feature": {"name": SKILL_NAME},
             },

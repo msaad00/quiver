@@ -90,7 +90,7 @@ def _event(
             "version": "1.8.0",
             "uid": uid,
             "product": {
-                "name": "quiver",
+                "name": "cloud-ai-security-skills",
                 "vendor_name": "msaad00/quiver",
                 "feature": {"name": producer},
             },
