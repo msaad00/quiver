@@ -107,7 +107,7 @@ jobs:
       - uses: ./.github/actions/setup-python-deps
         with:
           python-version: "3.11"
-          packages: pytest ruff
+          packages: pytest ruff pyyaml
       - run: ruff check examples/agents --config pyproject.toml
       - name: Run dependency-light agent examples
         run: pytest examples/agents/tests/test_examples.py -q
