@@ -1,10 +1,18 @@
 from __future__ import annotations
 
 import importlib.util
+import json
 import sys
 from pathlib import Path
 
+import pytest
+
 ROOT = Path(__file__).resolve().parents[2]
+
+# stdin -> stdout passthrough, used as a stand-in skill so handler tests
+# exercise the real subprocess path without needing a cloud fixture.
+_PASSTHROUGH_CMD = f'{sys.executable} -c "import sys; sys.stdout.write(sys.stdin.read())"'
+_FAILING_CMD = f"{sys.executable} -c \"import sys; sys.stderr.write('boom'); sys.exit(3)\""
 
 
 def _load_module(name: str, path: Path):
@@ -104,3 +112,105 @@ class TestAwsS3SqsDetectRunner:
 
         assert [len(batch) for batch in seen_batches] == [10, 2]
         assert seen_batches[0][0]["Subject"] == "skill-finding:uid-0"
+
+    def test_detect_publish_findings_raises_on_partial_failure(self, monkeypatch):
+        class _FakeClient:
+            def publish_batch(self, **kwargs):
+                return {"Failed": [{"Id": "0-0"}]}
+
+        monkeypatch.setattr(DETECT, "_sns_client", lambda: _FakeClient())
+        monkeypatch.setattr(DETECT, "_sns_topic", lambda: "arn:aws:sns:us-east-1:123:topic")
+
+        with pytest.raises(RuntimeError, match="publish_batch failed"):
+            DETECT._publish_findings([("line-0", "uid-0")])
+
+    def test_ingest_run_skill_passes_payload_through(self, monkeypatch):
+        monkeypatch.setenv("INGEST_SKILL_CMD", _PASSTHROUGH_CMD)
+        assert INGEST._run_skill("line-1\n\nline-2\n") == ["line-1", "line-2"]
+
+    def test_ingest_run_skill_surfaces_skill_stderr(self, monkeypatch):
+        monkeypatch.setenv("INGEST_SKILL_CMD", _FAILING_CMD)
+        with pytest.raises(RuntimeError, match="boom"):
+            INGEST._run_skill("line-1\n")
+
+    def test_detect_run_skill_joins_lines_for_stdin(self, monkeypatch):
+        monkeypatch.setenv("DETECT_SKILL_CMD", _PASSTHROUGH_CMD)
+        assert DETECT._run_skill(["line-1", "line-2"]) == ["line-1", "line-2"]
+
+    def test_detect_extract_uid_rejects_record_without_identity(self):
+        with pytest.raises(ValueError, match="finding_info.uid"):
+            DETECT._extract_uid({"metadata": {"uid": ""}})
+
+    def test_ingest_lambda_handler_end_to_end(self, monkeypatch):
+        monkeypatch.setenv("INGEST_SKILL_CMD", _PASSTHROUGH_CMD)
+        monkeypatch.setenv("DETECT_QUEUE_URL", "https://sqs.test/queue")
+
+        class _FakeBody:
+            def read(self):
+                return b"line-1\nline-2\n"
+
+        class _FakeS3:
+            def get_object(self, Bucket, Key):
+                assert (Bucket, Key) == ("raw-bucket", "audit/day1.jsonl")
+                return {"Body": _FakeBody()}
+
+        sent: list[tuple[str, str]] = []
+
+        class _FakeSqs:
+            def send_message(self, QueueUrl, MessageBody):
+                sent.append((QueueUrl, MessageBody))
+
+        monkeypatch.setattr(INGEST, "_s3_client", lambda: _FakeS3())
+        monkeypatch.setattr(INGEST, "_sqs_client", lambda: _FakeSqs())
+
+        event = {
+            "Records": [
+                {"s3": {"bucket": {"name": "raw-bucket"}, "object": {"key": "audit/day1.jsonl"}}}
+            ]
+        }
+        result = INGEST.lambda_handler(event, None)
+
+        assert result == {"objects_processed": 1, "messages_enqueued": 2}
+        assert sent == [
+            ("https://sqs.test/queue", "line-1"),
+            ("https://sqs.test/queue", "line-2"),
+        ]
+
+    def test_detect_lambda_handler_dedupes_and_publishes(self, monkeypatch):
+        monkeypatch.setenv("DETECT_SKILL_CMD", _PASSTHROUGH_CMD)
+
+        dedupe_results = iter([True, False])
+        monkeypatch.setattr(DETECT, "_put_if_new", lambda uid, payload: next(dedupe_results))
+        published: list[tuple[str, str]] = []
+        monkeypatch.setattr(DETECT, "_publish_findings", lambda records: published.extend(records))
+
+        finding_new = json.dumps({"finding_info": {"uid": "finding-new"}})
+        finding_dup = json.dumps({"event_uid": "event-dup"})
+        event = {"Records": [{"body": finding_new}, {"body": finding_dup}]}
+
+        result = DETECT.lambda_handler(event, None)
+
+        assert result == {"messages_processed": 2, "published": 1, "duplicates": 1}
+        assert published == [(finding_new, "finding-new")]
+
+    def test_detect_put_if_new_true_then_false_for_same_uid(self, monkeypatch):
+        monkeypatch.setenv("DEDUPE_TTL_DAYS", "30")
+
+        class _FakeTable:
+            def __init__(self):
+                self.items: dict[str, dict] = {}
+
+            def put_item(self, Item, ConditionExpression):
+                assert ConditionExpression == "attribute_not_exists(pk)"
+                if Item["pk"] in self.items:
+                    raise DETECT.ClientError(
+                        {"Error": {"Code": "ConditionalCheckFailedException"}}, "PutItem"
+                    )
+                self.items[Item["pk"]] = Item
+
+        table = _FakeTable()
+        monkeypatch.setattr(DETECT, "_dedupe_table", lambda: table)
+
+        assert DETECT._put_if_new("uid-1", "payload") is True
+        assert DETECT._put_if_new("uid-1", "payload") is False
+        assert set(table.items) == {"uid-1"}
