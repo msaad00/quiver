@@ -166,20 +166,29 @@ _AUDIT_SINK: AuditSink | None = None
 _AUDIT_LOCK = threading.Lock()
 
 
-def _audit_sink() -> AuditSink:
-    """Lazy-initialise the process-local audit sink. Reads env vars on first
-    use so tests can override `os.environ` between calls."""
+def _get_or_create_audit_sink() -> AuditSink:
+    """Return the cached sink, creating it on first use. Caller must hold
+    `_AUDIT_LOCK` — concurrent lazy init otherwise spawns two sinks, each
+    with its own genesis `prev_hash`, which breaks the HMAC chain."""
     global _AUDIT_SINK
     if _AUDIT_SINK is None:
         _AUDIT_SINK = sink_from_env()
     return _AUDIT_SINK
 
 
+def _audit_sink() -> AuditSink:
+    """Lazy-initialise the process-local audit sink. Reads env vars on first
+    use so tests can override `os.environ` between calls."""
+    with _AUDIT_LOCK:
+        return _get_or_create_audit_sink()
+
+
 def _reset_audit_sink_for_tests() -> None:
     """Test hook: drop the cached sink so the next call rebuilds it from
     the current environment."""
     global _AUDIT_SINK
-    _AUDIT_SINK = None
+    with _AUDIT_LOCK:
+        _AUDIT_SINK = None
 
 
 def _emit_audit_event(event: dict[str, Any]) -> None:
@@ -188,12 +197,11 @@ def _emit_audit_event(event: dict[str, Any]) -> None:
     opt-in via env (`CLOUD_SECURITY_MCP_AUDIT_LOG`,
     `CLOUD_SECURITY_AUDIT_HMAC_KEY`).
 
-    The annotate+write pair is held under a single process-wide lock so
-    the HMAC chain stays contiguous when the SSE transport is serving
-    multiple clients concurrently. The lock is uncontended on the stdio
-    path."""
-    sink = _audit_sink()
+    Sink init, annotate, and write share one lock so concurrent SSE clients
+    cannot spawn duplicate sinks or interleave chain links. The lock is
+    uncontended on the stdio path."""
     with _AUDIT_LOCK:
+        sink = _get_or_create_audit_sink()
         record = sink.annotate(event)
         sys.stderr.write(json.dumps(record, sort_keys=True) + "\n")
         sys.stderr.flush()
