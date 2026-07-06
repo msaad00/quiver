@@ -101,6 +101,21 @@ python examples/agents/run_langgraph_harness.py \
   --replay-checkpoint artifacts/langgraph-checkpoint.json
 ```
 
+LangGraph native interrupt/resume at the analyst HITL gate (separate from the
+JSON checkpoint artifact above — this uses LangGraph's built-in checkpointer):
+
+```bash
+uv sync --group dev --group langgraph
+
+PYTHONPATH=examples/agents python examples/agents/langgraph_hitl_interrupt_resume.py
+
+CLOUD_SECURITY_HARNESS_PROFILE=examples/agents/harness_profiles/dry-run-remediation.json \\
+  PYTHONPATH=examples/agents python examples/agents/langgraph_hitl_interrupt_resume.py
+```
+
+The demo pauses before ``review``, injects operator ``approval_context`` via
+``update_state``, then resumes into dry-run remediation planning.
+
 Execute or re-evaluate the emitted MCP plan as a separate artifact:
 
 ```bash

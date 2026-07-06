@@ -1496,6 +1496,57 @@ class TestLangGraphSocWorkflow:
         assert "DEMO_LANGGRAPH_RUNTIME" in text
 
 
+class TestLangGraphHitlInterrupt:
+    """LangGraph native interrupt/resume at the analyst review gate."""
+
+    SCRIPT = EXAMPLES / "langgraph_hitl_interrupt_resume.py"
+
+    def test_interrupt_resume_reaches_dry_run_remediation(self):
+        pytest.importorskip("langgraph.graph")
+        env = {
+            **os.environ,
+            "PYTHONPATH": str(EXAMPLES),
+            "CLOUD_SECURITY_HARNESS_PROFILE": str(
+                EXAMPLES / "harness_profiles" / "dry-run-remediation.json"
+            ),
+        }
+        result = subprocess.run(
+            [sys.executable, str(self.SCRIPT)],
+            capture_output=True,
+            text=True,
+            timeout=30,
+            check=False,
+            env=env,
+        )
+        assert result.returncode == 0, result.stderr
+        payload = json.loads(result.stdout)
+        assert payload["schema_version"] == "langgraph-hitl-interrupt-resume-v1"
+        assert payload["interrupt_before"] == "review"
+        assert payload["phases"]["paused_at_review"] is True
+        assert payload["review_decision"]["status"] == "approved"
+        assert payload["remediation_result"]["status"] == "dry_run"
+        assert payload["remediation_result"]["dry_run"] is True
+
+    def test_skips_gracefully_when_langgraph_is_missing(self, monkeypatch):
+        monkeypatch.delenv("PYTHONPATH", raising=False)
+        result = subprocess.run(
+            [sys.executable, str(self.SCRIPT)],
+            capture_output=True,
+            text=True,
+            timeout=30,
+            check=False,
+            env={
+                k: v
+                for k, v in os.environ.items()
+                if k not in {"VIRTUAL_ENV", "UV_PROJECT_ENVIRONMENT"}
+            },
+        )
+        if result.returncode == 0 and '"status": "skipped"' in result.stdout:
+            return
+        pytest.importorskip("langgraph.graph")
+        assert result.returncode == 0, result.stderr
+
+
 class TestLangGraphContractSchemas:
     """Contract coverage for harness profile and LLM adapter JSON schemas."""
 
