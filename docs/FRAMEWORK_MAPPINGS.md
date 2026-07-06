@@ -1,6 +1,6 @@
 # Framework Mappings
 
-This document shows which frameworks are represented in `quiver`, where
+This document shows which frameworks are represented in `cloud-ai-security-skills`, where
 they appear today, and where coverage is still partial.
 
 For machine-readable source of truth, see

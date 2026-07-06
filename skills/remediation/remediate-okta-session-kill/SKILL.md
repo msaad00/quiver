@@ -37,8 +37,8 @@ compatibility: >-
   access requires an API token with "Revoke Sessions and Tokens" scope
   (see REFERENCES.md). Dry-run mode requires no cloud credentials.
 metadata:
-  homepage: https://github.com/msaad00/quiver
-  source: https://github.com/msaad00/quiver/tree/main/skills/remediation/remediate-okta-session-kill
+  homepage: https://github.com/msaad00/cloud-ai-security-skills
+  source: https://github.com/msaad00/cloud-ai-security-skills/tree/main/skills/remediation/remediate-okta-session-kill
   version: 0.1.0
   frameworks:
     - MITRE ATT&CK v14

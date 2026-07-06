@@ -296,7 +296,7 @@ def render(skills: list[dict]) -> str:
     lines.append("")
     lines.append(
         "- **CIS depth** — only 4–6 controls per cloud × 3 clouds today. "
-        "Roadmap [#254](https://github.com/msaad00/quiver/issues/254) "
+        "Roadmap [#254](https://github.com/msaad00/cloud-ai-security-skills/issues/254) "
         "calls for 50% per platform; ~35–40 more controls to ship."
     )
     lines.append(

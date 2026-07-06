@@ -1,6 +1,6 @@
 # ingest-cloudtrail-ocsf OCSF field map
 
-Full CloudTrail-field → OCSF-field mapping for `ingest-cloudtrail-ocsf`. Pulled out of `SKILL.md` to keep that file under the progressive-disclosure target ([#247](https://github.com/msaad00/quiver/issues/247)).
+Full CloudTrail-field → OCSF-field mapping for `ingest-cloudtrail-ocsf`. Pulled out of `SKILL.md` to keep that file under the progressive-disclosure target ([#247](https://github.com/msaad00/cloud-ai-security-skills/issues/247)).
 
 ## Native output format
 

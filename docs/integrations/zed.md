@@ -1,6 +1,6 @@
 # Zed
 
-Setup for loading `quiver` into Zed via the MCP context-
+Setup for loading `cloud-ai-security-skills` into Zed via the MCP context-
 server extension.
 
 ## Install the MCP extension
@@ -15,11 +15,11 @@ install is needed beyond Zed itself.
 ```json
 {
   "context_servers": {
-    "quiver": {
+    "cloud-ai-security-skills": {
       "command": {
         "path": "python3",
         "args": [
-          "/absolute/path/to/quiver/mcp-server/src/server.py"
+          "/absolute/path/to/cloud-ai-security-skills/mcp-server/src/server.py"
         ]
       }
     }
@@ -30,7 +30,7 @@ install is needed beyond Zed itself.
 ## Enable in the UI
 
 Open the Zed assistant panel (**⌘?** on macOS) → **Settings → Tools →
-MCP** → verify `quiver` shows as connected.
+MCP** → verify `cloud-ai-security-skills` shows as connected.
 
 ## Least-privilege example — detection engineering
 
@@ -40,7 +40,7 @@ the SARIF converter, and detector skills available but nothing destructive):
 ```json
 {
   "context_servers": {
-    "quiver": {
+    "cloud-ai-security-skills": {
       "command": {
         "path": "python3",
         "args": ["/absolute/path/.../mcp-server/src/server.py"],

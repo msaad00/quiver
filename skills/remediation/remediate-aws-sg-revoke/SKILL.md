@@ -42,8 +42,8 @@ compatibility: >-
   on the target SG. The skill runs under whatever AWS profile / region the
   caller sets; cross-account orchestration belongs in the runner layer.
 metadata:
-  homepage: https://github.com/msaad00/quiver
-  source: https://github.com/msaad00/quiver/tree/main/skills/remediation/remediate-aws-sg-revoke
+  homepage: https://github.com/msaad00/cloud-ai-security-skills
+  source: https://github.com/msaad00/cloud-ai-security-skills/tree/main/skills/remediation/remediate-aws-sg-revoke
   version: 0.1.0
   frameworks:
     - MITRE ATT&CK v14
@@ -151,4 +151,4 @@ The execution role needs:
 - [`remediate-okta-session-kill`](../remediate-okta-session-kill/), [`remediate-k8s-rbac-revoke`](../remediate-k8s-rbac-revoke/), [`remediate-entra-credential-revoke`](../remediate-entra-credential-revoke/) — sibling closed-loop remediation skills
 - [`_shared/remediation_verifier.py`](../../_shared/remediation_verifier.py) — verification contract
 - [`docs/HITL_POLICY.md`](../../../docs/HITL_POLICY.md) — repo-wide HITL bar
-- [#307](https://github.com/msaad00/quiver/issues/307) — network-exposure response umbrella (this is phase A)
+- [#307](https://github.com/msaad00/cloud-ai-security-skills/issues/307) — network-exposure response umbrella (this is phase A)

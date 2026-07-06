@@ -54,8 +54,8 @@ compatibility: >-
   `roles/iam.serviceAccountKeyAdmin`, `roles/admin.directory.user.admin`)
   scoped to the org or folder boundary the operator owns.
 metadata:
-  homepage: https://github.com/msaad00/quiver
-  source: https://github.com/msaad00/quiver/tree/main/skills/remediation/iam-departures-gcp
+  homepage: https://github.com/msaad00/cloud-ai-security-skills
+  source: https://github.com/msaad00/cloud-ai-security-skills/tree/main/skills/remediation/iam-departures-gcp
   version: 0.1.0
   frameworks:
     - MITRE ATT&CK v14
@@ -72,7 +72,7 @@ metadata:
 # iam-departures-gcp
 
 GCP counterpart to the flagship [`iam-departures-aws`](../iam-departures-aws/) skill.
-Closes [#239](https://github.com/msaad00/quiver/issues/239).
+Closes [#239](https://github.com/msaad00/cloud-ai-security-skills/issues/239).
 
 Same closed loop: HR source → manifest in GCS → Eventarc → Cloud Workflow →
 parser Cloud Function → fan-out to worker Cloud Function → 11-step IAM

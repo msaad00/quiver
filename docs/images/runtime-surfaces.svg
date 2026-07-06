@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1320" height="640" viewBox="0 0 1320 640" role="img" aria-labelledby="runtime-title runtime-desc">
-  <title id="runtime-title">quiver runtime surfaces</title>
+  <title id="runtime-title">Cloud AI Security Skills runtime surfaces</title>
   <desc id="runtime-desc">Runtime architecture diagram. Four invocation surfaces — MCP clients, CLI, CI, cloud runners — all call the same shipped skill bundle. Only MCP clients go through the repo MCP server; CLI, CI, and cloud runners import the skill bundle directly. The shared bundle emits native JSONL, OCSF 1.8, SARIF 2.1.0, Mermaid flow, CycloneDX BOM, audit records, and evidence JSON. Counts: 131 shipped skills — 22 ingest, 71 detect, 5 discover, 12 eval, 12 remediate, 2 view, 3 sink, 4 source.</desc>
 
   <defs>

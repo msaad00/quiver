@@ -103,7 +103,7 @@ Per-track breadth toward the published target. The 'Today' column uses **per-con
 
 ## Where the gaps are
 
-- **CIS depth** — only 4–6 controls per cloud × 3 clouds today. Roadmap [#254](https://github.com/msaad00/quiver/issues/254) calls for 50% per platform; ~35–40 more controls to ship.
+- **CIS depth** — only 4–6 controls per cloud × 3 clouds today. Roadmap [#254](https://github.com/msaad00/cloud-ai-security-skills/issues/254) calls for 50% per platform; ~35–40 more controls to ship.
 - **OWASP Top 10 (web)** — zero detectors today. The hero banner advertises the framework — coverage owed.
 - **NIST AI RMF + CycloneDX ML-BOM** — only 4 + 2 skills. AI inventory and posture is a credible next theme.
 - **Per-vendor depth** — Snowflake / Databricks / ClickHouse are 3–4 skills each. Detect-side coverage on those is thin.

@@ -1,7 +1,7 @@
 # Design Decisions
 
 This file explains the major product and architecture decisions behind
-`quiver`: what the repo is, why it is shaped this way, and
+`cloud-ai-security-skills`: what the repo is, why it is shaped this way, and
 what features enterprise security teams can rely on today.
 
 Use this doc when you want the rationale. Use [`ARCHITECTURE.md`](./ARCHITECTURE.md)

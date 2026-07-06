@@ -46,7 +46,7 @@ When `--output-format native` is selected, it emits the same finding in the repo
 
 ## Field mapping
 
-The native output field list, the GuardDuty Type → MITRE ATT&CK tactic/technique tables, the 1.0–8.9 severity → `severity_id` ladder, the deterministic `finding_info.uid` derivation, and the explicit "not mapped (yet)" scope live in [`references/field-map.md`](references/field-map.md). Keeping the detail there keeps this file under the progressive-disclosure target ([#247](https://github.com/msaad00/quiver/issues/247)) while detectors and reviewers still get the exact mapping one click away.
+The native output field list, the GuardDuty Type → MITRE ATT&CK tactic/technique tables, the 1.0–8.9 severity → `severity_id` ladder, the deterministic `finding_info.uid` derivation, and the explicit "not mapped (yet)" scope live in [`references/field-map.md`](references/field-map.md). Keeping the detail there keeps this file under the progressive-disclosure target ([#247](https://github.com/msaad00/cloud-ai-security-skills/issues/247)) while detectors and reviewers still get the exact mapping one click away.
 
 ## Usage
 

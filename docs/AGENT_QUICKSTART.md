@@ -1,7 +1,7 @@
 # Agent Quickstart
 
 Give any agent these 131 skills in under 60 seconds. Pick your client,
-paste the snippet, restart. Replace `/abs/path/to/quiver`
+paste the snippet, restart. Replace `/abs/path/to/cloud-ai-security-skills`
 with the absolute path to your local clone.
 
 ---
@@ -14,8 +14,8 @@ the CLI:
 
 ```bash
 cd /your/other/repo
-claude mcp add quiver python3 \
-  /abs/path/to/quiver/mcp-server/src/server.py
+claude mcp add cloud-ai-security-skills python3 \
+  /abs/path/to/cloud-ai-security-skills/mcp-server/src/server.py
 ```
 
 Full setup: [`integrations/README.md`](integrations/README.md).
@@ -30,9 +30,9 @@ Edit `~/Library/Application Support/Claude/claude_desktop_config.json`
 ```json
 {
   "mcpServers": {
-    "quiver": {
+    "cloud-ai-security-skills": {
       "command": "python3",
-      "args": ["/abs/path/to/quiver/mcp-server/src/server.py"]
+      "args": ["/abs/path/to/cloud-ai-security-skills/mcp-server/src/server.py"]
     }
   }
 }
@@ -50,7 +50,7 @@ portable across clones:
 ```json
 {
   "mcpServers": {
-    "quiver": {
+    "cloud-ai-security-skills": {
       "command": "python3",
       "args": ["${workspaceFolder}/mcp-server/src/server.py"]
     }
@@ -58,7 +58,7 @@ portable across clones:
 }
 ```
 
-Enable: **Cursor Settings → MCP → quiver → on**.
+Enable: **Cursor Settings → MCP → cloud-ai-security-skills → on**.
 
 ---
 
@@ -70,9 +70,9 @@ Windsurf does not expand `~`):
 ```json
 {
   "mcpServers": {
-    "quiver": {
+    "cloud-ai-security-skills": {
       "command": "python3",
-      "args": ["/abs/path/to/quiver/mcp-server/src/server.py"]
+      "args": ["/abs/path/to/cloud-ai-security-skills/mcp-server/src/server.py"]
     }
   }
 }

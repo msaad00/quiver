@@ -1,6 +1,6 @@
 # Agent-SDK integration examples
 
-Three reference implementations showing how to load `quiver`
+Three reference implementations showing how to load `cloud-ai-security-skills`
 via MCP from inside an agent-framework loop, while keeping **every guardrail
 intact**. The same MCP wrapper enforces HITL, dry-run, audit, and the skill
 allowlist regardless of which SDK is driving the loop.

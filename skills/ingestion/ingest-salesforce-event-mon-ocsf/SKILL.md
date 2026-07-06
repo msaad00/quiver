@@ -27,8 +27,8 @@ compatibility: >-
   normalizer; never calls Salesforce APIs.
 metadata:
   author: msaad00
-  homepage: https://github.com/msaad00/quiver
-  source: https://github.com/msaad00/quiver/tree/main/skills/ingestion/ingest-salesforce-event-mon-ocsf
+  homepage: https://github.com/msaad00/cloud-ai-security-skills
+  source: https://github.com/msaad00/cloud-ai-security-skills/tree/main/skills/ingestion/ingest-salesforce-event-mon-ocsf
   version: 0.1.0
   frameworks:
     - OCSF 1.8

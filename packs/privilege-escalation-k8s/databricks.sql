@@ -251,8 +251,8 @@ SELECT
                     'version', '1.8.0',
                     'uid', finding_uid,
                     'product', NAMED_STRUCT(
-                        'name', 'quiver',
-                        'vendor_name', 'msaad00/quiver',
+                        'name', 'cloud-ai-security-skills',
+                        'vendor_name', 'msaad00/cloud-ai-security-skills',
                         'feature', NAMED_STRUCT('name', 'packs/privilege-escalation-k8s/databricks.sql')
                     ),
                     'labels', ARRAY('query-pack', 'kubernetes', 'privilege-escalation', rule_name, 'databricks')

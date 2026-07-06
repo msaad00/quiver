@@ -1,6 +1,6 @@
 # Claude Code Project Memory
 
-This file is Claude Code project memory for `quiver`. It is repo-wide
+This file is Claude Code project memory for `cloud-ai-security-skills`. It is repo-wide
 and universal for Claude within this repository. It is **not** the place for
 individual skill behavior; per-skill rules belong in `skills/<layer>/<skill>/SKILL.md`.
 

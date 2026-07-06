@@ -1,6 +1,6 @@
 # Snowflake security data lake — hero use case
 
-This is the end-to-end story for running quiver on top of a
+This is the end-to-end story for running cloud-ai-security-skills on top of a
 Snowflake-backed security data lake. It is one of the lake patterns the repo
 supports (see [`AGENT_DATA_LAKE_FLOW.md`](AGENT_DATA_LAKE_FLOW.md)) — the
 **warehouse-native, open-lakehouse** lane, the enterprise counterpart to the

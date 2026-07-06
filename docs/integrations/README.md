@@ -1,7 +1,7 @@
 # Agent + IDE integrations
 
 This directory holds per-client setup docs for loading
-`quiver` into AI agents and IDE assistants over MCP.
+`cloud-ai-security-skills` into AI agents and IDE assistants over MCP.
 
 Every integration **goes through the same `mcp-server/src/server.py` stdio
 wrapper** — so the skill contract, audit trail, and HITL gates are identical

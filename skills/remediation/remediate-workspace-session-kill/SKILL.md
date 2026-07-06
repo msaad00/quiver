@@ -50,8 +50,8 @@ compatibility: >-
   and admin.reports.audit.readonly (reverify). Service account with
   domain-wide delegation OR a delegated admin user with User Management role.
 metadata:
-  homepage: https://github.com/msaad00/quiver
-  source: https://github.com/msaad00/quiver/tree/main/skills/remediation/remediate-workspace-session-kill
+  homepage: https://github.com/msaad00/cloud-ai-security-skills
+  source: https://github.com/msaad00/cloud-ai-security-skills/tree/main/skills/remediation/remediate-workspace-session-kill
   version: 0.1.0
   frameworks:
     - MITRE ATT&CK v14
@@ -67,7 +67,7 @@ metadata:
 
 Pair skill for [`detect-google-workspace-suspicious-login`](../../detection/detect-google-workspace-suspicious-login/) — provider-marked suspicious Workspace login or repeated failures followed by success (MITRE ATT&CK T1110 Brute Force + T1078 Valid Accounts).
 
-Closes [#155](https://github.com/msaad00/quiver/issues/155) phase 4 (tracking issue: [#312](https://github.com/msaad00/quiver/issues/312)). After this lands, the closed-loop coverage matrix flips the Workspace row red→green. Ratio goes 7/11 → **8/11**.
+Closes [#155](https://github.com/msaad00/cloud-ai-security-skills/issues/155) phase 4 (tracking issue: [#312](https://github.com/msaad00/cloud-ai-security-skills/issues/312)). After this lands, the closed-loop coverage matrix flips the Workspace row red→green. Ratio goes 7/11 → **8/11**.
 
 ## Why sign-out + force-password-change (not user.suspend)
 

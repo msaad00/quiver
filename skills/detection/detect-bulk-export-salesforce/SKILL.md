@@ -23,8 +23,8 @@ input_formats: ocsf
 output_formats: native, ocsf
 concurrency_safety: stateless
 metadata:
-  homepage: https://github.com/msaad00/quiver
-  source: https://github.com/msaad00/quiver/tree/main/skills/detection/detect-bulk-export-salesforce
+  homepage: https://github.com/msaad00/cloud-ai-security-skills
+  source: https://github.com/msaad00/cloud-ai-security-skills/tree/main/skills/detection/detect-bulk-export-salesforce
   version: 0.1.0
   frameworks:
     - OCSF 1.8

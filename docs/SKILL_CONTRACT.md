@@ -1,6 +1,6 @@
 # Skill Contract
 
-This document defines the minimum contract for a shipped skill in `quiver`.
+This document defines the minimum contract for a shipped skill in `cloud-ai-security-skills`.
 
 The goal is to keep skills:
 

@@ -8,7 +8,7 @@ from datetime import UTC, datetime
 from typing import Any
 
 REPO_NAME = "cloud-ai-security-skills"
-REPO_VENDOR = "msaad00/quiver"
+REPO_VENDOR = "msaad00/cloud-ai-security-skills"
 OCSF_VERSION = "1.8.0"
 
 FINDING_CATEGORY_UID = 2

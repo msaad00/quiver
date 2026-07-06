@@ -30,7 +30,7 @@ from tool_registry import (  # noqa: E402
     tool_map,
 )
 
-SERVER_NAME = "quiver"
+SERVER_NAME = "cloud-ai-security-skills"
 SERVER_VERSION = "0.1.0"
 PROTOCOL_VERSION = "2025-06-18"
 DEFAULT_TIMEOUT_SECONDS = 60

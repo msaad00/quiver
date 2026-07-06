@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://quiver.local/examples/agents/schemas/checkpoint.schema.json",
+  "$id": "https://cloud-ai-security-skills.local/examples/agents/schemas/checkpoint.schema.json",
   "title": "LangGraph SOC checkpoint artifact",
   "type": "object",
   "additionalProperties": false,

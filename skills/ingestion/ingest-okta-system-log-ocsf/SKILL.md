@@ -31,8 +31,8 @@ compatibility: >-
   or native JSONL. Never calls write APIs.
 metadata:
   author: msaad00
-  homepage: https://github.com/msaad00/quiver
-  source: https://github.com/msaad00/quiver/tree/main/skills/ingestion/ingest-okta-system-log-ocsf
+  homepage: https://github.com/msaad00/cloud-ai-security-skills
+  source: https://github.com/msaad00/cloud-ai-security-skills/tree/main/skills/ingestion/ingest-okta-system-log-ocsf
   version: 0.2.0
   frameworks:
     - OCSF 1.8
@@ -157,7 +157,7 @@ Each output record includes:
 
 ### OCSF 1.8 mapping (v0.2, #271)
 
-The full Okta-field → OCSF-field table, the `unmapped.okta.*` native preservation list, and the risk-signal enrichment shape live in [`references/field-map.md`](references/field-map.md). Keeping the detail there keeps this file under the progressive-disclosure word target ([#247](https://github.com/msaad00/quiver/issues/247)) while detectors and reviewers still get the exact mapping one click away.
+The full Okta-field → OCSF-field table, the `unmapped.okta.*` native preservation list, and the risk-signal enrichment shape live in [`references/field-map.md`](references/field-map.md). Keeping the detail there keeps this file under the progressive-disclosure word target ([#247](https://github.com/msaad00/cloud-ai-security-skills/issues/247)) while detectors and reviewers still get the exact mapping one click away.
 
 ## Usage
 

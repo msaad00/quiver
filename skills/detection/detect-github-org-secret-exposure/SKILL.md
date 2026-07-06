@@ -31,8 +31,8 @@ input_formats: ocsf
 output_formats: native, ocsf
 concurrency_safety: stateless
 metadata:
-  homepage: https://github.com/msaad00/quiver
-  source: https://github.com/msaad00/quiver/tree/main/skills/detection/detect-github-org-secret-exposure
+  homepage: https://github.com/msaad00/cloud-ai-security-skills
+  source: https://github.com/msaad00/cloud-ai-security-skills/tree/main/skills/detection/detect-github-org-secret-exposure
   version: 0.1.0
   frameworks:
     - OCSF 1.8
@@ -151,4 +151,4 @@ The test suite covers:
 ## Closes
 
 This detector is one of the three detection deliverables of issue
-[`#31`](https://github.com/msaad00/quiver/issues/31).
+[`#31`](https://github.com/msaad00/cloud-ai-security-skills/issues/31).

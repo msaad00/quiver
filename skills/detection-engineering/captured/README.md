@@ -97,4 +97,4 @@ support claims of the form "X% precision / Y% recall on real attacker
 traffic at scale". Two atomics is a beachhead, not a corpus. Per-detector
 precision/recall scoring on a corpus an order of magnitude larger is
 tracked separately under
-[issue #419](https://github.com/msaad00/quiver/issues/419).
+[issue #419](https://github.com/msaad00/cloud-ai-security-skills/issues/419).

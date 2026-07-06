@@ -29,7 +29,7 @@
   Used for Config rule compliance change messages.
 - **OCSF metadata object** — https://schema.ocsf.io/1.8.0/objects/metadata
   `metadata.uid` is deterministic for dedupe and carries
-  `quiver` product identity.
+  `cloud-ai-security-skills` product identity.
 
 ## Related skills
 

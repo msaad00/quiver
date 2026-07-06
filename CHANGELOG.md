@@ -1,7 +1,6 @@
 # Changelog
 
-All notable changes to `quiver` (formerly `cloud-ai-security-skills`) should
-be recorded here.
+All notable changes to `cloud-ai-security-skills` should be recorded here.
 
 This changelog is intentionally **repo-level**, not per-skill semver. The repo
 is released as one trust boundary: one CI bar, one MCP wrapper, one validation
@@ -12,39 +11,21 @@ The format is loosely based on Keep a Changelog.
 
 ## [Unreleased]
 
-### README and visuals — less clutter, real vendor marks
+### Revert Quiver repo slug and finish name cleanup
 
-- Reverted the **display name** to **Cloud AI Security Skills** (`cloud-ai-security-skills`
-  in OCSF product metadata and `pyproject.toml`). The GitHub repo slug stays
-  `quiver` (redirects from the old name still work). Dropped vague "agent-safe"
+- Renamed the GitHub repository back to **`msaad00/cloud-ai-security-skills`**
+  (redirects from `msaad00/quiver` still work). Updated clone URLs, CI badges,
+  MCP server name, default OCSF `metadata.product.vendor_name`, golden fixtures,
+  release SBOM asset names, and integration docs to match.
+- Display name remains **Cloud AI Security Skills** (`cloud-ai-security-skills`
+  in OCSF product metadata and `pyproject.toml`). Dropped vague "agent-safe"
   positioning from the GitHub About blurb and README tagline.
 - Replaced the crowded hero banner with a minimal layout: title, one-line value
   prop, four stats, and eight **Simple Icons** (CC0) vendor marks — including
   the real Snowflake and ClickHouse paths, not placeholder glyphs.
 - Slimmed the README: shorter quickstart, collapsed lake hero walls into doc
   links, and added a clear **LangGraph vs LangChain vs skills** table.
-- Clarified orchestration diagram copy: LangGraph owns workflow state; LangChain
-  is optional adapter glue; skills own trust rails.
-
-### Rebrand: the project is now Quiver
-
-The repository renamed from `cloud-ai-security-skills` to `quiver` — a quiver
-of single-purpose arrows an agent draws one at a time, each precise and
-inspected. GitHub redirects the old URLs, and existing clones keep working
-(update remotes with
-`git remote set-url origin git@github.com:msaad00/quiver.git`).
-
-- New three-arrow logo mark (`docs/images/quiver-logo.svg`), refreshed hero
-  banner wordmark/tagline, and a social-preview card
-  (`docs/images/social-preview.png`).
-- All in-repo references updated: repo URLs, MCP server name in `.mcp.json`
-  and agent quickstart snippets, `pyproject.toml` project name, SARIF tool
-  name (`quiver-detection-engineering`), default OCSF
-  `metadata.product.name` / `vendor_name` identity strings, release SBOM
-  asset names, and golden fixtures. Operator overrides via
-  `CLOUD_SECURITY_VENDOR_NAME` / `CLOUD_SECURITY_PRODUCT_NAME` are unchanged.
-- Historical changelog entries below keep the old name where it was accurate
-  at the time.
+- Removed Quiver logo/social-preview assets from the default README path.
 
 ### Snowflake security data lake — hero use case end-to-end
 

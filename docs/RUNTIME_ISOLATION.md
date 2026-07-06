@@ -203,4 +203,4 @@ Some repo-local bridge and profile identifiers still use older names:
 
 Those names remain stable for compatibility with downstream readers. Public repo
 identity and emitted OCSF `metadata.product` identity should still use
-`quiver`.
+`cloud-ai-security-skills`.

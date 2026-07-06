@@ -51,8 +51,8 @@ compatibility: >-
   scope for cross-subscription role-assignment teardown.
 metadata:
   author: msaad00
-  homepage: https://github.com/msaad00/quiver
-  source: https://github.com/msaad00/quiver/tree/main/skills/remediation/iam-departures-azure-entra
+  homepage: https://github.com/msaad00/cloud-ai-security-skills
+  source: https://github.com/msaad00/cloud-ai-security-skills/tree/main/skills/remediation/iam-departures-azure-entra
   version: 0.1.0
   frameworks:
     - MITRE ATT&CK v14
@@ -65,7 +65,7 @@ metadata:
 
 # IAM Departures Remediation — Azure Entra ID
 
-Azure Entra ID counterpart to the flagship [`iam-departures-aws`](../iam-departures-aws/) pipeline. Closes [#238](https://github.com/msaad00/quiver/issues/238). Same skill contract, same rehire-safe + grace-period semantics, same dual-audit trail — but the orchestration uses Azure-native primitives (Function App, Logic App, EventGrid, Cosmos DB, Blob Storage with Key Vault CMK) instead of pretending one stack fits every cloud.
+Azure Entra ID counterpart to the flagship [`iam-departures-aws`](../iam-departures-aws/) pipeline. Closes [#238](https://github.com/msaad00/cloud-ai-security-skills/issues/238). Same skill contract, same rehire-safe + grace-period semantics, same dual-audit trail — but the orchestration uses Azure-native primitives (Function App, Logic App, EventGrid, Cosmos DB, Blob Storage with Key Vault CMK) instead of pretending one stack fits every cloud.
 
 Read [REFERENCES.md](REFERENCES.md) for Microsoft Graph + Azure RBAC API specs and [examples.md](examples.md) for deployment + dry-run walkthroughs.
 
@@ -114,7 +114,7 @@ HR source ─► Reconciler (rehire + grace + SHA-256 diff)
 ## Do NOT use
 
 - Do NOT use for AWS IAM (use [`iam-departures-aws`](../iam-departures-aws/)).
-- Do NOT use for GCP IAM (separate skill, see [#239](https://github.com/msaad00/quiver/issues/239)).
+- Do NOT use for GCP IAM (separate skill, see [#239](https://github.com/msaad00/cloud-ai-security-skills/issues/239)).
 - Do NOT use for Snowflake / Databricks user lifecycle (separate skills).
 - Do NOT use for Entra **service-principal** credential containment (use [`remediate-entra-credential-revoke`](../remediate-entra-credential-revoke/)).
 - Do NOT use for Okta session revocation (use [`remediate-okta-session-kill`](../remediate-okta-session-kill/)).

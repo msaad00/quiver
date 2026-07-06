@@ -1,6 +1,6 @@
 # Architecture
 
-This document is the load-bearing design contract for `quiver`. Every future PR is reviewed against it. If you need to deviate, update this doc *in the same PR* — the contract drifts by design, never by accident.
+This document is the load-bearing design contract for `cloud-ai-security-skills`. Every future PR is reviewed against it. If you need to deviate, update this doc *in the same PR* — the contract drifts by design, never by accident.
 
 This file is the design contract. It explains how the repo is supposed to work and what future changes must preserve. The visual set lives in [`images/`](images/) and is indexed inline in [`../README.md`](../README.md).
 
@@ -29,7 +29,7 @@ This file is the design contract. It explains how the repo is supposed to work a
 
 ## 1. Purpose and scope
 
-`quiver` is a library of **composable security skills for cloud and AI systems** that can operate in native, canonical, OCSF, or bridge modes. The repository is designed to be driven by agentic tools (Claude Code, Snowflake Cortex Code CLI, Claude Agent SDK, any MCP client) *and* by traditional CI / serverless pipelines — with no code changes between the two modes.
+`cloud-ai-security-skills` is a library of **composable security skills for cloud and AI systems** that can operate in native, canonical, OCSF, or bridge modes. The repository is designed to be driven by agentic tools (Claude Code, Snowflake Cortex Code CLI, Claude Agent SDK, any MCP client) *and* by traditional CI / serverless pipelines — with no code changes between the two modes.
 
 **In scope**
 - Normalising raw vendor telemetry into canonical or OCSF wire formats
@@ -260,7 +260,7 @@ An AI BOM capability belongs in the **discovery / inventory path**, not as the i
 - **Enrichment** belongs in L2 when joining model inventory, framework metadata, package provenance, and control coverage into a usable graph.
 - **Evaluation** belongs in L4 when mapping that inventory to MITRE ATLAS, NIST AI RMF, OWASP LLM Top 10, or other AI-security frameworks.
 
-That keeps AI BOM as one valuable skill family inside `quiver`, instead of pulling the whole repo away from its broader cloud + AI security scope.
+That keeps AI BOM as one valuable skill family inside `cloud-ai-security-skills`, instead of pulling the whole repo away from its broader cloud + AI security scope.
 
 ### Why this works: idempotency
 
@@ -276,7 +276,7 @@ Sinks exploit this: `MERGE INTO ocsf_findings USING input ON input.finding_info.
 ### Current layered tree
 
 ```
-quiver/
+cloud-ai-security-skills/
 ├── skills/
 │   ├── ingestion/               # L1
 │   ├── discovery/               # L2 discovery / inventory
@@ -294,7 +294,7 @@ quiver/
 ### Near-term target
 
 ```
-quiver/
+cloud-ai-security-skills/
 ├── skills/
 │   ├── ingestion/            # L1
 │   ├── discovery/            # L2

@@ -42,7 +42,7 @@ When `--output-format native` is selected, it emits the same finding in the repo
 
 ## Field mapping
 
-The native output field list, the ASFF required-field validation list, the `Severity.Label` / `Normalized` → `severity_id` ladder, the MITRE ATT&CK extraction rules (Types[] taxonomy + ProductFields lookup), the deterministic `finding_info.uid` derivation, and the `Compliance` block passthrough live in [`references/field-map.md`](references/field-map.md). Keeping the detail there keeps this file under the progressive-disclosure target ([#247](https://github.com/msaad00/quiver/issues/247)) while detectors and reviewers still get the exact mapping one click away.
+The native output field list, the ASFF required-field validation list, the `Severity.Label` / `Normalized` → `severity_id` ladder, the MITRE ATT&CK extraction rules (Types[] taxonomy + ProductFields lookup), the deterministic `finding_info.uid` derivation, and the `Compliance` block passthrough live in [`references/field-map.md`](references/field-map.md). Keeping the detail there keeps this file under the progressive-disclosure target ([#247](https://github.com/msaad00/cloud-ai-security-skills/issues/247)) while detectors and reviewers still get the exact mapping one click away.
 
 ## Usage
 

@@ -33,8 +33,8 @@ compatibility: >-
   stdout. No GCP SDK; pairs with `ingest-gcp-audit-ocsf` upstream.
 metadata:
   author: msaad00
-  homepage: https://github.com/msaad00/quiver
-  source: https://github.com/msaad00/quiver/tree/main/skills/detection/detect-gcp-outbound-peering-anomaly
+  homepage: https://github.com/msaad00/cloud-ai-security-skills
+  source: https://github.com/msaad00/cloud-ai-security-skills/tree/main/skills/detection/detect-gcp-outbound-peering-anomaly
   version: 0.1.0
   frameworks:
     - OCSF 1.8

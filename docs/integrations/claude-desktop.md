@@ -1,6 +1,6 @@
 # Claude Desktop
 
-Full setup for loading `quiver` into the Claude Desktop app
+Full setup for loading `cloud-ai-security-skills` into the Claude Desktop app
 over stdio MCP.
 
 ## 1 · Locate the config file
@@ -18,10 +18,10 @@ Create the file if it doesn't exist.
 ```json
 {
   "mcpServers": {
-    "quiver": {
+    "cloud-ai-security-skills": {
       "command": "python3",
       "args": [
-        "/absolute/path/to/quiver/mcp-server/src/server.py"
+        "/absolute/path/to/cloud-ai-security-skills/mcp-server/src/server.py"
       ]
     }
   }
@@ -38,12 +38,12 @@ auto-discovered by the wrapper on startup.
 
 ## 4 · Verify
 
-In a new chat ask: *"list my available MCP tools from quiver"* —
+In a new chat ask: *"list my available MCP tools from cloud-ai-security-skills"* —
 you should see `cspm-aws-cis-benchmark`, `ingest-cloudtrail-ocsf`,
 `detect-privilege-escalation-k8s`, etc.
 
 If nothing appears, check
-`~/Library/Logs/Claude/mcp-server-quiver.log`.
+`~/Library/Logs/Claude/mcp-server-cloud-ai-security-skills.log`.
 
 ## Least-privilege example — CSPM-only
 
@@ -53,7 +53,7 @@ ingestion tools aren't exposed to the model:
 ```json
 {
   "mcpServers": {
-    "quiver": {
+    "cloud-ai-security-skills": {
       "command": "python3",
       "args": ["/absolute/path/.../mcp-server/src/server.py"],
       "env": {

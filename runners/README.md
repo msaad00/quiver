@@ -46,7 +46,7 @@ the MCP SSE transport) are shipped and CI-validated.
 
 The repo does not yet claim a captured real-cloud deploy-and-first-event proof
 for all templates. That remaining work is tracked in
-[`#198`](https://github.com/msaad00/quiver/issues/198) and
+[`#198`](https://github.com/msaad00/cloud-ai-security-skills/issues/198) and
 summarized in [DEPLOYMENT_VERIFICATION.md](DEPLOYMENT_VERIFICATION.md).
 
 What is now committed:

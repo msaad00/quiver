@@ -27,8 +27,8 @@ compatibility: >-
   Service principal needs Reader role. No write permissions — assessment only.
 metadata:
   author: msaad00
-  homepage: https://github.com/msaad00/quiver
-  source: https://github.com/msaad00/quiver/tree/main/skills/evaluation/cspm-azure-cis-benchmark
+  homepage: https://github.com/msaad00/cloud-ai-security-skills
+  source: https://github.com/msaad00/cloud-ai-security-skills/tree/main/skills/evaluation/cspm-azure-cis-benchmark
   version: 0.1.0
   frameworks:
     - CIS Azure Foundations v2.1 (subset)

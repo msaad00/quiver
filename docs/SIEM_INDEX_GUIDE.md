@@ -80,7 +80,7 @@ The point is that a one-off CLI run and a queued/serverless run should produce i
 Useful filters:
 
 - producer:
-  - `metadata.product.vendor_name="msaad00/quiver"`
+  - `metadata.product.vendor_name="msaad00/cloud-ai-security-skills"`
   - `metadata.product.feature.name="detect-lateral-movement"`
 - class:
   - `class_uid=2004` for Detection Findings

@@ -69,7 +69,7 @@ K8s audit events are emitted at 4 stages: `RequestReceived`, `ResponseStarted`, 
 
 ## Field mapping
 
-The K8s verb → `activity_id` table, the `responseStatus.code` → `status_id` rules, the full K8s-field → OCSF-field map, the `unmapped.k8s.*` preservation rules, the service-account marker, and the native output field list live in [`references/field-map.md`](references/field-map.md). Keeping the detail there keeps this file under the progressive-disclosure target ([#247](https://github.com/msaad00/quiver/issues/247)) while detectors and reviewers still get the exact mapping one click away.
+The K8s verb → `activity_id` table, the `responseStatus.code` → `status_id` rules, the full K8s-field → OCSF-field map, the `unmapped.k8s.*` preservation rules, the service-account marker, and the native output field list live in [`references/field-map.md`](references/field-map.md). Keeping the detail there keeps this file under the progressive-disclosure target ([#247](https://github.com/msaad00/cloud-ai-security-skills/issues/247)) while detectors and reviewers still get the exact mapping one click away.
 
 ## Usage
 

@@ -51,8 +51,8 @@ compatibility: >-
   DefaultAzureCredential resolves; cross-subscription orchestration belongs
   in the runner layer.
 metadata:
-  homepage: https://github.com/msaad00/quiver
-  source: https://github.com/msaad00/quiver/tree/main/skills/remediation/remediate-azure-nsg-revoke
+  homepage: https://github.com/msaad00/cloud-ai-security-skills
+  source: https://github.com/msaad00/cloud-ai-security-skills/tree/main/skills/remediation/remediate-azure-nsg-revoke
   version: 0.1.0
   frameworks:
     - MITRE ATT&CK v14

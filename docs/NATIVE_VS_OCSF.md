@@ -1,6 +1,6 @@
 # Native vs OCSF
 
-`quiver` is **not OCSF-only**, but it is also not undecided.
+`cloud-ai-security-skills` is **not OCSF-only**, but it is also not undecided.
 
 The repo position is:
 

@@ -1,6 +1,6 @@
 # Roadmap
 
-This roadmap turns `quiver` into a measurable, cross-cloud security
+This roadmap turns `cloud-ai-security-skills` into a measurable, cross-cloud security
 skills repo for cloud and AI systems.
 
 The operating model is:

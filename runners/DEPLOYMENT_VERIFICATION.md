@@ -15,9 +15,9 @@ Read next:
 
 | Runner | Template shipped | Handler tests | IaC validation in CI | Walkthrough committed | Real deploy proof captured | Tracking issue |
 |---|---|---|---|---|---|---|
-| `aws-s3-sqs-detect` | yes | yes | yes | yes | not yet | [#198](https://github.com/msaad00/quiver/issues/198) |
-| `gcp-gcs-pubsub-detect` | yes | yes | yes | yes | not yet | [#198](https://github.com/msaad00/quiver/issues/198) |
-| `azure-blob-eventgrid-detect` | yes | yes | yes | yes | not yet | [#198](https://github.com/msaad00/quiver/issues/198) |
+| `aws-s3-sqs-detect` | yes | yes | yes | yes | not yet | [#198](https://github.com/msaad00/cloud-ai-security-skills/issues/198) |
+| `gcp-gcs-pubsub-detect` | yes | yes | yes | yes | not yet | [#198](https://github.com/msaad00/cloud-ai-security-skills/issues/198) |
+| `azure-blob-eventgrid-detect` | yes | yes | yes | yes | not yet | [#198](https://github.com/msaad00/cloud-ai-security-skills/issues/198) |
 
 Current repo reality:
 

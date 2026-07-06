@@ -21,8 +21,8 @@ If you don't have the repo, the same pipeline is a `python | python |
 python` one-liner once you check out a tagged release:
 
 ```bash
-git clone --branch v0.11.0 https://github.com/msaad00/quiver.git
-cd quiver
+git clone --branch v0.11.0 https://github.com/msaad00/cloud-ai-security-skills.git
+cd cloud-ai-security-skills
 
 python skills/ingestion/ingest-cloudtrail-ocsf/src/ingest.py \
        skills/detection-engineering/golden/cloudtrail_raw_sample.jsonl \

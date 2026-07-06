@@ -13,7 +13,7 @@ explicit follow-on gaps.
 | Vendor | Source signal | OCSF 1.8 class | Skill |
 |---|---|---|---|
 | AWS | CloudTrail event records | API Activity 6003 | [`ingest-cloudtrail-ocsf`](../skills/ingestion/ingest-cloudtrail-ocsf/) |
-| AWS | Config item history + compliance changes | API Activity 6003 / Compliance Finding 2003 | [`ingest-aws-config-ocsf`](../skills/ingestion/ingest-aws-config-ocsf/) — closes [`#29`](https://github.com/msaad00/quiver/issues/29) |
+| AWS | Config item history + compliance changes | API Activity 6003 / Compliance Finding 2003 | [`ingest-aws-config-ocsf`](../skills/ingestion/ingest-aws-config-ocsf/) — closes [`#29`](https://github.com/msaad00/cloud-ai-security-skills/issues/29) |
 | AWS | GuardDuty findings | Detection Finding 2004 | [`ingest-guardduty-ocsf`](../skills/ingestion/ingest-guardduty-ocsf/) |
 | AWS | Security Hub findings | Detection Finding 2004 | [`ingest-security-hub-ocsf`](../skills/ingestion/ingest-security-hub-ocsf/) |
 | AWS | VPC Flow Logs | Network Activity 4001 | [`ingest-vpc-flow-logs-ocsf`](../skills/ingestion/ingest-vpc-flow-logs-ocsf/) |
@@ -27,13 +27,13 @@ explicit follow-on gaps.
 | Kubernetes | API server audit log | API Activity 6003 | [`ingest-k8s-audit-ocsf`](../skills/ingestion/ingest-k8s-audit-ocsf/) |
 | Okta | System Log | IAM events — Authentication 3002 / Account Change 3001 / User Access 3005 | [`ingest-okta-system-log-ocsf`](../skills/ingestion/ingest-okta-system-log-ocsf/) |
 | Google Workspace | Login activity (Reports API) | Authentication 3002 | [`ingest-google-workspace-login-ocsf`](../skills/ingestion/ingest-google-workspace-login-ocsf/) |
-| Google Workspace | Admin SDK Reports API login / token / admin activity | Authentication 3002 / Account Change 3001 | [`ingest-workspace-admin-ocsf`](../skills/ingestion/ingest-workspace-admin-ocsf/) — closes [`#32`](https://github.com/msaad00/quiver/issues/32) |
-| GitHub | Organization Audit Log | API Activity 6003 / Authentication 3002 / User Access 3005 | [`ingest-github-audit-log-ocsf`](../skills/ingestion/ingest-github-audit-log-ocsf/) — closes [`#31`](https://github.com/msaad00/quiver/issues/31) |
+| Google Workspace | Admin SDK Reports API login / token / admin activity | Authentication 3002 / Account Change 3001 | [`ingest-workspace-admin-ocsf`](../skills/ingestion/ingest-workspace-admin-ocsf/) — closes [`#32`](https://github.com/msaad00/cloud-ai-security-skills/issues/32) |
+| GitHub | Organization Audit Log | API Activity 6003 / Authentication 3002 / User Access 3005 | [`ingest-github-audit-log-ocsf`](../skills/ingestion/ingest-github-audit-log-ocsf/) — closes [`#31`](https://github.com/msaad00/cloud-ai-security-skills/issues/31) |
 | MCP proxy | JSON-RPC request/response log | Application Activity 6002 | [`ingest-mcp-proxy-ocsf`](../skills/ingestion/ingest-mcp-proxy-ocsf/) |
-| Slack | Audit Logs API (`/audit/v1/logs`, Enterprise Grid) | Authentication 3002 / User Access 3005 / API Activity 6003 | [`ingest-slack-audit-ocsf`](../skills/ingestion/ingest-slack-audit-ocsf/) — closes [`#33`](https://github.com/msaad00/quiver/issues/33) |
-| Workday | REST / RaaS audit and HR lifecycle report exports | Account Change 3001 | [`ingest-workday-audit-ocsf`](../skills/ingestion/ingest-workday-audit-ocsf/) — closes [`#34`](https://github.com/msaad00/quiver/issues/34) |
-| Salesforce | Event Monitoring EventLogFile / REST exports | Application Activity 6002 | [`ingest-salesforce-event-mon-ocsf`](../skills/ingestion/ingest-salesforce-event-mon-ocsf/) — closes [`#35`](https://github.com/msaad00/quiver/issues/35) |
-| SAP | Security Audit Log | Application Activity 6002 | [`ingest-sap-audit-log-ocsf`](../skills/ingestion/ingest-sap-audit-log-ocsf/) — closes [`#36`](https://github.com/msaad00/quiver/issues/36) |
+| Slack | Audit Logs API (`/audit/v1/logs`, Enterprise Grid) | Authentication 3002 / User Access 3005 / API Activity 6003 | [`ingest-slack-audit-ocsf`](../skills/ingestion/ingest-slack-audit-ocsf/) — closes [`#33`](https://github.com/msaad00/cloud-ai-security-skills/issues/33) |
+| Workday | REST / RaaS audit and HR lifecycle report exports | Account Change 3001 | [`ingest-workday-audit-ocsf`](../skills/ingestion/ingest-workday-audit-ocsf/) — closes [`#34`](https://github.com/msaad00/cloud-ai-security-skills/issues/34) |
+| Salesforce | Event Monitoring EventLogFile / REST exports | Application Activity 6002 | [`ingest-salesforce-event-mon-ocsf`](../skills/ingestion/ingest-salesforce-event-mon-ocsf/) — closes [`#35`](https://github.com/msaad00/cloud-ai-security-skills/issues/35) |
+| SAP | Security Audit Log | Application Activity 6002 | [`ingest-sap-audit-log-ocsf`](../skills/ingestion/ingest-sap-audit-log-ocsf/) — closes [`#36`](https://github.com/msaad00/cloud-ai-security-skills/issues/36) |
 | AWS / GCP / Azure | Cross-cloud secret-scan + AI-BOM input pipes | (consumed by downstream detect-agent-credential-leak-mcp / discover-ai-bom) | covered transitively via the four above |
 
 > 23 rows for 22 ingest skills: Entra, Okta, GitHub, Slack, AWS Config, and Workspace Admin emit
@@ -61,9 +61,9 @@ records already shaped as OCSF API Activity 6003 by an upstream pipeline.
 
 | Vendor | Source | Target OCSF class | Tracking / disposition |
 |---|---|---|---|
-| ClickHouse | `system.query_log` native ingest | API Activity 6003 | [`#436`](https://github.com/msaad00/quiver/issues/436) — `ingest-clickhouse-query-log-ocsf` |
-| AWS | Lambda + API Gateway access logs | HTTP Activity 4002 | [`#253`](https://github.com/msaad00/quiver/issues/253) — first detection-side use case is the web-app exfil arc |
-| Google Workspace | Drive / Mobile feeds (beyond login, token, and admin role activity) | API Activity 6003 + User Access 3005 | Explicit follow-on gap; [`#32`](https://github.com/msaad00/quiver/issues/32) delivered the login / token / admin baseline |
+| ClickHouse | `system.query_log` native ingest | API Activity 6003 | [`#436`](https://github.com/msaad00/cloud-ai-security-skills/issues/436) — `ingest-clickhouse-query-log-ocsf` |
+| AWS | Lambda + API Gateway access logs | HTTP Activity 4002 | [`#253`](https://github.com/msaad00/cloud-ai-security-skills/issues/253) — first detection-side use case is the web-app exfil arc |
+| Google Workspace | Drive / Mobile feeds (beyond login, token, and admin role activity) | API Activity 6003 + User Access 3005 | Explicit follow-on gap; [`#32`](https://github.com/msaad00/cloud-ai-security-skills/issues/32) delivered the login / token / admin baseline |
 
 ## What "shipped" means here
 

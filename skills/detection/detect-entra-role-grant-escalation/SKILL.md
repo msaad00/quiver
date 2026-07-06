@@ -26,8 +26,8 @@ input_formats: canonical, native, ocsf
 output_formats: native, ocsf
 concurrency_safety: stateless
 metadata:
-  homepage: https://github.com/msaad00/quiver
-  source: https://github.com/msaad00/quiver/tree/main/skills/detection/detect-entra-role-grant-escalation
+  homepage: https://github.com/msaad00/cloud-ai-security-skills
+  source: https://github.com/msaad00/cloud-ai-security-skills/tree/main/skills/detection/detect-entra-role-grant-escalation
   version: 0.1.0
   frameworks:
     - OCSF 1.8

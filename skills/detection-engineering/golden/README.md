@@ -58,11 +58,11 @@ has the **opposite** provenance contract from this directory:
 Still planned but not yet shipped:
 
 - Filling out `captured/` for the remaining detectors. Tracked in
-  [issue #420](https://github.com/msaad00/quiver/issues/420);
+  [issue #420](https://github.com/msaad00/cloud-ai-security-skills/issues/420);
   the directory's `README.md` Roadmap section keeps the live gap list.
 - Per-detector precision/recall scoring on the captured corpus, posted as a
   PR comment. Tracked in
-  [issue #419](https://github.com/msaad00/quiver/issues/419).
+  [issue #419](https://github.com/msaad00/cloud-ai-security-skills/issues/419).
 
 Until those land, every claim about real-world detector quality should
 explicitly say "synthetic fixtures only" — and so should you. If a claim

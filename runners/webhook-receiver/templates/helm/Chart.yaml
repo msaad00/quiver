@@ -1,7 +1,7 @@
 apiVersion: v2
 name: cloud-security-webhook-receiver
 description: |
-  Hardened webhook receiver for quiver. Routes any
+  Hardened webhook receiver for cloud-ai-security-skills. Routes any
   HTTP POST through one of the shipped atomic ingest skills and fans
   the OCSF output into S3 / Snowflake / ClickHouse sinks.
 
@@ -11,10 +11,10 @@ description: |
 type: application
 version: 0.1.0
 appVersion: "0.11.0"
-home: https://github.com/msaad00/quiver
-icon: https://raw.githubusercontent.com/msaad00/quiver/main/docs/images/hero-banner.svg
+home: https://github.com/msaad00/cloud-ai-security-skills
+icon: https://raw.githubusercontent.com/msaad00/cloud-ai-security-skills/main/docs/images/hero-banner.svg
 sources:
-  - https://github.com/msaad00/quiver/tree/main/runners/webhook-receiver
+  - https://github.com/msaad00/cloud-ai-security-skills/tree/main/runners/webhook-receiver
 maintainers:
   - name: msaad00
     url: https://github.com/msaad00

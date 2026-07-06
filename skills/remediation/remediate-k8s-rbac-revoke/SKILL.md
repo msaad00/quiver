@@ -43,8 +43,8 @@ compatibility: >-
   rbac.authorization.k8s.io/v1 RoleBindings and ClusterRoleBindings plus
   audit write access to DynamoDB, S3, and KMS.
 metadata:
-  homepage: https://github.com/msaad00/quiver
-  source: https://github.com/msaad00/quiver/tree/main/skills/remediation/remediate-k8s-rbac-revoke
+  homepage: https://github.com/msaad00/cloud-ai-security-skills
+  source: https://github.com/msaad00/cloud-ai-security-skills/tree/main/skills/remediation/remediate-k8s-rbac-revoke
   version: 0.1.0
   frameworks:
     - MITRE ATT&CK v14

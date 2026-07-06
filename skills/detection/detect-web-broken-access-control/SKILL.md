@@ -35,8 +35,8 @@ compatibility: >-
   stdout. No outbound network calls.
 metadata:
   author: msaad00
-  homepage: https://github.com/msaad00/quiver
-  source: https://github.com/msaad00/quiver/tree/main/skills/detection/detect-web-broken-access-control
+  homepage: https://github.com/msaad00/cloud-ai-security-skills
+  source: https://github.com/msaad00/cloud-ai-security-skills/tree/main/skills/detection/detect-web-broken-access-control
   version: 0.1.0
   frameworks:
     - OCSF 1.8

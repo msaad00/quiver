@@ -25,8 +25,8 @@ compatibility: >-
   available. Read-only normalizer; never calls SAP APIs or changes SAP state.
 metadata:
   author: msaad00
-  homepage: https://github.com/msaad00/quiver
-  source: https://github.com/msaad00/quiver/tree/main/skills/ingestion/ingest-sap-audit-log-ocsf
+  homepage: https://github.com/msaad00/cloud-ai-security-skills
+  source: https://github.com/msaad00/cloud-ai-security-skills/tree/main/skills/ingestion/ingest-sap-audit-log-ocsf
   version: 0.1.0
   frameworks:
     - OCSF 1.8

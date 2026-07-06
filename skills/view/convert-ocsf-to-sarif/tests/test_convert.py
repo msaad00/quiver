@@ -58,7 +58,7 @@ def _detection_finding(
             "version": "1.8.0",
             "product": {
                 "name": "cloud-ai-security-skills",
-                "vendor_name": "msaad00/quiver",
+                "vendor_name": "msaad00/cloud-ai-security-skills",
                 "feature": {"name": detector},
             },
         },

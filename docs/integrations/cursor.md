@@ -1,6 +1,6 @@
 # Cursor
 
-Setup for loading `quiver` into Cursor over stdio MCP.
+Setup for loading `cloud-ai-security-skills` into Cursor over stdio MCP.
 
 ## Project-scoped config (recommended)
 
@@ -9,7 +9,7 @@ Create `.cursor/mcp.json` in the repo:
 ```json
 {
   "mcpServers": {
-    "quiver": {
+    "cloud-ai-security-skills": {
       "command": "python3",
       "args": ["${workspaceFolder}/mcp-server/src/server.py"]
     }
@@ -28,9 +28,9 @@ If you want these skills available in every Cursor workspace, add to
 ```json
 {
   "mcpServers": {
-    "quiver": {
+    "cloud-ai-security-skills": {
       "command": "python3",
-      "args": ["/absolute/path/to/quiver/mcp-server/src/server.py"]
+      "args": ["/absolute/path/to/cloud-ai-security-skills/mcp-server/src/server.py"]
     }
   }
 }
@@ -38,7 +38,7 @@ If you want these skills available in every Cursor workspace, add to
 
 ## Enable in the UI
 
-Open **Cursor Settings → MCP → quiver → toggle on**.
+Open **Cursor Settings → MCP → cloud-ai-security-skills → toggle on**.
 The tools appear in Composer's tool picker after the server connects.
 
 ## Least-privilege example — posture review
@@ -49,7 +49,7 @@ remediation):
 ```json
 {
   "mcpServers": {
-    "quiver": {
+    "cloud-ai-security-skills": {
       "command": "python3",
       "args": ["${workspaceFolder}/mcp-server/src/server.py"],
       "env": {

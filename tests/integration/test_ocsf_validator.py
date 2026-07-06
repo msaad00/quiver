@@ -48,7 +48,7 @@ def _base_auth_event(**overrides) -> dict:
             "uid": "evt-001",
             "product": {
                 "name": "cloud-ai-security-skills",
-                "vendor_name": "msaad00/quiver",
+                "vendor_name": "msaad00/cloud-ai-security-skills",
                 "feature": {"name": "ingest-okta-system-log-ocsf"},
             },
         },
@@ -74,7 +74,7 @@ def _base_finding(**overrides) -> dict:
             "uid": "det-001",
             "product": {
                 "name": "cloud-ai-security-skills",
-                "vendor_name": "msaad00/quiver",
+                "vendor_name": "msaad00/cloud-ai-security-skills",
                 "feature": {"name": "detect-okta-mfa-fatigue"},
             },
         },

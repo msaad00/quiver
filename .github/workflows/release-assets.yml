@@ -43,14 +43,14 @@ jobs:
             --preview-features sbom-export \
             --format cyclonedx1.5 \
             --all-groups \
-            --output-file quiver-full-lock.cdx.json
+            --output-file cloud-ai-security-skills-full-lock.cdx.json
 
       - name: Download signed source tarball from the release
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           tag="${{ steps.meta.outputs.tag }}"
-          out="quiver-${tag}-source.tar.gz"
+          out="cloud-ai-security-skills-${tag}-source.tar.gz"
           curl -sSL -H "Authorization: Bearer $GH_TOKEN" \
             "https://api.github.com/repos/${{ github.repository }}/tarball/refs/tags/${tag}" \
             -o "${out}"
@@ -62,8 +62,8 @@ jobs:
       - name: Sign SBOM with GitHub OIDC
         run: |
           cosign sign-blob --yes \
-            --bundle quiver-full-lock.cdx.json.sigstore.json \
-            quiver-full-lock.cdx.json
+            --bundle cloud-ai-security-skills-full-lock.cdx.json.sigstore.json \
+            cloud-ai-security-skills-full-lock.cdx.json
 
       - name: Sign source tarball with GitHub OIDC
         run: |
@@ -74,7 +74,7 @@ jobs:
       - name: Generate SLSA build provenance attestation for SBOM
         uses: actions/attest-build-provenance@v4
         with:
-          subject-path: quiver-full-lock.cdx.json
+          subject-path: cloud-ai-security-skills-full-lock.cdx.json
 
       - name: Generate SLSA build provenance attestation for source tarball
         uses: actions/attest-build-provenance@v4
@@ -85,15 +85,15 @@ jobs:
         uses: actions/attest-sbom@v4
         with:
           subject-path: ${{ env.SOURCE_TARBALL }}
-          sbom-path: quiver-full-lock.cdx.json
+          sbom-path: cloud-ai-security-skills-full-lock.cdx.json
 
       - name: Upload signed SBOM and source-tarball set to release
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
           gh release upload "${{ steps.meta.outputs.tag }}" \
-            quiver-full-lock.cdx.json \
-            quiver-full-lock.cdx.json.sigstore.json \
+            cloud-ai-security-skills-full-lock.cdx.json \
+            cloud-ai-security-skills-full-lock.cdx.json.sigstore.json \
             "${SOURCE_TARBALL}" \
             "${SOURCE_TARBALL}.sigstore.json" \
             --clobber

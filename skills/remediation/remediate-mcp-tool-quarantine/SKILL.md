@@ -43,8 +43,8 @@ compatibility: >-
   No third-party MCP SDK required — this skill writes a structured JSONL
   file that the operator's MCP client filters its tool list against.
 metadata:
-  homepage: https://github.com/msaad00/quiver
-  source: https://github.com/msaad00/quiver/tree/main/skills/remediation/remediate-mcp-tool-quarantine
+  homepage: https://github.com/msaad00/cloud-ai-security-skills
+  source: https://github.com/msaad00/cloud-ai-security-skills/tree/main/skills/remediation/remediate-mcp-tool-quarantine
   version: 0.1.0
   frameworks:
     - MITRE ATT&CK v14
@@ -65,7 +65,7 @@ Pair skill for both shipped MCP detectors:
 - [`detect-mcp-tool-drift`](../../detection/detect-mcp-tool-drift/) — T1195.001 Compromise Software Supply Chain (the rug-pull / tool-poisoning pattern where an MCP tool's behavior or schema mutates between calls)
 - [`detect-prompt-injection-mcp-proxy`](../../detection/detect-prompt-injection-mcp-proxy/) — MITRE ATLAS AML.T0051 Prompt Injection (suspicious natural-language patterns in tool descriptions designed to override agent instructions)
 
-Closes [#155](https://github.com/msaad00/quiver/issues/155) phase 2: 2 of 8 detection gaps in one skill, the AI-native loop. After this PR ships, **5 of 11 detections are closed-loop**.
+Closes [#155](https://github.com/msaad00/cloud-ai-security-skills/issues/155) phase 2: 2 of 8 detection gaps in one skill, the AI-native loop. After this PR ships, **5 of 11 detections are closed-loop**.
 
 ## Why file-based quarantine
 

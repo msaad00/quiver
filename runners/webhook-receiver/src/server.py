@@ -42,7 +42,7 @@ from sinks import (  # noqa: E402  pylint: disable=wrong-import-position
 )
 
 app = FastAPI(
-    title="quiver · webhook receiver",
+    title="cloud-ai-security-skills · webhook receiver",
     docs_url=None,
     redoc_url=None,
 )

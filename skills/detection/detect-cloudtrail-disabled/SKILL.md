@@ -29,8 +29,8 @@ compatibility: >-
   SDK; pairs with ingest-cloudtrail-ocsf upstream.
 metadata:
   author: msaad00
-  homepage: https://github.com/msaad00/quiver
-  source: https://github.com/msaad00/quiver/tree/main/skills/detection/detect-cloudtrail-disabled
+  homepage: https://github.com/msaad00/cloud-ai-security-skills
+  source: https://github.com/msaad00/cloud-ai-security-skills/tree/main/skills/detection/detect-cloudtrail-disabled
   version: 0.1.0
   frameworks:
     - OCSF 1.8

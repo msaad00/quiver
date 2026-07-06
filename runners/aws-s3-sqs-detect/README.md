@@ -89,7 +89,7 @@ Current repo reality:
 - a checked-in real-cloud deploy-and-first-event walkthrough is still pending
 
 That remaining deployment proof is tracked in
-[`#198`](https://github.com/msaad00/quiver/issues/198).
+[`#198`](https://github.com/msaad00/cloud-ai-security-skills/issues/198).
 
 ## First Event Proof Checklist
 

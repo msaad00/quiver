@@ -1,6 +1,6 @@
 # Okta System Log → OCSF 1.8 field map
 
-Full source-field → OCSF-field mapping for `ingest-okta-system-log-ocsf`. Pulled out of `SKILL.md` to keep that file under the ~5,000-word progressive-disclosure target ([#247](https://github.com/msaad00/quiver/issues/247)).
+Full source-field → OCSF-field mapping for `ingest-okta-system-log-ocsf`. Pulled out of `SKILL.md` to keep that file under the ~5,000-word progressive-disclosure target ([#247](https://github.com/msaad00/cloud-ai-security-skills/issues/247)).
 
 ## Class mapping (verified)
 
@@ -11,7 +11,7 @@ Each Okta `eventType` is routed to one OCSF class. Output records always carry:
 - `actor`, `user`, `src_endpoint`, and `resources` where the raw event supports them
 - expanded v0.2 OCSF-native slots (table below) when the Okta payload carries `geographicalContext`, `securityContext`, `client.userAgent`, `authenticationContext`, `debugContext`, or `request.ipChain`
 
-## OCSF 1.8 mapping (v0.2, [#271](https://github.com/msaad00/quiver/issues/271))
+## OCSF 1.8 mapping (v0.2, [#271](https://github.com/msaad00/cloud-ai-security-skills/issues/271))
 
 | Okta field | OCSF destination |
 |---|---|

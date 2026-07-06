@@ -8,7 +8,7 @@ The `main` branch is the supported release line. Security fixes land there first
 
 Please do not open public GitHub issues for suspected vulnerabilities.
 
-Send reports through [GitHub private security reporting](https://github.com/msaad00/quiver/security/advisories/new)
+Send reports through [GitHub private security reporting](https://github.com/msaad00/cloud-ai-security-skills/security/advisories/new)
 or directly by email if a contact is listed on the maintainer profile. Include:
 
 - affected skill and file path

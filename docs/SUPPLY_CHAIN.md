@@ -100,8 +100,8 @@ That artifact is intended to support:
 
 The uploaded artifact set contains:
 
-- `quiver-full-lock.cdx.json`
-- `quiver-full-lock.cdx.json.sigstore.json`
+- `cloud-ai-security-skills-full-lock.cdx.json`
+- `cloud-ai-security-skills-full-lock.cdx.json.sigstore.json`
 
 This gives consumers both the SBOM itself and the materials needed to verify
 that the CI workflow, not an out-of-band process, produced it.
@@ -118,9 +118,9 @@ Published GitHub Releases rebuild and attach both a signed CycloneDX SBOM and a
 signed source tarball, each with a SLSA build-provenance attestation and a
 CycloneDX SBOM attestation linking the tarball to its dependency graph:
 
-- SBOM: `quiver-full-lock.cdx.json` plus the matching
+- SBOM: `cloud-ai-security-skills-full-lock.cdx.json` plus the matching
   `.sigstore.json` Sigstore bundle
-- Source tarball: `quiver-<tag>-source.tar.gz` plus the
+- Source tarball: `cloud-ai-security-skills-<tag>-source.tar.gz` plus the
   matching `.sigstore.json` Sigstore bundle, downloaded from the
   GitHub `tarball/refs/tags/<tag>` endpoint at release time and signed
   keylessly via `cosign sign-blob` with GitHub OIDC
@@ -139,16 +139,16 @@ Verification example (consumer side):
 
 ```bash
 tag=vX.Y.Z
-tarball="quiver-${tag}-source.tar.gz"
+tarball="cloud-ai-security-skills-${tag}-source.tar.gz"
 cosign verify-blob \
   --certificate      "${tarball}.pem" \
   --signature        "${tarball}.sig" \
-  --certificate-identity-regexp 'https://github.com/msaad00/quiver/' \
+  --certificate-identity-regexp 'https://github.com/msaad00/cloud-ai-security-skills/' \
   --certificate-oidc-issuer     'https://token.actions.githubusercontent.com' \
   "${tarball}"
 
 gh attestation verify "${tarball}" \
-  --repo msaad00/quiver
+  --repo msaad00/cloud-ai-security-skills
 ```
 
 ## Future Tightenings

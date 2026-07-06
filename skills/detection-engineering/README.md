@@ -49,7 +49,7 @@ uid is not in the labels is a false positive.
 
 Every entry in `corpus.yaml` MUST set `synthetic: true` until the
 captured-traffic corpus tracked in
-[#420](https://github.com/msaad00/quiver/issues/420)
+[#420](https://github.com/msaad00/cloud-ai-security-skills/issues/420)
 lands. The same rule from
 [`golden/README.md`](./golden/README.md) applies: any public claim
 about precision/recall must say "synthetic fixtures only".

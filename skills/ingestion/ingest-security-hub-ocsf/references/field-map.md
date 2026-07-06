@@ -1,6 +1,6 @@
 # ingest-security-hub-ocsf OCSF field map
 
-Full ASFF-field → OCSF-field mapping for `ingest-security-hub-ocsf`. Pulled out of `SKILL.md` to keep that file under the progressive-disclosure target ([#247](https://github.com/msaad00/quiver/issues/247)).
+Full ASFF-field → OCSF-field mapping for `ingest-security-hub-ocsf`. Pulled out of `SKILL.md` to keep that file under the progressive-disclosure target ([#247](https://github.com/msaad00/cloud-ai-security-skills/issues/247)).
 
 ## Native output format
 

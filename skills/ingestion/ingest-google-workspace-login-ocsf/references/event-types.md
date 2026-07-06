@@ -1,6 +1,6 @@
 # Google Workspace login → OCSF 1.8 — input shapes + supported event family
 
-Pulled out of `SKILL.md` to keep it under the progressive-disclosure word target ([#247](https://github.com/msaad00/quiver/issues/247)).
+Pulled out of `SKILL.md` to keep it under the progressive-disclosure word target ([#247](https://github.com/msaad00/cloud-ai-security-skills/issues/247)).
 
 ## Accepted input shapes
 

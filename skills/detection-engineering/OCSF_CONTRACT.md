@@ -95,7 +95,7 @@ Every event a skill emits MUST populate these fields at minimum. Fields marked `
 | `metadata.version` | string [req] | `"1.8.0"` |
 | `metadata.uid` | string [pin] | Deterministic event-level identity for SIEM dedupe and replay safety |
 | `metadata.product.name` | string [pin] | `"cloud-ai-security-skills"` |
-| `metadata.product.vendor_name` | string [pin] | `"msaad00/quiver"` |
+| `metadata.product.vendor_name` | string [pin] | `"msaad00/cloud-ai-security-skills"` |
 | `metadata.product.feature.name` | string [pin] | Name of the emitting skill (e.g. `"detect-mcp-tool-drift"`) |
 
 ## OCSF class usage
@@ -146,7 +146,7 @@ All detection skills in this category produce **Detection Finding** (class `2004
     "uid": "det-mcp-drift-abc123",
     "product": {
       "name": "cloud-ai-security-skills",
-      "vendor_name": "msaad00/quiver",
+      "vendor_name": "msaad00/cloud-ai-security-skills",
       "feature": {"name": "detect-mcp-tool-drift"}
     },
     "labels": ["detection-engineering", "mcp", "supply-chain"]

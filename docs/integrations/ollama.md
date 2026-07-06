@@ -1,6 +1,6 @@
 # Ollama (and other open-model runtimes)
 
-You can drive `quiver` from an agent backed by Ollama-hosted
+You can drive `cloud-ai-security-skills` from an agent backed by Ollama-hosted
 open models (Llama, Mistral, Qwen, etc.) — **the MCP server's guardrails are
 model-agnostic and still hold**. But open-model accuracy and prompt-injection
 resistance are meaningfully worse than frontier closed models. This doc
@@ -65,7 +65,7 @@ they execute before the skill runs.
 ```json
 {
   "mcpServers": {
-    "quiver": {
+    "cloud-ai-security-skills": {
       "command": "python3",
       "args": ["/abs/path/.../mcp-server/src/server.py"],
       "env": {

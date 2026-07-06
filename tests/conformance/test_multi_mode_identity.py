@@ -73,7 +73,7 @@ def _read_message(proc: subprocess.Popen[bytes]) -> dict:
 def _initialize(proc: subprocess.Popen[bytes]) -> None:
     _send_message(proc, {"jsonrpc": "2.0", "id": 1, "method": "initialize", "params": {}})
     response = _read_message(proc)
-    assert response["result"]["serverInfo"]["name"] == "quiver"
+    assert response["result"]["serverInfo"]["name"] == "cloud-ai-security-skills"
     _send_message(proc, {"jsonrpc": "2.0", "method": "notifications/initialized", "params": {}})
 
 

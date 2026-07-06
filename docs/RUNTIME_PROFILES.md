@@ -5,8 +5,8 @@
 This document is regenerated from `runtime-profile-results.jsonl` every time the harness runs. It is intentionally light on prose: the point is to detect **regressions** between CI runs, not to advertise raw numbers.
 
 Closes:
-- [#198](https://github.com/msaad00/quiver/issues/198) — deploy and verify all three runner templates end to end (CI surface).
-- [#199](https://github.com/msaad00/quiver/issues/199) — benchmark runtime profiles at representative scale (CI cadence).
+- [#198](https://github.com/msaad00/cloud-ai-security-skills/issues/198) — deploy and verify all three runner templates end to end (CI surface).
+- [#199](https://github.com/msaad00/cloud-ai-security-skills/issues/199) — benchmark runtime profiles at representative scale (CI cadence).
 
 ## What this is
 

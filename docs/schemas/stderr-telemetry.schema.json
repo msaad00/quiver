@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://github.com/msaad00/quiver/docs/schemas/stderr-telemetry.schema.json",
+  "$id": "https://github.com/msaad00/cloud-ai-security-skills/docs/schemas/stderr-telemetry.schema.json",
   "title": "Skill stderr telemetry event",
   "description": "JSONL event emitted by skills/_shared/runtime_telemetry.py when structured stderr mode is enabled.",
   "type": "object",

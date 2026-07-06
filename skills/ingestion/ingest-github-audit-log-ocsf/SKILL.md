@@ -34,8 +34,8 @@ compatibility: >-
   GitHub event shape and emits OCSF or native JSONL. Never calls write APIs.
 metadata:
   author: msaad00
-  homepage: https://github.com/msaad00/quiver
-  source: https://github.com/msaad00/quiver/tree/main/skills/ingestion/ingest-github-audit-log-ocsf
+  homepage: https://github.com/msaad00/cloud-ai-security-skills
+  source: https://github.com/msaad00/cloud-ai-security-skills/tree/main/skills/ingestion/ingest-github-audit-log-ocsf
   version: 0.1.0
   frameworks:
     - OCSF 1.8
@@ -187,7 +187,7 @@ When `--output-format native` is selected, the skill emits:
 ## Closes
 
 This skill is the ingest deliverable of issue
-[`#31`](https://github.com/msaad00/quiver/issues/31) —
+[`#31`](https://github.com/msaad00/cloud-ai-security-skills/issues/31) —
 GitHub vendor story.
 
 ## See also

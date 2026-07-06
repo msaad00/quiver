@@ -1,6 +1,6 @@
 # ClickHouse security data lake — hero use case
 
-This is the canonical end-to-end story for running quiver on
+This is the canonical end-to-end story for running cloud-ai-security-skills on
 top of a ClickHouse-backed security data lake. It is one of three lake
 patterns the repo supports (see [`AGENT_DATA_LAKE_FLOW.md`](AGENT_DATA_LAKE_FLOW.md)),
 and the most fully wired one: write-side, read-side, and replay all live in

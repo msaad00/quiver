@@ -4,7 +4,7 @@ Every remediation skill in this repo closes a loop: **detect → act → audit �
 re-verify**. This doc pins what "re-verify" looks like and how every
 `remediate-*` skill should emit its verification outcome.
 
-Closes part B of [#257](https://github.com/msaad00/quiver/issues/257).
+Closes part B of [#257](https://github.com/msaad00/cloud-ai-security-skills/issues/257).
 
 ## The three outcomes
 
@@ -111,7 +111,7 @@ contract — adoption is tracked as follow-up work per skill.
 Next adopters, in order of priority:
 
 1. [`remediate-okta-session-kill`](../skills/remediation/remediate-okta-session-kill/) — straightforward: re-poll `/api/v1/users/{id}/sessions` 15 min after
-2. `remediate-k8s-rbac-revoke` ([#241](https://github.com/msaad00/quiver/issues/241))
+2. `remediate-k8s-rbac-revoke` ([#241](https://github.com/msaad00/cloud-ai-security-skills/issues/241))
 3. Each new `remediate-*` that ships, as a scaffold requirement
 
 ## Guardrails this contract enforces
@@ -132,4 +132,4 @@ Next adopters, in order of priority:
   is the contract that closes it.
 - [`./HITL_POLICY.md`](HITL_POLICY.md) — on repeated drift the policy matrix
   says page a human; this doc is the machinery.
-- [#257](https://github.com/msaad00/quiver/issues/257) — parent issue.
+- [#257](https://github.com/msaad00/cloud-ai-security-skills/issues/257) — parent issue.

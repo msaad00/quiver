@@ -331,19 +331,19 @@ jobs:
             --preview-features sbom-export \
             --format cyclonedx1.5 \
             --all-groups \
-            --output-file quiver-full-lock.cdx.json
+            --output-file cloud-ai-security-skills-full-lock.cdx.json
       - uses: sigstore/cosign-installer@v4.1.2
       - name: Sign SBOM with GitHub OIDC
         run: |
           cosign sign-blob --yes \
-            --bundle quiver-full-lock.cdx.json.sigstore.json \
-            quiver-full-lock.cdx.json
+            --bundle cloud-ai-security-skills-full-lock.cdx.json.sigstore.json \
+            cloud-ai-security-skills-full-lock.cdx.json
       - uses: actions/upload-artifact@v7
         with:
           name: cyclonedx-sbom
           path: |
-            quiver-full-lock.cdx.json
-            quiver-full-lock.cdx.json.sigstore.json
+            cloud-ai-security-skills-full-lock.cdx.json
+            cloud-ai-security-skills-full-lock.cdx.json.sigstore.json
 
   # ── IaC + shell validation (CloudFormation, Terraform, Bicep, Bash) ─
   validate-iac:

@@ -1,7 +1,7 @@
 ![Cloud AI Security Skills — 131 deterministic security skills. OCSF on the wire. MCP-ready. HITL-gated writes.](docs/images/hero-banner.svg)
 
 <p align="center">
-  <a href="https://github.com/msaad00/quiver/actions/workflows/ci.yml?query=branch%3Amain"><img alt="CI" src="https://github.com/msaad00/quiver/actions/workflows/ci.yml/badge.svg?branch=main"></a>
+  <a href="https://github.com/msaad00/cloud-ai-security-skills/actions/workflows/ci.yml?query=branch%3Amain"><img alt="CI" src="https://github.com/msaad00/cloud-ai-security-skills/actions/workflows/ci.yml/badge.svg?branch=main"></a>
   <a href="CHANGELOG.md"><img alt="Version" src="https://img.shields.io/badge/version-0.11.0-0ea5e9"></a>
   <a href="LICENSE"><img alt="License" src="https://img.shields.io/badge/license-Apache_2.0-blue"></a>
   <a href="https://www.python.org/downloads/"><img alt="Python 3.11+" src="https://img.shields.io/badge/python-3.11+-blue"></a>
@@ -26,8 +26,8 @@
 ## Quickstart
 
 ```bash
-git clone --branch v0.11.0 https://github.com/msaad00/quiver.git
-cd quiver
+git clone --branch v0.11.0 https://github.com/msaad00/cloud-ai-security-skills.git
+cd cloud-ai-security-skills
 uv sync --group dev --group aws   # see docs/INSTALL.md for other groups
 
 python skills/ingestion/ingest-cloudtrail-ocsf/src/ingest.py \

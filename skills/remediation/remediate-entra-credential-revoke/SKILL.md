@@ -46,8 +46,8 @@ compatibility: >-
   (Application). Entra ID role: Application Administrator (or Privileged
   Role Administrator if any target SPs hold privileged roles).
 metadata:
-  homepage: https://github.com/msaad00/quiver
-  source: https://github.com/msaad00/quiver/tree/main/skills/remediation/remediate-entra-credential-revoke
+  homepage: https://github.com/msaad00/cloud-ai-security-skills
+  source: https://github.com/msaad00/cloud-ai-security-skills/tree/main/skills/remediation/remediate-entra-credential-revoke
   version: 0.1.0
   frameworks:
     - MITRE ATT&CK v14
@@ -68,7 +68,7 @@ Pair skill for both shipped Entra detectors:
 - [`detect-entra-credential-addition`](../../detection/detect-entra-credential-addition/) — T1098.001 Additional Cloud Credentials (an attacker added a new key/password credential to a service principal or application)
 - [`detect-entra-role-grant-escalation`](../../detection/detect-entra-role-grant-escalation/) — T1098.003 Additional Cloud Roles (an attacker escalated an SP's app-role assignments)
 
-Closes [#155](https://github.com/msaad00/quiver/issues/155) phase 3 + the detection-side of [#238](https://github.com/msaad00/quiver/issues/238). After this lands, the closed-loop matrix flips both Entra detection rows from amber → green. Ratio goes 5/11 → **7/11**.
+Closes [#155](https://github.com/msaad00/cloud-ai-security-skills/issues/155) phase 3 + the detection-side of [#238](https://github.com/msaad00/cloud-ai-security-skills/issues/238). After this lands, the closed-loop matrix flips both Entra detection rows from amber → green. Ratio goes 5/11 → **7/11**.
 
 ## Why disable + triage (not auto-revoke)
 

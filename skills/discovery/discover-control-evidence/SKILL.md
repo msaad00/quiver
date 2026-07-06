@@ -30,8 +30,8 @@ compatibility: >-
   and persistent pipelines.
 metadata:
   author: msaad00
-  homepage: https://github.com/msaad00/quiver
-  source: https://github.com/msaad00/quiver/tree/main/skills/discovery/discover-control-evidence
+  homepage: https://github.com/msaad00/cloud-ai-security-skills
+  source: https://github.com/msaad00/cloud-ai-security-skills/tree/main/skills/discovery/discover-control-evidence
   version: 0.1.0
   frameworks:
     - PCI DSS 4.0

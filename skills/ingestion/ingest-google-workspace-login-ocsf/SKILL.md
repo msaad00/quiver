@@ -30,8 +30,8 @@ compatibility: >-
   emits OCSF or native JSONL. Never calls write APIs.
 metadata:
   author: msaad00
-  homepage: https://github.com/msaad00/quiver
-  source: https://github.com/msaad00/quiver/tree/main/skills/ingestion/ingest-google-workspace-login-ocsf
+  homepage: https://github.com/msaad00/cloud-ai-security-skills
+  source: https://github.com/msaad00/cloud-ai-security-skills/tree/main/skills/ingestion/ingest-google-workspace-login-ocsf
   version: 0.1.0
   frameworks:
     - OCSF 1.8
@@ -65,7 +65,7 @@ Accepts three raw Admin SDK Reports shapes (activities list, single activity, JS
 
 Emits OCSF 1.8 JSONL with verified class mappings: **Authentication (3002)** for login/logout events, **Account Change (3001)** for 2sv enroll/disable. Records carry deterministic `metadata.uid`, epoch-ms `time`, actor + session IDs, and raw `parameters[]` preserved under `unmapped.google_workspace_login`.
 
-Full input shapes, the supported event-family table, and the output guarantees live in [`references/event-types.md`](references/event-types.md) — kept out of `SKILL.md` per progressive disclosure ([#247](https://github.com/msaad00/quiver/issues/247)).
+Full input shapes, the supported event-family table, and the output guarantees live in [`references/event-types.md`](references/event-types.md) — kept out of `SKILL.md` per progressive disclosure ([#247](https://github.com/msaad00/cloud-ai-security-skills/issues/247)).
 
 ## Usage
 

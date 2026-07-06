@@ -61,7 +61,7 @@ if str(REPO_ROOT) not in sys.path:
 OCSF_VERSION = "1.8.0"
 CANONICAL_VERSION = "2026-04"
 REPO_NAME = "cloud-ai-security-skills"
-REPO_VENDOR = "msaad00/quiver"
+REPO_VENDOR = "msaad00/cloud-ai-security-skills"
 
 # Detection Finding envelope (OCSF 1.8)
 FINDING_CLASS_UID = 2004

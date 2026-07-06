@@ -1,6 +1,6 @@
 # ingest-k8s-audit-ocsf OCSF field map
 
-Full Kubernetes-audit-field → OCSF-field mapping for `ingest-k8s-audit-ocsf`. Pulled out of `SKILL.md` to keep that file under the progressive-disclosure target ([#247](https://github.com/msaad00/quiver/issues/247)).
+Full Kubernetes-audit-field → OCSF-field mapping for `ingest-k8s-audit-ocsf`. Pulled out of `SKILL.md` to keep that file under the progressive-disclosure target ([#247](https://github.com/msaad00/cloud-ai-security-skills/issues/247)).
 
 ## activity_id inference
 

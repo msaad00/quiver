@@ -23,8 +23,8 @@ input_formats: canonical, native, ocsf
 output_formats: ocsf, native
 concurrency_safety: requires_consistent_sharding
 metadata:
-  homepage: https://github.com/msaad00/quiver
-  source: https://github.com/msaad00/quiver/tree/main/skills/detection/detect-lateral-movement
+  homepage: https://github.com/msaad00/cloud-ai-security-skills
+  source: https://github.com/msaad00/cloud-ai-security-skills/tree/main/skills/detection/detect-lateral-movement
   version: 0.2.0
   frameworks:
     - OCSF 1.8

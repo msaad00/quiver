@@ -15,9 +15,9 @@ likely has a config file (check its docs) at a path like
 ```json
 {
   "mcpServers": {
-    "quiver": {
+    "cloud-ai-security-skills": {
       "command": "python3",
-      "args": ["/absolute/path/to/quiver/mcp-server/src/server.py"]
+      "args": ["/absolute/path/to/cloud-ai-security-skills/mcp-server/src/server.py"]
     }
   }
 }
@@ -28,19 +28,19 @@ likely has a config file (check its docs) at a path like
 Used by Codex CLI, some Rust-based tools:
 
 ```toml
-[mcp_servers.quiver]
+[mcp_servers.cloud-ai-security-skills]
 command = "python3"
-args = ["/absolute/path/to/quiver/mcp-server/src/server.py"]
+args = ["/absolute/path/to/cloud-ai-security-skills/mcp-server/src/server.py"]
 ```
 
 ## Shape 3 — YAML (Continue `~/.continue/config.yaml`)
 
 ```yaml
 mcpServers:
-  - name: quiver
+  - name: cloud-ai-security-skills
     command: python3
     args:
-      - /absolute/path/to/quiver/mcp-server/src/server.py
+      - /absolute/path/to/cloud-ai-security-skills/mcp-server/src/server.py
 ```
 
 ## Tool-specific notes
@@ -63,7 +63,7 @@ mcpServers:
 
 - Aider wires MCP via `--mcp-server` CLI flag rather than a config file:
   ```bash
-  aider --mcp-server "quiver:python3 /abs/path/mcp-server/src/server.py"
+  aider --mcp-server "cloud-ai-security-skills:python3 /abs/path/mcp-server/src/server.py"
   ```
 
 ### Anything else

@@ -183,11 +183,11 @@ def render_doc(records: list[dict[str, Any]]) -> str:
     parts.append("")
     parts.append("Closes:")
     parts.append(
-        "- [#198](https://github.com/msaad00/quiver/issues/198) — "
+        "- [#198](https://github.com/msaad00/cloud-ai-security-skills/issues/198) — "
         "deploy and verify all three runner templates end to end (CI surface)."
     )
     parts.append(
-        "- [#199](https://github.com/msaad00/quiver/issues/199) — "
+        "- [#199](https://github.com/msaad00/cloud-ai-security-skills/issues/199) — "
         "benchmark runtime profiles at representative scale (CI cadence)."
     )
     parts.append("")

@@ -1,6 +1,6 @@
 # ingest-guardduty-ocsf OCSF field map
 
-Full GuardDuty-finding → OCSF-field mapping for `ingest-guardduty-ocsf`. Pulled out of `SKILL.md` to keep that file under the progressive-disclosure target ([#247](https://github.com/msaad00/quiver/issues/247)).
+Full GuardDuty-finding → OCSF-field mapping for `ingest-guardduty-ocsf`. Pulled out of `SKILL.md` to keep that file under the progressive-disclosure target ([#247](https://github.com/msaad00/cloud-ai-security-skills/issues/247)).
 
 ## Native output format
 

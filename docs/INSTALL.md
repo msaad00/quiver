@@ -23,8 +23,8 @@ Do not publish this to PyPI yet. `pyproject.toml` intentionally sets
 Clone a signed tag:
 
 ```bash
-git clone https://github.com/msaad00/quiver.git
-cd quiver
+git clone https://github.com/msaad00/cloud-ai-security-skills.git
+cd cloud-ai-security-skills
 git fetch --tags
 git tag -v v0.8.1
 git checkout v0.8.1
@@ -38,10 +38,10 @@ For release tarballs, verify the GitHub attestation before use:
 
 ```bash
 tag=v0.8.1
-tarball="quiver-${tag}-source.tar.gz"
+tarball="cloud-ai-security-skills-${tag}-source.tar.gz"
 
 gh attestation verify "${tarball}" \
-  --repo msaad00/quiver
+  --repo msaad00/cloud-ai-security-skills
 ```
 
 When the Sigstore bundle is present, also verify the signed blob:
@@ -49,7 +49,7 @@ When the Sigstore bundle is present, also verify the signed blob:
 ```bash
 cosign verify-blob \
   --bundle "${tarball}.sigstore.json" \
-  --certificate-identity-regexp 'https://github.com/msaad00/quiver/' \
+  --certificate-identity-regexp 'https://github.com/msaad00/cloud-ai-security-skills/' \
   --certificate-oidc-issuer 'https://token.actions.githubusercontent.com' \
   "${tarball}"
 ```

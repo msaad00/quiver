@@ -29,8 +29,8 @@ input_formats: ocsf
 output_formats: native, ocsf
 concurrency_safety: requires_consistent_sharding
 metadata:
-  homepage: https://github.com/msaad00/quiver
-  source: https://github.com/msaad00/quiver/tree/main/skills/detection/detect-databricks-mlflow-model-exfil
+  homepage: https://github.com/msaad00/cloud-ai-security-skills
+  source: https://github.com/msaad00/cloud-ai-security-skills/tree/main/skills/detection/detect-databricks-mlflow-model-exfil
   version: 0.1.0
   frameworks:
     - OCSF 1.8

@@ -1,6 +1,6 @@
 # Windsurf
 
-Setup for loading `quiver` into Windsurf (Codeium) over
+Setup for loading `cloud-ai-security-skills` into Windsurf (Codeium) over
 stdio MCP.
 
 ## Config location
@@ -10,9 +10,9 @@ stdio MCP.
 ```json
 {
   "mcpServers": {
-    "quiver": {
+    "cloud-ai-security-skills": {
       "command": "python3",
-      "args": ["/absolute/path/to/quiver/mcp-server/src/server.py"]
+      "args": ["/absolute/path/to/cloud-ai-security-skills/mcp-server/src/server.py"]
     }
   }
 }
@@ -31,7 +31,7 @@ connects.
 ```json
 {
   "mcpServers": {
-    "quiver": {
+    "cloud-ai-security-skills": {
       "command": "python3",
       "args": ["/absolute/path/.../mcp-server/src/server.py"],
       "env": {

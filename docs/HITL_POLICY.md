@@ -1,7 +1,7 @@
 # HITL Policy
 
 The human-in-the-loop bar for every skill in this repo. Closes
-[#259](https://github.com/msaad00/quiver/issues/259).
+[#259](https://github.com/msaad00/cloud-ai-security-skills/issues/259).
 
 This file sets **when** human approval is required, **how many** approvers
 are required, and **where** the gate sits. It applies to every skill —
@@ -9,7 +9,7 @@ new and existing. It is the policy doc that
 [`scripts/validate_safe_skill_bar.py`](../scripts/validate_safe_skill_bar.py)
 enforces and that the auto-generated per-skill matrix in
 [`SECURITY_BAR.md`](../SECURITY_BAR.md) reflects
-([#246](https://github.com/msaad00/quiver/issues/246)).
+([#246](https://github.com/msaad00/cloud-ai-security-skills/issues/246)).
 
 If you are adding a new skill, find the row that matches what it does and
 set frontmatter to match. If no row matches cleanly, open an issue rather
@@ -78,10 +78,10 @@ frontmatter. The policy rubric is in the last three columns.
 |---|---|---|
 | `approval_model != "none"` for writable skills | [`validate_safe_skill_bar.py::validate_write_skill_dry_run`](../scripts/validate_safe_skill_bar.py) | A new `remediate-*` ships with `approval_model: none` |
 | `dry-run` documented in SKILL.md + exercised in tests | same | Writable skill lacks `dry-run` in SKILL.md or fails to test the dry-run path |
-| `sts:AssumeRole` carries a boundary condition | `validate_assume_role_boundaries()` ([#263](https://github.com/msaad00/quiver/pull/263)) | Any IAM policy grants AssumeRole without `aws:PrincipalOrgID` / `aws:SourceAccount` / equivalent |
+| `sts:AssumeRole` carries a boundary condition | `validate_assume_role_boundaries()` ([#263](https://github.com/msaad00/cloud-ai-security-skills/pull/263)) | Any IAM policy grants AssumeRole without `aws:PrincipalOrgID` / `aws:SourceAccount` / equivalent |
 | Wildcard action/resource justified | `validate_wildcards()` | `Action: "*"` or `Resource: "*"` without a `WILDCARD_OK` comment nearby |
 | Remediation `--apply` gated on incident + approver env vars | `validate_remediation_hitl_env_vars()` | A `remediate-*` skill src/ doesn't reference both an incident-style env var (`*INCIDENT*` / `*TICKET*` / `*CASE_ID*`) and an approver-style env var (`*APPROVER*` / `*APPROVED_BY*` / `*AUTHORIZED_BY*` / `*AUTHORIZER*`); opt out with `HITL_ENV_OK` + justification |
-| Per-skill matrix in SECURITY_BAR.md stays in sync with frontmatter | [#246](https://github.com/msaad00/quiver/issues/246) auto-gen (planned) | CI regenerates the matrix and asserts the committed file matches |
+| Per-skill matrix in SECURITY_BAR.md stays in sync with frontmatter | [#246](https://github.com/msaad00/cloud-ai-security-skills/issues/246) auto-gen (planned) | CI regenerates the matrix and asserts the committed file matches |
 
 ## How to declare in frontmatter
 
@@ -139,5 +139,5 @@ actually performs that check.
 - [`CLAUDE.md`](../CLAUDE.md) — agent guardrails for the same surface
 - [`AGENTS.md`](../AGENTS.md) — cross-agent repo contract
 - [`scripts/validate_safe_skill_bar.py`](../scripts/validate_safe_skill_bar.py) — the lint that enforces this policy
-- [#240](https://github.com/msaad00/quiver/issues/240), [#244](https://github.com/msaad00/quiver/issues/244), [#256](https://github.com/msaad00/quiver/issues/256) — landed pieces of the guardrail foundation
-- [#246](https://github.com/msaad00/quiver/issues/246), [#257](https://github.com/msaad00/quiver/issues/257) — SECURITY_BAR auto-gen and drift framework (will consume this doc)
+- [#240](https://github.com/msaad00/cloud-ai-security-skills/issues/240), [#244](https://github.com/msaad00/cloud-ai-security-skills/issues/244), [#256](https://github.com/msaad00/cloud-ai-security-skills/issues/256) — landed pieces of the guardrail foundation
+- [#246](https://github.com/msaad00/cloud-ai-security-skills/issues/246), [#257](https://github.com/msaad00/cloud-ai-security-skills/issues/257) — SECURITY_BAR auto-gen and drift framework (will consume this doc)

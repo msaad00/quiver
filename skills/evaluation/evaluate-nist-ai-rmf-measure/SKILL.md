@@ -36,8 +36,8 @@ compatibility: >-
   permissions, no API calls, no network access.
 metadata:
   author: msaad00
-  homepage: https://github.com/msaad00/quiver
-  source: https://github.com/msaad00/quiver/tree/main/skills/evaluation/evaluate-nist-ai-rmf-measure
+  homepage: https://github.com/msaad00/cloud-ai-security-skills
+  source: https://github.com/msaad00/cloud-ai-security-skills/tree/main/skills/evaluation/evaluate-nist-ai-rmf-measure
   version: 0.1.0
   frameworks:
     - NIST AI RMF 1.0

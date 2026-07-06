@@ -76,9 +76,9 @@ git push origin vX.Y.Z
 4. Verify GitHub Actions passed on the tagged commit if a release workflow uses
    tag triggers.
 5. Verify the release workflow attached the signed CycloneDX SBOM **and** the signed source tarball:
-   - SBOM: `quiver-full-lock.cdx.json` plus `.sigstore.json`
-   - Source tarball: `quiver-<tag>-source.tar.gz` plus `.sigstore.json`
-6. Verify the release workflow published SLSA build-provenance attestations for both the SBOM and the source tarball, plus a CycloneDX SBOM attestation binding the SBOM to the tarball. The attestations appear under the repo's GitHub attestation log and can be checked with `gh attestation verify <asset> --repo msaad00/quiver`.
+   - SBOM: `cloud-ai-security-skills-full-lock.cdx.json` plus `.sigstore.json`
+   - Source tarball: `cloud-ai-security-skills-<tag>-source.tar.gz` plus `.sigstore.json`
+6. Verify the release workflow published SLSA build-provenance attestations for both the SBOM and the source tarball, plus a CycloneDX SBOM attestation binding the SBOM to the tarball. The attestations appear under the repo's GitHub attestation log and can be checked with `gh attestation verify <asset> --repo msaad00/cloud-ai-security-skills`.
 
 ## Post-Release
 

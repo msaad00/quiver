@@ -310,7 +310,7 @@ Stay-honest list. Don't adopt this if:
 - **You already have a SIEM with shipped detection content and don't need MCP / agent-callable detection.** The OCSF + audit-chain story is a duplication, not an add.
 - **You only need posture (CSPM)** without HITL remediation or detection. A CSPM SaaS is cheaper. (We're 50% CIS coverage on three clouds + 10 NIST AI RMF subcategories per function; that's a piece, not the whole pie.)
 - **You're building proprietary closed-source detection and licence terms matter.** This repo is Apache-2.0; check downstream compatibility.
-- **You need ML-based / behavioural anomaly detection at scale.** Every detector in this repo is deterministic. ML detection is a roadmap item ([#253](https://github.com/msaad00/quiver/issues/253)), not what we ship today.
+- **You need ML-based / behavioural anomaly detection at scale.** Every detector in this repo is deterministic. ML detection is a roadmap item ([#253](https://github.com/msaad00/cloud-ai-security-skills/issues/253)), not what we ship today.
 
 ## The positioning sentence
 

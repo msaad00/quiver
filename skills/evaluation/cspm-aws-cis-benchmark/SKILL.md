@@ -35,8 +35,8 @@ compatibility: >-
   plus dual-audit write access to DynamoDB, S3, and KMS.
 metadata:
   author: msaad00
-  homepage: https://github.com/msaad00/quiver
-  source: https://github.com/msaad00/quiver/tree/main/skills/evaluation/cspm-aws-cis-benchmark
+  homepage: https://github.com/msaad00/cloud-ai-security-skills
+  source: https://github.com/msaad00/cloud-ai-security-skills/tree/main/skills/evaluation/cspm-aws-cis-benchmark
   version: 0.1.0
   frameworks:
     - CIS AWS Foundations v3.0

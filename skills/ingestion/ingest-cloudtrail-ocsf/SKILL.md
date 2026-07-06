@@ -46,7 +46,7 @@ When `--output-format native` is selected, it emits the same event in the repo's
 
 ## Field mapping
 
-The native output field list, the `eventName` → `activity_id` prefix table, the `errorCode` → `status_id` rules, and the explicit "not mapped (yet)" scope live in [`references/field-map.md`](references/field-map.md). Keeping the detail there keeps this file under the progressive-disclosure target ([#247](https://github.com/msaad00/quiver/issues/247)) while detectors and reviewers still get the exact mapping one click away.
+The native output field list, the `eventName` → `activity_id` prefix table, the `errorCode` → `status_id` rules, and the explicit "not mapped (yet)" scope live in [`references/field-map.md`](references/field-map.md). Keeping the detail there keeps this file under the progressive-disclosure target ([#247](https://github.com/msaad00/cloud-ai-security-skills/issues/247)) while detectors and reviewers still get the exact mapping one click away.
 
 ## Usage
 
