@@ -1,4 +1,4 @@
-![Cloud AI Security Skills — 131 deterministic security skills for cloud and AI agents. OCSF on the wire. MCP-ready. HITL-audited.](docs/images/hero-banner.svg)
+![Cloud AI Security Skills — 131 deterministic security skills. OCSF on the wire. MCP-ready. HITL-gated writes.](docs/images/hero-banner.svg)
 
 <p align="center">
   <a href="https://github.com/msaad00/quiver/actions/workflows/ci.yml?query=branch%3Amain"><img alt="CI" src="https://github.com/msaad00/quiver/actions/workflows/ci.yml/badge.svg?branch=main"></a>
@@ -9,7 +9,7 @@
   <a href="docs/COVERAGE_SNAPSHOT.md"><img alt="Coverage gated" src="https://img.shields.io/badge/coverage-CI_gated-0f766e"></a>
 </p>
 
-<p align="center"><strong>131 deterministic security skills for cloud &amp; AI agents.</strong> One bundle on CLI, CI, MCP, webhook, library, and runners — same contract everywhere.</p>
+<p align="center"><strong>131 deterministic security skills for cloud &amp; AI infrastructure.</strong> Ingest, detect, evaluate, remediate — one bundle on CLI, CI, MCP, webhook, library, and runners.</p>
 
 ---
 

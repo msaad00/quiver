@@ -21,7 +21,7 @@
 
   <g font-family="Inter, Segoe UI, ui-sans-serif, Arial, sans-serif">
     <text x="60" y="72" font-size="40" font-weight="800" fill="#f8fafc">Cloud AI Security Skills</text>
-    <text x="60" y="108" fill="#94a3b8" font-size="17" font-weight="500">Deterministic skills for cloud and AI agents. OCSF on the wire. HITL-audited. MCP-ready.</text>
+    <text x="60" y="108" fill="#94a3b8" font-size="17" font-weight="500">Ingest, detect, evaluate, remediate. OCSF on the wire. HITL-gated writes. MCP-ready.</text>
 
     <g transform="translate(60,132)">
       <g>

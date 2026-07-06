@@ -16,7 +16,8 @@ The format is loosely based on Keep a Changelog.
 
 - Reverted the **display name** to **Cloud AI Security Skills** (`cloud-ai-security-skills`
   in OCSF product metadata and `pyproject.toml`). The GitHub repo slug stays
-  `quiver` (redirects from the old name still work).
+  `quiver` (redirects from the old name still work). Dropped vague "agent-safe"
+  positioning from the GitHub About blurb and README tagline.
 - Replaced the crowded hero banner with a minimal layout: title, one-line value
   prop, four stats, and eight **Simple Icons** (CC0) vendor marks — including
   the real Snowflake and ClickHouse paths, not placeholder glyphs.
