@@ -224,6 +224,24 @@ class TestHitlGateReachable:
             result.stdout + result.stderr
         )
 
+    def test_openai_reaches_remediation_with_approval(self):
+        env = {
+            **os.environ,
+            "DEMO_APPROVE": "yes",
+            "DEMO_TICKET": "SEC-TEST-2",
+        }
+        result = subprocess.run(
+            [sys.executable, str(EXAMPLES / "openai_sdk_security_agent.py")],
+            capture_output=True,
+            text=True,
+            timeout=60,
+            check=False,
+            env=env,
+        )
+        assert "remediation_dry_run" in result.stdout or "reconciler" in (
+            result.stdout + result.stderr
+        )
+
     def test_langgraph_reaches_remediation_with_approval(self):
         env = {
             **os.environ,
