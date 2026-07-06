@@ -12,6 +12,8 @@ allowlist regardless of which SDK is driving the loop.
 | [`langgraph_security_graph.py`](langgraph_security_graph.py) | LangGraph | SOC workflow DAG: ingest → normalize → enrich → correlate → confidence → MITRE/CVSS/EPSS/KEV map → HITL → dry-run remediation → audit/eval writeback |
 | [`langgraph_hitl_interrupt_resume.py`](langgraph_hitl_interrupt_resume.py) | LangGraph | Native `interrupt_before` + checkpointer at the analyst review gate; operator resumes with `approval_context` |
 
+Anthropic and OpenAI examples load [`harness_profiles/sdk-cspm-agent.json`](harness_profiles/sdk-cspm-agent.json) by default so allowlists, caller context, and MCP execution policy stay customizable without editing Python.
+
 ## Safety posture — every example enforces the same invariants
 
 1. **Read-only skill allowlist.** Every example sets
