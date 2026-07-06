@@ -136,7 +136,10 @@ def _insert_rows(table_name: str, rows: list[PreparedRow]) -> int:
                     "(payload, schema_mode, event_uid, finding_uid) "
                     "VALUES (PARSE_JSON(%s), %s, %s, %s)"
                 ),
-                [(row.payload_json, row.schema_mode, row.event_uid, row.finding_uid) for row in rows],
+                [
+                    (row.payload_json, row.schema_mode, row.event_uid, row.finding_uid)
+                    for row in rows
+                ],
             )
             conn.commit()
             inserted = len(rows)
@@ -150,7 +153,9 @@ def _insert_rows(table_name: str, rows: list[PreparedRow]) -> int:
     return inserted
 
 
-def _summary(table_name: str, rows: list[PreparedRow], dry_run: bool, inserted: int) -> dict[str, Any]:
+def _summary(
+    table_name: str, rows: list[PreparedRow], dry_run: bool, inserted: int
+) -> dict[str, Any]:
     schema_modes = Counter(row.schema_mode for row in rows)
     return {
         "schema_mode": "native",
@@ -167,8 +172,14 @@ def _summary(table_name: str, rows: list[PreparedRow], dry_run: bool, inserted: 
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Append JSONL records into a pre-provisioned Snowflake table.")
-    parser.add_argument("--table", required=True, help="Target Snowflake table: table, schema.table, or database.schema.table.")
+    parser = argparse.ArgumentParser(
+        description="Append JSONL records into a pre-provisioned Snowflake table."
+    )
+    parser.add_argument(
+        "--table",
+        required=True,
+        help="Target Snowflake table: table, schema.table, or database.schema.table.",
+    )
     parser.add_argument(
         "--output-format",
         choices=("native",),
@@ -176,8 +187,18 @@ def main(argv: list[str] | None = None) -> int:
         help="Declared output rendering mode for the sink result.",
     )
     mode = parser.add_mutually_exclusive_group()
-    mode.add_argument("--dry-run", dest="dry_run", action="store_true", help="Validate and summarize without inserting.")
-    mode.add_argument("--apply", dest="dry_run", action="store_false", help="Execute parameterized INSERT statements.")
+    mode.add_argument(
+        "--dry-run",
+        dest="dry_run",
+        action="store_true",
+        help="Validate and summarize without inserting.",
+    )
+    mode.add_argument(
+        "--apply",
+        dest="dry_run",
+        action="store_false",
+        help="Execute parameterized INSERT statements.",
+    )
     parser.set_defaults(dry_run=True)
     args = parser.parse_args(argv)
 
@@ -187,7 +208,10 @@ def main(argv: list[str] | None = None) -> int:
         if not rows:
             raise ValueError("stdin did not contain any JSONL records")
         inserted = 0 if args.dry_run else _insert_rows(table_name, rows)
-        sys.stdout.write(json.dumps(_summary(table_name, rows, args.dry_run, inserted), separators=(",", ":")) + "\n")
+        sys.stdout.write(
+            json.dumps(_summary(table_name, rows, args.dry_run, inserted), separators=(",", ":"))
+            + "\n"
+        )
     except Exception as exc:
         print(f"[{SKILL_NAME}] {exc}", file=sys.stderr)
         return 1

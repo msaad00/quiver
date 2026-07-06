@@ -43,12 +43,8 @@ PYTHON_MIRROR = (
 
 # ARN template suffix patterns we treat as "user-scoped" deny entries. The
 # IaC uses `${TARGET_ACCOUNT_ID}` as a CloudFormation placeholder.
-_USER_ARN_RE = re.compile(
-    r"^arn:aws:iam::\${TARGET_ACCOUNT_ID}:user/(?P<pattern>.+)$"
-)
-_ROLE_ARN_RE = re.compile(
-    r"^arn:aws:iam::\${TARGET_ACCOUNT_ID}:role/(?P<pattern>.+)$"
-)
+_USER_ARN_RE = re.compile(r"^arn:aws:iam::\${TARGET_ACCOUNT_ID}:user/(?P<pattern>.+)$")
+_ROLE_ARN_RE = re.compile(r"^arn:aws:iam::\${TARGET_ACCOUNT_ID}:role/(?P<pattern>.+)$")
 
 
 def _iac_user_patterns() -> set[str]:
@@ -149,16 +145,12 @@ def main() -> int:
         for err in errors:
             print(f"  - {err}", file=sys.stderr)
         print(
-            "\nFix: update whichever file is behind. Both locations must list "
-            "the same patterns.",
+            "\nFix: update whichever file is behind. Both locations must list the same patterns.",
             file=sys.stderr,
         )
         return 1
 
-    print(
-        f"Deny-list parity check passed "
-        f"(users={sorted(iac_users)}, roles={sorted(iac_roles)})."
-    )
+    print(f"Deny-list parity check passed (users={sorted(iac_users)}, roles={sorted(iac_roles)}).")
     return 0
 
 

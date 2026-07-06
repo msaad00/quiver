@@ -63,9 +63,12 @@ def handler(event: dict[str, Any], context: Any | None = None) -> dict[str, Any]
     blob_name_raw = event.get("blob_name")
 
     if not (
-        isinstance(storage_account_raw, str) and storage_account_raw
-        and isinstance(container_raw, str) and container_raw
-        and isinstance(blob_name_raw, str) and blob_name_raw
+        isinstance(storage_account_raw, str)
+        and storage_account_raw
+        and isinstance(container_raw, str)
+        and container_raw
+        and isinstance(blob_name_raw, str)
+        and blob_name_raw
     ):
         logger.error("Invalid parser event payload: missing storage_account/container/blob_name")
         return _empty_summary(
@@ -196,7 +199,11 @@ def _validate_entry(entry: dict[str, Any], *, graph_client: Any | None) -> dict[
     if not _UPN_RE.fullmatch(str(entry["upn"])):
         return {"action": "skip", "reason": "Invalid UPN format", "entry": entry}
     if not _OBJECT_ID_RE.fullmatch(str(entry["object_id"])):
-        return {"action": "skip", "reason": "Invalid Entra ObjectId format (expected GUID)", "entry": entry}
+        return {
+            "action": "skip",
+            "reason": "Invalid Entra ObjectId format (expected GUID)",
+            "entry": entry,
+        }
 
     if entry.get("user_deleted"):
         return {"action": "skip", "reason": "Entra user already deleted", "entry": entry}
@@ -257,7 +264,9 @@ def _validate_entry(entry: dict[str, Any], *, graph_client: Any | None) -> dict[
     return {"action": "remediate", "entry": entry, "reason": ""}
 
 
-def _empty_summary(storage_account: str, container: str, blob_name: str, *, error: str) -> dict[str, Any]:
+def _empty_summary(
+    storage_account: str, container: str, blob_name: str, *, error: str
+) -> dict[str, Any]:
     return {
         "validated_entries": [],
         "validation_summary": {
@@ -344,8 +353,12 @@ def main(argv: list[str] | None = None) -> int:
     matches the dry-run path the Logic App exercises before invoking the
     worker Function.
     """
-    parser = argparse.ArgumentParser(description="Dry-run the Entra IAM departures parser against a manifest file.")
-    parser.add_argument("manifest", help="Path to a manifest JSON file (see examples/manifest.json).")
+    parser = argparse.ArgumentParser(
+        description="Dry-run the Entra IAM departures parser against a manifest file."
+    )
+    parser.add_argument(
+        "manifest", help="Path to a manifest JSON file (see examples/manifest.json)."
+    )
     parser.add_argument("--output", "-o", help="JSONL output. Defaults to stdout.")
     args = parser.parse_args(argv)
 
@@ -364,7 +377,9 @@ def main(argv: list[str] | None = None) -> int:
     out = open(args.output, "w", encoding="utf-8") if args.output else sys.stdout
     try:
         for entry in summary["validated_entries"]:
-            out.write(json.dumps({"action": "remediate", "entry": entry}, separators=(",", ":")) + "\n")
+            out.write(
+                json.dumps({"action": "remediate", "entry": entry}, separators=(",", ":")) + "\n"
+            )
         for skipped in summary["validation_summary"]["skipped"]:
             out.write(json.dumps({"action": "skip", **skipped}, separators=(",", ":")) + "\n")
         for err in summary["validation_summary"]["errors"]:

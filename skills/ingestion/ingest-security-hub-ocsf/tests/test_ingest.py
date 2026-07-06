@@ -64,7 +64,10 @@ def _minimal_asff(
         "ProductArn": "arn:aws:securityhub:us-east-1::product/aws/guardduty",
         "GeneratorId": "arn:aws:guardduty:us-east-1:111122223333:detector/abc",
         "AwsAccountId": "111122223333",
-        "Types": types or ["TTPs/Initial Access/UnauthorizedAccess:IAMUser-InstanceCredentialExfiltration.OutsideAWS"],
+        "Types": types
+        or [
+            "TTPs/Initial Access/UnauthorizedAccess:IAMUser-InstanceCredentialExfiltration.OutsideAWS"
+        ],
         "CreatedAt": created,
         "UpdatedAt": updated,
         "FirstObservedAt": created,
@@ -244,7 +247,9 @@ class TestExtractAttacks:
         assert extract_attacks(f) == []
 
     def test_malformed_product_fields(self):
-        f = _minimal_asff(types=["TTPs/Initial Access/Foo"], product_fields={"mitre-technique": "garbage-no-id"})
+        f = _minimal_asff(
+            types=["TTPs/Initial Access/Foo"], product_fields={"mitre-technique": "garbage-no-id"}
+        )
         attacks = extract_attacks(f)
         # Still emits the tactic from Types[], ProductFields match fails silently
         assert len(attacks) == 1
@@ -311,7 +316,9 @@ class TestConvertFinding:
         assert ev["severity_id"] == SEVERITY_CRITICAL
 
     def test_first_observed_time(self):
-        ev = convert_finding(_minimal_asff(created="2026-04-10T05:00:00.000Z", updated="2026-04-10T05:05:00.000Z"))
+        ev = convert_finding(
+            _minimal_asff(created="2026-04-10T05:00:00.000Z", updated="2026-04-10T05:05:00.000Z")
+        )
         assert ev["finding_info"]["first_seen_time"] == 1775797200000
         assert ev["finding_info"]["last_seen_time"] == 1775797500000
 

@@ -300,7 +300,13 @@ def _render_ocsf_finding(native_finding: dict[str, Any]) -> dict[str, Any]:
                 "vendor_name": REPO_VENDOR,
                 "feature": {"name": SKILL_NAME},
             },
-            "labels": ["data-warehouse", "snowflake", "defense-evasion", "network-policy", "detection"],
+            "labels": [
+                "data-warehouse",
+                "snowflake",
+                "defense-evasion",
+                "network-policy",
+                "detection",
+            ],
         },
         "finding_info": {
             "uid": native_finding["finding_uid"],
@@ -337,7 +343,9 @@ def coverage_metadata() -> dict[str, Any]:
     }
 
 
-def detect(events: Iterable[dict[str, Any]], output_format: str = "ocsf") -> Iterable[dict[str, Any]]:
+def detect(
+    events: Iterable[dict[str, Any]], output_format: str = "ocsf"
+) -> Iterable[dict[str, Any]]:
     if output_format not in OUTPUT_FORMATS:
         raise ContractError(
             f"unsupported output_format: {output_format}",
@@ -396,9 +404,15 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         description="Detect Snowflake network-policy disable / widening from OCSF 1.8 API Activity input."
     )
-    parser.add_argument("input", nargs="?", help="OCSF 1.8 API Activity 6003 JSONL input. Defaults to stdin.")
-    parser.add_argument("--output", "-o", help="Detection Finding JSONL output. Defaults to stdout.")
-    parser.add_argument("--output-format", choices=OUTPUT_FORMATS, default="ocsf", help="Output format.")
+    parser.add_argument(
+        "input", nargs="?", help="OCSF 1.8 API Activity 6003 JSONL input. Defaults to stdin."
+    )
+    parser.add_argument(
+        "--output", "-o", help="Detection Finding JSONL output. Defaults to stdout."
+    )
+    parser.add_argument(
+        "--output-format", choices=OUTPUT_FORMATS, default="ocsf", help="Output format."
+    )
     args = parser.parse_args(argv)
 
     in_stream = sys.stdin if not args.input else open(args.input, "r", encoding="utf-8")

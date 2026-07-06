@@ -62,7 +62,8 @@ IMPLEMENTED_SUBCATEGORIES: tuple[tuple[str, str, str, str], ...] = (
 DOCUMENTED_NOT_IMPLEMENTED: tuple[str, ...] = (
     "MANAGE-2.3",
     "MANAGE-3.3",
-    "MANAGE-4.2", "MANAGE-4.3",
+    "MANAGE-4.2",
+    "MANAGE-4.3",
 )
 
 
@@ -286,9 +287,7 @@ def run_benchmark(
         if subcategory and sub_id != subcategory:
             continue
         entry = entries.get(sub_id)
-        findings.append(
-            _evaluate_entry(sub_id, title, section, severity, entry, now=when)
-        )
+        findings.append(_evaluate_entry(sub_id, title, section, severity, entry, now=when))
     return findings
 
 
@@ -302,8 +301,13 @@ def print_summary(findings: list[Finding]) -> None:
     print(f"  {BENCHMARK_NAME}")
     print(f"  Implements {len(IMPLEMENTED_SUBCATEGORIES)} subcategories")
     print(f"{'=' * 64}\n")
-    icon = {STATUS_PASS: "+", STATUS_PARTIAL: "~", STATUS_FAIL: "x",
-            STATUS_NA: "-", STATUS_ERROR: "?"}
+    icon = {
+        STATUS_PASS: "+",
+        STATUS_PARTIAL: "~",
+        STATUS_FAIL: "x",
+        STATUS_NA: "-",
+        STATUS_ERROR: "?",
+    }
     for f in findings:
         print(f"  [{icon.get(f.status, '?')}] {f.control_id:14s} [{f.severity:6s}] {f.title}")
         if f.status in (STATUS_FAIL, STATUS_PARTIAL):
@@ -325,20 +329,14 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument(
         "manifest",
         nargs="?",
-        help=(
-            f"Path to manifest (JSON/YAML). Defaults to ${MANIFEST_ENV} env var."
-        ),
+        help=(f"Path to manifest (JSON/YAML). Defaults to ${MANIFEST_ENV} env var."),
     )
     parser.add_argument(
         "--subcategory",
         help="Run a single subcategory (e.g. MANAGE-1.1).",
     )
-    parser.add_argument(
-        "--output", choices=["console", "json"], default="console"
-    )
-    parser.add_argument(
-        "--output-format", choices=list(OUTPUT_FORMATS), default="native"
-    )
+    parser.add_argument("--output", choices=["console", "json"], default="console")
+    parser.add_argument("--output-format", choices=list(OUTPUT_FORMATS), default="native")
     args = parser.parse_args(argv)
 
     manifest_path = args.manifest or os.environ.get(MANIFEST_ENV) or ""

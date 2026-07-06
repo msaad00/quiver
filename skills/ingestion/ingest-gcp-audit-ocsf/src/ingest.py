@@ -58,7 +58,10 @@ _GRPC_CODE_NAMES = {
 
 _VERB_TABLE = (
     (("Create", "Insert", "Generate", "Issue", "Provision", "Allocate"), ACTIVITY_CREATE),
-    (("Get", "List", "Search", "Lookup", "BatchGet", "Test", "Validate", "Aggregate"), ACTIVITY_READ),
+    (
+        ("Get", "List", "Search", "Lookup", "BatchGet", "Test", "Validate", "Aggregate"),
+        ACTIVITY_READ,
+    ),
     (("Update", "Patch", "Set", "Replace", "Add", "Enable", "Attach", "Promote"), ACTIVITY_UPDATE),
     (("Delete", "Remove", "Cancel", "Disable", "Detach", "Revoke", "Purge"), ACTIVITY_DELETE),
 )
@@ -153,7 +156,11 @@ def _build_resources(proto: dict[str, Any], log_entry: dict[str, Any]) -> list[d
         resources.append({"name": name, "type": rtype})
     response = proto.get("response") or {}
     response_name = response.get("name")
-    if isinstance(response_name, str) and "/serviceAccounts/" in response_name and "/keys/" in response_name:
+    if (
+        isinstance(response_name, str)
+        and "/serviceAccounts/" in response_name
+        and "/keys/" in response_name
+    ):
         resources.append({"name": response_name, "type": "service_account_key"})
     return resources
 
@@ -176,19 +183,25 @@ def _build_canonical_event(log_entry: dict[str, Any]) -> dict[str, Any] | None:
     method_name = proto.get("methodName", "")
     activity_id = infer_activity_id(method_name)
     status_id, status_detail = _status_id_and_detail(proto.get("status"))
-    event_uid = str(log_entry.get("insertId") or "").strip() or hashlib.sha256(
-        json.dumps(
-            {
-                "timestamp": log_entry.get("timestamp", ""),
-                "logName": log_entry.get("logName", ""),
-                "methodName": method_name,
-                "resourceName": proto.get("resourceName", ""),
-                "principalEmail": ((proto.get("authenticationInfo") or {}).get("principalEmail")) or "",
-            },
-            sort_keys=True,
-            separators=(",", ":"),
-        ).encode("utf-8")
-    ).hexdigest()
+    event_uid = (
+        str(log_entry.get("insertId") or "").strip()
+        or hashlib.sha256(
+            json.dumps(
+                {
+                    "timestamp": log_entry.get("timestamp", ""),
+                    "logName": log_entry.get("logName", ""),
+                    "methodName": method_name,
+                    "resourceName": proto.get("resourceName", ""),
+                    "principalEmail": (
+                        (proto.get("authenticationInfo") or {}).get("principalEmail")
+                    )
+                    or "",
+                },
+                sort_keys=True,
+                separators=(",", ":"),
+            ).encode("utf-8")
+        ).hexdigest()
+    )
 
     cloud = _build_cloud(log_entry)
     account_uid = ((cloud.get("account") or {}).get("uid")) or ""
@@ -207,7 +220,9 @@ def _build_canonical_event(log_entry: dict[str, Any]) -> dict[str, Any] | None:
         "operation": method_name,
         "service_name": proto.get("serviceName", ""),
         "activity_id": activity_id,
-        "activity_name": {1: "create", 2: "read", 3: "update", 4: "delete", 99: "other"}.get(activity_id, "unknown"),
+        "activity_name": {1: "create", 2: "read", 3: "update", 4: "delete", 99: "other"}.get(
+            activity_id, "unknown"
+        ),
         "status_id": status_id,
         "status": "failure" if status_id == STATUS_FAILURE else "success",
         "status_detail": status_detail or "",
@@ -309,7 +324,9 @@ def iter_raw_entries(stream: Iterable[str]) -> Iterable[dict[str, Any]]:
         try:
             obj = json.loads(line)
         except json.JSONDecodeError as exc:
-            print(f"[{SKILL_NAME}] skipping line {lineno}: json parse failed: {exc}", file=sys.stderr)
+            print(
+                f"[{SKILL_NAME}] skipping line {lineno}: json parse failed: {exc}", file=sys.stderr
+            )
             continue
         if isinstance(obj, dict):
             yield obj
@@ -325,13 +342,17 @@ def ingest(stream: Iterable[str], *, output_format: str = "ocsf") -> Iterable[di
             print(f"[{SKILL_NAME}] skipping entry: convert error: {exc}", file=sys.stderr)
             continue
         if event is None:
-            print(f"[{SKILL_NAME}] skipping entry: not a google.cloud.audit.AuditLog", file=sys.stderr)
+            print(
+                f"[{SKILL_NAME}] skipping entry: not a google.cloud.audit.AuditLog", file=sys.stderr
+            )
             continue
         yield event
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Convert raw GCP audit logs to API Activity JSONL.")
+    parser = argparse.ArgumentParser(
+        description="Convert raw GCP audit logs to API Activity JSONL."
+    )
     parser.add_argument("input", nargs="?", help="Input JSON/JSONL file. Defaults to stdin.")
     parser.add_argument("--output", "-o", help="Output JSONL file. Defaults to stdout.")
     parser.add_argument(

@@ -64,7 +64,9 @@ class TestK8sContainerEscapePipelineEndToEnd:
     def test_expected_mitre_techniques_present(self):
         raw_lines = (GOLDEN_DIR / "k8s_container_escape_raw_sample.jsonl").read_text().splitlines()
         findings = list(self.detect.detect(self.ingest.ingest(raw_lines)))
-        techniques = {finding["finding_info"]["attacks"][0]["technique"]["uid"] for finding in findings}
+        techniques = {
+            finding["finding_info"]["attacks"][0]["technique"]["uid"] for finding in findings
+        }
         assert techniques == {"T1610", "T1611"}
 
     def test_followup_input_matches_frozen_followup_golden(self):
@@ -80,6 +82,12 @@ class TestK8sContainerEscapePipelineEndToEnd:
             )
 
     def test_followup_findings_add_exec_and_runtime_techniques(self):
-        findings = list(self.detect.detect(_load_jsonl(GOLDEN_DIR / "k8s_container_escape_followup_input.jsonl")))
-        techniques = {finding["finding_info"]["attacks"][0]["technique"]["uid"] for finding in findings}
+        findings = list(
+            self.detect.detect(
+                _load_jsonl(GOLDEN_DIR / "k8s_container_escape_followup_input.jsonl")
+            )
+        )
+        techniques = {
+            finding["finding_info"]["attacks"][0]["technique"]["uid"] for finding in findings
+        }
         assert techniques == {"T1611", "T1613"}

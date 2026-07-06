@@ -110,7 +110,10 @@ class TestRemediationSteps:
         iam.get_paginator.return_value.paginate.return_value = [
             {
                 "AttachedPolicies": [
-                    {"PolicyName": "ReadOnly", "PolicyArn": "arn:aws:iam::aws:policy/ReadOnlyAccess"},
+                    {
+                        "PolicyName": "ReadOnly",
+                        "PolicyArn": "arn:aws:iam::aws:policy/ReadOnlyAccess",
+                    },
                 ]
             }
         ]
@@ -122,7 +125,9 @@ class TestRemediationSteps:
 
     def test_delete_inline_policies(self):
         iam = MagicMock()
-        iam.get_paginator.return_value.paginate.return_value = [{"PolicyNames": ["custom-policy-1", "custom-policy-2"]}]
+        iam.get_paginator.return_value.paginate.return_value = [
+            {"PolicyNames": ["custom-policy-1", "custom-policy-2"]}
+        ]
         actions = []
         _delete_inline_policies(iam, "jane", actions)
 
@@ -150,10 +155,20 @@ class TestWorkerHandler:
     """Test the full worker Lambda handler."""
 
     @patch("lambda_worker.handler._save_checkpoint")
-    @patch("lambda_worker.handler._load_checkpoint", return_value={"status": "new", "actions_taken": [], "completed_steps": [], "updated_at": ""})
+    @patch(
+        "lambda_worker.handler._load_checkpoint",
+        return_value={
+            "status": "new",
+            "actions_taken": [],
+            "completed_steps": [],
+            "updated_at": "",
+        },
+    )
     @patch("lambda_worker.handler._write_audit")
     @patch("lambda_worker.handler._get_iam_client")
-    def test_successful_remediation(self, mock_iam, mock_audit, _mock_load_checkpoint, mock_save_checkpoint):
+    def test_successful_remediation(
+        self, mock_iam, mock_audit, _mock_load_checkpoint, mock_save_checkpoint
+    ):
         """Full remediation flow for a standard terminated employee."""
         iam = MagicMock()
         mock_iam.return_value = iam
@@ -197,10 +212,20 @@ class TestWorkerHandler:
         assert mock_save_checkpoint.call_count >= 2
 
     @patch("lambda_worker.handler._save_checkpoint")
-    @patch("lambda_worker.handler._load_checkpoint", return_value={"status": "new", "actions_taken": [], "completed_steps": [], "updated_at": ""})
+    @patch(
+        "lambda_worker.handler._load_checkpoint",
+        return_value={
+            "status": "new",
+            "actions_taken": [],
+            "completed_steps": [],
+            "updated_at": "",
+        },
+    )
     @patch("lambda_worker.handler._write_audit")
     @patch("lambda_worker.handler._get_iam_client")
-    def test_remediation_failure_logged(self, mock_iam, mock_audit, _mock_load_checkpoint, mock_save_checkpoint):
+    def test_remediation_failure_logged(
+        self, mock_iam, mock_audit, _mock_load_checkpoint, mock_save_checkpoint
+    ):
         """If remediation fails, error is captured and audit still written."""
         mock_iam.side_effect = Exception("AssumeRole denied")
 
@@ -251,7 +276,13 @@ class TestWorkerHandler:
         "lambda_worker.handler._load_checkpoint",
         return_value={
             "status": "in_progress",
-            "actions_taken": [{"action": "delete_user", "target": "jane", "timestamp": "2026-04-17T00:00:00+00:00"}],
+            "actions_taken": [
+                {
+                    "action": "delete_user",
+                    "target": "jane",
+                    "timestamp": "2026-04-17T00:00:00+00:00",
+                }
+            ],
             "completed_steps": [
                 "deactivate_access_keys",
                 "delete_login_profile",
@@ -293,7 +324,13 @@ class TestWorkerHandler:
         "lambda_worker.handler._load_checkpoint",
         return_value={
             "status": "remediated",
-            "actions_taken": [{"action": "delete_user", "target": "jane", "timestamp": "2026-04-17T00:00:00+00:00"}],
+            "actions_taken": [
+                {
+                    "action": "delete_user",
+                    "target": "jane",
+                    "timestamp": "2026-04-17T00:00:00+00:00",
+                }
+            ],
             "completed_steps": ["delete_user"],
             "updated_at": "2026-04-17T00:00:00+00:00",
         },
@@ -339,11 +376,14 @@ class TestAuditWriteFailure:
 
     @patch("lambda_worker.handler.boto3")
     def test_write_audit_raises_when_all_stores_fail(self, mock_boto3):
-        mock_boto3.resource.return_value.Table.return_value.put_item.side_effect = RuntimeError("ddb down")
+        mock_boto3.resource.return_value.Table.return_value.put_item.side_effect = RuntimeError(
+            "ddb down"
+        )
         mock_boto3.client.return_value.put_object.side_effect = RuntimeError("s3 down")
 
-        with patch("lambda_worker.handler.AUDIT_TABLE", "t"), patch(
-            "lambda_worker.handler.AUDIT_BUCKET", "b"
+        with (
+            patch("lambda_worker.handler.AUDIT_TABLE", "t"),
+            patch("lambda_worker.handler.AUDIT_BUCKET", "b"),
         ):
             with pytest.raises(AuditWriteError) as excinfo:
                 _write_audit(self._audit_record())
@@ -355,19 +395,28 @@ class TestAuditWriteFailure:
     @patch("lambda_worker.handler.boto3")
     def test_write_audit_tolerates_one_store_failure(self, mock_boto3):
         """Dual-write redundancy: one store succeeding is still acceptable."""
-        mock_boto3.resource.return_value.Table.return_value.put_item.side_effect = RuntimeError("ddb down")
+        mock_boto3.resource.return_value.Table.return_value.put_item.side_effect = RuntimeError(
+            "ddb down"
+        )
         mock_boto3.client.return_value.put_object.return_value = {}
 
-        with patch("lambda_worker.handler.AUDIT_TABLE", "t"), patch(
-            "lambda_worker.handler.AUDIT_BUCKET", "b"
+        with (
+            patch("lambda_worker.handler.AUDIT_TABLE", "t"),
+            patch("lambda_worker.handler.AUDIT_BUCKET", "b"),
         ):
             # Should not raise — S3 succeeded, so we have durable record.
             _write_audit(self._audit_record())
 
     @patch("lambda_worker.handler._save_checkpoint")
-    @patch("lambda_worker.handler._load_checkpoint", return_value={
-        "status": "new", "actions_taken": [], "completed_steps": [], "updated_at": "",
-    })
+    @patch(
+        "lambda_worker.handler._load_checkpoint",
+        return_value={
+            "status": "new",
+            "actions_taken": [],
+            "completed_steps": [],
+            "updated_at": "",
+        },
+    )
     @patch("lambda_worker.handler._remediation_steps", return_value=[])
     @patch("lambda_worker.handler._get_iam_client")
     @patch("lambda_worker.handler._write_audit", side_effect=AuditWriteError("all stores failed"))
@@ -389,9 +438,15 @@ class TestAuditWriteFailure:
         assert "all stores failed" in result["audit_error"]
 
     @patch("lambda_worker.handler._save_checkpoint")
-    @patch("lambda_worker.handler._load_checkpoint", return_value={
-        "status": "new", "actions_taken": [], "completed_steps": [], "updated_at": "",
-    })
+    @patch(
+        "lambda_worker.handler._load_checkpoint",
+        return_value={
+            "status": "new",
+            "actions_taken": [],
+            "completed_steps": [],
+            "updated_at": "",
+        },
+    )
     @patch("lambda_worker.handler._remediation_steps", return_value=[])
     @patch("lambda_worker.handler.boto3")
     @patch("lambda_worker.handler._get_iam_client")

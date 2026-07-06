@@ -90,7 +90,9 @@ def _normalize_frameworks(frameworks: list[str] | None) -> list[str]:
     for item in frameworks:
         key = item.strip().lower()
         if key not in SUPPORTED_FRAMEWORKS:
-            raise ValueError(f"unsupported framework `{item}`; supported values: {', '.join(SUPPORTED_FRAMEWORKS)}")
+            raise ValueError(
+                f"unsupported framework `{item}`; supported values: {', '.join(SUPPORTED_FRAMEWORKS)}"
+            )
         if key not in normalized:
             normalized.append(key)
     return normalized
@@ -126,7 +128,11 @@ def _normalize_bom(document: dict[str, Any]) -> dict[str, Any]:
 
     assets: list[dict[str, Any]] = []
     for component in components or []:
-        props = {item.get("name"): item.get("value") for item in component.get("properties", []) if isinstance(item, dict)}
+        props = {
+            item.get("name"): item.get("value")
+            for item in component.get("properties", [])
+            if isinstance(item, dict)
+        }
         assets.append(
             _clean(
                 {
@@ -141,7 +147,11 @@ def _normalize_bom(document: dict[str, Any]) -> dict[str, Any]:
         )
 
     for service in services or []:
-        props = {item.get("name"): item.get("value") for item in service.get("properties", []) if isinstance(item, dict)}
+        props = {
+            item.get("name"): item.get("value")
+            for item in service.get("properties", [])
+            if isinstance(item, dict)
+        }
         assets.append(
             _clean(
                 {
@@ -208,7 +218,9 @@ def _normalize_graph(document: dict[str, Any]) -> dict[str, Any]:
         source = _string(edge.get("source"))
         target = _string(edge.get("target"))
         if source and target:
-            relationships.append({"source": source, "target": target, "relationship": edge.get("relationship")})
+            relationships.append(
+                {"source": source, "target": target, "relationship": edge.get("relationship")}
+            )
 
     return {
         "source_kind": "environment-graph",
@@ -256,7 +268,9 @@ def _summaries(normalized: dict[str, Any]) -> dict[str, Any]:
         "asset_count": len(assets),
         "dependency_count": len(dependencies),
         "kind_counts": dict(sorted(kinds.items())),
-        "external_services": sorted(external_services, key=lambda item: json.dumps(item, sort_keys=True)),
+        "external_services": sorted(
+            external_services, key=lambda item: json.dumps(item, sort_keys=True)
+        ),
     }
 
 
@@ -268,7 +282,14 @@ def _status(has_enough: bool, has_some: bool) -> str:
     return "missing"
 
 
-def _control(framework: str, control_id: str, title: str, description: str, evidence: list[dict[str, Any]], gaps: list[str]) -> dict[str, Any]:
+def _control(
+    framework: str,
+    control_id: str,
+    title: str,
+    description: str,
+    evidence: list[dict[str, Any]],
+    gaps: list[str],
+) -> dict[str, Any]:
     status = _status(not gaps and bool(evidence), bool(evidence))
     return {
         "framework": FRAMEWORK_LABELS[framework],
@@ -308,15 +329,23 @@ def build_evidence(document: dict[str, Any], frameworks: list[str] | None = None
                         "System component inventory evidence",
                         "Evidence package showing inventoried AI and cloud system components relevant to cardholder-data environments or connected services.",
                         base_evidence,
-                        [] if summary["asset_count"] else ["No assets were present in the source artifact."],
+                        []
+                        if summary["asset_count"]
+                        else ["No assets were present in the source artifact."],
                     ),
                     _control(
                         framework,
                         "inventory.external-services",
                         "Externally reachable service evidence",
                         "Evidence package listing inventoried externally reachable endpoints and their provider/service context.",
-                        [{"type": "external-services", "value": external_services}] if external_services else [],
-                        [] if external_services else ["No externally reachable services were identified in the source artifact."],
+                        [{"type": "external-services", "value": external_services}]
+                        if external_services
+                        else [],
+                        []
+                        if external_services
+                        else [
+                            "No externally reachable services were identified in the source artifact."
+                        ],
                     ),
                 ]
             )
@@ -329,15 +358,23 @@ def build_evidence(document: dict[str, Any], frameworks: list[str] | None = None
                         "System inventory evidence",
                         "Evidence package describing the systems, providers, and services currently present in the discovery artifact.",
                         base_evidence,
-                        [] if summary["asset_count"] else ["No assets were present in the source artifact."],
+                        []
+                        if summary["asset_count"]
+                        else ["No assets were present in the source artifact."],
                     ),
                     _control(
                         framework,
                         "system.dependencies",
                         "Dependency and relationship evidence",
                         "Evidence package summarizing explicit dependencies or graph relationships between inventoried assets.",
-                        [{"type": "dependencies", "value": normalized["dependencies"][:20]}] if normalized["dependencies"] else [],
-                        [] if normalized["dependencies"] else ["No explicit dependencies or graph relationships were present in the source artifact."],
+                        [{"type": "dependencies", "value": normalized["dependencies"][:20]}]
+                        if normalized["dependencies"]
+                        else [],
+                        []
+                        if normalized["dependencies"]
+                        else [
+                            "No explicit dependencies or graph relationships were present in the source artifact."
+                        ],
                     ),
                 ]
             )
@@ -398,9 +435,18 @@ def to_ocsf_live_evidence(evidence: dict[str, Any]) -> dict[str, Any]:
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Generate deterministic technical-control evidence from discovery artifacts.")
-    parser.add_argument("input", nargs="?", help="Path to a discovery artifact JSON file. Reads stdin when omitted.")
-    parser.add_argument("--framework", dest="frameworks", action="append", help="Evidence family to emit: pci or soc2. Defaults to both.")
+    parser = argparse.ArgumentParser(
+        description="Generate deterministic technical-control evidence from discovery artifacts."
+    )
+    parser.add_argument(
+        "input", nargs="?", help="Path to a discovery artifact JSON file. Reads stdin when omitted."
+    )
+    parser.add_argument(
+        "--framework",
+        dest="frameworks",
+        action="append",
+        help="Evidence family to emit: pci or soc2. Defaults to both.",
+    )
     parser.add_argument(
         "--output-format",
         choices=SUPPORTED_OUTPUT_FORMATS,

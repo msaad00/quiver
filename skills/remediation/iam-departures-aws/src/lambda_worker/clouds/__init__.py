@@ -65,7 +65,11 @@ class RemediationResult:
         self.completed_at = datetime.now(timezone.utc).isoformat()
         failed = [s for s in self.steps if s.status == RemediationStatus.FAILED]
         if failed:
-            self.status = RemediationStatus.PARTIAL if len(failed) < len(self.steps) else RemediationStatus.FAILED
+            self.status = (
+                RemediationStatus.PARTIAL
+                if len(failed) < len(self.steps)
+                else RemediationStatus.FAILED
+            )
 
     @property
     def steps_completed(self) -> int:

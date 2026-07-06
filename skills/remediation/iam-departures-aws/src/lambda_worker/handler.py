@@ -115,9 +115,7 @@ def handler(event: dict, context: Any) -> dict:
         assert_not_protected(iam_username)
     except ProtectedPrincipalError as exc:
         logger.error("Refusing protected principal: %s", exc)
-        audit_record = _build_audit_record(
-            entry, [], "refused", error=str(exc), context=context
-        )
+        audit_record = _build_audit_record(entry, [], "refused", error=str(exc), context=context)
         _write_audit(audit_record)
         return {
             "email": entry.get("email", ""),
@@ -129,7 +127,9 @@ def handler(event: dict, context: Any) -> dict:
         }
     except ValueError as exc:
         logger.warning("Invalid remediation payload: %s", exc)
-        audit_record = _build_audit_record(entry, [], "error", error="Invalid remediation payload", context=context)
+        audit_record = _build_audit_record(
+            entry, [], "error", error="Invalid remediation payload", context=context
+        )
         _write_audit(audit_record)
         return {
             "email": entry.get("email", ""),
@@ -153,7 +153,11 @@ def handler(event: dict, context: Any) -> dict:
     completed_step_set = set(completed_steps)
 
     if checkpoint["status"] == "remediated":
-        logger.info("Replay-safe short circuit for already remediated user %s in %s", iam_username, account_id)
+        logger.info(
+            "Replay-safe short circuit for already remediated user %s in %s",
+            iam_username,
+            account_id,
+        )
         return {
             "email": email,
             "iam_username": iam_username,
@@ -233,7 +237,9 @@ def handler(event: dict, context: Any) -> dict:
         )
 
         # Still write audit — record the failure
-        audit_record = _build_audit_record(entry, actions_taken, "error", error=str(exc), context=context)
+        audit_record = _build_audit_record(
+            entry, actions_taken, "error", error=str(exc), context=context
+        )
         _write_audit(audit_record)
 
         return {
@@ -264,17 +270,56 @@ def _remediation_steps() -> tuple[tuple[str, Any], ...]:
     `docs/images/iam-departures-aws.svg` DELETION ORDER card.
     """
     return (
-        ("deactivate_access_keys", lambda iam, username, _entry, actions: _deactivate_access_keys(iam, username, actions)),
-        ("delete_login_profile", lambda iam, username, _entry, actions: _delete_login_profile(iam, username, actions)),
-        ("remove_from_groups", lambda iam, username, _entry, actions: _remove_from_groups(iam, username, actions)),
-        ("detach_managed_policies", lambda iam, username, _entry, actions: _detach_managed_policies(iam, username, actions)),
-        ("delete_inline_policies", lambda iam, username, _entry, actions: _delete_inline_policies(iam, username, actions)),
-        ("delete_mfa_devices", lambda iam, username, _entry, actions: _delete_mfa_devices(iam, username, actions)),
-        ("delete_signing_certificates", lambda iam, username, _entry, actions: _delete_signing_certificates(iam, username, actions)),
-        ("delete_ssh_keys", lambda iam, username, _entry, actions: _delete_ssh_keys(iam, username, actions)),
-        ("delete_service_credentials", lambda iam, username, _entry, actions: _delete_service_credentials(iam, username, actions)),
-        ("tag_user_for_audit", lambda iam, username, entry, actions: _tag_user_for_audit(iam, username, entry, actions)),
-        ("delete_user", lambda iam, username, _entry, actions: _delete_user(iam, username, actions)),
+        (
+            "deactivate_access_keys",
+            lambda iam, username, _entry, actions: _deactivate_access_keys(iam, username, actions),
+        ),
+        (
+            "delete_login_profile",
+            lambda iam, username, _entry, actions: _delete_login_profile(iam, username, actions),
+        ),
+        (
+            "remove_from_groups",
+            lambda iam, username, _entry, actions: _remove_from_groups(iam, username, actions),
+        ),
+        (
+            "detach_managed_policies",
+            lambda iam, username, _entry, actions: _detach_managed_policies(iam, username, actions),
+        ),
+        (
+            "delete_inline_policies",
+            lambda iam, username, _entry, actions: _delete_inline_policies(iam, username, actions),
+        ),
+        (
+            "delete_mfa_devices",
+            lambda iam, username, _entry, actions: _delete_mfa_devices(iam, username, actions),
+        ),
+        (
+            "delete_signing_certificates",
+            lambda iam, username, _entry, actions: _delete_signing_certificates(
+                iam, username, actions
+            ),
+        ),
+        (
+            "delete_ssh_keys",
+            lambda iam, username, _entry, actions: _delete_ssh_keys(iam, username, actions),
+        ),
+        (
+            "delete_service_credentials",
+            lambda iam, username, _entry, actions: _delete_service_credentials(
+                iam, username, actions
+            ),
+        ),
+        (
+            "tag_user_for_audit",
+            lambda iam, username, entry, actions: _tag_user_for_audit(
+                iam, username, entry, actions
+            ),
+        ),
+        (
+            "delete_user",
+            lambda iam, username, _entry, actions: _delete_user(iam, username, actions),
+        ),
     )
 
 

@@ -167,7 +167,9 @@ def test_skips_event_without_path():
 
 
 def test_native_output_format_idor():
-    f = list(detect([_http_event(path="/users/42/profile", actor_uid="user-7")], output_format="native"))[0]
+    f = list(
+        detect([_http_event(path="/users/42/profile", actor_uid="user-7")], output_format="native")
+    )[0]
     assert f["schema_mode"] == "native"
     assert f["rule"] == "idor"
     assert f["target_id"] == "42"

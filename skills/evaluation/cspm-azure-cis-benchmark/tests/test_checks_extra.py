@@ -208,7 +208,9 @@ def test_4_1_error_branch():
 def _watcher(name, rg):
     w = MagicMock()
     w.name = name
-    w.id = f"/subscriptions/sub/resourceGroups/{rg}/providers/Microsoft.Network/networkWatchers/{name}"
+    w.id = (
+        f"/subscriptions/sub/resourceGroups/{rg}/providers/Microsoft.Network/networkWatchers/{name}"
+    )
     return w
 
 
@@ -387,7 +389,9 @@ def test_print_summary_renders():
 
 def test_main_console_exit_zero(monkeypatch):
     _install_fake_azure(monkeypatch)
-    monkeypatch.setattr(sys, "argv", ["checks.py", "--subscription-id", "sub", "--section", "storage"])
+    monkeypatch.setattr(
+        sys, "argv", ["checks.py", "--subscription-id", "sub", "--section", "storage"]
+    )
     buf = io.StringIO()
     with redirect_stdout(buf):
         try:

@@ -199,7 +199,10 @@ class TestExtractors:
 
     def test_extract_attack_with_sub_technique_prefers_sub(self):
         f = _finding()
-        f["finding_info"]["attacks"][0]["sub_technique"] = {"name": "Container API", "uid": "T1552.007"}
+        f["finding_info"]["attacks"][0]["sub_technique"] = {
+            "name": "Container API",
+            "uid": "T1552.007",
+        }
         uid, _name = extract_attack(f)
         assert uid == "T1552.007"
 

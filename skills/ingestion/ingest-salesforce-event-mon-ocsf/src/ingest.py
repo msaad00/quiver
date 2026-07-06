@@ -93,7 +93,9 @@ def parse_ts_ms(value: Any) -> int:
 
 
 def _event_type(record: dict[str, Any]) -> str:
-    return str(_first(record, "event_type", "eventtype", "type", "log_type", "event_name") or "").strip()
+    return str(
+        _first(record, "event_type", "eventtype", "type", "log_type", "event_name") or ""
+    ).strip()
 
 
 def _event_family(record: dict[str, Any]) -> str:
@@ -104,7 +106,10 @@ def _event_family(record: dict[str, Any]) -> str:
         return "logout"
     if "login" in joined and "logout" not in joined:
         return "login"
-    if any(term in joined for term in ("reportexport", "report_export", "export", "bulkapi", "bulkapi2", "dataloader")):
+    if any(
+        term in joined
+        for term in ("reportexport", "report_export", "export", "bulkapi", "bulkapi2", "dataloader")
+    ):
         return "export"
     if any(term in joined for term in ("api", "rest", "soap", "query", "apex")):
         return "api"
@@ -148,7 +153,9 @@ def _severity_id(family: str, status_id: int) -> int:
 
 
 def _status_name(status_id: int) -> str:
-    return {STATUS_SUCCESS: "success", STATUS_FAILURE: "failure", STATUS_UNKNOWN: "unknown"}.get(status_id, "unknown")
+    return {STATUS_SUCCESS: "success", STATUS_FAILURE: "failure", STATUS_UNKNOWN: "unknown"}.get(
+        status_id, "unknown"
+    )
 
 
 def _severity_name(severity_id: int) -> str:
@@ -214,7 +221,11 @@ def _resources(record: dict[str, Any]) -> list[dict[str, Any]]:
 
 
 def _api(record: dict[str, Any]) -> dict[str, Any]:
-    operation = str(_first(record, "operation", "method", "action", "event_type") or _event_type(record) or "unknown").strip()
+    operation = str(
+        _first(record, "operation", "method", "action", "event_type")
+        or _event_type(record)
+        or "unknown"
+    ).strip()
     return {"operation": operation, "service": {"name": "salesforce.event_monitoring"}}
 
 
@@ -237,13 +248,24 @@ def _salesforce_block(record: dict[str, Any], family: str) -> dict[str, Any]:
         "event_type": _event_type(record),
         "event_family": family,
         "org_id": str(_first(record, "organization_id", "org_id") or "").strip(),
-        "client_name": str(_first(record, "client_name", "client", "connected_app_name", "application") or "").strip(),
+        "client_name": str(
+            _first(record, "client_name", "client", "connected_app_name", "application") or ""
+        ).strip(),
         "api_type": str(_first(record, "api_type", "api_version", "api") or "").strip(),
         "operation": str(_first(record, "operation", "method", "action") or "").strip(),
-        "rows_processed": _int_value(record, "rows_processed", "rows_returned", "records_processed", "records_returned", "record_count"),
+        "rows_processed": _int_value(
+            record,
+            "rows_processed",
+            "rows_returned",
+            "records_processed",
+            "records_returned",
+            "record_count",
+        ),
         "bytes": _int_value(record, "bytes", "response_size", "request_size", "db_total_time"),
         "session_key": str(_first(record, "session_key", "session_id", "session") or "").strip(),
-        "request_id": str(_first(record, "request_id", "requestid", "event_identifier", "event_id") or "").strip(),
+        "request_id": str(
+            _first(record, "request_id", "requestid", "event_identifier", "event_id") or ""
+        ).strip(),
         "raw": record,
     }
 
@@ -252,21 +274,31 @@ def _event_uid(record: dict[str, Any], family: str) -> str:
     material = {
         "event_type": _event_type(record),
         "family": family,
-        "time": str(_first(record, "timestamp", "time", "date", "event_date", "login_time", "logout_time") or ""),
+        "time": str(
+            _first(record, "timestamp", "time", "date", "event_date", "login_time", "logout_time")
+            or ""
+        ),
         "user": str(_first(record, "user_id", "username", "user_name") or ""),
-        "request": str(_first(record, "request_id", "requestid", "event_identifier", "event_id") or ""),
+        "request": str(
+            _first(record, "request_id", "requestid", "event_identifier", "event_id") or ""
+        ),
         "session": str(_first(record, "session_key", "session_id", "session") or ""),
     }
     if not any(material.values()):
         material["raw"] = json.dumps(record, sort_keys=True, separators=(",", ":"), default=str)
-    return hashlib.sha256(json.dumps(material, sort_keys=True, separators=(",", ":")).encode("utf-8")).hexdigest()
+    return hashlib.sha256(
+        json.dumps(material, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    ).hexdigest()
 
 
 def validate_record(record: dict[str, Any]) -> tuple[bool, str]:
     if not isinstance(record, dict):
         return False, "not a dict"
     normalized = _normalize_record(record)
-    if not (_event_type(normalized) or _first(normalized, "user_id", "username", "operation", "request_id")):
+    if not (
+        _event_type(normalized)
+        or _first(normalized, "user_id", "username", "operation", "request_id")
+    ):
         return False, "missing event type and user/request identifiers"
     return True, ""
 
@@ -276,7 +308,9 @@ def _build_canonical_event(raw: dict[str, Any]) -> dict[str, Any]:
     family = _event_family(record)
     status_id = _status_id(record)
     severity_id = _severity_id(family, status_id)
-    time_ms = parse_ts_ms(_first(record, "timestamp", "time", "date", "event_date", "login_time", "logout_time"))
+    time_ms = parse_ts_ms(
+        _first(record, "timestamp", "time", "date", "event_date", "login_time", "logout_time")
+    )
     activity_id = _activity_id(family, record)
     event_uid = _event_uid(record, family)
     out: dict[str, Any] = {
@@ -350,7 +384,11 @@ def _render_native_event(canonical: dict[str, Any]) -> dict[str, Any]:
 
 def convert_record(record: dict[str, Any], output_format: str = "ocsf") -> dict[str, Any]:
     canonical = _build_canonical_event(record)
-    return _render_native_event(canonical) if output_format == "native" else _render_ocsf_event(canonical)
+    return (
+        _render_native_event(canonical)
+        if output_format == "native"
+        else _render_ocsf_event(canonical)
+    )
 
 
 def _yield_wrapped(value: Any) -> Iterable[dict[str, Any]]:
@@ -392,7 +430,9 @@ def iter_raw_records(stream: Iterable[str]) -> Iterable[dict[str, Any]]:
                     yield {key: value for key, value in row.items() if key}
                 return
         except csv.Error as exc:
-            emit_stderr_event(SKILL_NAME, level="warning", event="csv_parse_failed", message=str(exc))
+            emit_stderr_event(
+                SKILL_NAME, level="warning", event="csv_parse_failed", message=str(exc)
+            )
 
     for lineno, raw_line in enumerate(buf, start=1):
         line = raw_line.strip()
@@ -401,7 +441,13 @@ def iter_raw_records(stream: Iterable[str]) -> Iterable[dict[str, Any]]:
         try:
             obj = json.loads(line)
         except json.JSONDecodeError as exc:
-            emit_stderr_event(SKILL_NAME, level="warning", event="json_parse_failed", message=str(exc), line=lineno)
+            emit_stderr_event(
+                SKILL_NAME,
+                level="warning",
+                event="json_parse_failed",
+                message=str(exc),
+                line=lineno,
+            )
             continue
         yield from _yield_wrapped(obj)
 
@@ -412,16 +458,30 @@ def ingest(stream: Iterable[str], output_format: str = "ocsf") -> Iterable[dict[
     for record in iter_raw_records(stream):
         ok, reason = validate_record(record)
         if not ok:
-            emit_stderr_event(SKILL_NAME, level="warning", event="invalid_record", message=f"skipping record: {reason}", reason=reason)
+            emit_stderr_event(
+                SKILL_NAME,
+                level="warning",
+                event="invalid_record",
+                message=f"skipping record: {reason}",
+                reason=reason,
+            )
             continue
         try:
             yield convert_record(record, output_format=output_format)
         except Exception as exc:
-            emit_stderr_event(SKILL_NAME, level="warning", event="convert_error", message=f"skipping record: {exc}", error=str(exc))
+            emit_stderr_event(
+                SKILL_NAME,
+                level="warning",
+                event="convert_error",
+                message=f"skipping record: {exc}",
+                error=str(exc),
+            )
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Convert Salesforce Event Monitoring exports to OCSF Application Activity.")
+    parser = argparse.ArgumentParser(
+        description="Convert Salesforce Event Monitoring exports to OCSF Application Activity."
+    )
     parser.add_argument("input", nargs="?", help="Input JSON/JSONL/CSV file. Defaults to stdin.")
     parser.add_argument("--output", "-o", help="Output JSONL file. Defaults to stdout.")
     parser.add_argument("--output-format", choices=OUTPUT_FORMATS, default="ocsf")

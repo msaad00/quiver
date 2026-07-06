@@ -70,13 +70,28 @@ class TestFingerprint:
         assert tool_fingerprint(base) != tool_fingerprint(mut)
 
     def test_input_schema_change_breaks_fingerprint(self):
-        base = {"name": "t", "description": "", "inputSchema": {"type": "object"}, "annotations": {}}
+        base = {
+            "name": "t",
+            "description": "",
+            "inputSchema": {"type": "object"},
+            "annotations": {},
+        }
         mut = {"name": "t", "description": "", "inputSchema": {"type": "string"}, "annotations": {}}
         assert tool_fingerprint(base) != tool_fingerprint(mut)
 
     def test_annotations_change_breaks_fingerprint(self):
-        base = {"name": "t", "description": "", "inputSchema": {}, "annotations": {"readOnly": True}}
-        mut = {"name": "t", "description": "", "inputSchema": {}, "annotations": {"readOnly": False}}
+        base = {
+            "name": "t",
+            "description": "",
+            "inputSchema": {},
+            "annotations": {"readOnly": True},
+        }
+        mut = {
+            "name": "t",
+            "description": "",
+            "inputSchema": {},
+            "annotations": {"readOnly": False},
+        }
         assert tool_fingerprint(base) != tool_fingerprint(mut)
 
     def test_key_order_does_not_affect_fingerprint(self):
@@ -87,7 +102,12 @@ class TestFingerprint:
     def test_input_schema_fingerprint_isolated(self):
         t = {"name": "x", "description": "y", "inputSchema": {"k": "v"}, "annotations": {"z": 1}}
         # Changing description / annotations should NOT move the input_schema fingerprint
-        t2 = {"name": "x", "description": "different", "inputSchema": {"k": "v"}, "annotations": {"z": 999}}
+        t2 = {
+            "name": "x",
+            "description": "different",
+            "inputSchema": {"k": "v"},
+            "annotations": {"z": 999},
+        }
         assert input_schema_fingerprint(t) == input_schema_fingerprint(t2)
 
 
@@ -166,7 +186,12 @@ class TestConvertEvent:
         assert "tool" not in events[0]["mcp"]
 
     def test_missing_session_defaults_to_unknown(self):
-        raw = {"timestamp": "2026-04-10T05:00:00Z", "method": "tools/list", "direction": "response", "body": {"tools": []}}
+        raw = {
+            "timestamp": "2026-04-10T05:00:00Z",
+            "method": "tools/list",
+            "direction": "response",
+            "body": {"tools": []},
+        }
         events = list(convert_event(raw))
         assert all(e["mcp"]["session_uid"] == "sess-unknown" for e in events)
 
@@ -176,7 +201,11 @@ class TestConvertEvent:
             "session_id": "sess-abc",
             "method": "tools/list",
             "direction": "response",
-            "body": {"tools": [{"name": "query_db", "description": "", "inputSchema": {}, "annotations": {}}]},
+            "body": {
+                "tools": [
+                    {"name": "query_db", "description": "", "inputSchema": {}, "annotations": {}}
+                ]
+            },
         }
         events = list(convert_event(raw, output_format="native"))
         assert len(events) == 1
@@ -228,9 +257,13 @@ class TestGoldenFixture:
         raw_lines = RAW_FIXTURE.read_text().splitlines()
         produced = list(ingest(raw_lines))
         expected = _load_jsonl(OCSF_FIXTURE)
-        assert len(produced) == len(expected), f"event count mismatch: produced {len(produced)}, expected {len(expected)}"
+        assert len(produced) == len(expected), (
+            f"event count mismatch: produced {len(produced)}, expected {len(expected)}"
+        )
         for p, e in zip(produced, expected):
-            assert p == e, f"event mismatch:\n  produced: {json.dumps(p, sort_keys=True)}\n  expected: {json.dumps(e, sort_keys=True)}"
+            assert p == e, (
+                f"event mismatch:\n  produced: {json.dumps(p, sort_keys=True)}\n  expected: {json.dumps(e, sort_keys=True)}"
+            )
 
     def test_sess_abc_query_db_fingerprint_changes_in_fixture(self):
         """Sanity check: the fixture is designed to trigger a drift detection.
@@ -241,20 +274,28 @@ class TestGoldenFixture:
         fps = [
             e["mcp"]["tool"]["fingerprint"]
             for e in events
-            if e["mcp"]["session_uid"] == "sess-abc" and e["mcp"].get("method") == "tools/list" and e["mcp"]["tool"]["name"] == "query_db"
+            if e["mcp"]["session_uid"] == "sess-abc"
+            and e["mcp"].get("method") == "tools/list"
+            and e["mcp"]["tool"]["name"] == "query_db"
         ]
         assert len(fps) == 2, "fixture must contain two tools/list events for query_db in sess-abc"
-        assert fps[0] != fps[1], "fixture must have query_db drift — otherwise detection cannot be tested"
+        assert fps[0] != fps[1], (
+            "fixture must have query_db drift — otherwise detection cannot be tested"
+        )
 
     def test_sess_abc_read_file_fingerprint_is_stable_in_fixture(self):
         events = _load_jsonl(OCSF_FIXTURE)
         fps = [
             e["mcp"]["tool"]["fingerprint"]
             for e in events
-            if e["mcp"]["session_uid"] == "sess-abc" and e["mcp"].get("method") == "tools/list" and e["mcp"]["tool"]["name"] == "read_file"
+            if e["mcp"]["session_uid"] == "sess-abc"
+            and e["mcp"].get("method") == "tools/list"
+            and e["mcp"]["tool"]["name"] == "read_file"
         ]
         assert len(fps) == 2
-        assert fps[0] == fps[1], "fixture must have stable read_file fingerprint as a negative control"
+        assert fps[0] == fps[1], (
+            "fixture must have stable read_file fingerprint as a negative control"
+        )
 
     def test_native_fixture_projection_preserves_event_uid_and_tool_shape(self):
         raw_lines = RAW_FIXTURE.read_text().splitlines()
@@ -267,4 +308,6 @@ class TestGoldenFixture:
         assert native_events[0]["record_type"] == "application_activity"
         assert "class_uid" not in native_events[0]
         assert "metadata" not in native_events[0]
-        assert native_events[0]["tool"]["fingerprint"] == ocsf_events[0]["mcp"]["tool"]["fingerprint"]
+        assert (
+            native_events[0]["tool"]["fingerprint"] == ocsf_events[0]["mcp"]["tool"]["fingerprint"]
+        )

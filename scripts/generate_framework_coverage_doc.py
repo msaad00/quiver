@@ -146,8 +146,12 @@ def _render(data: dict[str, Any]) -> str:
         "1. Edit [`framework-coverage.json`](framework-coverage.json) with the new "
         "framework, skill, or mapping."
     )
-    lines.append("2. Run `python scripts/generate_framework_coverage_doc.py` to regenerate this file.")
-    lines.append("3. Commit both `framework-coverage.json` and `FRAMEWORK_COVERAGE.md` in the same change.")
+    lines.append(
+        "2. Run `python scripts/generate_framework_coverage_doc.py` to regenerate this file."
+    )
+    lines.append(
+        "3. Commit both `framework-coverage.json` and `FRAMEWORK_COVERAGE.md` in the same change."
+    )
     lines.append(
         "4. CI runs the script in check mode and fails if the generated doc differs "
         "from the checked-in version."

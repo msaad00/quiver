@@ -16,7 +16,9 @@ sys.modules[spec.name] = ingest_mod
 spec.loader.exec_module(ingest_mod)
 
 
-def _activity(application: str, event_name: str, params: list[dict[str, object]]) -> dict[str, object]:
+def _activity(
+    application: str, event_name: str, params: list[dict[str, object]]
+) -> dict[str, object]:
     return {
         "id": {
             "time": "2026-06-06T04:00:00.000Z",

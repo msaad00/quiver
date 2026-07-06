@@ -78,22 +78,22 @@ ACCEPTED_PRODUCERS = frozenset({"ingest-cloudtrail-ocsf"})
 # job is to FIRE on every 0.0.0.0/0 grant to these ports; the remediator
 # decides what to actually revoke.
 DEFAULT_RISKY_PORTS = (
-    22,     # SSH
-    23,     # Telnet
-    135,    # MSRPC
-    445,    # SMB
-    1433,   # MSSQL
-    1521,   # Oracle
-    2049,   # NFS
-    3306,   # MySQL
-    3389,   # RDP
-    5432,   # Postgres
-    5984,   # CouchDB
-    6379,   # Redis
-    8086,   # InfluxDB
-    9042,   # Cassandra
-    9092,   # Kafka
-    9200,   # Elasticsearch
+    22,  # SSH
+    23,  # Telnet
+    135,  # MSRPC
+    445,  # SMB
+    1433,  # MSSQL
+    1521,  # Oracle
+    2049,  # NFS
+    3306,  # MySQL
+    3389,  # RDP
+    5432,  # Postgres
+    5984,  # CouchDB
+    6379,  # Redis
+    8086,  # InfluxDB
+    9042,  # Cassandra
+    9092,  # Kafka
+    9200,  # Elasticsearch
     11211,  # Memcached
     27017,  # MongoDB
 )
@@ -314,7 +314,9 @@ def _to_ocsf(native: dict[str, Any]) -> dict[str, Any]:
         observables.append({"name": "permission.protocol", "type": "Other", "value": protocol})
     from_port = (native["permission"] or {}).get("fromPort")
     if from_port is not None:
-        observables.append({"name": "permission.from_port", "type": "Other", "value": str(from_port)})
+        observables.append(
+            {"name": "permission.from_port", "type": "Other", "value": str(from_port)}
+        )
     to_port = (native["permission"] or {}).get("toPort")
     if to_port is not None:
         observables.append({"name": "permission.to_port", "type": "Other", "value": str(to_port)})
@@ -387,7 +389,9 @@ def detect(
             # Soft-warn for visibility but keep going — this detector is
             # CloudTrail-only and may receive noise from a mixed pipeline
             emit_stderr_event(
-                SKILL_NAME, level="warning", event="wrong_source",
+                SKILL_NAME,
+                level="warning",
+                event="wrong_source",
                 message=f"skipping event from non-cloudtrail producer `{producer}`",
             )
             continue
@@ -414,14 +418,19 @@ def detect(
             sg_id, sg_name = _sg_id_and_name(params)
             if not sg_id:
                 emit_stderr_event(
-                    SKILL_NAME, level="warning", event="no_sg_id",
+                    SKILL_NAME,
+                    level="warning",
+                    event="no_sg_id",
                     message="AuthorizeSecurityGroupIngress finding missing sg id; skipping",
                 )
                 continue
 
             native = _build_native_finding(
-                event=event, sg_id=sg_id, sg_name=sg_name,
-                public_cidrs_hit=public_hits, risky_ports_hit=port_hits,
+                event=event,
+                sg_id=sg_id,
+                sg_name=sg_name,
+                public_cidrs_hit=public_hits,
+                risky_ports_hit=port_hits,
                 permission=permission,
             )
             yield native if output_format == "native" else _to_ocsf(native)
@@ -436,8 +445,11 @@ def load_jsonl(stream: Iterable[str]) -> Iterable[dict[str, Any]]:
             obj = json.loads(line)
         except json.JSONDecodeError as exc:
             emit_stderr_event(
-                SKILL_NAME, level="warning", event="json_parse_failed",
-                message=f"skipping line {lineno}: json parse failed: {exc}", line=lineno,
+                SKILL_NAME,
+                level="warning",
+                event="json_parse_failed",
+                message=f"skipping line {lineno}: json parse failed: {exc}",
+                line=lineno,
             )
             continue
         if isinstance(obj, dict):
@@ -451,7 +463,9 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("input", nargs="?", help="JSONL input. Defaults to stdin.")
     parser.add_argument("--output", "-o", help="JSONL output. Defaults to stdout.")
     parser.add_argument(
-        "--output-format", choices=sorted(OUTPUT_FORMATS), default="ocsf",
+        "--output-format",
+        choices=sorted(OUTPUT_FORMATS),
+        default="ocsf",
         help="Emit OCSF Detection Finding (default) or native projection.",
     )
     args = parser.parse_args(argv)

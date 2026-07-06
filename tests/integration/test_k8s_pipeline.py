@@ -134,7 +134,9 @@ class TestK8sPipelineEndToEnd:
         first = list(self.detect.detect(self.ingest.ingest(raw_lines)))
         second = list(self.detect.detect(self.ingest.ingest(raw_lines)))
 
-        assert first == second, "Pipeline is not idempotent — re-running produced different findings"
+        assert first == second, (
+            "Pipeline is not idempotent — re-running produced different findings"
+        )
 
         # Stronger assertion: serialized form is byte-identical
         first_bytes = "\n".join(json.dumps(f, sort_keys=True) for f in first)
@@ -166,7 +168,9 @@ class TestMcpPipelineEndToEnd:
         findings = list(self.detect.detect(ocsf_events))
 
         expected = _load_jsonl(GOLDEN_DIR / "tool_drift_finding.ocsf.jsonl")
-        assert len(findings) == len(expected) == 1, f"finding count drift: produced {len(findings)}, expected {len(expected)}"
+        assert len(findings) == len(expected) == 1, (
+            f"finding count drift: produced {len(findings)}, expected {len(expected)}"
+        )
 
         for produced, expected_f in zip(findings, expected):
             assert produced == expected_f, (
@@ -237,7 +241,11 @@ class TestK8sPipelineWithConvertLayer:
         assert "system:serviceaccount:default:builder" in mermaid
         for technique in ("T1552.007", "T1611", "T1098"):
             assert technique in mermaid
-        actor_lines = [line for line in mermaid.splitlines() if "system:serviceaccount" in line and "]:::" in line and "-->" not in line]
+        actor_lines = [
+            line
+            for line in mermaid.splitlines()
+            if "system:serviceaccount" in line and "]:::" in line and "-->" not in line
+        ]
         assert len(actor_lines) == 1
         assert ":::critical" in actor_lines[0]
 
@@ -281,12 +289,16 @@ class TestCrossSkillOcsfWireContract:
     def test_every_ingest_skill_pins_ocsf_1_8(self):
         for name, entry, _ in self.INGEST_SKILLS:
             module = _load_module(f"_contract_{name}", INGESTION_DIR / name / "src" / entry)
-            assert module.OCSF_VERSION == "1.8.0", f"{name}: expected OCSF 1.8.0, got {module.OCSF_VERSION}"
+            assert module.OCSF_VERSION == "1.8.0", (
+                f"{name}: expected OCSF 1.8.0, got {module.OCSF_VERSION}"
+            )
 
     def test_every_ingest_skill_uses_expected_class_uid(self):
         for name, entry, expected_class in self.INGEST_SKILLS:
             module = _load_module(f"_contract_class_{name}", INGESTION_DIR / name / "src" / entry)
-            assert module.CLASS_UID == expected_class, f"{name}: expected CLASS_UID={expected_class}, got {module.CLASS_UID}"
+            assert module.CLASS_UID == expected_class, (
+                f"{name}: expected CLASS_UID={expected_class}, got {module.CLASS_UID}"
+            )
 
     def test_every_detect_skill_emits_2004(self):
         for name, entry in self.DETECT_SKILLS:
@@ -299,4 +311,6 @@ class TestCrossSkillOcsfWireContract:
     def test_every_detect_skill_pins_mitre_v14(self):
         for name, entry in self.DETECT_SKILLS:
             module = _load_module(f"_contract_mitre_{name}", DETECTION_DIR / name / "src" / entry)
-            assert module.MITRE_VERSION == "v14", f"{name}: must pin MITRE ATT&CK v14 to match the OCSF_CONTRACT version"
+            assert module.MITRE_VERSION == "v14", (
+                f"{name}: must pin MITRE ATT&CK v14 to match the OCSF_CONTRACT version"
+            )

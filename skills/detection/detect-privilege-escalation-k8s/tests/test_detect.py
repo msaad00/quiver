@@ -94,7 +94,13 @@ def _native_sa_event(
         "provider": "Kubernetes",
         "time_ms": time_ms,
         "operation": verb,
-        "actor": {"user": {"name": sa, "type": "ServiceAccount", "groups": [{"name": g} for g in (groups or [])]}},
+        "actor": {
+            "user": {
+                "name": sa,
+                "type": "ServiceAccount",
+                "groups": [{"name": g} for g in (groups or [])],
+            }
+        },
         "resources": [r],
     }
 
@@ -125,21 +131,40 @@ class TestRule1:
         t0 = 1000
         events = [
             _sa_event(verb="list", resource_type="secrets", time_ms=t0),
-            _sa_event(verb="get", resource_type="secrets", name="db", time_ms=t0 + RULE1_WINDOW_MS + 1),
+            _sa_event(
+                verb="get", resource_type="secrets", name="db", time_ms=t0 + RULE1_WINDOW_MS + 1
+            ),
         ]
         assert list(rule1_secret_enumeration(events)) == []
 
     def test_different_namespace_does_not_correlate(self):
         events = [
             _sa_event(verb="list", resource_type="secrets", namespace="default", time_ms=1000),
-            _sa_event(verb="get", resource_type="secrets", name="db", namespace="kube-system", time_ms=2000),
+            _sa_event(
+                verb="get",
+                resource_type="secrets",
+                name="db",
+                namespace="kube-system",
+                time_ms=2000,
+            ),
         ]
         assert list(rule1_secret_enumeration(events)) == []
 
     def test_different_sa_does_not_correlate(self):
         events = [
-            _sa_event(verb="list", resource_type="secrets", sa="system:serviceaccount:default:a", time_ms=1000),
-            _sa_event(verb="get", resource_type="secrets", name="db", sa="system:serviceaccount:default:b", time_ms=2000),
+            _sa_event(
+                verb="list",
+                resource_type="secrets",
+                sa="system:serviceaccount:default:a",
+                time_ms=1000,
+            ),
+            _sa_event(
+                verb="get",
+                resource_type="secrets",
+                name="db",
+                sa="system:serviceaccount:default:b",
+                time_ms=2000,
+            ),
         ]
         assert list(rule1_secret_enumeration(events)) == []
 
@@ -223,13 +248,19 @@ class TestRule2:
     def test_deduplicated_per_actor_target(self):
         # Same SA execs into the same pod twice — only one finding.
         events = [
-            _sa_event(verb="create", resource_type="pods", name="web", subresource="exec", time_ms=1000),
-            _sa_event(verb="create", resource_type="pods", name="web", subresource="exec", time_ms=2000),
+            _sa_event(
+                verb="create", resource_type="pods", name="web", subresource="exec", time_ms=1000
+            ),
+            _sa_event(
+                verb="create", resource_type="pods", name="web", subresource="exec", time_ms=2000
+            ),
         ]
         assert len(list(rule2_pod_exec(events))) == 1
 
     def test_native_input_fires(self):
-        events = [_native_sa_event(verb="create", resource_type="pods", name="web", subresource="exec")]
+        events = [
+            _native_sa_event(verb="create", resource_type="pods", name="web", subresource="exec")
+        ]
         findings = list(rule2_pod_exec(events))
         assert len(findings) == 1
         assert findings[0]["severity"] == "critical"
@@ -239,11 +270,19 @@ class TestRule2:
 
 
 class TestRule3:
-    def _binding_event(self, *, rtype: str, name: str, actor_name: str, groups: list[str], user_type: str = "User") -> dict:
+    def _binding_event(
+        self, *, rtype: str, name: str, actor_name: str, groups: list[str], user_type: str = "User"
+    ) -> dict:
         return {
             "class_uid": 6003,
             "time": 1000,
-            "actor": {"user": {"name": actor_name, "type": user_type, "groups": [{"name": g} for g in groups]}},
+            "actor": {
+                "user": {
+                    "name": actor_name,
+                    "type": user_type,
+                    "groups": [{"name": g} for g in groups],
+                }
+            },
             "api": {"operation": "create"},
             "resources": [{"type": rtype, "name": name}],
         }
@@ -262,24 +301,33 @@ class TestRule3:
         assert findings[0]["severity_id"] == SEVERITY_CRITICAL
 
     def test_non_admin_rb_fires(self):
-        ev = self._binding_event(rtype="rolebindings", name="attacker", actor_name="user-bob", groups=[])
+        ev = self._binding_event(
+            rtype="rolebindings", name="attacker", actor_name="user-bob", groups=[]
+        )
         findings = list(rule3_rbac_self_grant([ev]))
         assert len(findings) == 1
 
     def test_system_masters_group_does_not_fire(self):
         ev = self._binding_event(
-            rtype="clusterrolebindings", name="legitimate", actor_name="alice", groups=["system:masters", "system:authenticated"]
+            rtype="clusterrolebindings",
+            name="legitimate",
+            actor_name="alice",
+            groups=["system:masters", "system:authenticated"],
         )
         assert list(rule3_rbac_self_grant([ev])) == []
 
     def test_kube_admin_user_does_not_fire(self):
-        ev = self._binding_event(rtype="clusterrolebindings", name="legitimate", actor_name="kubernetes-admin", groups=[])
+        ev = self._binding_event(
+            rtype="clusterrolebindings", name="legitimate", actor_name="kubernetes-admin", groups=[]
+        )
         assert list(rule3_rbac_self_grant([ev])) == []
 
     def test_is_admin_helper(self):
         assert _is_admin({"actor": {"user": {"name": "kubernetes-admin"}}})
         assert _is_admin({"actor": {"user": {"groups": [{"name": "system:masters"}]}}})
-        assert not _is_admin({"actor": {"user": {"name": "alice", "groups": [{"name": "system:authenticated"}]}}})
+        assert not _is_admin(
+            {"actor": {"user": {"name": "alice", "groups": [{"name": "system:authenticated"}]}}}
+        )
 
     def test_non_binding_resource_does_not_fire(self):
         events = [_sa_event(verb="create", resource_type="pods", name="web")]
@@ -305,13 +353,27 @@ class TestRule3:
 
 class TestRule4:
     def test_serviceaccount_token_subresource_fires(self):
-        events = [_sa_event(verb="create", resource_type="serviceaccounts", name="target-sa", subresource="token")]
+        events = [
+            _sa_event(
+                verb="create",
+                resource_type="serviceaccounts",
+                name="target-sa",
+                subresource="token",
+            )
+        ]
         findings = list(rule4_token_self_grant(events))
         assert len(findings) == 1
         assert findings[0]["mitre_attacks"][0]["sub_technique_uid"] == R4_SUB_UID
 
     def test_tokenrequest_subresource_fires(self):
-        events = [_sa_event(verb="create", resource_type="serviceaccounts", name="target-sa", subresource="tokenrequest")]
+        events = [
+            _sa_event(
+                verb="create",
+                resource_type="serviceaccounts",
+                name="target-sa",
+                subresource="tokenrequest",
+            )
+        ]
         assert len(list(rule4_token_self_grant(events))) == 1
 
     def test_tokenreviews_resource_fires(self):
@@ -335,7 +397,14 @@ class TestRule4:
         assert list(rule4_token_self_grant(events)) == []
 
     def test_native_input_fires(self):
-        events = [_native_sa_event(verb="create", resource_type="serviceaccounts", name="target-sa", subresource="token")]
+        events = [
+            _native_sa_event(
+                verb="create",
+                resource_type="serviceaccounts",
+                name="target-sa",
+                subresource="token",
+            )
+        ]
         findings = list(rule4_token_self_grant(events))
         assert len(findings) == 1
         assert findings[0]["severity"] == "high"
@@ -373,7 +442,9 @@ class TestFindingShape:
         assert finding["rule_name"] == "r2-pod-exec"
 
     def test_native_input_can_still_emit_ocsf(self):
-        events = [_native_sa_event(verb="create", resource_type="pods", name="web", subresource="exec")]
+        events = [
+            _native_sa_event(verb="create", resource_type="pods", name="web", subresource="exec")
+        ]
         finding = list(detect(events))[0]
         assert finding["class_uid"] == FINDING_CLASS_UID
         assert finding["finding_info"]["uid"].startswith("det-k8s-r2-pod-exec-")
@@ -414,7 +485,9 @@ class TestGoldenFixture:
         expected = _load(EXPECTED)
         assert len(produced) == len(expected)
         for p, e in zip(produced, expected):
-            assert p == e, f"finding mismatch:\n  produced: {json.dumps(p, sort_keys=True)}\n  expected: {json.dumps(e, sort_keys=True)}"
+            assert p == e, (
+                f"finding mismatch:\n  produced: {json.dumps(p, sort_keys=True)}\n  expected: {json.dumps(e, sort_keys=True)}"
+            )
 
     def test_all_three_rules_fired(self):
         events = _load(OCSF_INPUT)

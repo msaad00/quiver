@@ -81,7 +81,10 @@ def test_fires_on_successful_cross_account_copy():
     assert finding["class_uid"] == 2004
     assert finding["finding_info"]["title"] == "S3 cross-account copy detected"
     assert finding["finding_info"]["attacks"][0]["technique_uid"] == TECHNIQUE_UID
-    assert any(obs["name"] == "destination.bucket" and obs["value"] == "target-bucket" for obs in finding["observables"])
+    assert any(
+        obs["name"] == "destination.bucket" and obs["value"] == "target-bucket"
+        for obs in finding["observables"]
+    )
 
 
 def test_native_output_contains_source_and_destination():
@@ -95,7 +98,12 @@ def test_native_output_contains_source_and_destination():
 
 
 def test_skips_same_account_copy():
-    assert list(detect([_ct_event(actor_account_uid="444455556666", target_account_uid="444455556666")])) == []
+    assert (
+        list(
+            detect([_ct_event(actor_account_uid="444455556666", target_account_uid="444455556666")])
+        )
+        == []
+    )
 
 
 def test_skips_failed_event():

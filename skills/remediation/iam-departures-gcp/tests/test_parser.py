@@ -168,7 +168,9 @@ class TestParserHandler:
         manifest = {
             "entries": [
                 _make_entry(email="a@acme.example", terminated_at=_days_ago_iso(30)),
-                _make_entry(email="b@acme.example", principal_id="b@acme.example", principal_deleted=True),
+                _make_entry(
+                    email="b@acme.example", principal_id="b@acme.example", principal_deleted=True
+                ),
                 _make_entry(email="c@acme.example"),
             ]
         }
@@ -180,11 +182,15 @@ class TestParserHandler:
         assert result["validation_summary"]["skipped_count"] >= 1
 
     def test_handler_reads_gcs_via_mocked_discovery(self, monkeypatch):
-        manifest = {"entries": [_make_entry(email="x@acme.example", terminated_at=_days_ago_iso(30))]}
+        manifest = {
+            "entries": [_make_entry(email="x@acme.example", terminated_at=_days_ago_iso(30))]
+        }
 
         def fake_build(api: str, version: str, **kwargs):
             client = MagicMock()
-            client.objects.return_value.get_media.return_value.execute.return_value = json.dumps(manifest).encode()
+            client.objects.return_value.get_media.return_value.execute.return_value = json.dumps(
+                manifest
+            ).encode()
             return client
 
         monkeypatch.setattr("googleapiclient.discovery.build", fake_build)
@@ -196,7 +202,9 @@ class TestParserCli:
     def test_dry_run_via_main(self, tmp_path, capsys):
         from cloud_function_parser.handler import main
 
-        manifest = {"entries": [_make_entry(email="z@acme.example", terminated_at=_days_ago_iso(30))]}
+        manifest = {
+            "entries": [_make_entry(email="z@acme.example", terminated_at=_days_ago_iso(30))]
+        }
         path = tmp_path / "m.json"
         path.write_text(json.dumps(manifest))
         rc = main([str(path), "--dry-run"])

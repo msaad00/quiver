@@ -48,7 +48,12 @@ def protocol_name(value: str | int | None) -> str:
 
 
 def activity_id_for_decision(value: str | None) -> int:
-    mapping = {"A": ACTIVITY_TRAFFIC, "ALLOW": ACTIVITY_TRAFFIC, "D": ACTIVITY_DENIED, "DENY": ACTIVITY_DENIED}
+    mapping = {
+        "A": ACTIVITY_TRAFFIC,
+        "ALLOW": ACTIVITY_TRAFFIC,
+        "D": ACTIVITY_DENIED,
+        "DENY": ACTIVITY_DENIED,
+    }
     if value is None or value == "":
         return ACTIVITY_UNKNOWN
     return mapping.get(str(value).upper(), ACTIVITY_UNKNOWN)
@@ -131,9 +136,25 @@ def _build_canonical_record(
     mac: str,
     location: str = "",
 ) -> dict[str, Any]:
-    time_ms = parse_ts_ms(tuple_data.get("time")) or int(datetime.now(timezone.utc).timestamp() * 1000)
-    bytes_total = sum(value for value in (_int_or_none(tuple_data.get("bytes_out")), _int_or_none(tuple_data.get("bytes_in"))) if value is not None)
-    packets_total = sum(value for value in (_int_or_none(tuple_data.get("packets_out")), _int_or_none(tuple_data.get("packets_in"))) if value is not None)
+    time_ms = parse_ts_ms(tuple_data.get("time")) or int(
+        datetime.now(timezone.utc).timestamp() * 1000
+    )
+    bytes_total = sum(
+        value
+        for value in (
+            _int_or_none(tuple_data.get("bytes_out")),
+            _int_or_none(tuple_data.get("bytes_in")),
+        )
+        if value is not None
+    )
+    packets_total = sum(
+        value
+        for value in (
+            _int_or_none(tuple_data.get("packets_out")),
+            _int_or_none(tuple_data.get("packets_in")),
+        )
+        if value is not None
+    )
     activity_id = activity_id_for_decision(tuple_data.get("decision"))
     event_uid = hashlib.sha256(
         json.dumps(
@@ -200,9 +221,11 @@ def _build_canonical_record(
         "region": cloud.get("region") or "",
         "time_ms": time_ms,
         "activity_id": activity_id,
-        "activity_name": {ACTIVITY_TRAFFIC: "traffic", ACTIVITY_DENIED: "denied", ACTIVITY_UNKNOWN: "unknown"}.get(
-            activity_id, "unknown"
-        ),
+        "activity_name": {
+            ACTIVITY_TRAFFIC: "traffic",
+            ACTIVITY_DENIED: "denied",
+            ACTIVITY_UNKNOWN: "unknown",
+        }.get(activity_id, "unknown"),
         "status_id": STATUS_SUCCESS,
         "status": "success",
         "src": src,
@@ -249,7 +272,11 @@ def _render_ocsf_record(canonical: dict[str, Any]) -> dict[str, Any]:
         "cloud": canonical["cloud"],
         "observables": [
             {"name": "azure.nsg.rule", "type": "Other", "value": canonical["source"]["rule"]},
-            {"name": "azure.flow_state", "type": "Other", "value": canonical["source"]["flow_state"]},
+            {
+                "name": "azure.flow_state",
+                "type": "Other",
+                "value": canonical["source"]["flow_state"],
+            },
         ],
     }
     return event
@@ -271,7 +298,9 @@ def convert_tuple(
     mac: str,
     location: str = "",
 ) -> dict[str, Any]:
-    canonical = _build_canonical_record(tuple_data, resource_id=resource_id, rule=rule, mac=mac, location=location)
+    canonical = _build_canonical_record(
+        tuple_data, resource_id=resource_id, rule=rule, mac=mac, location=location
+    )
     return _render_ocsf_record(canonical)
 
 
@@ -283,7 +312,9 @@ def convert_tuple_native(
     mac: str,
     location: str = "",
 ) -> dict[str, Any]:
-    canonical = _build_canonical_record(tuple_data, resource_id=resource_id, rule=rule, mac=mac, location=location)
+    canonical = _build_canonical_record(
+        tuple_data, resource_id=resource_id, rule=rule, mac=mac, location=location
+    )
     return _render_native_record(canonical)
 
 
@@ -300,7 +331,10 @@ def iter_raw_records(stream: Iterable[str]) -> Iterable[dict[str, Any]]:
             try:
                 obj = json.loads(line)
             except json.JSONDecodeError as exc:
-                print(f"[{SKILL_NAME}] skipping line {lineno}: json parse failed: {exc}", file=sys.stderr)
+                print(
+                    f"[{SKILL_NAME}] skipping line {lineno}: json parse failed: {exc}",
+                    file=sys.stderr,
+                )
                 continue
             if isinstance(obj, dict):
                 yield obj
@@ -332,7 +366,13 @@ def ingest(stream: Iterable[str], *, output_format: str = "ocsf") -> Iterable[di
                 for tuple_value in flow.get("flowTuples") or []:
                     tuple_data = parse_flow_tuple(tuple_value, version)
                     if tuple_data:
-                        canonical = _build_canonical_record(tuple_data, resource_id=resource_id, rule=rule, mac=mac, location=location)
+                        canonical = _build_canonical_record(
+                            tuple_data,
+                            resource_id=resource_id,
+                            rule=rule,
+                            mac=mac,
+                            location=location,
+                        )
                         if output_format == "native":
                             yield _render_native_record(canonical)
                         else:
@@ -340,7 +380,9 @@ def ingest(stream: Iterable[str], *, output_format: str = "ocsf") -> Iterable[di
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Convert Azure NSG Flow Logs to OCSF 1.8 Network Activity JSONL.")
+    parser = argparse.ArgumentParser(
+        description="Convert Azure NSG Flow Logs to OCSF 1.8 Network Activity JSONL."
+    )
     parser.add_argument("input", nargs="?", help="Input JSON or JSONL file. Defaults to stdin.")
     parser.add_argument("--output", "-o", help="Output JSONL file. Defaults to stdout.")
     parser.add_argument(

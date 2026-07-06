@@ -80,7 +80,9 @@ def _normalize_event(event: dict[str, Any]) -> dict[str, Any] | None:
             return None
         mcp = event.get("mcp") or {}
         unmapped_mcp = _unmapped_mcp(event)
-        session_uid = str(mcp.get("session_uid") or unmapped_mcp.get("session_uid") or "sess-unknown")
+        session_uid = str(
+            mcp.get("session_uid") or unmapped_mcp.get("session_uid") or "sess-unknown"
+        )
         tool_name = str(unmapped_mcp.get("tool_name") or (mcp.get("tool") or {}).get("name") or "")
         artifact_sha = str(unmapped_mcp.get("model_artifact_sha256") or "")
         return {
@@ -102,9 +104,13 @@ def _normalize_event(event: dict[str, Any]) -> dict[str, Any] | None:
     unmapped_mcp = _unmapped_mcp(event)
     return {
         "source_format": schema_mode or "native",
-        "session_uid": str(event.get("session_uid") or unmapped_mcp.get("session_uid") or "sess-unknown"),
+        "session_uid": str(
+            event.get("session_uid") or unmapped_mcp.get("session_uid") or "sess-unknown"
+        ),
         "tool_name": str(unmapped_mcp.get("tool_name") or event.get("tool_name") or ""),
-        "artifact_sha256": str(unmapped_mcp.get("model_artifact_sha256") or event.get("model_artifact_sha256") or ""),
+        "artifact_sha256": str(
+            unmapped_mcp.get("model_artifact_sha256") or event.get("model_artifact_sha256") or ""
+        ),
         "time_ms": _safe_int(event.get("time_ms") or event.get("time")),
         "raw_event": event,
     }
@@ -228,7 +234,9 @@ def _render_ocsf_finding(native_finding: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def detect(events: Iterable[dict[str, Any]], output_format: str = "ocsf") -> Iterable[dict[str, Any]]:
+def detect(
+    events: Iterable[dict[str, Any]], output_format: str = "ocsf"
+) -> Iterable[dict[str, Any]]:
     if output_format not in OUTPUT_FORMATS:
         raise ValueError(f"unsupported output_format `{output_format}`")
 
@@ -268,7 +276,9 @@ def load_jsonl(stream: Iterable[str]) -> Iterable[dict[str, Any]]:
         try:
             obj = json.loads(line)
         except json.JSONDecodeError as exc:
-            print(f"[{SKILL_NAME}] skipping line {lineno}: json parse failed: {exc}", file=sys.stderr)
+            print(
+                f"[{SKILL_NAME}] skipping line {lineno}: json parse failed: {exc}", file=sys.stderr
+            )
             continue
         if isinstance(obj, dict):
             yield obj

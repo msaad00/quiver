@@ -120,8 +120,16 @@ class TestDetection:
         monkeypatch.setenv(THRESHOLD_ENV, "5")
         events = []
         for i in range(3):
-            events.append(_event(uid=f"ev-a-{i}", time_ms=1_000 + i, secret_scope="scope-a", secret_key=f"k-{i}"))
-            events.append(_event(uid=f"ev-b-{i}", time_ms=2_000 + i, secret_scope="scope-b", secret_key=f"k-{i}"))
+            events.append(
+                _event(
+                    uid=f"ev-a-{i}", time_ms=1_000 + i, secret_scope="scope-a", secret_key=f"k-{i}"
+                )
+            )
+            events.append(
+                _event(
+                    uid=f"ev-b-{i}", time_ms=2_000 + i, secret_scope="scope-b", secret_key=f"k-{i}"
+                )
+            )
         # Each scope only has 3 distinct keys per actor, below threshold of 5.
         assert list(detect(events)) == []
 
@@ -154,9 +162,23 @@ class TestDetection:
         monkeypatch.setenv(THRESHOLD_ENV, "3")
         events = []
         for i in range(3):
-            events.append(_event(uid=f"a-{i}", time_ms=1_000 + i, actor_uid="alice@example.com", secret_key=f"k-{i}"))
+            events.append(
+                _event(
+                    uid=f"a-{i}",
+                    time_ms=1_000 + i,
+                    actor_uid="alice@example.com",
+                    secret_key=f"k-{i}",
+                )
+            )
         for i in range(3):
-            events.append(_event(uid=f"b-{i}", time_ms=1_000 + i, actor_uid="bob@example.com", secret_key=f"k-{i}"))
+            events.append(
+                _event(
+                    uid=f"b-{i}",
+                    time_ms=1_000 + i,
+                    actor_uid="bob@example.com",
+                    secret_key=f"k-{i}",
+                )
+            )
         findings = list(detect(events))
         assert len(findings) == 2
 

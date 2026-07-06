@@ -81,12 +81,17 @@ class TestInferActivity:
     def test_unknown_falls_to_other(self):
         # 'register' and 'sync' aren't in the verb map. Even after walking past
         # generic suffixes there's no recognised verb, so → OTHER.
-        for n in ("MICROSOFT.RESOURCES/SUBSCRIPTIONS/PROVIDERS/REGISTER", "Microsoft.Web/sites/sync/action"):
+        for n in (
+            "MICROSOFT.RESOURCES/SUBSCRIPTIONS/PROVIDERS/REGISTER",
+            "Microsoft.Web/sites/sync/action",
+        ):
             assert infer_activity_id(n) == ACTIVITY_OTHER
 
     def test_action_suffix_walks_to_real_verb(self):
         # The /ACTION suffix is generic — the meaningful verb is the segment before it.
-        assert infer_activity_id("MICROSOFT.COMPUTE/VIRTUALMACHINES/RESTART/ACTION") == ACTIVITY_UPDATE
+        assert (
+            infer_activity_id("MICROSOFT.COMPUTE/VIRTUALMACHINES/RESTART/ACTION") == ACTIVITY_UPDATE
+        )
         # listSnapshots starts with 'list' which is in the read map (case-insensitive
         # via .upper()), so this is correctly classified as Read.
         assert infer_activity_id("MICROSOFT.WEB/SITES/LIST/ACTION") == ACTIVITY_READ
@@ -100,7 +105,10 @@ class TestInferActivity:
 
 class TestExtractors:
     def test_service_name(self):
-        assert _service_name_from_operation("MICROSOFT.STORAGE/STORAGEACCOUNTS/WRITE") == "microsoft.storage"
+        assert (
+            _service_name_from_operation("MICROSOFT.STORAGE/STORAGEACCOUNTS/WRITE")
+            == "microsoft.storage"
+        )
 
     def test_service_name_empty(self):
         assert _service_name_from_operation("") == ""
@@ -124,7 +132,9 @@ class TestStatus:
         assert detail is None
 
     def test_result_type_failure(self):
-        sid, detail = _status_id_and_detail({"resultType": "Failure", "resultSignature": "Forbidden.AuthorizationFailed"})
+        sid, detail = _status_id_and_detail(
+            {"resultType": "Failure", "resultSignature": "Forbidden.AuthorizationFailed"}
+        )
         assert sid == STATUS_FAILURE
         assert detail == "Forbidden.AuthorizationFailed"
 
@@ -205,7 +215,9 @@ class TestConvertEvent:
         assert e["actor"]["user"]["uid"] == "11111111-2222-3333-4444-555555555555"
 
     def test_actor_service_principal_only(self):
-        e = convert_event(self._entry(identity={"claims": {"appid": "99999999-8888-7777-6666-555555555555"}}))
+        e = convert_event(
+            self._entry(identity={"claims": {"appid": "99999999-8888-7777-6666-555555555555"}})
+        )
         assert e["actor"]["user"]["name"] == "99999999-8888-7777-6666-555555555555"
         assert e["actor"]["user"]["type"] == "ServicePrincipal"
 
@@ -230,7 +242,9 @@ class TestConvertEvent:
         assert e["resources"][0]["type"] == "storageaccounts"
 
     def test_failure_with_result_signature(self):
-        e = convert_event(self._entry(resultType="Failure", resultSignature="Forbidden.AuthorizationFailed"))
+        e = convert_event(
+            self._entry(resultType="Failure", resultSignature="Forbidden.AuthorizationFailed")
+        )
         assert e["status_id"] == STATUS_FAILURE
         assert e["status_detail"] == "Forbidden.AuthorizationFailed"
 
@@ -251,7 +265,10 @@ class TestConvertEvent:
 class TestIterRawEntries:
     def test_records_wrapper(self):
         wrapped = {
-            "records": [{"operationName": "X", "time": "2026-04-10T05:00:00Z"}, {"operationName": "Y", "time": "2026-04-10T05:01:00Z"}]
+            "records": [
+                {"operationName": "X", "time": "2026-04-10T05:00:00Z"},
+                {"operationName": "Y", "time": "2026-04-10T05:01:00Z"},
+            ]
         }
         out = list(iter_raw_entries([json.dumps(wrapped)]))
         assert len(out) == 2
@@ -290,7 +307,9 @@ class TestGoldenFixture:
         produced = list(ingest(RAW_FIXTURE.read_text().splitlines()))
         expected = _load_jsonl(OCSF_FIXTURE)
         for p, e in zip(produced, expected):
-            assert p == e, f"event mismatch:\n  produced: {json.dumps(p, sort_keys=True)}\n  expected: {json.dumps(e, sort_keys=True)}"
+            assert p == e, (
+                f"event mismatch:\n  produced: {json.dumps(p, sort_keys=True)}\n  expected: {json.dumps(e, sort_keys=True)}"
+            )
 
     def test_fixture_has_failure_with_signature(self):
         events = _load_jsonl(OCSF_FIXTURE)

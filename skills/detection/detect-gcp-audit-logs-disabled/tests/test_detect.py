@@ -77,19 +77,40 @@ def test_fires_on_delete_sink():
     finding = findings[0]
     assert finding["class_uid"] == 2004
     assert finding["finding_info"]["attacks"][0]["technique_uid"] == TECHNIQUE_UID
-    assert any(obs["name"] == "target.name" and obs["value"] == "audit-export" for obs in finding["observables"])
+    assert any(
+        obs["name"] == "target.name" and obs["value"] == "audit-export"
+        for obs in finding["observables"]
+    )
 
 
 def test_fires_on_delete_log():
-    findings = list(detect([_gcp_event(operation="google.logging.v2.LoggingServiceV2.DeleteLog", target_name="cloudaudit.googleapis.com%2Factivity")]))
+    findings = list(
+        detect(
+            [
+                _gcp_event(
+                    operation="google.logging.v2.LoggingServiceV2.DeleteLog",
+                    target_name="cloudaudit.googleapis.com%2Factivity",
+                )
+            ]
+        )
+    )
     assert len(findings) == 1
-    assert any(obs["name"] == "api.operation" and obs["value"] == "google.logging.v2.LoggingServiceV2.DeleteLog" for obs in findings[0]["observables"])
+    assert any(
+        obs["name"] == "api.operation"
+        and obs["value"] == "google.logging.v2.LoggingServiceV2.DeleteLog"
+        for obs in findings[0]["observables"]
+    )
 
 
 def test_native_output_contains_target_identity():
     findings = list(
         detect(
-            [_gcp_event(operation="google.logging.v2.ConfigServiceV2.DeleteSink", target_name="audit-export")],
+            [
+                _gcp_event(
+                    operation="google.logging.v2.ConfigServiceV2.DeleteSink",
+                    target_name="audit-export",
+                )
+            ],
             output_format="native",
         )
     )
@@ -104,7 +125,9 @@ def test_skips_failed_event():
 
 
 def test_skips_unrelated_operation():
-    assert list(detect([_gcp_event(operation="google.logging.v2.ConfigServiceV2.CreateSink")])) == []
+    assert (
+        list(detect([_gcp_event(operation="google.logging.v2.ConfigServiceV2.CreateSink")])) == []
+    )
 
 
 def test_skips_wrong_producer(capsys):

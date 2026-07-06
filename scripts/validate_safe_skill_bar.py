@@ -49,9 +49,13 @@ def validate_read_only_no_subprocess(skill: object) -> list[str]:
                     f"{rel}: read-only skill must not use subprocess/shell pattern `{pattern}`"
                 )
     if approval_model != "none":
-        errors.append(f"{skill_dir.relative_to(ROOT)}: read-only skill must keep approval_model `none`")
+        errors.append(
+            f"{skill_dir.relative_to(ROOT)}: read-only skill must keep approval_model `none`"
+        )
     if side_effects != ("none",):
-        errors.append(f"{skill_dir.relative_to(ROOT)}: read-only skill must keep side_effects `none`")
+        errors.append(
+            f"{skill_dir.relative_to(ROOT)}: read-only skill must keep side_effects `none`"
+        )
     return errors
 
 
@@ -65,14 +69,20 @@ def validate_write_skill_dry_run(skill: object) -> list[str]:
 
     skill_md = (skill_dir / "SKILL.md").read_text().lower()
     if "dry-run" not in skill_md and "dry_run" not in skill_md:
-        errors.append(f"{skill_dir.relative_to(ROOT)}: write-capable skill must document dry-run in SKILL.md")
+        errors.append(
+            f"{skill_dir.relative_to(ROOT)}: write-capable skill must document dry-run in SKILL.md"
+        )
 
     tests_dir = skill_dir / "tests"
     test_text = "\n".join(path.read_text() for path in sorted(tests_dir.rglob("*.py")))
     if "dry_run" not in test_text and "--dry-run" not in test_text and "dry-run" not in test_text:
-        errors.append(f"{skill_dir.relative_to(ROOT)}: write-capable skill must exercise dry-run in tests")
+        errors.append(
+            f"{skill_dir.relative_to(ROOT)}: write-capable skill must exercise dry-run in tests"
+        )
     if approval_model != "human_required":
-        errors.append(f"{skill_dir.relative_to(ROOT)}: write-capable skill must require human approval")
+        errors.append(
+            f"{skill_dir.relative_to(ROOT)}: write-capable skill must require human approval"
+        )
 
     return errors
 
@@ -98,8 +108,8 @@ _DRY_RUN_MARKERS_IN_SRC = (
 )
 
 _AUDIT_WRITE_MARKERS_IN_SRC = (
-    "put_item",        # DynamoDB
-    "put_object",      # S3
+    "put_item",  # DynamoDB
+    "put_object",  # S3
     "dynamodb",
     "audit",
     "AuditWriter",
@@ -111,16 +121,16 @@ _AUDIT_WRITE_MARKERS_IN_SRC = (
 # skill should never invoke any of these. Subset matches the most common write
 # surfaces; extend when new ones land.
 _CLOUD_WRITE_METHOD_PREFIXES = (
-    ".delete_",       # delete_user / delete_access_key / delete_role etc.
-    ".create_",       # create_user / create_access_key / create_role etc.
-    ".update_",       # update_access_key / update_role etc.
-    ".put_",          # put_role_policy / put_bucket_policy etc.
-    ".attach_",       # attach_role_policy etc.
-    ".detach_",       # detach_user_policy etc.
-    ".remove_",       # remove_user_from_group etc.
-    ".deactivate_",   # deactivate_mfa_device
-    ".revoke_",       # revoke_security_group_ingress
-    ".terminate_",    # terminate_instances
+    ".delete_",  # delete_user / delete_access_key / delete_role etc.
+    ".create_",  # create_user / create_access_key / create_role etc.
+    ".update_",  # update_access_key / update_role etc.
+    ".put_",  # put_role_policy / put_bucket_policy etc.
+    ".attach_",  # attach_role_policy etc.
+    ".detach_",  # detach_user_policy etc.
+    ".remove_",  # remove_user_from_group etc.
+    ".deactivate_",  # deactivate_mfa_device
+    ".revoke_",  # revoke_security_group_ingress
+    ".terminate_",  # terminate_instances
 )
 
 
@@ -179,9 +189,7 @@ def validate_write_skill_source_guards(skill: object) -> list[str]:
 
     src_files = _src_python_files(skill_dir)
     if not src_files:
-        errors.append(
-            f"{skill_dir.relative_to(ROOT)}: writable skill has no src/**/*.py files"
-        )
+        errors.append(f"{skill_dir.relative_to(ROOT)}: writable skill has no src/**/*.py files")
         return errors
 
     src_text = "\n".join(path.read_text() for path in src_files)
@@ -234,7 +242,6 @@ def validate_read_only_no_cloud_writes(skill: object) -> list[str]:
                     )
                     break  # one error per line is enough
 
-
     return errors
 
 
@@ -283,7 +290,7 @@ def validate_wildcards() -> list[str]:
 ASSUME_ROLE_ACTION_PATTERNS = (
     re.compile(r'"Action"\s*:\s*"sts:AssumeRole"', re.IGNORECASE),
     re.compile(r'\bAction\s*=\s*"sts:AssumeRole"', re.IGNORECASE),
-    re.compile(r'^\s*Action\s*:\s*sts:AssumeRole\s*$', re.IGNORECASE | re.MULTILINE),
+    re.compile(r"^\s*Action\s*:\s*sts:AssumeRole\s*$", re.IGNORECASE | re.MULTILINE),
 )
 
 _BOUNDARY_CONDITION_MARKERS = (

@@ -308,7 +308,9 @@ def _metadata_uid(event: dict[str, Any]) -> str:
         "repo": event.get("repo") or "",
         "request_id": event.get("request_id") or "",
     }
-    return hashlib.sha256(json.dumps(stable, sort_keys=True, separators=(",", ":")).encode("utf-8")).hexdigest()
+    return hashlib.sha256(
+        json.dumps(stable, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    ).hexdigest()
 
 
 def _status_name(status_id: int) -> str:
@@ -363,7 +365,9 @@ def _privileges(event: dict[str, Any]) -> list[str]:
     return [str(event.get("action") or "")]
 
 
-def _build_canonical_event(event: dict[str, Any], class_uid: int, activity_id: int) -> dict[str, Any]:
+def _build_canonical_event(
+    event: dict[str, Any], class_uid: int, activity_id: int
+) -> dict[str, Any]:
     action = str(event.get("action") or "")
     status_id = status_from_action(action)
     severity_id = severity_for_action(action)

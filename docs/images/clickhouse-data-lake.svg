@@ -64,7 +64,7 @@
     <text x="64" y="94" class="sub">Operator-owned storage, read-only replay, and audit closure for cloud, identity, Kubernetes, SaaS, and MCP security events.</text>
 
     <g transform="translate(1246,42)">
-      <rect x="0" y="0" width="290" height="70" rx="14" fill="#101827" stroke="#334155"/>
+      <rect x="0" y="0" width="322" height="70" rx="14" fill="#101827" stroke="#334155"/>
       <g transform="translate(22,18)">
         <rect x="0" y="0" width="12" height="34" fill="#facc15"/>
         <rect x="18" y="0" width="12" height="34" fill="#fbbf24"/>
@@ -115,7 +115,7 @@
           <circle cx="27" cy="29" r="17" fill="#2563eb"/>
           <text x="27" y="34" text-anchor="middle" font-size="10" font-weight="900" fill="#ffffff">AZ</text>
           <text x="55" y="26" class="badge">Azure</text>
-          <text x="55" y="43" class="tiny">activity · NSG</text>
+          <text x="50" y="43" class="tiny" style="font-size:10px">activity · NSG</text>
         </g>
         <g transform="translate(134,74)">
           <rect x="0" y="0" width="118" height="58" rx="12" fill="#172033" stroke="#475569"/>

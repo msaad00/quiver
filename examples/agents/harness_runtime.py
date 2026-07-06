@@ -101,15 +101,13 @@ def validate_harness_summary(summary: Mapping[str, Any]) -> tuple[str, ...]:
         errors.append("model policy selection source must be recorded")
     if token_usage.get("status") not in {"within_budget", "fallback"}:
         errors.append("token budget status must be within_budget or fallback")
-    if (
-        token_usage.get("status") == "within_budget"
-        and token_usage.get("compact_input_tokens_estimate", 0) > token_budget.get("max_input_tokens", 0)
-    ):
+    if token_usage.get("status") == "within_budget" and token_usage.get(
+        "compact_input_tokens_estimate", 0
+    ) > token_budget.get("max_input_tokens", 0):
         errors.append("compact LLM input exceeds max_input_tokens")
-    if (
-        token_usage.get("status") == "within_budget"
-        and token_usage.get("compact_evidence_chars", 0) > token_budget.get("max_evidence_chars", 0)
-    ):
+    if token_usage.get("status") == "within_budget" and token_usage.get(
+        "compact_evidence_chars", 0
+    ) > token_budget.get("max_evidence_chars", 0):
         errors.append("compact LLM evidence exceeds max_evidence_chars")
 
     for card in summary.get("llm_evidence_cards") or []:
@@ -139,10 +137,7 @@ def validate_harness_summary(summary: Mapping[str, Any]) -> tuple[str, ...]:
         errors.append("agent policy report must use langgraph-agent-policy-v1")
     if not agent_policy.get("policy_hash"):
         errors.append("agent policy report must include policy_hash")
-    policy_entries = {
-        entry.get("agent_id"): entry
-        for entry in agent_policy.get("entries") or []
-    }
+    policy_entries = {entry.get("agent_id"): entry for entry in agent_policy.get("entries") or []}
     triage_policy = policy_entries.get("triage-agent") or {}
     if triage_policy.get("effective_skill_grants") not in ((), []):
         errors.append("triage-agent policy must not grant tool skills")
@@ -208,9 +203,7 @@ def validate_harness_summary(summary: Mapping[str, Any]) -> tuple[str, ...]:
 
     contract = summary.get("pipeline_contract") or {}
     triage_nodes = [
-        node
-        for node in contract.get("nodes") or []
-        if node.get("node") == "llm_triage"
+        node for node in contract.get("nodes") or [] if node.get("node") == "llm_triage"
     ]
     if not triage_nodes:
         errors.append("pipeline contract must include llm_triage node")
@@ -270,7 +263,9 @@ def run_harness(config: HarnessRunConfig | None = None, *, check: bool = True) -
     )
 
 
-def run_harness_summary(config: HarnessRunConfig | None = None, *, check: bool = True) -> dict[str, Any]:
+def run_harness_summary(
+    config: HarnessRunConfig | None = None, *, check: bool = True
+) -> dict[str, Any]:
     """Return the operator-facing summary with wrapper runtime metadata."""
     result = run_harness(config, check=check)
     return {

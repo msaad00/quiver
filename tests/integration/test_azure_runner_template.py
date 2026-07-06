@@ -47,7 +47,9 @@ class TestAzureBlobEventGridDetectRunner:
 
     def test_ingest_handles_blob_event_and_enqueues_lines(self, monkeypatch):
         monkeypatch.setattr(INGEST, "_download_blob_text", lambda url: f"blob:{url}")
-        monkeypatch.setattr(INGEST, "_run_skill", lambda payload: [f"{payload}:line1", f"{payload}:line2"])
+        monkeypatch.setattr(
+            INGEST, "_run_skill", lambda payload: [f"{payload}:line1", f"{payload}:line2"]
+        )
         seen_lines: list[str] = []
         monkeypatch.setattr(
             INGEST,
@@ -56,7 +58,9 @@ class TestAzureBlobEventGridDetectRunner:
         )
 
         result = INGEST.handle_ingest_message(
-            json.dumps({"data": {"url": "https://account.blob.core.windows.net/container/blob.jsonl"}})
+            json.dumps(
+                {"data": {"url": "https://account.blob.core.windows.net/container/blob.jsonl"}}
+            )
         )
 
         assert result == {

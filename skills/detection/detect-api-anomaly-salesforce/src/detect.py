@@ -67,7 +67,13 @@ def _parse_positive_int_env(name: str, default: int) -> int:
     try:
         value = int(raw)
     except ValueError:
-        emit_stderr_event(SKILL_NAME, level="warning", event="invalid_env_int", message=f"{name} must be an integer", env_var=name)
+        emit_stderr_event(
+            SKILL_NAME,
+            level="warning",
+            event="invalid_env_int",
+            message=f"{name} must be an integer",
+            env_var=name,
+        )
         return default
     return value if value > 0 else default
 
@@ -86,7 +92,13 @@ def _load_baseline() -> dict[str, dict[str, Any]]:
     try:
         parsed = json.loads(raw)
     except json.JSONDecodeError as exc:
-        emit_stderr_event(SKILL_NAME, level="warning", event="invalid_baseline_json", message=str(exc), env_var=BASELINE_ENV)
+        emit_stderr_event(
+            SKILL_NAME,
+            level="warning",
+            event="invalid_baseline_json",
+            message=str(exc),
+            env_var=BASELINE_ENV,
+        )
         return {}
     if not isinstance(parsed, dict):
         return {}
@@ -161,7 +173,10 @@ def _api_operation(event: dict[str, Any]) -> str:
 
 
 def _is_relevant(event: dict[str, Any]) -> bool:
-    if event.get("class_uid") != APP_ACTIVITY_CLASS_UID and event.get("record_type") != "application_activity":
+    if (
+        event.get("class_uid") != APP_ACTIVITY_CLASS_UID
+        and event.get("record_type") != "application_activity"
+    ):
         return False
     if _producer(event) != SALESFORCE_INGEST_SKILL:
         return False
@@ -202,7 +217,9 @@ def _reason_for_bucket(
     default_threshold: int,
 ) -> str:
     config = _baseline_for_actor(actor, baseline)
-    baseline_clients = _as_set(config.get("client_names") or config.get("clients")) | allowed_clients
+    baseline_clients = (
+        _as_set(config.get("client_names") or config.get("clients")) | allowed_clients
+    )
     baseline_ips = _as_set(config.get("ips") or config.get("ip_addrs"))
     max_events = _max_events(config, default_threshold)
     clients = {_client_name(event) for event in events if _client_name(event)}
@@ -220,7 +237,9 @@ def _reason_for_bucket(
     return ""
 
 
-def _build_native_finding(events: list[dict[str, Any]], actor: str, window_start_ms: int, window_minutes: int, reason: str) -> dict[str, Any]:
+def _build_native_finding(
+    events: list[dict[str, Any]], actor: str, window_start_ms: int, window_minutes: int, reason: str
+) -> dict[str, Any]:
     actor_name = _actor_name(events[0])
     event_uids = [_metadata_uid(event) for event in events if _metadata_uid(event)]
     finding_uid = _finding_uid(actor, window_start_ms, reason, event_uids)
@@ -238,7 +257,9 @@ def _build_native_finding(events: list[dict[str, Any]], actor: str, window_start
         {"name": "salesforce.api.event_count", "type": "Counter", "value": str(len(events))},
     ]
     for client in clients[:10]:
-        observables.append({"name": "salesforce.client_name", "type": "Process Name", "value": client})
+        observables.append(
+            {"name": "salesforce.client_name", "type": "Process Name", "value": client}
+        )
     for ip in ips[:10]:
         observables.append({"name": "src.ip", "type": "IP Address", "value": ip})
 
@@ -259,7 +280,9 @@ def _build_native_finding(events: list[dict[str, Any]], actor: str, window_start
         "title": "Salesforce API usage outside baseline",
         "description": description,
         "finding_types": ["salesforce-api-anomaly", OWASP_FINDING_TYPE],
-        "first_seen_time_ms": min((_event_time(event) for event in events), default=window_start_ms),
+        "first_seen_time_ms": min(
+            (_event_time(event) for event in events), default=window_start_ms
+        ),
         "last_seen_time_ms": max((_event_time(event) for event in events), default=window_end_ms),
         "mitre_attacks": [
             {
@@ -334,7 +357,13 @@ def iter_records(stream: Iterable[str]) -> Iterable[dict[str, Any]]:
         try:
             obj = json.loads(line)
         except json.JSONDecodeError as exc:
-            emit_stderr_event(SKILL_NAME, level="warning", event="json_parse_failed", message=str(exc), line=lineno)
+            emit_stderr_event(
+                SKILL_NAME,
+                level="warning",
+                event="json_parse_failed",
+                message=str(exc),
+                line=lineno,
+            )
             continue
         if isinstance(obj, dict):
             yield obj
@@ -356,7 +385,9 @@ def detect(stream: Iterable[str], output_format: str = "ocsf") -> list[dict[str,
         buckets[(actor, _window_start(event_time, window_minutes))].append(event)
 
     findings: list[dict[str, Any]] = []
-    for (actor, window_start_ms), events in sorted(buckets.items(), key=lambda item: (item[0][1], item[0][0])):
+    for (actor, window_start_ms), events in sorted(
+        buckets.items(), key=lambda item: (item[0][1], item[0][0])
+    ):
         reason = _reason_for_bucket(events, actor, baseline, allowed_clients, threshold)
         if not reason:
             continue

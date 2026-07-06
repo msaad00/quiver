@@ -157,7 +157,9 @@ def _recipient_block(event: dict[str, Any]) -> dict[str, Any]:
 
 
 def _recipient_id(event: dict[str, Any]) -> str:
-    return str(_recipient_block(event).get("id") or _recipient_block(event).get("name") or "").strip()
+    return str(
+        _recipient_block(event).get("id") or _recipient_block(event).get("name") or ""
+    ).strip()
 
 
 def _recipient_type(event: dict[str, Any]) -> str:
@@ -201,7 +203,9 @@ def _is_databricks_event(event: dict[str, Any]) -> bool:
     return _producer(event) in ACCEPTED_PRODUCERS
 
 
-def _finding_uid(event_uid: str, actor_uid: str, recipient_id: str, share_name: str, time_ms: int) -> str:
+def _finding_uid(
+    event_uid: str, actor_uid: str, recipient_id: str, share_name: str, time_ms: int
+) -> str:
     material = f"{SKILL_NAME}|{event_uid}|{actor_uid}|{recipient_id}|{share_name}|{time_ms}"
     digest = hashlib.sha256(material.encode("utf-8")).hexdigest()[:16]
     return f"det-databricks-uc-cross-workspace-share-{digest}"
@@ -260,18 +264,26 @@ def _build_native_finding(
     if actor_name and actor_name != actor_uid:
         observables.append({"name": "actor.user.name", "type": "User Name", "value": actor_name})
     if workspace_id:
-        observables.append({"name": "databricks.workspace_id", "type": "Resource UID", "value": workspace_id})
+        observables.append(
+            {"name": "databricks.workspace_id", "type": "Resource UID", "value": workspace_id}
+        )
     observables.append({"name": "api.operation", "type": "Other", "value": operation})
     if recipient_id:
         observables.append(
             {"name": "databricks.recipient_id", "type": "Resource UID", "value": recipient_id}
         )
     if recipient_type:
-        observables.append({"name": "databricks.recipient_type", "type": "Other", "value": recipient_type})
+        observables.append(
+            {"name": "databricks.recipient_type", "type": "Other", "value": recipient_type}
+        )
     if share_name:
-        observables.append({"name": "databricks.share_name", "type": "Resource UID", "value": share_name})
+        observables.append(
+            {"name": "databricks.share_name", "type": "Resource UID", "value": share_name}
+        )
     for bound in bound_recipients:
-        observables.append({"name": "databricks.share_recipient", "type": "Resource UID", "value": bound})
+        observables.append(
+            {"name": "databricks.share_recipient", "type": "Resource UID", "value": bound}
+        )
 
     evidence: dict[str, Any] = {
         "events_observed": 1,
@@ -514,9 +526,15 @@ def main(argv: list[str] | None = None) -> int:
             "from OCSF 1.8 API Activity 6003 input."
         )
     )
-    parser.add_argument("input", nargs="?", help="OCSF 1.8 API Activity 6003 JSONL input. Defaults to stdin.")
-    parser.add_argument("--output", "-o", help="Detection Finding JSONL output. Defaults to stdout.")
-    parser.add_argument("--output-format", choices=OUTPUT_FORMATS, default="ocsf", help="Output format.")
+    parser.add_argument(
+        "input", nargs="?", help="OCSF 1.8 API Activity 6003 JSONL input. Defaults to stdin."
+    )
+    parser.add_argument(
+        "--output", "-o", help="Detection Finding JSONL output. Defaults to stdout."
+    )
+    parser.add_argument(
+        "--output-format", choices=OUTPUT_FORMATS, default="ocsf", help="Output format."
+    )
     args = parser.parse_args(argv)
 
     in_stream = sys.stdin if not args.input else open(args.input, "r", encoding="utf-8")

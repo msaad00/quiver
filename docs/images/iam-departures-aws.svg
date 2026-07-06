@@ -78,7 +78,7 @@
 
   <g font-family="Segoe UI, ui-sans-serif, Arial, sans-serif">
     <g transform="translate(46,38)">
-      <rect x="0" y="0" width="214" height="32" rx="16" fill="#221306" stroke="#f59e0b"/>
+      <rect x="0" y="0" width="240" height="32" rx="16" fill="#221306" stroke="#f59e0b"/>
       <use href="#aws" x="12" y="7" width="18" height="18"/>
       <text x="38" y="21" fill="#fbbf24" font-size="12" font-weight="800" letter-spacing="1.4">AWS FLAGSHIP WORKFLOW</text>
     </g>
@@ -164,7 +164,7 @@
     <g filter="url(#shadow)">
       <rect x="530" y="240" width="126" height="64" rx="12" fill="url(#panel)" stroke="#ec4899" stroke-width="1.4"/>
       <use href="#sfn" x="544" y="252" width="22" height="22"/>
-      <text x="574" y="267" fill="#fbcfe8" font-size="13" font-weight="800">Step Function</text>
+      <text x="574" y="267" fill="#fbcfe8" font-size="12" font-weight="800">Step Function</text>
       <text x="544" y="290" fill="#94a3b8" font-size="10">map · one user per item</text>
     </g>
 

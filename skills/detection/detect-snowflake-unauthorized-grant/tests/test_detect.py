@@ -138,7 +138,13 @@ class TestDetection:
         monkeypatch.setenv("SNOWFLAKE_AUTHORIZED_GRANTERS", "BREAK_GLASS_USER")
         events = [
             _event(uid="q-1", time_ms=1_000, actor_uid="MALLORY", granted_role="ACCOUNTADMIN"),
-            _event(uid="q-2", time_ms=2_000, actor_uid="EVE", granted_role="SECURITYADMIN", grantee_user="ANOTHER_USER"),
+            _event(
+                uid="q-2",
+                time_ms=2_000,
+                actor_uid="EVE",
+                granted_role="SECURITYADMIN",
+                grantee_user="ANOTHER_USER",
+            ),
         ]
         findings = list(detect(events))
         assert len(findings) == 2

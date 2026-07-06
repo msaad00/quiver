@@ -14,21 +14,10 @@ JSON_POLICY = (
     / "worker_execution_role.json"
 )
 CLOUDFORMATION = (
-    ROOT
-    / "skills"
-    / "remediation"
-    / "iam-departures-aws"
-    / "infra"
-    / "cloudformation.yaml"
+    ROOT / "skills" / "remediation" / "iam-departures-aws" / "infra" / "cloudformation.yaml"
 )
 TERRAFORM = (
-    ROOT
-    / "skills"
-    / "remediation"
-    / "iam-departures-aws"
-    / "infra"
-    / "terraform"
-    / "main.tf"
+    ROOT / "skills" / "remediation" / "iam-departures-aws" / "infra" / "terraform" / "main.tf"
 )
 
 

@@ -37,10 +37,18 @@ def _aws_snapshot() -> dict:
                 ]
             },
             "kms": {"keys": [{"KeyId": "key-1", "RotationEnabled": True}]},
-            "cloudtrail": {"trails": [{"Name": "org-trail", "IsLogging": True, "KmsKeyId": "arn:kms"}]},
+            "cloudtrail": {
+                "trails": [{"Name": "org-trail", "IsLogging": True, "KmsKeyId": "arn:kms"}]
+            },
             "ec2": {
                 "instances": [{"InstanceId": "i-123", "PublicIpAddress": "1.2.3.4"}],
-                "security_groups": [{"GroupId": "sg-1", "GroupName": "public-sg", "ingress": [{"cidr": "0.0.0.0/0"}]}],
+                "security_groups": [
+                    {
+                        "GroupId": "sg-1",
+                        "GroupName": "public-sg",
+                        "ingress": [{"cidr": "0.0.0.0/0"}],
+                    }
+                ],
             },
         },
     }
@@ -52,24 +60,55 @@ def _multi_cloud_snapshot() -> dict:
         "captured_at": "2026-04-12T03:00:00Z",
         "aws": {
             "bedrock": {
-                "custom_models": [{"modelArn": "arn:aws:bedrock:model/guard", "modelName": "guard-model"}],
+                "custom_models": [
+                    {"modelArn": "arn:aws:bedrock:model/guard", "modelName": "guard-model"}
+                ],
                 "guardrails": [{"id": "gr-1", "name": "bedrock-guard"}],
-                "knowledge_bases": [{"knowledgeBaseId": "kb-1", "name": "kb-prod", "encrypted": True}],
+                "knowledge_bases": [
+                    {"knowledgeBaseId": "kb-1", "name": "kb-prod", "encrypted": True}
+                ],
             },
             "sagemaker": {
-                "endpoints": [{"EndpointArn": "arn:aws:sagemaker:endpoint/fraud", "EndpointName": "fraud", "public": False}],
-                "training_jobs": [{"TrainingJobArn": "arn:aws:sagemaker:training-job/fraud", "TrainingJobName": "fraud-train"}],
+                "endpoints": [
+                    {
+                        "EndpointArn": "arn:aws:sagemaker:endpoint/fraud",
+                        "EndpointName": "fraud",
+                        "public": False,
+                    }
+                ],
+                "training_jobs": [
+                    {
+                        "TrainingJobArn": "arn:aws:sagemaker:training-job/fraud",
+                        "TrainingJobName": "fraud-train",
+                    }
+                ],
             },
         },
         "gcp": {
             "iam": {"service_accounts": [{"email": "svc@example.iam.gserviceaccount.com"}]},
             "logging": {"sinks": [{"name": "org-sink"}]},
-            "compute": {"instances": [{"id": "gce-1", "name": "gce-1", "networkInterfaces": [{"accessConfigs": [{}]}]}]},
+            "compute": {
+                "instances": [
+                    {"id": "gce-1", "name": "gce-1", "networkInterfaces": [{"accessConfigs": [{}]}]}
+                ]
+            },
             "vertex_ai": {
-                "models": [{"name": "projects/p/locations/us/models/1", "displayName": "fraud-model"}],
-                "endpoints": [{"name": "projects/p/locations/us/endpoints/1", "displayName": "fraud-endpoint", "public": True}],
-                "datasets": [{"name": "projects/p/locations/us/datasets/1", "displayName": "fraud-dataset"}],
-                "indexes": [{"name": "projects/p/locations/us/indexes/1", "displayName": "fraud-index"}],
+                "models": [
+                    {"name": "projects/p/locations/us/models/1", "displayName": "fraud-model"}
+                ],
+                "endpoints": [
+                    {
+                        "name": "projects/p/locations/us/endpoints/1",
+                        "displayName": "fraud-endpoint",
+                        "public": True,
+                    }
+                ],
+                "datasets": [
+                    {"name": "projects/p/locations/us/datasets/1", "displayName": "fraud-dataset"}
+                ],
+                "indexes": [
+                    {"name": "projects/p/locations/us/indexes/1", "displayName": "fraud-index"}
+                ],
             },
         },
         "azure": {
@@ -77,13 +116,17 @@ def _multi_cloud_snapshot() -> dict:
             "storage": {"accounts": [{"id": "st-1", "name": "stprod", "encrypted": True}]},
             "monitor": {"diagnostic_settings": [{"id": "diag-1", "name": "diag-prod"}]},
             "ai_foundry": {
-                "deployments": [{"id": "dep-1", "name": "chat-prod", "public": True, "logging_enabled": True}],
+                "deployments": [
+                    {"id": "dep-1", "name": "chat-prod", "public": True, "logging_enabled": True}
+                ],
                 "projects": [{"id": "proj-1", "name": "ai-project"}],
             },
             "azure_ml": {
                 "models": [{"id": "/models/fraud", "name": "fraud-model"}],
                 "data_assets": [{"id": "/data/fraud", "name": "fraud-data"}],
-                "online_endpoints": [{"id": "/endpoints/fraud", "name": "fraud", "public_network_access": False}],
+                "online_endpoints": [
+                    {"id": "/endpoints/fraud", "name": "fraud", "public_network_access": False}
+                ],
             },
         },
     }
@@ -121,14 +164,22 @@ class TestBuildEvidence:
         evidence = build_evidence(_multi_cloud_snapshot(), ["soc2"])
         assert evidence["frameworks"] == ["SOC 2 Security"]
         assert {control["framework"] for control in evidence["controls"]} == {"SOC 2 Security"}
-        assert any(control["control_id"] == "cc6.ai-service-surface" for control in evidence["controls"])
+        assert any(
+            control["control_id"] == "cc6.ai-service-surface" for control in evidence["controls"]
+        )
 
     def test_ai_rmf_filter(self):
         evidence = build_evidence(_multi_cloud_snapshot(), ["ai-rmf"])
         assert evidence["frameworks"] == ["NIST AI RMF 1.0"]
         assert {control["framework"] for control in evidence["controls"]} == {"NIST AI RMF 1.0"}
-        assert any(control["control_id"] == "ai-rmf.map.ai-system-inventory" for control in evidence["controls"])
-        assert any(control["framework_mappings"]["nist_ai_rmf"] == "GOVERN" for control in evidence["controls"])
+        assert any(
+            control["control_id"] == "ai-rmf.map.ai-system-inventory"
+            for control in evidence["controls"]
+        )
+        assert any(
+            control["framework_mappings"]["nist_ai_rmf"] == "GOVERN"
+            for control in evidence["controls"]
+        )
 
     def test_inventory_summary_includes_ai_surface_counts(self):
         evidence = build_evidence(_multi_cloud_snapshot())
@@ -149,16 +200,34 @@ class TestBuildEvidence:
         evidence = build_evidence(
             {
                 "aws": {
-                    "ec2": {"security_groups": [{"GroupId": "sg-1", "GroupName": "app", "ingress": [{"cidr": "10.0.0.0/8"}]}]}
+                    "ec2": {
+                        "security_groups": [
+                            {
+                                "GroupId": "sg-1",
+                                "GroupName": "app",
+                                "ingress": [{"cidr": "10.0.0.0/8"}],
+                            }
+                        ]
+                    }
                 },
-                "gcp": {"compute": {"firewalls": [{"name": "internal-only", "sourceRanges": ["10.0.0.0/8"]}]}},
+                "gcp": {
+                    "compute": {
+                        "firewalls": [{"name": "internal-only", "sourceRanges": ["10.0.0.0/8"]}]
+                    }
+                },
                 "azure": {
                     "network": {
                         "nsgs": [
                             {
                                 "id": "nsg-1",
                                 "name": "internal-only",
-                                "securityRules": [{"access": "Allow", "direction": "Inbound", "sourceAddressPrefix": "10.0.0.0/8"}],
+                                "securityRules": [
+                                    {
+                                        "access": "Allow",
+                                        "direction": "Inbound",
+                                        "sourceAddressPrefix": "10.0.0.0/8",
+                                    }
+                                ],
                             }
                         ]
                     }
@@ -177,7 +246,11 @@ class TestBuildEvidence:
 
     def test_reports_missing_logging_when_absent(self):
         evidence = build_evidence({"aws": {"iam": {"users": [{"UserName": "alice"}]}}}, ["pci"])
-        logging_control = next(control for control in evidence["controls"] if control["control_id"] == "inventory.audit-logging")
+        logging_control = next(
+            control
+            for control in evidence["controls"]
+            if control["control_id"] == "inventory.audit-logging"
+        )
         assert logging_control["status"] == "missing"
 
     def test_invalid_input_raises(self):
@@ -194,8 +267,12 @@ class TestBuildEvidence:
         assert event["class_uid"] == 5040
         assert event["class_name"] == "Live Evidence Info"
         assert event["metadata"]["version"] == "1.8.0"
-        assert event["unmapped"]["cloud_security_technical_evidence"]["frameworks"] == ["PCI DSS 4.0"]
+        assert event["unmapped"]["cloud_security_technical_evidence"]["frameworks"] == [
+            "PCI DSS 4.0"
+        ]
 
     def test_ai_rmf_bridge_preserves_framework(self):
         event = to_ocsf_live_evidence(build_evidence(_multi_cloud_snapshot(), ["ai-rmf"]))
-        assert event["unmapped"]["cloud_security_technical_evidence"]["frameworks"] == ["NIST AI RMF 1.0"]
+        assert event["unmapped"]["cloud_security_technical_evidence"]["frameworks"] == [
+            "NIST AI RMF 1.0"
+        ]

@@ -256,8 +256,12 @@ class TestDetection:
 
     def test_native_input_can_emit_native_finding(self):
         events = [
-            _native_event(uid="evt-1", event_type="system.push.send_factor_verify_push", time_ms=1000),
-            _native_event(uid="evt-2", event_type="system.push.send_factor_verify_push", time_ms=2000),
+            _native_event(
+                uid="evt-1", event_type="system.push.send_factor_verify_push", time_ms=1000
+            ),
+            _native_event(
+                uid="evt-2", event_type="system.push.send_factor_verify_push", time_ms=2000
+            ),
             _native_event(
                 uid="evt-3",
                 event_type="user.mfa.okta_verify.deny_push",
@@ -277,8 +281,12 @@ class TestDetection:
 
     def test_native_input_can_emit_ocsf_finding(self):
         events = [
-            _native_event(uid="evt-1", event_type="system.push.send_factor_verify_push", time_ms=1000),
-            _native_event(uid="evt-2", event_type="system.push.send_factor_verify_push", time_ms=2000),
+            _native_event(
+                uid="evt-1", event_type="system.push.send_factor_verify_push", time_ms=1000
+            ),
+            _native_event(
+                uid="evt-2", event_type="system.push.send_factor_verify_push", time_ms=2000
+            ),
             _native_event(
                 uid="evt-3",
                 event_type="user.mfa.okta_verify.deny_push",
@@ -336,7 +344,9 @@ class TestMetadata:
         assert metadata["thresholds"]["min_relevant_events"] == MIN_RELEVANT_EVENTS
         assert metadata["thresholds"]["min_challenges"] == MIN_CHALLENGES
         assert metadata["thresholds"]["min_denials"] == MIN_DENIALS
-        assert CHALLENGE_EVENT_TYPES.issubset(set(metadata["attack_coverage"]["okta"]["anchor_event_types"]))
+        assert CHALLENGE_EVENT_TYPES.issubset(
+            set(metadata["attack_coverage"]["okta"]["anchor_event_types"])
+        )
 
 
 class TestLoadJsonl:

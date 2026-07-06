@@ -58,13 +58,15 @@ _TRUTHY = frozenset({"1", "true", "yes", "on"})
 # Hard-coded list of evaluation-layer skills that are wired to support
 # the long-running worker harness. Keep in lockstep with the
 # `__main__` blocks in each skill's `checks.py`.
-SUPPORTED_SKILL_NAMES: frozenset[str] = frozenset({
-    "cspm-aws-cis-benchmark",
-    "cspm-gcp-cis-benchmark",
-    "cspm-azure-cis-benchmark",
-    "k8s-security-benchmark",
-    "container-security",
-})
+SUPPORTED_SKILL_NAMES: frozenset[str] = frozenset(
+    {
+        "cspm-aws-cis-benchmark",
+        "cspm-gcp-cis-benchmark",
+        "cspm-azure-cis-benchmark",
+        "k8s-security-benchmark",
+        "container-security",
+    }
+)
 
 
 def is_enabled(env: dict[str, str] | None = None) -> bool:

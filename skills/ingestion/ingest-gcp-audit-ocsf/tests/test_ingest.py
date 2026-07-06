@@ -153,7 +153,10 @@ class TestConvertEvent:
         return {
             "protoPayload": proto,
             "insertId": "e1",
-            "resource": {"type": "service_account", "labels": {"project_id": "my-project", "location": "us-central1"}},
+            "resource": {
+                "type": "service_account",
+                "labels": {"project_id": "my-project", "location": "us-central1"},
+            },
             "timestamp": "2026-04-10T05:00:00Z",
         }
 
@@ -203,7 +206,9 @@ class TestConvertEvent:
     def test_resources(self):
         e = convert_event(self._entry())
         assert len(e["resources"]) == 1
-        assert e["resources"][0]["name"] == "projects/-/serviceAccounts/sa@p.iam.gserviceaccount.com"
+        assert (
+            e["resources"][0]["name"] == "projects/-/serviceAccounts/sa@p.iam.gserviceaccount.com"
+        )
         assert e["resources"][0]["type"] == "service_account"
 
     def test_resources_include_sanitized_created_service_account_key_name(self):
@@ -216,7 +221,10 @@ class TestConvertEvent:
             )
         )
         assert e["resources"] == [
-            {"name": "projects/-/serviceAccounts/sa@p.iam.gserviceaccount.com", "type": "service_account"},
+            {
+                "name": "projects/-/serviceAccounts/sa@p.iam.gserviceaccount.com",
+                "type": "service_account",
+            },
             {
                 "name": "projects/-/serviceAccounts/sa@p.iam.gserviceaccount.com/keys/key-123",
                 "type": "service_account_key",
@@ -230,7 +238,12 @@ class TestConvertEvent:
         assert "PERMISSION_DENIED" in e["status_detail"]
 
     def test_skips_non_audit_log(self):
-        e = {"protoPayload": {"@type": "type.googleapis.com/something.else.LogEntry", "methodName": "x"}}
+        e = {
+            "protoPayload": {
+                "@type": "type.googleapis.com/something.else.LogEntry",
+                "methodName": "x",
+            }
+        }
         assert convert_event(e) is None
 
     def test_native_output_keeps_canonical_fields_without_ocsf_envelope(self):
@@ -249,23 +262,44 @@ class TestConvertEvent:
 
 class TestIngestStream:
     def test_ndjson(self):
-        e1 = json.dumps({"protoPayload": {"@type": AUDIT_LOG_TYPE, "methodName": "x.y.GetThing"}, "timestamp": "2026-04-10T05:00:00Z"})
-        e2 = json.dumps({"protoPayload": {"@type": AUDIT_LOG_TYPE, "methodName": "x.y.DeleteThing"}, "timestamp": "2026-04-10T05:01:00Z"})
+        e1 = json.dumps(
+            {
+                "protoPayload": {"@type": AUDIT_LOG_TYPE, "methodName": "x.y.GetThing"},
+                "timestamp": "2026-04-10T05:00:00Z",
+            }
+        )
+        e2 = json.dumps(
+            {
+                "protoPayload": {"@type": AUDIT_LOG_TYPE, "methodName": "x.y.DeleteThing"},
+                "timestamp": "2026-04-10T05:01:00Z",
+            }
+        )
         out = list(ingest([e1, e2]))
         assert len(out) == 2
         assert out[0]["activity_id"] == ACTIVITY_READ
         assert out[1]["activity_id"] == ACTIVITY_DELETE
 
     def test_skips_non_audit(self, capsys):
-        good = json.dumps({"protoPayload": {"@type": AUDIT_LOG_TYPE, "methodName": "x.y.GetThing"}, "timestamp": "2026-04-10T05:00:00Z"})
-        bad = json.dumps({"protoPayload": {"@type": "type.googleapis.com/other.LogEntry", "methodName": "x"}})
+        good = json.dumps(
+            {
+                "protoPayload": {"@type": AUDIT_LOG_TYPE, "methodName": "x.y.GetThing"},
+                "timestamp": "2026-04-10T05:00:00Z",
+            }
+        )
+        bad = json.dumps(
+            {"protoPayload": {"@type": "type.googleapis.com/other.LogEntry", "methodName": "x"}}
+        )
         out = list(ingest([bad, good]))
         assert len(out) == 1
         assert "not a google.cloud.audit.AuditLog" in capsys.readouterr().err
 
     def test_native_output_mode(self):
         payload = json.dumps(
-            {"protoPayload": {"@type": AUDIT_LOG_TYPE, "methodName": "x.y.GetThing"}, "insertId": "n1", "timestamp": "2026-04-10T05:00:00Z"}
+            {
+                "protoPayload": {"@type": AUDIT_LOG_TYPE, "methodName": "x.y.GetThing"},
+                "insertId": "n1",
+                "timestamp": "2026-04-10T05:00:00Z",
+            }
         )
         out = list(ingest([payload], output_format="native"))
         assert len(out) == 1
@@ -310,7 +344,9 @@ class TestGoldenFixture:
         produced = list(ingest(RAW_FIXTURE.read_text().splitlines()))
         expected = _load_jsonl(OCSF_FIXTURE)
         for p, e in zip(produced, expected):
-            assert p == e, f"event mismatch:\n  produced: {json.dumps(p, sort_keys=True)}\n  expected: {json.dumps(e, sort_keys=True)}"
+            assert p == e, (
+                f"event mismatch:\n  produced: {json.dumps(p, sort_keys=True)}\n  expected: {json.dumps(e, sort_keys=True)}"
+            )
 
     def test_fixture_exercises_all_activities(self):
         events = _load_jsonl(OCSF_FIXTURE)

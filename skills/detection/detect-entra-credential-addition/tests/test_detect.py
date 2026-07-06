@@ -165,7 +165,12 @@ class TestDetection:
                         target_uid="app-target-1",
                         target_type="Application",
                         src_ip="203.0.113.20",
-                        additional_details=[{"key": "Issuer", "value": "https://token.actions.githubusercontent.com"}],
+                        additional_details=[
+                            {
+                                "key": "Issuer",
+                                "value": "https://token.actions.githubusercontent.com",
+                            }
+                        ],
                     )
                 ],
                 output_format="native",
@@ -196,7 +201,9 @@ class TestDetection:
         assert findings == []
 
     def test_duplicate_event_uid_does_not_double_count(self):
-        event = _ocsf_event(uid="evt-1", operation="Add service principal credentials", time_ms=1776052800000)
+        event = _ocsf_event(
+            uid="evt-1", operation="Add service principal credentials", time_ms=1776052800000
+        )
         findings = list(detect([event, event]))
         assert len(findings) == 1
 

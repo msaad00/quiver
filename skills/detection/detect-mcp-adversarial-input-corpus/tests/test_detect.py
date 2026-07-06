@@ -226,7 +226,7 @@ class TestDetect:
 
 class TestLoadJsonl:
     def test_skips_malformed(self, capsys):
-        lines = ['{not json', '{"ok":true}']
+        lines = ["{not json", '{"ok":true}']
         assert list(load_jsonl(lines)) == [{"ok": True}]
         assert "skipping line 1" in capsys.readouterr().err
 

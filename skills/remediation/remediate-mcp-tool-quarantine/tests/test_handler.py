@@ -158,10 +158,16 @@ def test_check_apply_gate_accepts_legacy_two_approver_envs(monkeypatch):
 
 def test_parse_targets_accepts_both_producers():
     drift = next(parse_targets([_finding(producer="detect-mcp-tool-drift")]))[0]
-    inj = next(parse_targets([_finding(
-        producer="detect-prompt-injection-mcp-proxy",
-        fp_observable="tool.description_sha256",
-    )]))[0]
+    inj = next(
+        parse_targets(
+            [
+                _finding(
+                    producer="detect-prompt-injection-mcp-proxy",
+                    fp_observable="tool.description_sha256",
+                )
+            ]
+        )
+    )[0]
     assert drift is not None and drift.producer_skill == "detect-mcp-tool-drift"
     assert inj is not None and inj.producer_skill == "detect-prompt-injection-mcp-proxy"
 
@@ -290,6 +296,7 @@ def test_run_apply_writes_failure_audit_when_store_throws():
 
 def test_run_apply_requires_audit_writer():
     import pytest
+
     with pytest.raises(ValueError, match="audit writer is required"):
         list(run([_finding()], store=_FakeStore(), apply=True, audit=None))
 
@@ -355,11 +362,11 @@ def test_quarantine_file_round_trips_tool_names(tmp_path):
 def test_quarantine_file_skips_malformed_lines(tmp_path):
     path = tmp_path / "q.jsonl"
     path.write_text(
-        '\n'.join(
+        "\n".join(
             [
                 '{"tool_name": "good"}',
-                'this-is-not-json',
-                '',
+                "this-is-not-json",
+                "",
                 '{"missing_tool_name": true}',
                 '{"tool_name": "also-good"}',
             ]

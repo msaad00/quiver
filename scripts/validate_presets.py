@@ -55,21 +55,15 @@ def _validate_preset(path: Path, shipped: set[str]) -> list[str]:
         return errs
     allowed = data["allowed_skills"]
     if not isinstance(allowed, list) or not allowed:
-        errs.append(
-            f"{_label(path)}: `allowed_skills` must be a non-empty list"
-        )
+        errs.append(f"{_label(path)}: `allowed_skills` must be a non-empty list")
         return errs
     seen: set[str] = set()
     for entry in allowed:
         if not isinstance(entry, str):
-            errs.append(
-                f"{_label(path)}: `allowed_skills` entry {entry!r} is not a string"
-            )
+            errs.append(f"{_label(path)}: `allowed_skills` entry {entry!r} is not a string")
             continue
         if entry in seen:
-            errs.append(
-                f"{_label(path)}: duplicate entry `{entry}` in `allowed_skills`"
-            )
+            errs.append(f"{_label(path)}: duplicate entry `{entry}` in `allowed_skills`")
         seen.add(entry)
         if entry not in shipped:
             errs.append(

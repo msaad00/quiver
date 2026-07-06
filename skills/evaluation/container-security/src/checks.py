@@ -64,7 +64,9 @@ def _safe_iter_images(config: object, *, check_id: str, prefer: str = "images") 
             check_id=check_id,
         )
         return []
-    primary, secondary = ("images", "containers") if prefer == "images" else ("containers", "images")
+    primary, secondary = (
+        ("images", "containers") if prefer == "images" else ("containers", "images")
+    )
     raw = config.get(primary)
     if raw is None:
         raw = config.get(secondary)
@@ -125,7 +127,9 @@ def check_1_1_no_root_user(config: dict) -> Finding:
         section="dockerfile",
         severity="HIGH",
         status="FAIL" if root_images else "PASS",
-        detail=f"{len(root_images)} images run as root" if root_images else "All images use non-root user",
+        detail=f"{len(root_images)} images run as root"
+        if root_images
+        else "All images use non-root user",
         remediation="Add USER directive with non-root UID in Dockerfile. Never run as root.",
         cis_docker="4.1",
         nist_csf="PR.AC-4",
@@ -169,7 +173,9 @@ def check_1_3_healthcheck_defined(config: dict) -> Finding:
         section="dockerfile",
         severity="LOW",
         status="FAIL" if no_health else "PASS",
-        detail=f"{len(no_health)} images without healthcheck" if no_health else "All images have HEALTHCHECK",
+        detail=f"{len(no_health)} images without healthcheck"
+        if no_health
+        else "All images have HEALTHCHECK",
         remediation="Add HEALTHCHECK instruction to Dockerfile for orchestrator liveness probes.",
         cis_docker="4.6",
         nist_csf="DE.CM-1",
@@ -206,7 +212,9 @@ def check_2_1_no_secrets_in_env(config: dict) -> Finding:
         section="image_security",
         severity="CRITICAL",
         status="FAIL" if exposed else "PASS",
-        detail=f"{len(exposed)} potential secrets in env" if exposed else "No secrets in environment variables",
+        detail=f"{len(exposed)} potential secrets in env"
+        if exposed
+        else "No secrets in environment variables",
         remediation="Use mounted secrets or external secret managers. Never bake secrets into images.",
         cis_docker="4.5",
         nist_csf="PR.DS-5",
@@ -229,7 +237,9 @@ def check_2_2_minimal_packages(config: dict) -> Finding:
         section="image_security",
         severity="MEDIUM",
         status="FAIL" if bloated else "PASS",
-        detail=f"{len(bloated)} images not using minimal base" if bloated else "All images use minimal bases",
+        detail=f"{len(bloated)} images not using minimal base"
+        if bloated
+        else "All images use minimal bases",
         remediation="Use alpine, slim, or distroless base images to reduce attack surface.",
         cis_docker="4.3",
         nist_csf="PR.IP-1",
@@ -242,7 +252,9 @@ def check_2_3_no_add_instruction(config: dict) -> Finding:
     images = _safe_iter_images(config, check_id="CTR-2.3")
     uses_add = []
     for img in images:
-        instructions = img.get("instructions") if img.get("instructions") is not None else img.get("history")
+        instructions = (
+            img.get("instructions") if img.get("instructions") is not None else img.get("history")
+        )
         if not isinstance(instructions, list):
             continue
         for inst in instructions:
@@ -292,7 +304,9 @@ def check_3_1_read_only_rootfs(config: dict) -> Finding:
         section="runtime",
         severity="MEDIUM",
         status="FAIL" if writable else "PASS",
-        detail=f"{len(writable)} containers with writable rootfs" if writable else "All containers read-only",
+        detail=f"{len(writable)} containers with writable rootfs"
+        if writable
+        else "All containers read-only",
         remediation="Set readOnlyRootFilesystem: true. Use emptyDir for temp data.",
         cis_docker="5.12",
         nist_csf="PR.DS-6",
@@ -315,7 +329,9 @@ def check_3_2_resource_limits(config: dict) -> Finding:
         section="runtime",
         severity="MEDIUM",
         status="FAIL" if no_limits else "PASS",
-        detail=f"{len(no_limits)} containers without resource limits" if no_limits else "All containers have limits",
+        detail=f"{len(no_limits)} containers without resource limits"
+        if no_limits
+        else "All containers have limits",
         remediation="Set resources.limits.cpu and resources.limits.memory on every container.",
         cis_docker="5.14",
         nist_csf="PR.DS-4",
@@ -329,7 +345,11 @@ def check_3_2_resource_limits(config: dict) -> Finding:
 
 ALL_CHECKS = {
     "dockerfile": [check_1_1_no_root_user, check_1_2_no_latest_base, check_1_3_healthcheck_defined],
-    "image_security": [check_2_1_no_secrets_in_env, check_2_2_minimal_packages, check_2_3_no_add_instruction],
+    "image_security": [
+        check_2_1_no_secrets_in_env,
+        check_2_2_minimal_packages,
+        check_2_3_no_add_instruction,
+    ],
     "runtime": [check_3_1_read_only_rootfs, check_3_2_resource_limits],
 }
 
@@ -392,7 +412,9 @@ def main() -> None:
         print(json.dumps(rendered, indent=2))
     else:
         print_summary(findings)
-    sys.exit(1 if any(f.status == "FAIL" and f.severity in ("CRITICAL", "HIGH") for f in findings) else 0)
+    sys.exit(
+        1 if any(f.status == "FAIL" and f.severity in ("CRITICAL", "HIGH") for f in findings) else 0
+    )
 
 
 if __name__ == "__main__":

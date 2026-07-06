@@ -43,9 +43,7 @@ PROTECTED_USER_PATTERNS: tuple[str, ...] = (
 # Role patterns — present for documentation + parity check with IaC. The
 # handler only deletes users, so these are never reached as deletion targets.
 # The IaC `Resource` deny still covers them at the API boundary.
-PROTECTED_ROLE_PATTERNS: tuple[str, ...] = (
-    "*",
-)
+PROTECTED_ROLE_PATTERNS: tuple[str, ...] = ("*",)
 
 
 class ProtectedPrincipalError(ValueError):

@@ -16,7 +16,9 @@ sys.modules[spec.name] = ingest_mod
 spec.loader.exec_module(ingest_mod)
 
 
-def _termination(worker_id: str = "W-1001", email: str = "departed@example.com") -> dict[str, object]:
+def _termination(
+    worker_id: str = "W-1001", email: str = "departed@example.com"
+) -> dict[str, object]:
     return {
         "eventName": "Terminate Employee",
         "eventTime": "2026-06-06T14:30:00Z",
@@ -67,7 +69,10 @@ def test_ingests_jsonl_data_wrapper() -> None:
 
 
 def test_skips_invalid_record() -> None:
-    assert list(ingest_mod.ingest(StringIO(json.dumps({"not": "workday"})), output_format="ocsf")) == []
+    assert (
+        list(ingest_mod.ingest(StringIO(json.dumps({"not": "workday"})), output_format="ocsf"))
+        == []
+    )
 
 
 def test_cli_outputs_jsonl(tmp_path: Path) -> None:

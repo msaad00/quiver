@@ -44,7 +44,9 @@ class SkillError(Exception):
     retryable: bool = False
     error_class: str = "skill_error"
 
-    def __init__(self, message: str, *, redacted: str | None = None, hint: str | None = None) -> None:
+    def __init__(
+        self, message: str, *, redacted: str | None = None, hint: str | None = None
+    ) -> None:
         super().__init__(message)
         self.message = message
         self.redacted = redacted or message

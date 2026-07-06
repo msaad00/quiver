@@ -62,8 +62,11 @@ def _finding(
     obs: list[dict] = [
         {"name": "cloud.provider", "type": "Other", "value": "Azure"},
         {"name": "actor.name", "type": "Other", "value": "alice"},
-        {"name": "api.operation", "type": "Other",
-         "value": "Microsoft.Network/networkSecurityGroups/securityRules/write"},
+        {
+            "name": "api.operation",
+            "type": "Other",
+            "value": "Microsoft.Network/networkSecurityGroups/securityRules/write",
+        },
         {"name": "rule", "type": "Other", "value": "open-nsg-inbound"},
         {"name": "target.name", "type": "Other", "value": rule_name},
         {"name": "target.type", "type": "Other", "value": "NetworkSecurityRule"},
@@ -80,8 +83,7 @@ def _finding(
         obs.append({"name": "rule.port", "type": "Other", "value": str(p)})
     return {
         "class_uid": 2004,
-        "metadata": {"uid": "find-1",
-                     "product": {"feature": {"name": "detect-azure-open-nsg"}}},
+        "metadata": {"uid": "find-1", "product": {"feature": {"name": "detect-azure-open-nsg"}}},
         "finding_info": {"uid": "find-1"},
         "observables": obs,
     }
@@ -92,12 +94,20 @@ class _FakeAudit:
     writes: list[dict] = field(default_factory=list)
 
     def record(self, *, target, step, status, detail, incident_id, approver):
-        self.writes.append({
-            "rule_id": target.rule_id, "step": step, "status": status,
-            "detail": detail, "incident_id": incident_id, "approver": approver,
-        })
-        return {"row_uid": f"row-{len(self.writes)}",
-                "s3_evidence_uri": f"s3://bucket/{target.rule_name}-{len(self.writes)}.json"}
+        self.writes.append(
+            {
+                "rule_id": target.rule_id,
+                "step": step,
+                "status": status,
+                "detail": detail,
+                "incident_id": incident_id,
+                "approver": approver,
+            }
+        )
+        return {
+            "row_uid": f"row-{len(self.writes)}",
+            "s3_evidence_uri": f"s3://bucket/{target.rule_name}-{len(self.writes)}.json",
+        }
 
 
 @dataclass
@@ -133,7 +143,9 @@ class _FakeNetworkClient:
         self.deletes.append((subscription_id, resource_group, nsg_name, rule_name))
         self.rules.pop(self._rule_key(subscription_id, resource_group, nsg_name, rule_name), None)
 
-    def patch_security_rule_to_deny(self, *, subscription_id, resource_group, nsg_name, rule_name, existing):
+    def patch_security_rule_to_deny(
+        self, *, subscription_id, resource_group, nsg_name, rule_name, existing
+    ):
         if self.raise_on_patch:
             raise RuntimeError("simulated azure 403 (patch)")
         self.patches.append((subscription_id, resource_group, nsg_name, rule_name, dict(existing)))
@@ -238,11 +250,20 @@ def test_parse_targets_rejects_wrong_producer(capsys):
 
 def _t(**overrides) -> Target:
     base = dict(
-        rule_id=_rule_uid(), rule_name=RULE, nsg_name=NSG, resource_group=RG,
-        subscription_id=SUB, region="eastus",
-        source_prefixes=("*",), ports=(3389,), protocol="Tcp", direction="Inbound",
-        actor="a", rule="open-nsg-inbound",
-        producer_skill="detect-azure-open-nsg", finding_uid="f",
+        rule_id=_rule_uid(),
+        rule_name=RULE,
+        nsg_name=NSG,
+        resource_group=RG,
+        subscription_id=SUB,
+        region="eastus",
+        source_prefixes=("*",),
+        ports=(3389,),
+        protocol="Tcp",
+        direction="Inbound",
+        actor="a",
+        rule="open-nsg-inbound",
+        producer_skill="detect-azure-open-nsg",
+        finding_uid="f",
     )
     base.update(overrides)
     return Target(**base)
@@ -252,8 +273,10 @@ def test_protected_default_rule_name():
     p, why = is_protected_rule(
         _t(rule_name="DefaultInbound"),
         rule_name_prefixes=("default", "Default"),
-        nsg_name_suffixes=(), rule_ids=(),
-        intentionally_open_tag="intentionally-open", nsg_describe=None,
+        nsg_name_suffixes=(),
+        rule_ids=(),
+        intentionally_open_tag="intentionally-open",
+        nsg_describe=None,
     )
     assert p is True
     assert "Default" in why
@@ -262,9 +285,11 @@ def test_protected_default_rule_name():
 def test_protected_nsg_name_suffix():
     p, why = is_protected_rule(
         _t(nsg_name="bootstrap-protected"),
-        rule_name_prefixes=(), nsg_name_suffixes=("-protected",),
+        rule_name_prefixes=(),
+        nsg_name_suffixes=("-protected",),
         rule_ids=(),
-        intentionally_open_tag="intentionally-open", nsg_describe=None,
+        intentionally_open_tag="intentionally-open",
+        nsg_describe=None,
     )
     assert p is True
     assert "-protected" in why
@@ -273,9 +298,11 @@ def test_protected_nsg_name_suffix():
 def test_protected_via_env_rule_id_allowlist():
     p, why = is_protected_rule(
         _t(),
-        rule_name_prefixes=(), nsg_name_suffixes=(),
+        rule_name_prefixes=(),
+        nsg_name_suffixes=(),
         rule_ids=(_rule_uid(),),
-        intentionally_open_tag="intentionally-open", nsg_describe=None,
+        intentionally_open_tag="intentionally-open",
+        nsg_describe=None,
     )
     assert p is True
     assert "rule-id" in why
@@ -285,8 +312,11 @@ def test_protected_via_intentionally_open_tag_dict():
     nsg = {"tags": {"intentionally-open": "alb-443"}}
     p, why = is_protected_rule(
         _t(),
-        rule_name_prefixes=(), nsg_name_suffixes=(), rule_ids=(),
-        intentionally_open_tag="intentionally-open", nsg_describe=nsg,
+        rule_name_prefixes=(),
+        nsg_name_suffixes=(),
+        rule_ids=(),
+        intentionally_open_tag="intentionally-open",
+        nsg_describe=nsg,
     )
     assert p is True
     assert "intentionally-open" in why
@@ -295,9 +325,11 @@ def test_protected_via_intentionally_open_tag_dict():
 def test_unprotected_when_no_match():
     p, _ = is_protected_rule(
         _t(rule_name="my-prod-rule", nsg_name="nsg-prod"),
-        rule_name_prefixes=("default",), nsg_name_suffixes=("-protected",),
+        rule_name_prefixes=("default",),
+        nsg_name_suffixes=("-protected",),
         rule_ids=(),
-        intentionally_open_tag="intentionally-open", nsg_describe={"tags": {}},
+        intentionally_open_tag="intentionally-open",
+        nsg_describe={"tags": {}},
     )
     assert p is False
 
@@ -339,14 +371,18 @@ def test_run_skips_finding_without_rule_uid():
 
 
 def test_run_skips_unparseable_rule_id():
-    records = list(run([_finding(rule_uid="/not/a/valid/azure/id")], network_client=_FakeNetworkClient()))
+    records = list(
+        run([_finding(rule_uid="/not/a/valid/azure/id")], network_client=_FakeNetworkClient())
+    )
     assert records[0]["status"] == "skipped_unparseable_rule_id"
 
 
 def test_run_skips_default_rule_in_dry_run():
     records = list(
-        run([_finding(rule_uid=_rule_uid(rule="DefaultInbound"), rule_name="DefaultInbound")],
-            network_client=_FakeNetworkClient())
+        run(
+            [_finding(rule_uid=_rule_uid(rule="DefaultInbound"), rule_name="DefaultInbound")],
+            network_client=_FakeNetworkClient(),
+        )
     )
     assert records[0]["status"] == STATUS_WOULD_VIOLATE_PROTECTED
     assert "Default" in records[0]["status_detail"]
@@ -357,9 +393,17 @@ def test_run_skips_intentionally_open_tagged_nsg_in_apply():
     nc = _FakeNetworkClient(
         nsgs={f"{SUB}|{RG}|{NSG}": {"name": NSG, "tags": {"intentionally-open": "yes"}}},
     )
-    records = list(run([_finding()], network_client=nc, apply=True, audit=audit,
-                       incident_id="INC-1", approver="alice",
-                       allowed_subscription_ids=(SUB,)))
+    records = list(
+        run(
+            [_finding()],
+            network_client=nc,
+            apply=True,
+            audit=audit,
+            incident_id="INC-1",
+            approver="alice",
+            allowed_subscription_ids=(SUB,),
+        )
+    )
     assert records[0]["status"] == STATUS_SKIPPED_PROTECTED
     assert nc.deletes == []
     assert nc.patches == []
@@ -367,8 +411,7 @@ def test_run_skips_intentionally_open_tagged_nsg_in_apply():
 
 
 def test_run_skips_via_env_protected_rule_id():
-    records = list(run([_finding()], network_client=_FakeNetworkClient(),
-                       rule_ids=(_rule_uid(),)))
+    records = list(run([_finding()], network_client=_FakeNetworkClient(), rule_ids=(_rule_uid(),)))
     assert records[0]["status"] == STATUS_WOULD_VIOLATE_PROTECTED
 
 
@@ -378,15 +421,29 @@ def test_run_skips_via_env_protected_rule_id():
 def test_run_apply_delete_with_dual_audit():
     audit = _FakeAudit()
     nc = _FakeNetworkClient(
-        rules={f"{SUB}|{RG}|{NSG}|{RULE}": {"access": "Allow", "direction": "Inbound",
-                                            "sourceAddressPrefix": "*",
-                                            "destinationPortRange": "3389",
-                                            "priority": 1000, "protocol": "Tcp"}},
+        rules={
+            f"{SUB}|{RG}|{NSG}|{RULE}": {
+                "access": "Allow",
+                "direction": "Inbound",
+                "sourceAddressPrefix": "*",
+                "destinationPortRange": "3389",
+                "priority": 1000,
+                "protocol": "Tcp",
+            }
+        },
         nsgs={f"{SUB}|{RG}|{NSG}": {"name": NSG, "tags": {}}},
     )
-    records = list(run([_finding()], network_client=nc, apply=True, audit=audit,
-                       incident_id="INC-1", approver="alice@security",
-                       allowed_subscription_ids=(SUB,)))
+    records = list(
+        run(
+            [_finding()],
+            network_client=nc,
+            apply=True,
+            audit=audit,
+            incident_id="INC-1",
+            approver="alice@security",
+            allowed_subscription_ids=(SUB,),
+        )
+    )
     rec = records[0]
     assert rec["status"] == STATUS_SUCCESS
     assert rec["dry_run"] is False
@@ -400,11 +457,20 @@ def test_run_apply_delete_with_dual_audit():
 
 def test_run_apply_delete_writes_failure_audit_when_delete_throws():
     audit = _FakeAudit()
-    nc = _FakeNetworkClient(raise_on_delete=True,
-                            nsgs={f"{SUB}|{RG}|{NSG}": {"name": NSG, "tags": {}}})
-    records = list(run([_finding()], network_client=nc, apply=True, audit=audit,
-                       incident_id="INC-1", approver="alice",
-                       allowed_subscription_ids=(SUB,)))
+    nc = _FakeNetworkClient(
+        raise_on_delete=True, nsgs={f"{SUB}|{RG}|{NSG}": {"name": NSG, "tags": {}}}
+    )
+    records = list(
+        run(
+            [_finding()],
+            network_client=nc,
+            apply=True,
+            audit=audit,
+            incident_id="INC-1",
+            approver="alice",
+            allowed_subscription_ids=(SUB,),
+        )
+    )
     assert records[0]["status"] == STATUS_FAILURE
     assert len(audit.writes) == 2
     assert audit.writes[1]["status"] == STATUS_FAILURE
@@ -412,9 +478,17 @@ def test_run_apply_delete_writes_failure_audit_when_delete_throws():
 
 def test_run_apply_requires_audit_writer():
     import pytest
+
     with pytest.raises(ValueError, match="audit writer is required"):
-        list(run([_finding()], network_client=_FakeNetworkClient(), apply=True, audit=None,
-                 allowed_subscription_ids=(SUB,)))
+        list(
+            run(
+                [_finding()],
+                network_client=_FakeNetworkClient(),
+                apply=True,
+                audit=None,
+                allowed_subscription_ids=(SUB,),
+            )
+        )
 
 
 # ---------- run: apply (patch mode) ----------
@@ -422,16 +496,30 @@ def test_run_apply_requires_audit_writer():
 
 def test_run_apply_patch_to_deny():
     audit = _FakeAudit()
-    existing = {"access": "Allow", "direction": "Inbound",
-                "sourceAddressPrefix": "*", "destinationPortRange": "3389",
-                "priority": 1000, "protocol": "Tcp"}
+    existing = {
+        "access": "Allow",
+        "direction": "Inbound",
+        "sourceAddressPrefix": "*",
+        "destinationPortRange": "3389",
+        "priority": 1000,
+        "protocol": "Tcp",
+    }
     nc = _FakeNetworkClient(
         rules={f"{SUB}|{RG}|{NSG}|{RULE}": dict(existing)},
         nsgs={f"{SUB}|{RG}|{NSG}": {"name": NSG, "tags": {}}},
     )
-    records = list(run([_finding()], network_client=nc, apply=True, audit=audit,
-                       incident_id="INC-1", approver="alice", mode=MODE_PATCH,
-                       allowed_subscription_ids=(SUB,)))
+    records = list(
+        run(
+            [_finding()],
+            network_client=nc,
+            apply=True,
+            audit=audit,
+            incident_id="INC-1",
+            approver="alice",
+            mode=MODE_PATCH,
+            allowed_subscription_ids=(SUB,),
+        )
+    )
     rec = records[0]
     assert rec["status"] == STATUS_SUCCESS
     assert rec["mode"] == "patch"
@@ -447,9 +535,17 @@ def test_run_apply_patch_to_deny():
 def test_run_apply_skips_wrong_subscription_boundary():
     audit = _FakeAudit()
     nc = _FakeNetworkClient()
-    records = list(run([_finding()], network_client=nc, apply=True, audit=audit,
-                       incident_id="INC-1", approver="alice",
-                       allowed_subscription_ids=("00000000-0000-0000-0000-000000000099",)))
+    records = list(
+        run(
+            [_finding()],
+            network_client=nc,
+            apply=True,
+            audit=audit,
+            incident_id="INC-1",
+            approver="alice",
+            allowed_subscription_ids=("00000000-0000-0000-0000-000000000099",),
+        )
+    )
     assert records[0]["status"] == STATUS_SKIPPED_SUBSCRIPTION_BOUNDARY
     assert nc.deletes == []
     assert nc.patches == []
@@ -469,8 +565,13 @@ def test_run_reverify_verified_when_rule_gone():
 
 def test_run_reverify_verified_when_rule_patched_to_deny():
     nc = _FakeNetworkClient(
-        rules={f"{SUB}|{RG}|{NSG}|{RULE}": {"access": "Deny", "direction": "Inbound",
-                                            "sourceAddressPrefix": "*"}},
+        rules={
+            f"{SUB}|{RG}|{NSG}|{RULE}": {
+                "access": "Deny",
+                "direction": "Inbound",
+                "sourceAddressPrefix": "*",
+            }
+        },
         nsgs={f"{SUB}|{RG}|{NSG}": {"name": NSG, "tags": {}}},
     )
     records = list(run([_finding()], network_client=nc, reverify=True))
@@ -480,9 +581,14 @@ def test_run_reverify_verified_when_rule_patched_to_deny():
 
 def test_run_reverify_drift_emits_ocsf_finding_alongside_verification():
     nc = _FakeNetworkClient(
-        rules={f"{SUB}|{RG}|{NSG}|{RULE}": {"access": "Allow", "direction": "Inbound",
-                                            "sourceAddressPrefix": "*",
-                                            "destinationPortRange": "3389"}},
+        rules={
+            f"{SUB}|{RG}|{NSG}|{RULE}": {
+                "access": "Allow",
+                "direction": "Inbound",
+                "sourceAddressPrefix": "*",
+                "destinationPortRange": "3389",
+            }
+        },
         nsgs={f"{SUB}|{RG}|{NSG}": {"name": NSG, "tags": {}}},
     )
     records = list(run([_finding()], network_client=nc, reverify=True))
@@ -508,8 +614,9 @@ def test_run_reverify_uses_finding_time_as_remediation_reference():
 
 
 def test_run_reverify_unreachable_when_get_raises():
-    nc = _FakeNetworkClient(raise_on_get_rule=True,
-                            nsgs={f"{SUB}|{RG}|{NSG}": {"name": NSG, "tags": {}}})
+    nc = _FakeNetworkClient(
+        raise_on_get_rule=True, nsgs={f"{SUB}|{RG}|{NSG}": {"name": NSG, "tags": {}}}
+    )
     records = list(run([_finding()], network_client=nc, reverify=True))
     assert any(r["status"] == "unreachable" for r in records)
 
@@ -532,15 +639,21 @@ def test_real_azure_client_lazy_imports_sdk_only_when_used():
         as_dict=lambda: {"access": "Allow", "direction": "Inbound", "sourceAddressPrefix": "*"}
     )
 
-    with patch.dict(sys.modules, {
-        "azure": MagicMock(),
-        "azure.identity": azure_identity_mod,
-        "azure.mgmt": MagicMock(),
-        "azure.mgmt.network": azure_mgmt_network_mod,
-    }):
+    with patch.dict(
+        sys.modules,
+        {
+            "azure": MagicMock(),
+            "azure.identity": azure_identity_mod,
+            "azure.mgmt": MagicMock(),
+            "azure.mgmt.network": azure_mgmt_network_mod,
+        },
+    ):
         client = AzureNetworkClient()
         result = client.get_security_rule(
-            subscription_id=SUB, resource_group=RG, nsg_name=NSG, rule_name=RULE,
+            subscription_id=SUB,
+            resource_group=RG,
+            nsg_name=NSG,
+            rule_name=RULE,
         )
     assert result == {"access": "Allow", "direction": "Inbound", "sourceAddressPrefix": "*"}
     fake_credential_cls.assert_called()
@@ -559,14 +672,20 @@ def test_real_azure_client_delete_uses_poller():
     poller = MagicMock()
     fake_client_instance.security_rules.begin_delete.return_value = poller
 
-    with patch.dict(sys.modules, {
-        "azure": MagicMock(),
-        "azure.identity": azure_identity_mod,
-        "azure.mgmt": MagicMock(),
-        "azure.mgmt.network": azure_mgmt_network_mod,
-    }):
+    with patch.dict(
+        sys.modules,
+        {
+            "azure": MagicMock(),
+            "azure.identity": azure_identity_mod,
+            "azure.mgmt": MagicMock(),
+            "azure.mgmt.network": azure_mgmt_network_mod,
+        },
+    ):
         AzureNetworkClient().delete_security_rule(
-            subscription_id=SUB, resource_group=RG, nsg_name=NSG, rule_name=RULE,
+            subscription_id=SUB,
+            resource_group=RG,
+            nsg_name=NSG,
+            rule_name=RULE,
         )
     fake_client_instance.security_rules.begin_delete.assert_called_with(RG, NSG, RULE)
     poller.result.assert_called()

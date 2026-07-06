@@ -208,10 +208,7 @@ def test_load_corpus_rejects_bad_mode(tmp_path: Path) -> None:
 def test_load_corpus_rejects_non_mapping_labels(tmp_path: Path) -> None:
     corpus_yaml = tmp_path / "corpus.yaml"
     corpus_yaml.write_text(
-        "entries:\n"
-        "  - detector_name: detect-foo\n"
-        "    input_fixture: x.jsonl\n"
-        "    labels: [a, b]\n"
+        "entries:\n  - detector_name: detect-foo\n    input_fixture: x.jsonl\n    labels: [a, b]\n"
     )
     with pytest.raises(ValueError, match="labels"):
         SCORE.load_corpus(corpus_yaml)
@@ -266,9 +263,7 @@ def test_main_writes_json_to_stdout(
         "    labels:\n"
         "      uid-good: true\n"
     )
-    monkeypatch.setattr(
-        SCORE, "run_detector", lambda entry: [{"metadata": {"uid": "uid-good"}}]
-    )
+    monkeypatch.setattr(SCORE, "run_detector", lambda entry: [{"metadata": {"uid": "uid-good"}}])
     rc = SCORE.main(["--corpus", str(corpus_yaml)])
     out = capsys.readouterr().out
     payload = json.loads(out)
@@ -301,9 +296,7 @@ def test_main_returns_nonzero_when_detector_errors(
     assert payload["per_detector"][0]["error"]
 
 
-def test_main_handles_empty_corpus(
-    tmp_path: Path, capsys: pytest.CaptureFixture[str]
-) -> None:
+def test_main_handles_empty_corpus(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
     corpus_yaml = tmp_path / "corpus.yaml"
     corpus_yaml.write_text("entries: []\n")
     rc = SCORE.main(["--corpus", str(corpus_yaml)])

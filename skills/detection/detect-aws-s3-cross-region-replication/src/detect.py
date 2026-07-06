@@ -67,9 +67,7 @@ OUTPUT_FORMATS = frozenset({"ocsf", "native"})
 
 AUTHORIZED_BUCKETS_ENV = "AWS_REPLICATION_AUTHORIZED_BUCKETS"
 
-_ARN_PATTERN = re.compile(
-    r"^arn:aws[^:]*:s3:::(?P<bucket>[a-z0-9.\-]+)(?:/.*)?$"
-)
+_ARN_PATTERN = re.compile(r"^arn:aws[^:]*:s3:::(?P<bucket>[a-z0-9.\-]+)(?:/.*)?$")
 
 
 def _producer(event: dict[str, Any]) -> str:
@@ -148,11 +146,7 @@ def _destination_rules(params: dict[str, Any]) -> list[dict[str, Any]]:
     request as either `replicationConfiguration.rules[]` or the
     `ReplicationConfiguration.Rule` XML shape. We accept both.
     """
-    config = (
-        params.get("replicationConfiguration")
-        or params.get("ReplicationConfiguration")
-        or {}
-    )
+    config = params.get("replicationConfiguration") or params.get("ReplicationConfiguration") or {}
     if not isinstance(config, dict):
         return []
     rules: list[dict[str, Any]] = []

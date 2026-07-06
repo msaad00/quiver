@@ -24,7 +24,9 @@ def _event(scope: str = "https://www.googleapis.com/auth/drive.readonly") -> dic
             "uid": "evt-1",
             "product": {"feature": {"name": "ingest-workspace-admin-ocsf"}},
         },
-        "actor": {"user": {"uid": "1001", "email_addr": "alice@example.com", "name": "alice@example.com"}},
+        "actor": {
+            "user": {"uid": "1001", "email_addr": "alice@example.com", "name": "alice@example.com"}
+        },
         "unmapped": {
             "google_workspace_admin": {
                 "application_name": "token",

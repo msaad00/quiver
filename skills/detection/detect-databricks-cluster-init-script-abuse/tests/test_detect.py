@@ -220,7 +220,10 @@ class TestMetadata:
         metadata = coverage_metadata()
         assert metadata["providers"] == ("databricks",)
         assert MITRE_TECHNIQUE_UID in metadata["attack_coverage"]["databricks"]["techniques"]
-        assert MITRE_PERSISTENCE_TECHNIQUE_UID in metadata["attack_coverage"]["databricks"]["techniques"]
+        assert (
+            MITRE_PERSISTENCE_TECHNIQUE_UID
+            in metadata["attack_coverage"]["databricks"]["techniques"]
+        )
         assert "clusters.create" in metadata["attack_coverage"]["databricks"]["anchor_operations"]
         assert "clusters.edit" in metadata["attack_coverage"]["databricks"]["anchor_operations"]
         assert "ingest-databricks-audit-ocsf" in ACCEPTED_PRODUCERS

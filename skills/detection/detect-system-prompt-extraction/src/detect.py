@@ -57,11 +57,17 @@ ATLAS_TECHNIQUES = (
 )
 
 LEAK_PATTERNS: tuple[tuple[str, re.Pattern[str]], ...] = (
-    ("xml-system-prompt", re.compile(r"<system_prompt>.*?</system_prompt>", re.IGNORECASE | re.DOTALL)),
+    (
+        "xml-system-prompt",
+        re.compile(r"<system_prompt>.*?</system_prompt>", re.IGNORECASE | re.DOTALL),
+    ),
     ("system-prompt-phrase", re.compile(r"\bsystem prompt\b", re.IGNORECASE)),
     ("developer-message", re.compile(r"\bdeveloper message\b", re.IGNORECASE)),
     ("hidden-instructions", re.compile(r"\bhidden instructions?\b", re.IGNORECASE)),
-    ("assistant-role-preface", re.compile(r"\bYou are (?:ChatGPT|Claude|an AI assistant)\b", re.IGNORECASE)),
+    (
+        "assistant-role-preface",
+        re.compile(r"\bYou are (?:ChatGPT|Claude|an AI assistant)\b", re.IGNORECASE),
+    ),
 )
 
 
@@ -196,9 +202,13 @@ def _fingerprint(text: str) -> str:
     return "sha256:" + hashlib.sha256(text.encode("utf-8")).hexdigest()
 
 
-def _finding_uid(session_uid: str, tool_name: str, event_uid: str, matched_signals: list[str]) -> str:
+def _finding_uid(
+    session_uid: str, tool_name: str, event_uid: str, matched_signals: list[str]
+) -> str:
     material = f"{session_uid}|{tool_name}|{event_uid}|{'|'.join(sorted(matched_signals))}"
-    return f"det-system-prompt-extraction-{hashlib.sha256(material.encode('utf-8')).hexdigest()[:16]}"
+    return (
+        f"det-system-prompt-extraction-{hashlib.sha256(material.encode('utf-8')).hexdigest()[:16]}"
+    )
 
 
 def _build_native_finding(event: dict[str, Any]) -> dict[str, Any]:
@@ -293,7 +303,9 @@ def _render_ocsf_finding(native_finding: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def detect(events: Iterable[dict[str, Any]], output_format: str = "ocsf") -> Iterable[dict[str, Any]]:
+def detect(
+    events: Iterable[dict[str, Any]], output_format: str = "ocsf"
+) -> Iterable[dict[str, Any]]:
     if output_format not in OUTPUT_FORMATS:
         raise ValueError(f"unsupported output_format `{output_format}`")
 

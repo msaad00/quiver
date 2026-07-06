@@ -86,7 +86,9 @@ def validate_references() -> list[str]:
 
 def validate_dangerous_code() -> list[str]:
     errors: list[str] = []
-    compiled = [(re.compile(pattern), message) for pattern, message in DANGEROUS_CODE_PATTERNS.items()]
+    compiled = [
+        (re.compile(pattern), message) for pattern, message in DANGEROUS_CODE_PATTERNS.items()
+    ]
     for skill in discover_skill_contracts():
         for path in sorted((skill.skill_dir / "src").rglob("*.py")):
             text = path.read_text()
@@ -106,9 +108,13 @@ def validate_mcp_alignment() -> list[str]:
         missing = sorted(set(contracts) - set(registry_map))
         extra = sorted(set(registry_map) - set(contracts))
         if missing:
-            errors.append(f"mcp-server: missing skills from registry discovery: {', '.join(missing)}")
+            errors.append(
+                f"mcp-server: missing skills from registry discovery: {', '.join(missing)}"
+            )
         if extra:
-            errors.append(f"mcp-server: unexpected skills in registry discovery: {', '.join(extra)}")
+            errors.append(
+                f"mcp-server: unexpected skills in registry discovery: {', '.join(extra)}"
+            )
 
     for name, contract in contracts.items():
         registry_skill = registry_map.get(name)

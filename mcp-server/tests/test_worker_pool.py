@@ -88,7 +88,8 @@ def _stub_worker_script(tmp_path: Path) -> Path:
     """A self-contained stub skill that uses the real `worker_harness`
     so we exercise the full framing + dispatch path, not a mock."""
     script = tmp_path / "stub_skill.py"
-    script.write_text(textwrap.dedent(f"""
+    script.write_text(
+        textwrap.dedent(f"""
         import sys
         sys.path.insert(0, {str(REPO_ROOT)!r})
 
@@ -116,7 +117,8 @@ def _stub_worker_script(tmp_path: Path) -> Path:
                 from skills._shared.worker_harness import run_worker
                 raise SystemExit(run_worker(main))
             raise SystemExit(main())
-    """))
+    """)
+    )
     return script
 
 
@@ -130,14 +132,16 @@ def test_invoke_spawns_once_and_reuses(tmp_path):
     pool = _make_pool()
     spawn_command = [sys.executable, str(script), "--worker"]
 
-    r1 = pool.invoke(skill, ["--echo", "first"], "", os.environ.copy(), 5,
-                     spawn_command=spawn_command)
+    r1 = pool.invoke(
+        skill, ["--echo", "first"], "", os.environ.copy(), 5, spawn_command=spawn_command
+    )
     assert r1.returncode == 0
     assert r1.stdout == "echo:first"
     pid_after_first = pool._workers["stub"].process.pid
 
-    r2 = pool.invoke(skill, ["--echo", "second"], "", os.environ.copy(), 5,
-                     spawn_command=spawn_command)
+    r2 = pool.invoke(
+        skill, ["--echo", "second"], "", os.environ.copy(), 5, spawn_command=spawn_command
+    )
     assert r2.returncode == 0
     assert r2.stdout == "echo:second"
     pid_after_second = pool._workers["stub"].process.pid
@@ -153,8 +157,14 @@ def test_invoke_passes_stdin(tmp_path):
     pool = _make_pool()
     spawn_command = [sys.executable, str(script), "--worker"]
 
-    r = pool.invoke(skill, ["--echo-stdin"], "hello-from-pipe", os.environ.copy(), 5,
-                    spawn_command=spawn_command)
+    r = pool.invoke(
+        skill,
+        ["--echo-stdin"],
+        "hello-from-pipe",
+        os.environ.copy(),
+        5,
+        spawn_command=spawn_command,
+    )
     assert r.returncode == 0
     assert r.stdout == "stdin:hello-from-pipe"
     pool.shutdown()
@@ -166,8 +176,7 @@ def test_non_zero_exit_code_is_returned(tmp_path):
     pool = _make_pool()
     spawn_command = [sys.executable, str(script), "--worker"]
 
-    r = pool.invoke(skill, ["--exit", "7"], "", os.environ.copy(), 5,
-                    spawn_command=spawn_command)
+    r = pool.invoke(skill, ["--exit", "7"], "", os.environ.copy(), 5, spawn_command=spawn_command)
     assert r.returncode == 7
     pool.shutdown()
 
@@ -179,8 +188,7 @@ def test_idle_ttl_kills_worker(tmp_path, monkeypatch):
     spawn_command = [sys.executable, str(script), "--worker"]
     monkeypatch.setenv("CLOUD_SECURITY_MCP_WORKER_IDLE_SECONDS", "1")
 
-    pool.invoke(skill, ["--echo", "x"], "", os.environ.copy(), 5,
-                spawn_command=spawn_command)
+    pool.invoke(skill, ["--echo", "x"], "", os.environ.copy(), 5, spawn_command=spawn_command)
     pid_one = pool._workers["stub-ttl"].process.pid
 
     # Walk the worker's last_used backwards instead of sleeping to keep
@@ -190,8 +198,7 @@ def test_idle_ttl_kills_worker(tmp_path, monkeypatch):
     assert "stub-ttl" not in pool._workers
 
     # Next invoke spawns fresh
-    pool.invoke(skill, ["--echo", "y"], "", os.environ.copy(), 5,
-                spawn_command=spawn_command)
+    pool.invoke(skill, ["--echo", "y"], "", os.environ.copy(), 5, spawn_command=spawn_command)
     pid_two = pool._workers["stub-ttl"].process.pid
     assert pid_one != pid_two
     pool.shutdown()
@@ -204,15 +211,17 @@ def test_output_overflow_kills_worker(tmp_path, monkeypatch):
     spawn_command = [sys.executable, str(script), "--worker"]
     monkeypatch.setenv("CLOUD_SECURITY_MCP_WORKER_MAX_BYTES", "1024")
 
-    r = pool.invoke(skill, ["--bytes", "100000"], "", os.environ.copy(), 5,
-                    spawn_command=spawn_command)
+    r = pool.invoke(
+        skill, ["--bytes", "100000"], "", os.environ.copy(), 5, spawn_command=spawn_command
+    )
     assert r.returncode == 1
     assert "exceeded" in r.stderr
     assert "stub-overflow" not in pool._workers
 
     # Re-spawn fresh on the next call
-    r2 = pool.invoke(skill, ["--echo", "after"], "", os.environ.copy(), 5,
-                     spawn_command=spawn_command)
+    r2 = pool.invoke(
+        skill, ["--echo", "after"], "", os.environ.copy(), 5, spawn_command=spawn_command
+    )
     assert r2.returncode == 0
     assert r2.stdout == "echo:after"
     pool.shutdown()
@@ -224,15 +233,15 @@ def test_worker_crash_returns_completed_shape_and_respawns(tmp_path):
     pool = _make_pool()
     spawn_command = [sys.executable, str(script), "--worker"]
 
-    pool.invoke(skill, ["--echo", "x"], "", os.environ.copy(), 5,
-                spawn_command=spawn_command)
+    pool.invoke(skill, ["--echo", "x"], "", os.environ.copy(), 5, spawn_command=spawn_command)
     worker = pool._workers["stub-crash"]
     # Simulate a worker that died between calls (e.g. OOM)
     worker.process.kill()
     worker.process.wait(timeout=2)
 
-    r = pool.invoke(skill, ["--echo", "after-crash"], "", os.environ.copy(), 5,
-                    spawn_command=spawn_command)
+    r = pool.invoke(
+        skill, ["--echo", "after-crash"], "", os.environ.copy(), 5, spawn_command=spawn_command
+    )
     # Either the dispatch detects the crash and returns code 1, OR a
     # fresh worker was spawned cleanly. Both are acceptable; what's
     # not acceptable is hanging or raising.
@@ -255,8 +264,9 @@ def test_concurrent_invokes_for_same_skill_serialise(tmp_path):
 
     def _run(arg: str) -> None:
         try:
-            r = pool.invoke(skill, ["--echo", arg], "", os.environ.copy(), 5,
-                            spawn_command=spawn_command)
+            r = pool.invoke(
+                skill, ["--echo", arg], "", os.environ.copy(), 5, spawn_command=spawn_command
+            )
             results.append(r)
         except BaseException as exc:  # noqa: BLE001
             errors.append(exc)
@@ -282,8 +292,7 @@ def test_shutdown_kills_all_workers(tmp_path):
 
     for name in ("a", "b", "c"):
         skill = _FakeSkill(name=name, entrypoint=script)
-        pool.invoke(skill, ["--echo", name], "", os.environ.copy(), 5,
-                    spawn_command=spawn_command)
+        pool.invoke(skill, ["--echo", name], "", os.environ.copy(), 5, spawn_command=spawn_command)
     procs = [w.process for w in pool._workers.values()]
     pool.shutdown()
     for proc in procs:
@@ -297,8 +306,14 @@ def test_invoke_after_shutdown_raises(tmp_path):
     pool = _make_pool()
     pool.shutdown()
     with pytest.raises(RuntimeError, match="shut down"):
-        pool.invoke(skill, [], "", os.environ.copy(), 5,
-                    spawn_command=[sys.executable, str(script), "--worker"])
+        pool.invoke(
+            skill,
+            [],
+            "",
+            os.environ.copy(),
+            5,
+            spawn_command=[sys.executable, str(script), "--worker"],
+        )
 
 
 # ----------------------------------------------------------------------
@@ -325,8 +340,7 @@ def test_pool_uses_provided_spawn_command(tmp_path, monkeypatch):
     monkeypatch.setattr(WP.subprocess, "Popen", _spy_popen)
 
     spawn_command = [sys.executable, str(script), "--worker"]
-    pool.invoke(skill, ["--echo", "z"], "", os.environ.copy(), 5,
-                spawn_command=spawn_command)
+    pool.invoke(skill, ["--echo", "z"], "", os.environ.copy(), 5, spawn_command=spawn_command)
     assert captured["cmd"] == spawn_command
     pool.shutdown()
 
@@ -354,19 +368,20 @@ def test_malformed_reply_returns_error_record(tmp_path, monkeypatch):
     """If the worker replies with non-JSON bytes, the pool returns an
     error CompletedProcessShape rather than raising."""
     script_path = tmp_path / "bad_worker.py"
-    script_path.write_text(textwrap.dedent("""
+    script_path.write_text(
+        textwrap.dedent("""
         import sys
         # Ignore stdin; emit a malformed framed message and exit.
         body = b"not-json-at-all"
         sys.stdout.buffer.write(b"Content-Length: %d\\r\\n\\r\\n" % len(body))
         sys.stdout.buffer.write(body)
         sys.stdout.buffer.flush()
-    """))
+    """)
+    )
     skill = _FakeSkill(name="stub-bad", entrypoint=script_path)
     pool = _make_pool()
     spawn_command = [sys.executable, str(script_path)]
 
-    r = pool.invoke(skill, [], "", os.environ.copy(), 5,
-                    spawn_command=spawn_command)
+    r = pool.invoke(skill, [], "", os.environ.copy(), 5, spawn_command=spawn_command)
     assert r.returncode == 1
     pool.shutdown()

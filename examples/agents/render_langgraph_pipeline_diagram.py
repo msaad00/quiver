@@ -124,14 +124,16 @@ def render_mermaid() -> str:
         lines.append("")
 
     lines.extend(_edge_line(edge) for edge in contract["edges"])
-    lines.extend([
-        "",
-        '    RAILS["Non-bypassable rails<br/>allowlist intersection · HITL · dry-run · audit/eval · idempotency"]:::audit',
-        "    RAILS -. constrains tool calls .-> ING",
-        "    RAILS -. bounds model authority .-> TRIAGE",
-        "    RAILS -. gates write paths .-> REM",
-        "",
-    ])
+    lines.extend(
+        [
+            "",
+            '    RAILS["Non-bypassable rails<br/>allowlist intersection · HITL · dry-run · audit/eval · idempotency"]:::audit',
+            "    RAILS -. constrains tool calls .-> ING",
+            "    RAILS -. bounds model authority .-> TRIAGE",
+            "    RAILS -. gates write paths .-> REM",
+            "",
+        ]
+    )
     return "\n".join(lines).rstrip()
 
 

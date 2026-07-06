@@ -72,9 +72,15 @@ def _format_ratio(value: float) -> str:
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Check runtime benchmark scaling against a baseline snapshot.")
-    parser.add_argument("--baseline", type=Path, required=True, help="Checked-in baseline snapshot JSON.")
-    parser.add_argument("--candidate", type=Path, required=True, help="Freshly-generated benchmark snapshot JSON.")
+    parser = argparse.ArgumentParser(
+        description="Check runtime benchmark scaling against a baseline snapshot."
+    )
+    parser.add_argument(
+        "--baseline", type=Path, required=True, help="Checked-in baseline snapshot JSON."
+    )
+    parser.add_argument(
+        "--candidate", type=Path, required=True, help="Freshly-generated benchmark snapshot JSON."
+    )
     parser.add_argument(
         "--max-wall-multiplier-regression",
         type=float,

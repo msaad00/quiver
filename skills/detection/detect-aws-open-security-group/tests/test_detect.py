@@ -99,24 +99,19 @@ def test_fires_on_ssh_open_to_world():
         for obs in f["observables"]
     )
     assert any(
-        obs["name"] == "permission.cidr" and obs["value"] == "0.0.0.0/0"
-        for obs in f["observables"]
+        obs["name"] == "permission.cidr" and obs["value"] == "0.0.0.0/0" for obs in f["observables"]
     )
     assert any(
-        obs["name"] == "permission.port" and obs["value"] == "22"
-        for obs in f["observables"]
+        obs["name"] == "permission.port" and obs["value"] == "22" for obs in f["observables"]
     )
     assert any(
-        obs["name"] == "permission.protocol" and obs["value"] == "tcp"
-        for obs in f["observables"]
+        obs["name"] == "permission.protocol" and obs["value"] == "tcp" for obs in f["observables"]
     )
     assert any(
-        obs["name"] == "permission.from_port" and obs["value"] == "22"
-        for obs in f["observables"]
+        obs["name"] == "permission.from_port" and obs["value"] == "22" for obs in f["observables"]
     )
     assert any(
-        obs["name"] == "permission.to_port" and obs["value"] == "22"
-        for obs in f["observables"]
+        obs["name"] == "permission.to_port" and obs["value"] == "22" for obs in f["observables"]
     )
 
 
@@ -140,7 +135,9 @@ def test_fires_on_port_range_covering_risky_port():
 
 def test_fires_on_protocol_neg_one_all_ports():
     """ipProtocol=-1 means all protocols+all ports; must fire."""
-    findings = list(detect([_ct_event(cidrs_v4=["0.0.0.0/0"], protocol="-1", from_port=-1, to_port=-1)]))
+    findings = list(
+        detect([_ct_event(cidrs_v4=["0.0.0.0/0"], protocol="-1", from_port=-1, to_port=-1)])
+    )
     assert len(findings) == 1
     assert any(
         obs["name"] == "permission.protocol" and obs["value"] == "-1"
@@ -184,7 +181,9 @@ def test_no_finding_for_unrelated_operation():
 
 
 def test_skips_event_from_wrong_producer(capsys):
-    findings = list(detect([_ct_event(producer="ingest-okta-system-log-ocsf", cidrs_v4=["0.0.0.0/0"])]))
+    findings = list(
+        detect([_ct_event(producer="ingest-okta-system-log-ocsf", cidrs_v4=["0.0.0.0/0"])])
+    )
     assert findings == []
     assert "non-cloudtrail producer" in capsys.readouterr().err
 
@@ -204,28 +203,45 @@ def test_one_event_with_multiple_permissions_emits_per_permission():
     event = _ct_event(cidrs_v4=["0.0.0.0/0"], from_port=22, to_port=22)
     # Add a second risky permission to the same event
     event["unmapped"]["cloudtrail"]["request_parameters"]["ipPermissions"]["items"].append(
-        {"ipProtocol": "tcp", "fromPort": 3306, "toPort": 3306,
-         "ipRanges": {"items": [{"cidrIp": "0.0.0.0/0"}]}}
+        {
+            "ipProtocol": "tcp",
+            "fromPort": 3306,
+            "toPort": 3306,
+            "ipRanges": {"items": [{"cidrIp": "0.0.0.0/0"}]},
+        }
     )
     findings = list(detect([event]))
     assert len(findings) == 2
-    sg_ids = {obs["value"] for f in findings for obs in f["observables"] if obs["name"] == "target.uid"}
+    sg_ids = {
+        obs["value"] for f in findings for obs in f["observables"] if obs["name"] == "target.uid"
+    }
     assert sg_ids == {"sg-0123456789abcdef0"}
 
 
 def test_mixed_world_and_corp_cidrs_only_emits_for_world():
     """If a permission has both 0.0.0.0/0 and 10.0.0.0/8, the finding only
     cites the world cidr in observables (we don't yell about corp CIDRs)."""
-    findings = list(detect([_ct_event(
-        cidrs_v4=["0.0.0.0/0", "10.0.0.0/8"], from_port=22, to_port=22,
-    )]))
+    findings = list(
+        detect(
+            [
+                _ct_event(
+                    cidrs_v4=["0.0.0.0/0", "10.0.0.0/8"],
+                    from_port=22,
+                    to_port=22,
+                )
+            ]
+        )
+    )
     assert len(findings) == 1
-    cidr_obs = [obs["value"] for obs in findings[0]["observables"] if obs["name"] == "permission.cidr"]
+    cidr_obs = [
+        obs["value"] for obs in findings[0]["observables"] if obs["name"] == "permission.cidr"
+    ]
     assert cidr_obs == ["0.0.0.0/0"]
 
 
 def test_unsupported_output_format_raises():
     import pytest
+
     with pytest.raises(ContractError, match="unsupported output_format") as excinfo:
         list(detect([_ct_event(cidrs_v4=["0.0.0.0/0"])], output_format="weird"))
     assert excinfo.value.error_class == "contract"

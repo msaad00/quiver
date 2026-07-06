@@ -94,7 +94,9 @@ class VolumeSnapshotRef:
 
 class KubernetesForensicsClient(Protocol):
     def get_pod_labels(self, namespace: str, pod_name: str) -> dict[str, str] | None: ...
-    def get_workload_selector(self, namespace: str, resource_type: str, resource_name: str) -> dict[str, str] | None: ...
+    def get_workload_selector(
+        self, namespace: str, resource_type: str, resource_name: str
+    ) -> dict[str, str] | None: ...
     def list_target_pods(self, namespace: str, selector: dict[str, str]) -> list[PodContext]: ...
     def create_volume_snapshot(
         self,
@@ -133,10 +135,14 @@ class KubernetesApiForensicsClient:
     def get_pod_labels(self, namespace: str, pod_name: str) -> dict[str, str] | None:
         core, _ = self._apis()
         pod = core.read_namespaced_pod(name=pod_name, namespace=namespace)
-        labels = (getattr(pod.metadata, "labels", None) or {}) if getattr(pod, "metadata", None) else {}
+        labels = (
+            (getattr(pod.metadata, "labels", None) or {}) if getattr(pod, "metadata", None) else {}
+        )
         return dict(labels) if labels else None
 
-    def get_workload_selector(self, namespace: str, resource_type: str, resource_name: str) -> dict[str, str] | None:
+    def get_workload_selector(
+        self, namespace: str, resource_type: str, resource_name: str
+    ) -> dict[str, str] | None:
         from kubernetes import client  # local import
 
         core, _ = self._apis()
@@ -157,19 +163,31 @@ class KubernetesApiForensicsClient:
             return dict(tmpl_labels) if tmpl_labels else None
 
         if resource_type == "deployments":
-            return _selector(apps.read_namespaced_deployment(name=resource_name, namespace=namespace))
+            return _selector(
+                apps.read_namespaced_deployment(name=resource_name, namespace=namespace)
+            )
         if resource_type == "daemonsets":
-            return _selector(apps.read_namespaced_daemon_set(name=resource_name, namespace=namespace))
+            return _selector(
+                apps.read_namespaced_daemon_set(name=resource_name, namespace=namespace)
+            )
         if resource_type == "statefulsets":
-            return _selector(apps.read_namespaced_stateful_set(name=resource_name, namespace=namespace))
+            return _selector(
+                apps.read_namespaced_stateful_set(name=resource_name, namespace=namespace)
+            )
         if resource_type == "replicasets":
-            return _selector(apps.read_namespaced_replica_set(name=resource_name, namespace=namespace))
+            return _selector(
+                apps.read_namespaced_replica_set(name=resource_name, namespace=namespace)
+            )
         if resource_type == "replicationcontrollers":
-            return _selector(core.read_namespaced_replication_controller(name=resource_name, namespace=namespace))
+            return _selector(
+                core.read_namespaced_replication_controller(name=resource_name, namespace=namespace)
+            )
         if resource_type == "jobs":
             return _selector(batch.read_namespaced_job(name=resource_name, namespace=namespace))
         if resource_type == "cronjobs":
-            return _selector(batch.read_namespaced_cron_job(name=resource_name, namespace=namespace))
+            return _selector(
+                batch.read_namespaced_cron_job(name=resource_name, namespace=namespace)
+            )
         return None
 
     def list_target_pods(self, namespace: str, selector: dict[str, str]) -> list[PodContext]:
@@ -407,7 +425,9 @@ def _collect_runtime_log_artifacts(log_root: Path, pod: PodContext) -> dict[str,
         rel = path.relative_to(log_root)
         artifacts[f"runtime-logs/{pod.pod_name}/{rel.as_posix()}"] = data
     if not artifacts:
-        artifacts[f"runtime-logs/{pod.pod_name}/no-runtime-logs.txt"] = b"no runtime log files matched the target pod\n"
+        artifacts[f"runtime-logs/{pod.pod_name}/no-runtime-logs.txt"] = (
+            b"no runtime log files matched the target pod\n"
+        )
     return artifacts
 
 
@@ -493,10 +513,7 @@ def _bundle_manifest(
             }
             for pod in pods
         ],
-        "volume_snapshots": [
-            dataclasses.asdict(snapshot)
-            for snapshot in snapshots
-        ],
+        "volume_snapshots": [dataclasses.asdict(snapshot) for snapshot in snapshots],
     }
     return json.dumps(payload, sort_keys=True, separators=(",", ":")).encode("utf-8")
 
@@ -561,9 +578,12 @@ def _collection_record(
     actions = [
         {
             "step": STEP_COLLECT_FORENSICS,
-            "endpoint": bundle_uri or "PUT s3://<configured bucket>/container-escape/audit/<incident-id>/<bundle>",
+            "endpoint": bundle_uri
+            or "PUT s3://<configured bucket>/container-escape/audit/<incident-id>/<bundle>",
             "status": status,
-            "detail": "dry-run: would collect and upload forensic bundle" if dry_run else "forensic bundle uploaded",
+            "detail": "dry-run: would collect and upload forensic bundle"
+            if dry_run
+            else "forensic bundle uploaded",
         }
     ]
     if snapshots:
@@ -673,7 +693,9 @@ def collect_forensics(
         )
 
     snapshots = (
-        _plan_volume_snapshots(pods=pods, collected_at=collected_at, snapshot_class_name=snapshot_class_name)
+        _plan_volume_snapshots(
+            pods=pods, collected_at=collected_at, snapshot_class_name=snapshot_class_name
+        )
         if snapshot_volumes and not upload
         else []
     )
@@ -797,15 +819,21 @@ def main(argv: list[str] | None = None) -> int:
     )
     parser.add_argument("input", nargs="?", help="JSONL input. Defaults to stdin.")
     parser.add_argument("--output", "-o", help="JSONL output. Defaults to stdout.")
-    parser.add_argument("--upload", action="store_true", help="Upload the forensic bundle to KMS-encrypted S3.")
+    parser.add_argument(
+        "--upload", action="store_true", help="Upload the forensic bundle to KMS-encrypted S3."
+    )
     parser.add_argument(
         "--snapshot-volumes",
         action="store_true",
         help="Plan or create CSI VolumeSnapshot objects for PVC-backed pod volumes.",
     )
     parser.add_argument("--snapshot-class", help="Optional VolumeSnapshotClass name.")
-    parser.add_argument("--proc-root", default=str(DEFAULT_PROC_ROOT), help="Mounted host /proc root.")
-    parser.add_argument("--log-root", default=str(DEFAULT_LOG_ROOT), help="Mounted host /var/log root.")
+    parser.add_argument(
+        "--proc-root", default=str(DEFAULT_PROC_ROOT), help="Mounted host /proc root."
+    )
+    parser.add_argument(
+        "--log-root", default=str(DEFAULT_LOG_ROOT), help="Mounted host /var/log root."
+    )
     args = parser.parse_args(argv)
 
     in_stream = sys.stdin if not args.input else open(args.input, "r", encoding="utf-8")

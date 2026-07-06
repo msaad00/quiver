@@ -152,8 +152,6 @@ def _verify_bearer(request: Request, key_store: KeyStore) -> bool:
     return bool(key_store.verify_token(presented))
 
 
-
-
 class _Session:
     """One SSE stream + its inbound queue.
 
@@ -212,7 +210,9 @@ def create_app(
     flag off so signal handlers do not leak across the suite.
     """
     src = os.environ if env is None else env
-    effective_bind = bind if bind is not None else (src.get(BIND_ENV) or DEFAULT_BIND).strip() or DEFAULT_BIND
+    effective_bind = (
+        bind if bind is not None else (src.get(BIND_ENV) or DEFAULT_BIND).strip() or DEFAULT_BIND
+    )
     try:
         key_store = KeyStore(env=src, emit_audit=dispatch.emit_audit_event)
     except EmptyKeyStoreError as exc:

@@ -138,7 +138,13 @@ def _build_actor(entry: dict[str, Any]) -> dict[str, Any]:
     identity = entry.get("identity") or {}
     claims = identity.get("claims") or {}
     upn_key = "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/upn"
-    name = claims.get(upn_key) or claims.get("upn") or claims.get("name") or claims.get("appid") or entry.get("caller", "")
+    name = (
+        claims.get(upn_key)
+        or claims.get("upn")
+        or claims.get("name")
+        or claims.get("appid")
+        or entry.get("caller", "")
+    )
     if name:
         user["name"] = name
     appid = claims.get("appid")
@@ -205,19 +211,22 @@ def _build_canonical_event(entry: dict[str, Any]) -> dict[str, Any]:
     operation_name = entry.get("operationName", "")
     activity_id = infer_activity_id(operation_name)
     status_id, status_detail = _status_id_and_detail(entry)
-    event_uid = str(entry.get("eventDataId") or entry.get("correlationId") or "").strip() or hashlib.sha256(
-        json.dumps(
-            {
-                "time": entry.get("time", ""),
-                "operationName": operation_name,
-                "resourceId": entry.get("resourceId", ""),
-                "caller": entry.get("caller", ""),
-                "correlationId": entry.get("correlationId", ""),
-            },
-            sort_keys=True,
-            separators=(",", ":"),
-        ).encode("utf-8")
-    ).hexdigest()
+    event_uid = (
+        str(entry.get("eventDataId") or entry.get("correlationId") or "").strip()
+        or hashlib.sha256(
+            json.dumps(
+                {
+                    "time": entry.get("time", ""),
+                    "operationName": operation_name,
+                    "resourceId": entry.get("resourceId", ""),
+                    "caller": entry.get("caller", ""),
+                    "correlationId": entry.get("correlationId", ""),
+                },
+                sort_keys=True,
+                separators=(",", ":"),
+            ).encode("utf-8")
+        ).hexdigest()
+    )
 
     cloud = _build_cloud(entry)
     account_uid = ((cloud.get("account") or {}).get("uid")) or ""
@@ -236,7 +245,9 @@ def _build_canonical_event(entry: dict[str, Any]) -> dict[str, Any]:
         "operation": operation_name,
         "service_name": _service_name_from_operation(operation_name),
         "activity_id": activity_id,
-        "activity_name": {1: "create", 2: "read", 3: "update", 4: "delete", 99: "other"}.get(activity_id, "unknown"),
+        "activity_name": {1: "create", 2: "read", 3: "update", 4: "delete", 99: "other"}.get(
+            activity_id, "unknown"
+        ),
         "status_id": status_id,
         "status": {STATUS_SUCCESS: "success", STATUS_FAILURE: "failure"}.get(status_id, "unknown"),
         "status_detail": status_detail or "",
@@ -336,7 +347,9 @@ def iter_raw_entries(stream: Iterable[str]) -> Iterable[dict[str, Any]]:
         try:
             obj = json.loads(line)
         except json.JSONDecodeError as exc:
-            print(f"[{SKILL_NAME}] skipping line {lineno}: json parse failed: {exc}", file=sys.stderr)
+            print(
+                f"[{SKILL_NAME}] skipping line {lineno}: json parse failed: {exc}", file=sys.stderr
+            )
             continue
         if isinstance(obj, dict):
             yield obj
@@ -355,7 +368,9 @@ def ingest(stream: Iterable[str], *, output_format: str = "ocsf") -> Iterable[di
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Convert raw Azure Activity Logs to API Activity JSONL.")
+    parser = argparse.ArgumentParser(
+        description="Convert raw Azure Activity Logs to API Activity JSONL."
+    )
     parser.add_argument("input", nargs="?", help="Input JSON/JSONL file. Defaults to stdin.")
     parser.add_argument("--output", "-o", help="Output JSONL file. Defaults to stdout.")
     parser.add_argument(

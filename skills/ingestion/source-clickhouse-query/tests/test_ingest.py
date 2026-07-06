@@ -41,10 +41,16 @@ class TestNormalizeQuery:
         assert _normalize_query("SELECT * FROM foo") == "SELECT * FROM foo"
 
     def test_allows_with(self):
-        assert _normalize_query("WITH t AS (SELECT 1) SELECT * FROM t") == "WITH t AS (SELECT 1) SELECT * FROM t"
+        assert (
+            _normalize_query("WITH t AS (SELECT 1) SELECT * FROM t")
+            == "WITH t AS (SELECT 1) SELECT * FROM t"
+        )
 
     def test_allows_describe(self):
-        assert _normalize_query("DESCRIBE TABLE security.findings_sink") == "DESCRIBE TABLE security.findings_sink"
+        assert (
+            _normalize_query("DESCRIBE TABLE security.findings_sink")
+            == "DESCRIBE TABLE security.findings_sink"
+        )
 
     def test_rejects_multiple_statements(self):
         try:
@@ -103,7 +109,10 @@ class TestNormalizeQuery:
             raise AssertionError("expected ValueError")
 
     def test_allows_keyword_inside_string_literal(self):
-        assert _normalize_query("SELECT 'drop table foo' AS sample") == "SELECT 'drop table foo' AS sample"
+        assert (
+            _normalize_query("SELECT 'drop table foo' AS sample")
+            == "SELECT 'drop table foo' AS sample"
+        )
 
     def test_rejects_unbalanced_parentheses(self):
         try:

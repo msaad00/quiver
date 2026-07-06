@@ -23,9 +23,7 @@ from pathlib import Path
 # Step Function deployment already imports `lambda_parser.handler` by that
 # path, and we do not want to break that.
 _PARSER_PATH = Path(__file__).resolve().parent / "lambda_parser" / "handler.py"
-_spec = importlib.util.spec_from_file_location(
-    "iam_departures_aws_parser", _PARSER_PATH
-)
+_spec = importlib.util.spec_from_file_location("iam_departures_aws_parser", _PARSER_PATH)
 assert _spec and _spec.loader, f"could not load {_PARSER_PATH}"
 _parser_mod = importlib.util.module_from_spec(_spec)
 sys.modules.setdefault("iam_departures_aws_parser", _parser_mod)

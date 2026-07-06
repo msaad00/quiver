@@ -51,7 +51,9 @@ class TestHelpers:
         assert _extract_subscription_id(rid) == "00000000-0000-0000-0000-000000000000"
 
     def test_parse_tuple_v2(self):
-        parsed = parse_flow_tuple("1775797320000,10.0.1.4,10.0.2.7,49812,3306,T,O,A,B,12,4500,10,3200", 2)
+        parsed = parse_flow_tuple(
+            "1775797320000,10.0.1.4,10.0.2.7,49812,3306,T,O,A,B,12,4500,10,3200", 2
+        )
         assert parsed["src_ip"] == "10.0.1.4"
         assert parsed["bytes_out"] == "4500"
 
@@ -59,7 +61,9 @@ class TestHelpers:
 class TestConvert:
     def test_convert_tuple(self):
         event = convert_tuple(
-            parse_flow_tuple("1775797320000,10.0.1.4,10.0.2.7,49812,3306,T,O,A,B,12,4500,10,3200", 2),
+            parse_flow_tuple(
+                "1775797320000,10.0.1.4,10.0.2.7,49812,3306,T,O,A,B,12,4500,10,3200", 2
+            ),
             resource_id="/SUBSCRIPTIONS/00000000-0000-0000-0000-000000000000/RESOURCEGROUPS/rg/providers/MICROSOFT.NETWORK/NETWORKSECURITYGROUPS/web-nsg",
             rule="AllowDb",
             mac="000D3A1B2C3D",
@@ -76,7 +80,9 @@ class TestConvert:
 
     def test_native_output_keeps_canonical_fields_without_ocsf_envelope(self):
         event = convert_tuple_native(
-            parse_flow_tuple("1775797320000,10.0.1.4,10.0.2.7,49812,3306,T,O,A,B,12,4500,10,3200", 2),
+            parse_flow_tuple(
+                "1775797320000,10.0.1.4,10.0.2.7,49812,3306,T,O,A,B,12,4500,10,3200", 2
+            ),
             resource_id="/SUBSCRIPTIONS/00000000-0000-0000-0000-000000000000/RESOURCEGROUPS/rg/providers/MICROSOFT.NETWORK/NETWORKSECURITYGROUPS/web-nsg",
             rule="AllowDb",
             mac="000D3A1B2C3D",

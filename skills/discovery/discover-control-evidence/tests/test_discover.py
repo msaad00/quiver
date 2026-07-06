@@ -65,7 +65,10 @@ def _graph() -> dict:
                 "entity_type": "user",
                 "label": "alice",
                 "dimensions": {"cloud_provider": "aws", "service": "iam"},
-                "attributes": {"arn": "arn:aws:iam::123456789012:user/alice", "password": "drop-me"},
+                "attributes": {
+                    "arn": "arn:aws:iam::123456789012:user/alice",
+                    "password": "drop-me",
+                },
             },
             {
                 "id": "aws:lambda:score",
@@ -74,7 +77,9 @@ def _graph() -> dict:
                 "dimensions": {"cloud_provider": "aws", "service": "lambda"},
             },
         ],
-        "edges": [{"source": "aws:iam_user:alice", "target": "aws:lambda:score", "relationship": "uses"}],
+        "edges": [
+            {"source": "aws:iam_user:alice", "target": "aws:lambda:score", "relationship": "uses"}
+        ],
     }
 
 
@@ -116,7 +121,11 @@ class TestBuildEvidence:
 
     def test_graph_without_external_services_is_partial_for_pci_surface(self):
         evidence = build_evidence(_graph(), ["pci"])
-        pci_surface = next(control for control in evidence["controls"] if control["control_id"] == "inventory.external-services")
+        pci_surface = next(
+            control
+            for control in evidence["controls"]
+            if control["control_id"] == "inventory.external-services"
+        )
         assert pci_surface["status"] == "missing"
 
     def test_invalid_input_raises(self):
@@ -133,4 +142,6 @@ class TestBuildEvidence:
         assert event["class_uid"] == 5040
         assert event["class_name"] == "Live Evidence Info"
         assert event["metadata"]["version"] == "1.8.0"
-        assert event["unmapped"]["cloud_security_technical_evidence"]["frameworks"] == ["SOC 2 Security"]
+        assert event["unmapped"]["cloud_security_technical_evidence"]["frameworks"] == [
+            "SOC 2 Security"
+        ]

@@ -91,12 +91,12 @@ class RemediationReference:
     verifier reads them from the audit table and passes them back here.
     """
 
-    remediation_skill: str           # e.g. "remediate-okta-session-kill"
-    remediation_action_uid: str      # deterministic id of the action
-    target_provider: str             # "Okta" / "AWS" / "GCP" / "Azure" / "Kubernetes"
-    target_identifier: str           # e.g. Okta user uid, IAM username, k8s binding
-    original_finding_uid: str        # the finding that triggered remediation
-    remediated_at_ms: int            # when the action wrote its post-audit row
+    remediation_skill: str  # e.g. "remediate-okta-session-kill"
+    remediation_action_uid: str  # deterministic id of the action
+    target_provider: str  # "Okta" / "AWS" / "GCP" / "Azure" / "Kubernetes"
+    target_identifier: str  # e.g. Okta user uid, IAM username, k8s binding
+    original_finding_uid: str  # the finding that triggered remediation
+    remediated_at_ms: int  # when the action wrote its post-audit row
 
 
 @dataclasses.dataclass
@@ -105,10 +105,10 @@ class VerificationResult:
 
     status: VerificationStatus
     checked_at_ms: int
-    sla_deadline_ms: int             # by when this verification had to land
-    expected_state: str              # one-line description of what we expected
-    actual_state: str                # what the verifier actually found
-    detail: str | None = None        # free-form context (error msg, query, etc.)
+    sla_deadline_ms: int  # by when this verification had to land
+    expected_state: str  # one-line description of what we expected
+    actual_state: str  # what the verifier actually found
+    detail: str | None = None  # free-form context (error msg, query, etc.)
 
 
 def _now_ms() -> int:
@@ -177,8 +177,7 @@ def build_drift_finding(
     """
     if result.status != VerificationStatus.DRIFT:
         raise ValueError(
-            "build_drift_finding must only be called with status=DRIFT; "
-            f"got {result.status}"
+            f"build_drift_finding must only be called with status=DRIFT; got {result.status}"
         )
 
     finding_uid = _deterministic_uid(
@@ -203,7 +202,11 @@ def build_drift_finding(
 
     observables = [
         {"name": "remediation.skill", "type": "Other", "value": reference.remediation_skill},
-        {"name": "remediation.action_uid", "type": "Other", "value": reference.remediation_action_uid},
+        {
+            "name": "remediation.action_uid",
+            "type": "Other",
+            "value": reference.remediation_action_uid,
+        },
         {"name": "target.provider", "type": "Other", "value": reference.target_provider},
         {"name": "target.identifier", "type": "Other", "value": reference.target_identifier},
         {"name": "original.finding_uid", "type": "Other", "value": reference.original_finding_uid},

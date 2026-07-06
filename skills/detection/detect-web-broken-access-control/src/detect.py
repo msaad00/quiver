@@ -390,8 +390,11 @@ def load_jsonl(stream: Iterable[str]) -> Iterable[dict[str, Any]]:
             obj = json.loads(line)
         except json.JSONDecodeError as exc:
             emit_stderr_event(
-                SKILL_NAME, level="warning", event="json_parse_failed",
-                message=f"skipping line {lineno}: json parse failed: {exc}", line=lineno,
+                SKILL_NAME,
+                level="warning",
+                event="json_parse_failed",
+                message=f"skipping line {lineno}: json parse failed: {exc}",
+                line=lineno,
             )
             continue
         if isinstance(obj, dict):
@@ -405,11 +408,15 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("input", nargs="?", help="JSONL input. Defaults to stdin.")
     parser.add_argument("--output", "-o", help="JSONL output. Defaults to stdout.")
     parser.add_argument(
-        "--output-format", choices=sorted(OUTPUT_FORMATS), default="ocsf",
+        "--output-format",
+        choices=sorted(OUTPUT_FORMATS),
+        default="ocsf",
         help="Emit OCSF Detection Finding (default) or native projection.",
     )
     parser.add_argument(
-        "--auth-swap-window-ms", type=int, default=DEFAULT_AUTH_SWAP_WINDOW_MS,
+        "--auth-swap-window-ms",
+        type=int,
+        default=DEFAULT_AUTH_SWAP_WINDOW_MS,
         help=f"Auth-swap flip window in ms (default {DEFAULT_AUTH_SWAP_WINDOW_MS}).",
     )
     args = parser.parse_args(argv)

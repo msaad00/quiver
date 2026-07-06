@@ -121,8 +121,7 @@ def _violations() -> list[str]:
                 skill_md = skill_dir / "SKILL.md"
                 if not skill_md.is_file():
                     if any(
-                        (skill_dir / sentinel).is_file()
-                        for sentinel in SENTINEL_NON_SKILL_FILES
+                        (skill_dir / sentinel).is_file() for sentinel in SENTINEL_NON_SKILL_FILES
                     ):
                         errs.append(
                             f"{skill_dir.relative_to(REPO_ROOT)}: missing SKILL.md "

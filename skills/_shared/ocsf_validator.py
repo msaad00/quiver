@@ -99,7 +99,9 @@ def _check_required_int(
     return int(value)
 
 
-def _check_required_string(event: dict[str, Any], path: tuple[str, ...], errors: list[str]) -> str | None:
+def _check_required_string(
+    event: dict[str, Any], path: tuple[str, ...], errors: list[str]
+) -> str | None:
     value = _get(event, *path)
     if value is None or value == "":
         errors.append(f"missing required field `{'.'.join(path)}`")
@@ -116,8 +118,7 @@ def _check_pinned_string(
     value = _get(event, *path)
     if value != expected:
         errors.append(
-            f"`{'.'.join(path)}` must be pinned to `{expected}` "
-            f"(OCSF_CONTRACT.md), got `{value!r}`"
+            f"`{'.'.join(path)}` must be pinned to `{expected}` (OCSF_CONTRACT.md), got `{value!r}`"
         )
 
 
@@ -177,7 +178,9 @@ def validate_event(event: dict[str, Any]) -> list[str]:
     if time_value is None:
         errors.append("missing required field `time`")
     elif not _is_int(time_value):
-        errors.append(f"`time` must be an int (epoch milliseconds), got {type(time_value).__name__}")
+        errors.append(
+            f"`time` must be an int (epoch milliseconds), got {type(time_value).__name__}"
+        )
     elif time_value < 1_000_000_000_000:
         # Any sane epoch-ms value after 2001-09-09 is > 1e12. Epoch-seconds
         # values (~1.7e9) are a common bug: caller emitted seconds not ms.

@@ -136,10 +136,19 @@ class TestNetworkChecks:
     def test_4_1_ssh_open_fails(self):
         ec2 = boto3.client("ec2", region_name="us-east-1")
         vpc = ec2.create_vpc(CidrBlock="10.0.0.0/16")
-        sg = ec2.create_security_group(GroupName="open-ssh", Description="test", VpcId=vpc["Vpc"]["VpcId"])
+        sg = ec2.create_security_group(
+            GroupName="open-ssh", Description="test", VpcId=vpc["Vpc"]["VpcId"]
+        )
         ec2.authorize_security_group_ingress(
             GroupId=sg["GroupId"],
-            IpPermissions=[{"FromPort": 22, "ToPort": 22, "IpProtocol": "tcp", "IpRanges": [{"CidrIp": "0.0.0.0/0"}]}],
+            IpPermissions=[
+                {
+                    "FromPort": 22,
+                    "ToPort": 22,
+                    "IpProtocol": "tcp",
+                    "IpRanges": [{"CidrIp": "0.0.0.0/0"}],
+                }
+            ],
         )
         f = check_4_1_no_unrestricted_ssh(ec2)
         assert f.status == "FAIL"
@@ -328,18 +337,20 @@ class TestExpandedIamControls:
 
 @mock_aws
 class TestExpandedStorageControls:
-    _SSL_DENY_POLICY = json.dumps({
-        "Version": "2012-10-17",
-        "Statement": [
-            {
-                "Effect": "Deny",
-                "Principal": "*",
-                "Action": "s3:*",
-                "Resource": ["arn:aws:s3:::test-bucket", "arn:aws:s3:::test-bucket/*"],
-                "Condition": {"Bool": {"aws:SecureTransport": "false"}},
-            }
-        ],
-    })
+    _SSL_DENY_POLICY = json.dumps(
+        {
+            "Version": "2012-10-17",
+            "Statement": [
+                {
+                    "Effect": "Deny",
+                    "Principal": "*",
+                    "Action": "s3:*",
+                    "Resource": ["arn:aws:s3:::test-bucket", "arn:aws:s3:::test-bucket/*"],
+                    "Condition": {"Bool": {"aws:SecureTransport": "false"}},
+                }
+            ],
+        }
+    )
 
     def test_2_1_4_ssl_required_pass(self):
         s3 = boto3.client("s3", region_name="us-east-1")

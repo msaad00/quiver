@@ -71,6 +71,7 @@ LAYER_TO_PRIV: dict[str, str] = {
     "remediation": "read_write",
 }
 
+
 # Persistence: derive from side_effects (frontmatter), not from layer,
 # so the answer reflects what the skill actually does.
 # - side_effects: none → persistence: none
@@ -194,7 +195,9 @@ def _format_scalar_line(key: str, value: str) -> str:
     contains characters that would otherwise need a YAML block scalar.
     """
     # Purpose may contain commas, colons, etc. Quote it.
-    if key == "purpose" and (":" in value or value.startswith(("&", "*", "!", "?", "{", "[", ">", "|"))):
+    if key == "purpose" and (
+        ":" in value or value.startswith(("&", "*", "!", "?", "{", "[", ">", "|"))
+    ):
         # YAML double-quote with the doubled-quote escape.
         escaped = value.replace("\\", "\\\\").replace('"', '\\"')
         return f'{key}: "{escaped}"'
@@ -221,7 +224,11 @@ def _remove_top_level_key(lines: list[str], key: str) -> tuple[list[str], str | 
                 # Skip any indented continuation block.
                 head = line.split(":", 1)[1].strip()
                 if head in {">", ">-", "|", "|-"} or not head:
-                    while i < n and (lines[i].startswith(" ") or lines[i].startswith("\t") or not lines[i].strip()):
+                    while i < n and (
+                        lines[i].startswith(" ")
+                        or lines[i].startswith("\t")
+                        or not lines[i].strip()
+                    ):
                         i += 1
                 continue
         out.append(line)
@@ -281,7 +288,9 @@ def _insert_fields(
             head = line.split(":", 1)[1].strip()
             i += 1
             if head in {">", ">-", "|", "|-"}:
-                while i < n and (lines[i].startswith(" ") or lines[i].startswith("\t") or not lines[i].strip()):
+                while i < n and (
+                    lines[i].startswith(" ") or lines[i].startswith("\t") or not lines[i].strip()
+                ):
                     out.append(lines[i])
                     i += 1
             for key, value in to_add:
@@ -295,7 +304,9 @@ def _insert_fields(
             out.append(_format_scalar_line(key, value))
 
     # Report only newly-derived insertions, not the relocated capability.
-    added_keys = [k for k, _ in to_add if not (k == "capability" and relocated_capability is not None)]
+    added_keys = [
+        k for k, _ in to_add if not (k == "capability" and relocated_capability is not None)
+    ]
     return "\n".join(out), added_keys
 
 
@@ -327,7 +338,7 @@ def _process_skill(path: Path) -> tuple[bool, list[str]]:
     if not added:
         return False, []
 
-    new_text = opener + new_body + closer + text[len(opener) + len(body) + len(closer):]
+    new_text = opener + new_body + closer + text[len(opener) + len(body) + len(closer) :]
     path.write_text(new_text)
     return True, added
 
@@ -377,7 +388,11 @@ def main(argv: list[str] | None = None) -> int:
             # Canonical position: must appear before `license`.
             try:
                 cap_pos = existing_keys_list.index("capability")
-                lic_pos = existing_keys_list.index("license") if "license" in existing else len(existing_keys_list)
+                lic_pos = (
+                    existing_keys_list.index("license")
+                    if "license" in existing
+                    else len(existing_keys_list)
+                )
                 if cap_pos > lic_pos:
                     misordered_capability = True
             except ValueError:

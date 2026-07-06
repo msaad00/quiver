@@ -52,9 +52,15 @@ def build_manifest(source_name: str, previous_hash: str | None = None) -> dict[s
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--source", required=True, help="HR source name: snowflake, databricks, clickhouse, workday")
-    parser.add_argument("--previous-hash", help="Optional previously persisted hash to compare against.")
-    parser.add_argument("--hash-only", action="store_true", help="Emit only the computed content hash as JSON.")
+    parser.add_argument(
+        "--source", required=True, help="HR source name: snowflake, databricks, clickhouse, workday"
+    )
+    parser.add_argument(
+        "--previous-hash", help="Optional previously persisted hash to compare against."
+    )
+    parser.add_argument(
+        "--hash-only", action="store_true", help="Emit only the computed content hash as JSON."
+    )
     parser.add_argument("--pretty", action="store_true", help="Pretty-print JSON output.")
     parser.add_argument("-o", "--output", help="Write JSON to a file instead of stdout.")
     args = parser.parse_args(argv)

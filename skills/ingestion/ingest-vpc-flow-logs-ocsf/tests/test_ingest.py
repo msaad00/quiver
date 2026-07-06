@@ -156,7 +156,10 @@ class TestParseHeader:
 
     def test_non_header_line(self):
         # A real flow record starts with a version number, not the word "version"
-        assert parse_header("5 111122223333 eni-abc 10.0.0.1 10.0.0.2 80 443 6 5 320 1 2 ACCEPT OK") is None
+        assert (
+            parse_header("5 111122223333 eni-abc 10.0.0.1 10.0.0.2 80 443 6 5 320 1 2 ACCEPT OK")
+            is None
+        )
 
     def test_empty(self):
         assert parse_header("") is None
@@ -294,7 +297,9 @@ class TestConvertRecord:
 
 class TestIngestStream:
     def test_default_field_order_no_header(self):
-        lines = ["5 111122223333 eni-abc 10.0.0.1 10.0.0.2 48123 22 6 12 1680 1775797200 1775797260 ACCEPT OK"]
+        lines = [
+            "5 111122223333 eni-abc 10.0.0.1 10.0.0.2 48123 22 6 12 1680 1775797200 1775797260 ACCEPT OK"
+        ]
         out = list(ingest(lines))
         assert len(out) == 1
         assert out[0]["src_endpoint"]["ip"] == "10.0.0.1"
@@ -326,7 +331,9 @@ class TestIngestStream:
         assert "skipping line 1" in capsys.readouterr().err
 
     def test_native_output_mode_emits_enriched_flows(self):
-        lines = ["5 111122223333 eni-abc 10.0.0.1 10.0.0.2 48123 22 6 12 1680 1775797200 1775797260 ACCEPT OK"]
+        lines = [
+            "5 111122223333 eni-abc 10.0.0.1 10.0.0.2 48123 22 6 12 1680 1775797200 1775797260 ACCEPT OK"
+        ]
         out = list(ingest(lines, output_format="native"))
         assert len(out) == 1
         assert out[0]["schema_mode"] == "native"
@@ -349,7 +356,9 @@ class TestGoldenFixture:
         produced = list(ingest(RAW.read_text().splitlines()))
         expected = _load_jsonl(OCSF)
         for p, e in zip(produced, expected):
-            assert p == e, f"drift:\n  produced: {json.dumps(p, sort_keys=True)}\n  expected: {json.dumps(e, sort_keys=True)}"
+            assert p == e, (
+                f"drift:\n  produced: {json.dumps(p, sort_keys=True)}\n  expected: {json.dumps(e, sort_keys=True)}"
+            )
 
     def test_fixture_has_one_reject(self):
         events = _load_jsonl(OCSF)

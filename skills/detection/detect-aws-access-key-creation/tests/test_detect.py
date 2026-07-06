@@ -74,7 +74,9 @@ def test_fires_on_create_access_key():
     attack = finding["finding_info"]["attacks"][0]
     assert attack["sub_technique_uid"] == SUBTECHNIQUE_UID
     assert finding["finding_info"]["title"] == "AWS IAM access key created"
-    assert any(obs["name"] == "target.name" and obs["value"] == "bob" for obs in finding["observables"])
+    assert any(
+        obs["name"] == "target.name" and obs["value"] == "bob" for obs in finding["observables"]
+    )
 
 
 def test_native_output_contains_target_user():

@@ -103,11 +103,11 @@ def _connect() -> Any:
         "username": os.environ.get("CLICKHOUSE_USER", "default"),
         "password": os.environ.get("CLICKHOUSE_PASSWORD", ""),
     }
-    if (port := os.environ.get("CLICKHOUSE_PORT")):
+    if port := os.environ.get("CLICKHOUSE_PORT"):
         kwargs["port"] = int(port)
-    if (database := os.environ.get("CLICKHOUSE_DATABASE")):
+    if database := os.environ.get("CLICKHOUSE_DATABASE"):
         kwargs["database"] = database
-    if (secure := os.environ.get("CLICKHOUSE_SECURE")):
+    if secure := os.environ.get("CLICKHOUSE_SECURE"):
         kwargs["secure"] = secure.lower() not in {"0", "false", "no"}
     return clickhouse_connect.get_client(**kwargs)
 
@@ -118,8 +118,7 @@ def _insert_rows(table_name: str, rows: list[PreparedRow]) -> int:
         client.insert(
             table=table_name,
             data=[
-                [row.payload_json, row.schema_mode, row.event_uid, row.finding_uid]
-                for row in rows
+                [row.payload_json, row.schema_mode, row.event_uid, row.finding_uid] for row in rows
             ],
             column_names=["payload", "schema_mode", "event_uid", "finding_uid"],
         )
@@ -128,7 +127,9 @@ def _insert_rows(table_name: str, rows: list[PreparedRow]) -> int:
     return len(rows)
 
 
-def _summary(table_name: str, rows: list[PreparedRow], dry_run: bool, inserted: int) -> dict[str, Any]:
+def _summary(
+    table_name: str, rows: list[PreparedRow], dry_run: bool, inserted: int
+) -> dict[str, Any]:
     schema_modes = Counter(row.schema_mode for row in rows)
     return {
         "schema_mode": "native",
@@ -145,8 +146,12 @@ def _summary(table_name: str, rows: list[PreparedRow], dry_run: bool, inserted: 
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Append JSONL records into a pre-provisioned ClickHouse table.")
-    parser.add_argument("--table", required=True, help="Target ClickHouse table: table or database.table.")
+    parser = argparse.ArgumentParser(
+        description="Append JSONL records into a pre-provisioned ClickHouse table."
+    )
+    parser.add_argument(
+        "--table", required=True, help="Target ClickHouse table: table or database.table."
+    )
     parser.add_argument(
         "--output-format",
         choices=("native",),
@@ -154,8 +159,15 @@ def main(argv: list[str] | None = None) -> int:
         help="Declared output rendering mode for the sink result.",
     )
     mode = parser.add_mutually_exclusive_group()
-    mode.add_argument("--dry-run", dest="dry_run", action="store_true", help="Validate and summarize without inserting.")
-    mode.add_argument("--apply", dest="dry_run", action="store_false", help="Execute ClickHouse inserts.")
+    mode.add_argument(
+        "--dry-run",
+        dest="dry_run",
+        action="store_true",
+        help="Validate and summarize without inserting.",
+    )
+    mode.add_argument(
+        "--apply", dest="dry_run", action="store_false", help="Execute ClickHouse inserts."
+    )
     parser.set_defaults(dry_run=True)
     args = parser.parse_args(argv)
 
@@ -165,7 +177,10 @@ def main(argv: list[str] | None = None) -> int:
         if not rows:
             raise ValueError("stdin did not contain any JSONL records")
         inserted = 0 if args.dry_run else _insert_rows(table_name, rows)
-        sys.stdout.write(json.dumps(_summary(table_name, rows, args.dry_run, inserted), separators=(",", ":")) + "\n")
+        sys.stdout.write(
+            json.dumps(_summary(table_name, rows, args.dry_run, inserted), separators=(",", ":"))
+            + "\n"
+        )
     except Exception as exc:
         print(f"[{SKILL_NAME}] {exc}", file=sys.stderr)
         return 1

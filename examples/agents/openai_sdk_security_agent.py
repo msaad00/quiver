@@ -33,14 +33,16 @@ MCP_SERVER = REPO_ROOT / "mcp-server" / "src" / "server.py"
 
 # Same read-only allowlist posture as the Anthropic example — any agent
 # framework we ship docs for uses the same list.
-ALLOWED_SKILLS_READ_ONLY = ",".join([
-    "cspm-aws-cis-benchmark",
-    "cspm-gcp-cis-benchmark",
-    "cspm-azure-cis-benchmark",
-    "detect-lateral-movement",
-    "detect-privilege-escalation-k8s",
-    "convert-ocsf-to-sarif",
-])
+ALLOWED_SKILLS_READ_ONLY = ",".join(
+    [
+        "cspm-aws-cis-benchmark",
+        "cspm-gcp-cis-benchmark",
+        "cspm-azure-cis-benchmark",
+        "detect-lateral-movement",
+        "detect-privilege-escalation-k8s",
+        "convert-ocsf-to-sarif",
+    ]
+)
 
 
 def build_mcp_config() -> dict[str, Any]:
@@ -111,12 +113,17 @@ def main() -> int:
     approval = human_approval_gate(triage)
     if approval is None:
         return 0
-    print(json.dumps({
-        "stage": "remediation_dry_run",
-        "caller_context": caller,
-        "approval_context": approval,
-        "note": "In a real run this would shell into iam-departures-aws --dry-run",
-    }, indent=2))
+    print(
+        json.dumps(
+            {
+                "stage": "remediation_dry_run",
+                "caller_context": caller,
+                "approval_context": approval,
+                "note": "In a real run this would shell into iam-departures-aws --dry-run",
+            },
+            indent=2,
+        )
+    )
     return 0
 
 

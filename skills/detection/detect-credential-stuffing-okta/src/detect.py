@@ -192,9 +192,7 @@ def _build_native_finding(
 
     failure_ips = sorted({ip for item in failures if (ip := _source_ip(item))})
     success_ip = _source_ip(success)
-    session_uids = sorted(
-        {uid for item in (*failures, success) if (uid := _session_uid(item))}
-    )
+    session_uids = sorted({uid for item in (*failures, success) if (uid := _session_uid(item))})
     raw_event_uids = [item["event_uid"] for item in failures] + [success_uid]
 
     window_ms = _window_ms()
@@ -215,8 +213,12 @@ def _build_native_finding(
     ]
     if success_ip:
         observables.append({"name": "success.ip", "type": "IP Address", "value": success_ip})
-    observables.extend({"name": "failure.ip", "type": "IP Address", "value": ip} for ip in failure_ips)
-    observables.extend({"name": "session.uid", "type": "Other", "value": uid} for uid in session_uids)
+    observables.extend(
+        {"name": "failure.ip", "type": "IP Address", "value": ip} for ip in failure_ips
+    )
+    observables.extend(
+        {"name": "session.uid", "type": "Other", "value": uid} for uid in session_uids
+    )
 
     return {
         "schema_mode": "native",
@@ -326,7 +328,9 @@ def coverage_metadata() -> dict[str, Any]:
     }
 
 
-def detect(events: Iterable[dict[str, Any]], output_format: str = "ocsf") -> Iterable[dict[str, Any]]:
+def detect(
+    events: Iterable[dict[str, Any]], output_format: str = "ocsf"
+) -> Iterable[dict[str, Any]]:
     if output_format not in OUTPUT_FORMATS:
         raise ContractError(
             f"unsupported output_format: {output_format}",
@@ -385,7 +389,9 @@ def detect(events: Iterable[dict[str, Any]], output_format: str = "ocsf") -> Ite
 
         unique_ips = {_source_ip(f) for f in failures if _source_ip(f)}
         if len(failures) >= min_failures and len(unique_ips) >= min_unique_ips:
-            native_finding = _build_native_finding(user_uid, item["user_name"], list(failures), item)
+            native_finding = _build_native_finding(
+                user_uid, item["user_name"], list(failures), item
+            )
             if output_format == "native":
                 yield native_finding
             else:
@@ -446,8 +452,12 @@ def main(argv: list[str] | None = None) -> int:
         description="Detect Okta credential-stuffing bursts followed by successful sign-in."
     )
     parser.add_argument("input", nargs="?", help="Authentication JSONL input. Defaults to stdin.")
-    parser.add_argument("--output", "-o", help="Detection Finding JSONL output. Defaults to stdout.")
-    parser.add_argument("--output-format", choices=OUTPUT_FORMATS, default="ocsf", help="Output format.")
+    parser.add_argument(
+        "--output", "-o", help="Detection Finding JSONL output. Defaults to stdout."
+    )
+    parser.add_argument(
+        "--output-format", choices=OUTPUT_FORMATS, default="ocsf", help="Output format."
+    )
     args = parser.parse_args(argv)
 
     in_stream = sys.stdin if not args.input else open(args.input, "r", encoding="utf-8")

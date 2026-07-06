@@ -83,7 +83,13 @@ def _parse_positive_int_env(name: str, default: int) -> int:
     try:
         value = int(raw)
     except ValueError:
-        emit_stderr_event(SKILL_NAME, level="warning", event="invalid_env_int", message=f"{name} must be an integer", env_var=name)
+        emit_stderr_event(
+            SKILL_NAME,
+            level="warning",
+            event="invalid_env_int",
+            message=f"{name} must be an integer",
+            env_var=name,
+        )
         return default
     return value if value > 0 else default
 
@@ -162,7 +168,10 @@ def _change_count(event: dict[str, Any]) -> int:
 
 
 def _is_relevant(event: dict[str, Any], sensitive_tx: frozenset[str]) -> bool:
-    if event.get("class_uid") != APP_ACTIVITY_CLASS_UID and event.get("record_type") != "application_activity":
+    if (
+        event.get("class_uid") != APP_ACTIVITY_CLASS_UID
+        and event.get("record_type") != "application_activity"
+    ):
         return False
     if _producer(event) != SAP_INGEST_SKILL:
         return False
@@ -174,7 +183,9 @@ def _is_relevant(event: dict[str, Any], sensitive_tx: frozenset[str]) -> bool:
     return _family(event) in {"change", "privileged_access", "transaction"}
 
 
-def _finding_uid(actor: str, client: str, tx_code: str, window_start: int, event_uids: list[str]) -> str:
+def _finding_uid(
+    actor: str, client: str, tx_code: str, window_start: int, event_uids: list[str]
+) -> str:
     material = f"{actor}|{client}|{tx_code}|{window_start}|{'|'.join(sorted(event_uids))}"
     digest = hashlib.sha256(material.encode("utf-8")).hexdigest()[:16]
     return f"det-sap-mass-change-{digest}"
@@ -192,8 +203,12 @@ def _build_native_finding(
 ) -> dict[str, Any]:
     event_uids = [_metadata_uid(event) for event in events if _metadata_uid(event)]
     change_total = sum(_change_count(event) for event in events)
-    first_seen = min((_event_time(event) for event in events if _event_time(event)), default=window_start)
-    last_seen = max((_event_time(event) for event in events if _event_time(event)), default=window_start)
+    first_seen = min(
+        (_event_time(event) for event in events if _event_time(event)), default=window_start
+    )
+    last_seen = max(
+        (_event_time(event) for event in events if _event_time(event)), default=window_start
+    )
     finding_uid = _finding_uid(actor, client, tx_code, window_start, event_uids)
     description = (
         f"SAP principal '{actor_name or actor}' performed {change_total} sensitive changes through "
@@ -262,7 +277,11 @@ def _render_ocsf_finding(native_finding: dict[str, Any]) -> dict[str, Any]:
         "metadata": {
             "version": OCSF_VERSION,
             "uid": native_finding["event_uid"],
-            "product": {"name": REPO_NAME, "vendor_name": REPO_VENDOR, "feature": {"name": SKILL_NAME}},
+            "product": {
+                "name": REPO_NAME,
+                "vendor_name": REPO_VENDOR,
+                "feature": {"name": SKILL_NAME},
+            },
             "labels": ["sap", "mass-change", "detection"],
         },
         "finding_info": {
@@ -291,7 +310,13 @@ def iter_records(stream: Iterable[str]) -> Iterable[dict[str, Any]]:
         try:
             obj = json.loads(line)
         except json.JSONDecodeError as exc:
-            emit_stderr_event(SKILL_NAME, level="warning", event="json_parse_failed", message=str(exc), line=lineno)
+            emit_stderr_event(
+                SKILL_NAME,
+                level="warning",
+                event="json_parse_failed",
+                message=str(exc),
+                line=lineno,
+            )
             continue
         if isinstance(obj, dict):
             yield obj
@@ -323,13 +348,24 @@ def detect(stream: Iterable[str], output_format: str = "ocsf") -> list[dict[str,
         change_total = sum(_change_count(event) for event in events)
         if change_total < threshold:
             continue
-        native = _build_native_finding(actor, actor_names.get((actor, client, tx_code, window_start), ""), client, tx_code, window_start, window_minutes, threshold, events)
+        native = _build_native_finding(
+            actor,
+            actor_names.get((actor, client, tx_code, window_start), ""),
+            client,
+            tx_code,
+            window_start,
+            window_minutes,
+            threshold,
+            events,
+        )
         findings.append(native if output_format == "native" else _render_ocsf_finding(native))
     return findings
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Detect SAP mass change through sensitive transactions.")
+    parser = argparse.ArgumentParser(
+        description="Detect SAP mass change through sensitive transactions."
+    )
     parser.add_argument("input", nargs="?", help="Input OCSF/native JSONL. Defaults to stdin.")
     parser.add_argument("--output", "-o", help="Output JSONL file. Defaults to stdout.")
     parser.add_argument("--output-format", choices=OUTPUT_FORMATS, default="ocsf")

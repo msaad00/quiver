@@ -172,9 +172,7 @@ class Boto3EC2Client:
             del perm["IpRanges"]
         if not perm["Ipv6Ranges"]:
             del perm["Ipv6Ranges"]
-        self._client().revoke_security_group_ingress(
-            GroupId=sg_id, IpPermissions=[perm]
-        )
+        self._client().revoke_security_group_ingress(GroupId=sg_id, IpPermissions=[perm])
 
 
 @dataclasses.dataclass
@@ -229,19 +227,29 @@ class DualAuditWriter:
         }
         body = json.dumps(envelope, separators=(",", ":"))
         boto3.client("s3").put_object(
-            Bucket=self.s3_bucket, Key=evidence_key, Body=body.encode("utf-8"),
-            ServerSideEncryption="aws:kms", SSEKMSKeyId=self.kms_key_arn,
+            Bucket=self.s3_bucket,
+            Key=evidence_key,
+            Body=body.encode("utf-8"),
+            ServerSideEncryption="aws:kms",
+            SSEKMSKeyId=self.kms_key_arn,
             ContentType="application/json",
         )
         boto3.client("dynamodb").put_item(
             TableName=self.dynamodb_table,
             Item={
-                "sg_id": {"S": target.sg_id}, "action_at": {"S": action_at},
-                "row_uid": {"S": row_uid}, "step": {"S": step}, "status": {"S": status},
-                "incident_id": {"S": incident_id}, "approver": {"S": approver},
-                "sg_name": {"S": target.sg_name}, "region": {"S": target.region},
-                "account_uid": {"S": target.account_uid}, "actor": {"S": target.actor},
-                "rule": {"S": target.rule}, "producer_skill": {"S": target.producer_skill},
+                "sg_id": {"S": target.sg_id},
+                "action_at": {"S": action_at},
+                "row_uid": {"S": row_uid},
+                "step": {"S": step},
+                "status": {"S": status},
+                "incident_id": {"S": incident_id},
+                "approver": {"S": approver},
+                "sg_name": {"S": target.sg_name},
+                "region": {"S": target.region},
+                "account_uid": {"S": target.account_uid},
+                "actor": {"S": target.actor},
+                "rule": {"S": target.rule},
+                "producer_skill": {"S": target.producer_skill},
                 "finding_uid": {"S": target.finding_uid},
                 "s3_evidence_uri": {"S": evidence_uri},
             },
@@ -266,7 +274,11 @@ def _finding_product(event: dict[str, Any]) -> str:
 
 
 def _finding_uid(event: dict[str, Any]) -> str:
-    return str((event.get("finding_info") or {}).get("uid") or (event.get("metadata") or {}).get("uid") or "")
+    return str(
+        (event.get("finding_info") or {}).get("uid")
+        or (event.get("metadata") or {}).get("uid")
+        or ""
+    )
 
 
 def _observable_value(event: dict[str, Any], name: str) -> str:
@@ -310,7 +322,9 @@ def _target_from_event(event: dict[str, Any]) -> Target | None:
     producer = _finding_product(event)
     if producer not in ACCEPTED_PRODUCERS:
         emit_stderr_event(
-            SKILL_NAME, level="warning", event="wrong_source_skill",
+            SKILL_NAME,
+            level="warning",
+            event="wrong_source_skill",
             message=f"skipping finding from unaccepted producer `{producer or '<missing>'}`",
         )
         return None
@@ -338,14 +352,25 @@ def _target_from_event(event: dict[str, Any]) -> Target | None:
         to_port = ports[0]
 
     return Target(
-        sg_id=sg_id, sg_name=sg_name, region=region, account_uid=account_uid,
-        cidrs=cidrs, ports=tuple(ports), ip_protocol=ip_protocol, from_port=from_port, to_port=to_port,
-        actor=actor, rule=rule,
-        producer_skill=producer, finding_uid=_finding_uid(event),
+        sg_id=sg_id,
+        sg_name=sg_name,
+        region=region,
+        account_uid=account_uid,
+        cidrs=cidrs,
+        ports=tuple(ports),
+        ip_protocol=ip_protocol,
+        from_port=from_port,
+        to_port=to_port,
+        actor=actor,
+        rule=rule,
+        producer_skill=producer,
+        finding_uid=_finding_uid(event),
     )
 
 
-def parse_targets(events: Iterable[dict[str, Any]]) -> Iterator[tuple[Target | None, dict[str, Any]]]:
+def parse_targets(
+    events: Iterable[dict[str, Any]],
+) -> Iterator[tuple[Target | None, dict[str, Any]]]:
     for event in events:
         yield _target_from_event(event), event
 
@@ -415,7 +440,9 @@ def _verify_endpoint(target: Target) -> str:
     return f"GET ec2:DescribeSecurityGroups GroupIds=[{target.sg_id}]"
 
 
-def _plan_record(target: Target, *, status: str, detail: str | None, dry_run: bool) -> dict[str, Any]:
+def _plan_record(
+    target: Target, *, status: str, detail: str | None, dry_run: bool
+) -> dict[str, Any]:
     return {
         "schema_mode": "native",
         "canonical_schema_version": CANONICAL_VERSION,
@@ -435,12 +462,14 @@ def _plan_record(target: Target, *, status: str, detail: str | None, dry_run: bo
             "actor": target.actor,
             "rule": target.rule,
         },
-        "actions": [{
-            "step": STEP_REVOKE_INGRESS,
-            "endpoint": _revoke_endpoint(target),
-            "status": status,
-            "detail": detail,
-        }],
+        "actions": [
+            {
+                "step": STEP_REVOKE_INGRESS,
+                "endpoint": _revoke_endpoint(target),
+                "status": status,
+                "detail": detail,
+            }
+        ],
         "status": status,
         "dry_run": dry_run,
         "time_ms": int(datetime.now(timezone.utc).timestamp() * 1000),
@@ -455,11 +484,18 @@ def _skip_record(target: Target, *, status: str, detail: str, dry_run: bool) -> 
         "record_type": RECORD_PLAN if dry_run else RECORD_ACTION,
         "source_skill": SKILL_NAME,
         "target": {
-            "provider": "AWS", "sg_id": target.sg_id, "sg_name": target.sg_name,
-            "region": target.region, "account_uid": target.account_uid,
-            "cidrs": list(target.cidrs), "ports": list(target.ports),
-            "ip_protocol": target.ip_protocol, "from_port": target.from_port, "to_port": target.to_port,
-            "actor": target.actor, "rule": target.rule,
+            "provider": "AWS",
+            "sg_id": target.sg_id,
+            "sg_name": target.sg_name,
+            "region": target.region,
+            "account_uid": target.account_uid,
+            "cidrs": list(target.cidrs),
+            "ports": list(target.ports),
+            "ip_protocol": target.ip_protocol,
+            "from_port": target.from_port,
+            "to_port": target.to_port,
+            "actor": target.actor,
+            "rule": target.rule,
         },
         "actions": [],
         "status": status,
@@ -479,12 +515,15 @@ def revoke_ingress(
     approver: str,
 ) -> dict[str, Any]:
     first = audit.record(
-        target=target, step=STEP_REVOKE_INGRESS, status=STATUS_IN_PROGRESS,
+        target=target,
+        step=STEP_REVOKE_INGRESS,
+        status=STATUS_IN_PROGRESS,
         detail=(
             f"about to revoke {target.cidrs} protocol={target.ip_protocol or 'tcp'} "
             f"ports={target.from_port!r}-{target.to_port!r} on {target.sg_id}"
         ),
-        incident_id=incident_id, approver=approver,
+        incident_id=incident_id,
+        approver=approver,
     )
     try:
         ec2_client.revoke_security_group_ingress(
@@ -496,20 +535,27 @@ def revoke_ingress(
         )
     except Exception as exc:
         audit.record(
-            target=target, step=STEP_REVOKE_INGRESS, status=STATUS_FAILURE,
-            detail=str(exc), incident_id=incident_id, approver=approver,
+            target=target,
+            step=STEP_REVOKE_INGRESS,
+            status=STATUS_FAILURE,
+            detail=str(exc),
+            incident_id=incident_id,
+            approver=approver,
         )
         rec = _plan_record(target, status=STATUS_FAILURE, detail=str(exc), dry_run=False)
         rec["audit"] = first
         return rec
 
     last = audit.record(
-        target=target, step=STEP_REVOKE_INGRESS, status=STATUS_SUCCESS,
+        target=target,
+        step=STEP_REVOKE_INGRESS,
+        status=STATUS_SUCCESS,
         detail=(
             f"revoked ingress {target.cidrs} protocol={target.ip_protocol or 'tcp'} "
             f"ports={target.from_port!r}-{target.to_port!r} on {target.sg_id}"
         ),
-        incident_id=incident_id, approver=approver,
+        incident_id=incident_id,
+        approver=approver,
     )
     rec = _plan_record(target, status=STATUS_SUCCESS, detail=None, dry_run=False)
     rec["audit"] = last
@@ -527,7 +573,9 @@ def reverify_target(
 ) -> list[dict[str, Any]]:
     """Re-verify the offending IpPermission is no longer present on the SG.
     Emits one verification record; on DRIFT also emits OCSF Detection Finding."""
-    checked_at_ms = now_ms if now_ms is not None else int(datetime.now(timezone.utc).timestamp() * 1000)
+    checked_at_ms = (
+        now_ms if now_ms is not None else int(datetime.now(timezone.utc).timestamp() * 1000)
+    )
     remediated_at_ms_resolved = remediated_at_ms if remediated_at_ms is not None else checked_at_ms
 
     reference = RemediationReference(
@@ -564,7 +612,9 @@ def reverify_target(
             actual_state="ec2:DescribeSecurityGroups raised; cannot determine state",
             detail=str(exc),
         )
-        record = build_verification_record(reference=reference, result=result, verifier_skill=SKILL_NAME)
+        record = build_verification_record(
+            reference=reference, result=result, verifier_skill=SKILL_NAME
+        )
         record["target"] = {"provider": "AWS", "sg_id": target.sg_id, "sg_name": target.sg_name}
         return [record]
 
@@ -590,14 +640,18 @@ def reverify_target(
             if target_protocol == "-1":
                 ports_match = True
             else:
-                perm_from = _safe_int(str(perm.get("FromPort"))) if perm.get("FromPort") is not None else None
-                perm_to = _safe_int(str(perm.get("ToPort"))) if perm.get("ToPort") is not None else None
+                perm_from = (
+                    _safe_int(str(perm.get("FromPort")))
+                    if perm.get("FromPort") is not None
+                    else None
+                )
+                perm_to = (
+                    _safe_int(str(perm.get("ToPort"))) if perm.get("ToPort") is not None else None
+                )
                 ports_match = perm_from == target.from_port and perm_to == target.to_port
             cidrs_in_perm = {
                 str((r or {}).get("CidrIp", "")) for r in perm.get("IpRanges") or []
-            } | {
-                str((r or {}).get("CidrIpv6", "")) for r in perm.get("Ipv6Ranges") or []
-            }
+            } | {str((r or {}).get("CidrIpv6", "")) for r in perm.get("Ipv6Ranges") or []}
             cidr_overlap = target_cidrs & cidrs_in_perm
             if protocol_matches and ports_match and cidr_overlap:
                 offending.append(
@@ -613,7 +667,9 @@ def reverify_target(
             result = VerificationResult(
                 status=VerificationStatus.DRIFT,
                 checked_at_ms=checked_at_ms,
-                sla_deadline_ms=sla_deadline(remediated_at_ms_resolved, DEFAULT_VERIFICATION_SLA_MS),
+                sla_deadline_ms=sla_deadline(
+                    remediated_at_ms_resolved, DEFAULT_VERIFICATION_SLA_MS
+                ),
                 expected_state=expected,
                 actual_state=f"offending permissions still present: {offending}",
                 detail="ingress was re-added or never landed",
@@ -622,17 +678,23 @@ def reverify_target(
             result = VerificationResult(
                 status=VerificationStatus.VERIFIED,
                 checked_at_ms=checked_at_ms,
-                sla_deadline_ms=sla_deadline(remediated_at_ms_resolved, DEFAULT_VERIFICATION_SLA_MS),
+                sla_deadline_ms=sla_deadline(
+                    remediated_at_ms_resolved, DEFAULT_VERIFICATION_SLA_MS
+                ),
                 expected_state=expected,
                 actual_state="no offending permissions present",
                 detail="revoke confirmed",
             )
 
-    record = build_verification_record(reference=reference, result=result, verifier_skill=SKILL_NAME)
+    record = build_verification_record(
+        reference=reference, result=result, verifier_skill=SKILL_NAME
+    )
     record["target"] = {"provider": "AWS", "sg_id": target.sg_id, "sg_name": target.sg_name}
     outputs: list[dict[str, Any]] = [record]
     if result.status == VerificationStatus.DRIFT:
-        outputs.append(build_drift_finding(reference=reference, result=result, verifier_skill=SKILL_NAME))
+        outputs.append(
+            build_drift_finding(reference=reference, result=result, verifier_skill=SKILL_NAME)
+        )
     return outputs
 
 
@@ -645,8 +707,11 @@ def load_jsonl(stream: Iterable[str]) -> Iterable[dict[str, Any]]:
             obj = json.loads(line)
         except json.JSONDecodeError as exc:
             emit_stderr_event(
-                SKILL_NAME, level="warning", event="json_parse_failed",
-                message=f"skipping line {lineno}: json parse failed: {exc}", line=lineno,
+                SKILL_NAME,
+                level="warning",
+                event="json_parse_failed",
+                message=f"skipping line {lineno}: json parse failed: {exc}",
+                line=lineno,
             )
             continue
         if isinstance(obj, dict):
@@ -680,14 +745,19 @@ def run(
 
         if not target.sg_id:
             yield _skip_record(
-                target, status=STATUS_SKIPPED_NO_SG,
+                target,
+                status=STATUS_SKIPPED_NO_SG,
                 detail="finding did not carry a target.uid (sg id) observable",
                 dry_run=dry_run,
             )
             continue
 
         if apply:
-            if target.account_uid and allowed_account_ids and target.account_uid not in allowed_account_ids:
+            if (
+                target.account_uid
+                and allowed_account_ids
+                and target.account_uid not in allowed_account_ids
+            ):
                 yield _skip_record(
                     target,
                     status=STATUS_SKIPPED_ACCOUNT_BOUNDARY,
@@ -698,7 +768,11 @@ def run(
                     dry_run=False,
                 )
                 continue
-            if current_account_id and target.account_uid and target.account_uid != current_account_id:
+            if (
+                current_account_id
+                and target.account_uid
+                and target.account_uid != current_account_id
+            ):
                 yield _skip_record(
                     target,
                     status=STATUS_SKIPPED_ACCOUNT_BOUNDARY,
@@ -718,13 +792,19 @@ def run(
             sg_describe = None
 
         protected, why = is_protected_sg(
-            target, name_prefixes=name_prefixes, sg_ids=sg_ids,
-            intentionally_open_tag=intentionally_open_tag, sg_describe=sg_describe,
+            target,
+            name_prefixes=name_prefixes,
+            sg_ids=sg_ids,
+            intentionally_open_tag=intentionally_open_tag,
+            sg_describe=sg_describe,
         )
         if protected:
             status = STATUS_SKIPPED_PROTECTED if apply else STATUS_WOULD_VIOLATE_PROTECTED
             yield _skip_record(
-                target, status=status, detail=f"target is protected: {why}", dry_run=dry_run,
+                target,
+                status=status,
+                detail=f"target is protected: {why}",
+                dry_run=dry_run,
             )
             continue
 
@@ -738,7 +818,8 @@ def run(
 
         if not apply:
             yield _plan_record(
-                target, status=STATUS_PLANNED,
+                target,
+                status=STATUS_PLANNED,
                 detail=(
                     f"dry-run: would revoke {list(target.cidrs)} protocol={target.ip_protocol or 'tcp'} "
                     f"ports={target.from_port!r}-{target.to_port!r} on {target.sg_id}"
@@ -750,8 +831,11 @@ def run(
         if audit is None:
             raise ValueError("audit writer is required under --apply")
         yield revoke_ingress(
-            target, ec2_client=ec2_client, audit=audit,
-            incident_id=incident_id, approver=approver,
+            target,
+            ec2_client=ec2_client,
+            audit=audit,
+            incident_id=incident_id,
+            approver=approver,
         )
 
 
@@ -761,10 +845,16 @@ def main(argv: list[str] | None = None) -> int:
     )
     parser.add_argument("input", nargs="?", help="JSONL input. Defaults to stdin.")
     parser.add_argument("--output", "-o", help="JSONL output. Defaults to stdout.")
-    parser.add_argument("--apply", action="store_true",
-        help="Revoke the offending ingress after approval gates pass.")
-    parser.add_argument("--reverify", action="store_true",
-        help="Read-only verification: confirm offending ingress is gone.")
+    parser.add_argument(
+        "--apply",
+        action="store_true",
+        help="Revoke the offending ingress after approval gates pass.",
+    )
+    parser.add_argument(
+        "--reverify",
+        action="store_true",
+        help="Read-only verification: confirm offending ingress is gone.",
+    )
     args = parser.parse_args(argv)
 
     if args.apply and args.reverify:
@@ -806,10 +896,14 @@ def main(argv: list[str] | None = None) -> int:
             current_account_id = ""
 
         for record in run(
-            load_jsonl(in_stream), ec2_client=ec2_client,
-            apply=args.apply, reverify=args.reverify, audit=audit,
+            load_jsonl(in_stream),
+            ec2_client=ec2_client,
+            apply=args.apply,
+            reverify=args.reverify,
+            audit=audit,
             sg_ids=load_protected_sg_ids(),
-            incident_id=incident_id, approver=approver,
+            incident_id=incident_id,
+            approver=approver,
             allowed_account_ids=load_allowed_account_ids(),
             current_account_id=current_account_id,
         ):

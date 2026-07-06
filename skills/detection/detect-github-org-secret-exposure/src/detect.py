@@ -154,11 +154,7 @@ def _before_visibility(event: dict[str, Any]) -> str:
 
 def _selected_repos(event: dict[str, Any]) -> list:
     block = _github_block(event)
-    repos = (
-        block.get("selected_repositories")
-        or block.get("selected_repository_ids")
-        or []
-    )
+    repos = block.get("selected_repositories") or block.get("selected_repository_ids") or []
     return list(repos) if isinstance(repos, list) else []
 
 
@@ -466,12 +462,15 @@ def load_jsonl(stream: Iterable[str]) -> Iterator[dict[str, Any]]:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         description=(
-            "Detect GitHub org-level secret scope widening from OCSF 1.8 "
-            "API Activity 6003 input."
+            "Detect GitHub org-level secret scope widening from OCSF 1.8 API Activity 6003 input."
         )
     )
-    parser.add_argument("input", nargs="?", help="OCSF 1.8 API Activity 6003 JSONL input. Defaults to stdin.")
-    parser.add_argument("--output", "-o", help="Detection Finding JSONL output. Defaults to stdout.")
+    parser.add_argument(
+        "input", nargs="?", help="OCSF 1.8 API Activity 6003 JSONL input. Defaults to stdin."
+    )
+    parser.add_argument(
+        "--output", "-o", help="Detection Finding JSONL output. Defaults to stdout."
+    )
     parser.add_argument(
         "--output-format",
         choices=OUTPUT_FORMATS,

@@ -146,7 +146,11 @@ def _classify_event(event_type: str) -> tuple[int, str, int] | None:
     if event_type in _AUTH_EVENT_MAP:
         return AUTH_CLASS_UID, AUTH_CLASS_NAME, _AUTH_EVENT_MAP[event_type]
     if event_type in _ACCOUNT_CHANGE_EVENT_MAP:
-        return ACCOUNT_CHANGE_CLASS_UID, ACCOUNT_CHANGE_CLASS_NAME, _ACCOUNT_CHANGE_EVENT_MAP[event_type]
+        return (
+            ACCOUNT_CHANGE_CLASS_UID,
+            ACCOUNT_CHANGE_CLASS_NAME,
+            _ACCOUNT_CHANGE_EVENT_MAP[event_type],
+        )
     if event_type in _USER_ACCESS_EVENT_MAP:
         return USER_ACCESS_CLASS_UID, USER_ACCESS_CLASS_NAME, _USER_ACCESS_EVENT_MAP[event_type]
     return None
@@ -404,10 +408,14 @@ def _metadata_uid(event: dict[str, Any]) -> str:
         "published": event.get("published", ""),
         "eventType": event.get("eventType", ""),
         "actorId": (event.get("actor") or {}).get("id", ""),
-        "targetIds": [target.get("id") for target in event.get("target") or [] if isinstance(target, dict)],
+        "targetIds": [
+            target.get("id") for target in event.get("target") or [] if isinstance(target, dict)
+        ],
         "transactionId": (event.get("transaction") or {}).get("id", ""),
     }
-    return hashlib.sha256(json.dumps(stable, sort_keys=True, separators=(",", ":")).encode("utf-8")).hexdigest()
+    return hashlib.sha256(
+        json.dumps(stable, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    ).hexdigest()
 
 
 def _status_name(status_id: int) -> str:
@@ -503,7 +511,9 @@ def _unmapped_payload(event: dict[str, Any]) -> dict[str, Any]:
     return payload
 
 
-def _build_canonical_event(event: dict[str, Any], class_uid: int, activity_id: int) -> dict[str, Any]:
+def _build_canonical_event(
+    event: dict[str, Any], class_uid: int, activity_id: int
+) -> dict[str, Any]:
     status_id, status_detail = status_from_outcome(event.get("outcome") or {})
     severity_id = severity_to_id(event.get("severity"))
     auth_protocol, auth_factors, extra_labels = _auth_metadata(event)
@@ -521,7 +531,9 @@ def _build_canonical_event(event: dict[str, Any], class_uid: int, activity_id: i
         "status_id": status_id,
         "status": _status_name(status_id),
         "time_ms": parse_ts_ms(event.get("published")),
-        "message": str(event.get("displayMessage") or event.get("eventType") or _record_type(class_uid)),
+        "message": str(
+            event.get("displayMessage") or event.get("eventType") or _record_type(class_uid)
+        ),
         "actor": _actor(event),
         "src_endpoint": _src_endpoint(event),
         "unmapped": {"okta": _unmapped_payload(event)},
@@ -791,7 +803,9 @@ def ingest(
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Convert raw Okta System Log JSON to OCSF or native IAM JSONL.")
+    parser = argparse.ArgumentParser(
+        description="Convert raw Okta System Log JSON to OCSF or native IAM JSONL."
+    )
     parser.add_argument("input", nargs="?", help="Input JSON/JSONL file. Defaults to stdin.")
     parser.add_argument("--output", "-o", help="Output JSONL file. Defaults to stdout.")
     parser.add_argument(

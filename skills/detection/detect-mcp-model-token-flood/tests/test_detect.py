@@ -63,7 +63,10 @@ class TestDetect:
 
     def test_under_threshold_no_fire(self):
         events = [_ev("u", "m", 50_000, i * 30_000) for i in range(3)]  # 150k
-        assert list(detect(events, token_budget=DEFAULT_BUDGET, window_minutes=DEFAULT_WINDOW_MIN)) == []
+        assert (
+            list(detect(events, token_budget=DEFAULT_BUDGET, window_minutes=DEFAULT_WINDOW_MIN))
+            == []
+        )
 
     def test_over_threshold_fires_once(self):
         # 3 events × 80k = 240k > 200k inside the default 5-min window

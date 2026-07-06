@@ -34,7 +34,9 @@ def _ev(session: str, tool: str, artifact: str, time_ms: int) -> dict:
         "time": time_ms,
         "metadata": {"product": {"feature": {"name": "ingest-mcp-proxy-ocsf"}}},
         "mcp": {"session_uid": session, "method": "tools/call", "direction": "response"},
-        "unmapped": {"mcp": {"session_uid": session, "tool_name": tool, "model_artifact_sha256": artifact}},
+        "unmapped": {
+            "mcp": {"session_uid": session, "tool_name": tool, "model_artifact_sha256": artifact}
+        },
     }
 
 

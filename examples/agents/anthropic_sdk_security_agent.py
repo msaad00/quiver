@@ -35,14 +35,16 @@ MCP_SERVER = REPO_ROOT / "mcp-server" / "src" / "server.py"
 # Hard-coded read-only allowlist. `remediate-*` skills are intentionally not
 # registered as MCP tools — a compromised or malfunctioning agent loop cannot
 # call what isn't on the list.
-ALLOWED_SKILLS_READ_ONLY = ",".join([
-    "cspm-aws-cis-benchmark",
-    "cspm-gcp-cis-benchmark",
-    "cspm-azure-cis-benchmark",
-    "detect-lateral-movement",
-    "detect-privilege-escalation-k8s",
-    "convert-ocsf-to-sarif",
-])
+ALLOWED_SKILLS_READ_ONLY = ",".join(
+    [
+        "cspm-aws-cis-benchmark",
+        "cspm-gcp-cis-benchmark",
+        "cspm-azure-cis-benchmark",
+        "detect-lateral-movement",
+        "detect-privilege-escalation-k8s",
+        "convert-ocsf-to-sarif",
+    ]
+)
 
 # Separate allowlist for the human-gated remediation chain. Never combine
 # this with `ALLOWED_SKILLS_READ_ONLY` in the same agent loop.
@@ -59,6 +61,7 @@ def mcp_server_env(allowlist: str) -> dict[str, str]:
 # ---------------------------------------------------------------------------
 # Stage 1 — read-only CSPM + triage loop
 # ---------------------------------------------------------------------------
+
 
 def run_cspm_triage(caller_context: dict[str, str]) -> dict[str, Any]:
     """Drive a read-only CSPM scan via Claude Agent SDK over MCP.
@@ -110,6 +113,7 @@ def _simulated_cspm_call(caller_context: dict[str, str]) -> list[dict[str, Any]]
 # Stage 2 — HITL gate (stubbed; real runs pull from your approval system)
 # ---------------------------------------------------------------------------
 
+
 def human_approval_gate(findings: dict[str, Any]) -> dict[str, str] | None:
     """Return an `approval_context` if an operator signs off, else None.
 
@@ -130,6 +134,7 @@ def human_approval_gate(findings: dict[str, Any]) -> dict[str, str] | None:
 # Stage 3 — dry-run remediation chain
 # ---------------------------------------------------------------------------
 
+
 def dry_run_remediation(
     caller_context: dict[str, str],
     approval_context: dict[str, str],
@@ -145,8 +150,15 @@ def dry_run_remediation(
     # skill entrypoint directly so the reference runs without an LLM.
     cmd = [
         sys.executable,
-        str(REPO_ROOT / "skills" / "remediation" / "iam-departures-aws"
-            / "src" / "reconciler" / "handler.py"),
+        str(
+            REPO_ROOT
+            / "skills"
+            / "remediation"
+            / "iam-departures-aws"
+            / "src"
+            / "reconciler"
+            / "handler.py"
+        ),
         "--dry-run",
     ]
     result = subprocess.run(
@@ -170,6 +182,7 @@ def dry_run_remediation(
 # Anti-pattern — DO NOT DO THIS
 # ---------------------------------------------------------------------------
 
+
 def DONT_DO_THIS_combined_tools_loop() -> None:  # noqa: N802 - deliberate
     """Reference: combining read + remediate tools in one loop is WRONG.
 
@@ -178,10 +191,12 @@ def DONT_DO_THIS_combined_tools_loop() -> None:  # noqa: N802 - deliberate
     puts the wrong affordance in the model's hands. The correct posture is
     to never register remediation tools in the same loop as detection.
     """
-    bad_allowlist = ",".join([
-        "cspm-aws-cis-benchmark",
-        "iam-departures-aws",  # ❌ write-capable tool in a read-only loop
-    ])
+    bad_allowlist = ",".join(
+        [
+            "cspm-aws-cis-benchmark",
+            "iam-departures-aws",  # ❌ write-capable tool in a read-only loop
+        ]
+    )
     raise RuntimeError(
         f"Refusing to demonstrate unsafe pattern. If you see a tutorial with "
         f"allowlist={bad_allowlist!r}, close the tutorial."
@@ -191,6 +206,7 @@ def DONT_DO_THIS_combined_tools_loop() -> None:  # noqa: N802 - deliberate
 # ---------------------------------------------------------------------------
 # Entrypoint
 # ---------------------------------------------------------------------------
+
 
 def main() -> int:
     caller = {

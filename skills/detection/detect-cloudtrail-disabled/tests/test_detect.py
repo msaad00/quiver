@@ -76,19 +76,31 @@ def test_fires_on_stop_logging():
     assert finding["class_uid"] == 2004
     assert finding["finding_info"]["attacks"][0]["technique_uid"] == TECHNIQUE_UID
     assert finding["finding_info"]["title"] == "CloudTrail disabled via StopLogging"
-    assert any(obs["name"] == "target.name" and obs["value"] == "org-trail" for obs in finding["observables"])
+    assert any(
+        obs["name"] == "target.name" and obs["value"] == "org-trail"
+        for obs in finding["observables"]
+    )
 
 
 def test_fires_on_delete_trail():
     findings = list(detect([_ct_event(operation="DeleteTrail")]))
     assert len(findings) == 1
-    assert any(obs["name"] == "api.operation" and obs["value"] == "DeleteTrail" for obs in findings[0]["observables"])
+    assert any(
+        obs["name"] == "api.operation" and obs["value"] == "DeleteTrail"
+        for obs in findings[0]["observables"]
+    )
 
 
 def test_native_output_contains_trail_identity():
     findings = list(
         detect(
-            [_ct_event(operation="StopLogging", trail_name="org-trail", trail_arn="arn:aws:cloudtrail:us-east-1:111122223333:trail/org-trail")],
+            [
+                _ct_event(
+                    operation="StopLogging",
+                    trail_name="org-trail",
+                    trail_arn="arn:aws:cloudtrail:us-east-1:111122223333:trail/org-trail",
+                )
+            ],
             output_format="native",
         )
     )

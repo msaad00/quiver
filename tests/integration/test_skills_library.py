@@ -112,11 +112,7 @@ def test_invoke_read_only_skill_returns_skill_result():
     subprocess so we verify the SafeChildEnv / RLIMIT path."""
     client = LIB.SkillsClient(allowed_skills=("ingest-cloudtrail-ocsf",))
     raw = (
-        REPO_ROOT
-        / "skills"
-        / "detection-engineering"
-        / "golden"
-        / "cloudtrail_raw_sample.jsonl"
+        REPO_ROOT / "skills" / "detection-engineering" / "golden" / "cloudtrail_raw_sample.jsonl"
     ).read_bytes()
     result = client.invoke("ingest-cloudtrail-ocsf", stdin=raw)
     assert result.exit_code == 0, result.stderr
@@ -135,11 +131,7 @@ def test_audit_writer_receives_one_record_per_call():
         audit_writer=lambda rec: seen.append(rec),
     )
     raw = (
-        REPO_ROOT
-        / "skills"
-        / "detection-engineering"
-        / "golden"
-        / "cloudtrail_raw_sample.jsonl"
+        REPO_ROOT / "skills" / "detection-engineering" / "golden" / "cloudtrail_raw_sample.jsonl"
     ).read_bytes()
     client.invoke("ingest-cloudtrail-ocsf", stdin=raw)
     assert len(seen) == 1
@@ -155,6 +147,7 @@ def test_audit_writer_receives_one_record_per_call():
 def test_audit_writer_exception_does_not_break_call():
     """An exception in the operator's audit writer must not crash the
     call — the audit channel is best-effort."""
+
     def _broken_writer(rec):
         raise RuntimeError("operator's sink is down")
 
@@ -163,11 +156,7 @@ def test_audit_writer_exception_does_not_break_call():
         audit_writer=_broken_writer,
     )
     raw = (
-        REPO_ROOT
-        / "skills"
-        / "detection-engineering"
-        / "golden"
-        / "cloudtrail_raw_sample.jsonl"
+        REPO_ROOT / "skills" / "detection-engineering" / "golden" / "cloudtrail_raw_sample.jsonl"
     ).read_bytes()
     result = client.invoke("ingest-cloudtrail-ocsf", stdin=raw)
     assert result.exit_code == 0
@@ -179,9 +168,7 @@ def test_approval_count_helper_handles_empty():
 
 
 def test_approval_count_helper_dedupes():
-    assert LIB._approval_count(
-        {"approver_emails": ["a@x.com", "b@x.com", "a@x.com"]}
-    ) == 2
+    assert LIB._approval_count({"approver_emails": ["a@x.com", "b@x.com", "a@x.com"]}) == 2
 
 
 def test_approval_count_helper_falls_back_to_singular():

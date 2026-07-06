@@ -62,8 +62,12 @@ class _FakeAudit:
 
     def record(self, *, target, step, status, detail, incident_id, approver):
         entry = {
-            "user_uid": target.user_uid, "step": step, "status": status,
-            "detail": detail, "incident_id": incident_id, "approver": approver,
+            "user_uid": target.user_uid,
+            "step": step,
+            "status": status,
+            "detail": detail,
+            "incident_id": incident_id,
+            "approver": approver,
         }
         self.writes.append(entry)
         return {
@@ -152,8 +156,12 @@ def test_check_apply_gate_rejects_admin_email_outside_allowed_domains(monkeypatc
 
 def _t(**overrides) -> Target:
     base = dict(
-        user_uid="u-1", user_name="alice@example.com", source_ips=(), session_uids=(),
-        producer_skill="detect-google-workspace-suspicious-login", finding_uid="f-1",
+        user_uid="u-1",
+        user_name="alice@example.com",
+        source_ips=(),
+        session_uids=(),
+        producer_skill="detect-google-workspace-suspicious-login",
+        finding_uid="f-1",
     )
     base.update(overrides)
     return Target(**base)
@@ -165,7 +173,10 @@ def test_admin_email_is_denied():
 
 
 def test_break_glass_is_denied():
-    assert is_protected(_t(user_name="break-glass-oncall@example.com"), DEFAULT_DENY_PATTERNS)[0] is True
+    assert (
+        is_protected(_t(user_name="break-glass-oncall@example.com"), DEFAULT_DENY_PATTERNS)[0]
+        is True
+    )
 
 
 def test_google_employee_is_denied():
@@ -191,7 +202,9 @@ def test_extensible_via_env_file(tmp_path, monkeypatch):
 
 
 def test_parse_targets_extracts_user_and_forensics():
-    target, _ = next(parse_targets([_finding(ips=["198.51.100.5", "198.51.100.6"], sessions=["s1"])]))
+    target, _ = next(
+        parse_targets([_finding(ips=["198.51.100.5", "198.51.100.6"], sessions=["s1"])])
+    )
     assert target.user_uid == "alice@example.com"
     assert target.user_name == "Alice Example"
     assert target.source_ips == ("198.51.100.5", "198.51.100.6")
@@ -237,7 +250,9 @@ def test_run_skips_finding_without_user_uid():
 
 
 def test_run_skips_protected_principal_dry_run():
-    records = list(run([_finding(user_name="admin@example.com")], workspace_client=_FakeWorkspace()))
+    records = list(
+        run([_finding(user_name="admin@example.com")], workspace_client=_FakeWorkspace())
+    )
     assert records[0]["status"] == STATUS_WOULD_VIOLATE_DENY_LIST
 
 
@@ -247,8 +262,11 @@ def test_run_skips_protected_principal_apply():
     records = list(
         run(
             [_finding(user_name="break-glass-oncall@example.com")],
-            workspace_client=ws, apply=True, audit=audit,
-            incident_id="INC-1", approver="alice",
+            workspace_client=ws,
+            apply=True,
+            audit=audit,
+            incident_id="INC-1",
+            approver="alice",
             allowed_domains=("example.com",),
         )
     )
@@ -264,9 +282,15 @@ def test_run_apply_runs_both_steps_with_dual_audit():
     audit = _FakeAudit()
     ws = _FakeWorkspace()
     records = list(
-        run([_finding()], workspace_client=ws, apply=True, audit=audit,
-            incident_id="INC-1", approver="alice@security",
-            allowed_domains=("example.com",))
+        run(
+            [_finding()],
+            workspace_client=ws,
+            apply=True,
+            audit=audit,
+            incident_id="INC-1",
+            approver="alice@security",
+            allowed_domains=("example.com",),
+        )
     )
     rec = records[0]
     assert rec["status"] == STATUS_SUCCESS
@@ -294,9 +318,15 @@ def test_run_apply_marks_failure_when_step_throws():
     audit = _FakeAudit()
     ws = _FakeWorkspace(fail_on="sign_out")
     records = list(
-        run([_finding()], workspace_client=ws, apply=True, audit=audit,
-            incident_id="INC-1", approver="alice",
-            allowed_domains=("example.com",))
+        run(
+            [_finding()],
+            workspace_client=ws,
+            apply=True,
+            audit=audit,
+            incident_id="INC-1",
+            approver="alice",
+            allowed_domains=("example.com",),
+        )
     )
     rec = records[0]
     assert rec["status"] == STATUS_FAILURE
@@ -309,6 +339,7 @@ def test_run_apply_marks_failure_when_step_throws():
 
 def test_run_apply_requires_both_clients():
     import pytest
+
     with pytest.raises(RuntimeError, match="apply=True requires"):
         list(
             run(
@@ -397,6 +428,7 @@ def test_run_reverify_uses_finding_time_as_remediation_reference():
 
 def test_run_reverify_requires_workspace_client():
     import pytest
+
     with pytest.raises(RuntimeError, match="reverify=True requires"):
         list(run([_finding()], workspace_client=None, reverify=True))
 

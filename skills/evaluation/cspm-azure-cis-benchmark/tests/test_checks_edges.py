@@ -203,11 +203,27 @@ def test_malformed_payload_returns_finding(check_name, builder):
         "list_properties_of_keys",
         "list_properties_of_secrets",
     ):
-        for attr in ("storage_accounts", "blob_services", "blob_containers", "network_security_groups",
-                     "network_watchers", "flow_logs", "pricings", "auto_provisioning_settings",
-                     "servers", "databases", "configurations", "virtual_machines", "disks",
-                     "vaults", "web_apps", "log_profiles", "diagnostic_settings",
-                     "role_definitions", "users"):
+        for attr in (
+            "storage_accounts",
+            "blob_services",
+            "blob_containers",
+            "network_security_groups",
+            "network_watchers",
+            "flow_logs",
+            "pricings",
+            "auto_provisioning_settings",
+            "servers",
+            "databases",
+            "configurations",
+            "virtual_machines",
+            "disks",
+            "vaults",
+            "web_apps",
+            "log_profiles",
+            "diagnostic_settings",
+            "role_definitions",
+            "users",
+        ):
             sub = getattr(client, attr, None)
             if sub is None:
                 continue
@@ -313,7 +329,9 @@ def test_authorization_failed_does_not_crash(check_name, builder):
         for op in ("list", "list_all", "list_by_server"):
             method = getattr(sub, op, None)
             if method is not None and hasattr(method, "side_effect"):
-                method.side_effect = _AuthorizationFailed("403 The client does not have authorization")
+                method.side_effect = _AuthorizationFailed(
+                    "403 The client does not have authorization"
+                )
     if check_name in {"check_8_4_keyvault_key_expiration", "check_8_5_keyvault_secret_expiration"}:
         f = fn(client, _kv_factory)
     elif check_name == "check_1_5_no_guest_users":

@@ -55,9 +55,7 @@ def _stub_paginator(pages: list[dict]) -> MagicMock:
 
 class _NoSuchEntity(ClientError):
     def __init__(self):
-        super().__init__(
-            {"Error": {"Code": "NoSuchEntity", "Message": "no policy"}}, "Op"
-        )
+        super().__init__({"Error": {"Code": "NoSuchEntity", "Message": "no policy"}}, "Op")
 
 
 def _empty_iam():
@@ -66,7 +64,9 @@ def _empty_iam():
     # make the mock match that contract so `except iam.exceptions.NoSuchEntityException`
     # evaluates correctly.
     iam.exceptions.NoSuchEntityException = _NoSuchEntity
-    iam.get_account_summary.return_value = {"SummaryMap": {"AccountMFAEnabled": 1, "AccountAccessKeysPresent": 0}}
+    iam.get_account_summary.return_value = {
+        "SummaryMap": {"AccountMFAEnabled": 1, "AccountAccessKeysPresent": 0}
+    }
     # Paginator paths used by _paginate(...) in src/checks.py.
     iam.get_paginator.side_effect = lambda op: _stub_paginator(
         [{"Users": [], "AccessKeyMetadata": [], "Policies": []}]
@@ -285,7 +285,12 @@ def test_2_1_s3_encryption_partial():
     def _enc_side_effect(Bucket):
         if Bucket == "bare":
             raise ClientError(
-                {"Error": {"Code": "ServerSideEncryptionConfigurationNotFoundError", "Message": ""}},
+                {
+                    "Error": {
+                        "Code": "ServerSideEncryptionConfigurationNotFoundError",
+                        "Message": "",
+                    }
+                },
                 "GetBucketEncryption",
             )
         return {"ServerSideEncryptionConfiguration": {"Rules": [{}]}}
@@ -419,14 +424,24 @@ def test_4_1_ssh_with_multiple_sgs():
                 "GroupId": "sg-open",
                 "GroupName": "open",
                 "IpPermissions": [
-                    {"FromPort": 22, "ToPort": 22, "IpProtocol": "tcp", "IpRanges": [{"CidrIp": "0.0.0.0/0"}]}
+                    {
+                        "FromPort": 22,
+                        "ToPort": 22,
+                        "IpProtocol": "tcp",
+                        "IpRanges": [{"CidrIp": "0.0.0.0/0"}],
+                    }
                 ],
             },
             {
                 "GroupId": "sg-locked",
                 "GroupName": "locked",
                 "IpPermissions": [
-                    {"FromPort": 22, "ToPort": 22, "IpProtocol": "tcp", "IpRanges": [{"CidrIp": "10.0.0.0/8"}]}
+                    {
+                        "FromPort": 22,
+                        "ToPort": 22,
+                        "IpProtocol": "tcp",
+                        "IpRanges": [{"CidrIp": "10.0.0.0/8"}],
+                    }
                 ],
             },
         ]

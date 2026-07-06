@@ -68,8 +68,10 @@ def _finding(
         obs.append({"name": "permission.port", "type": "Other", "value": str(p)})
     return {
         "class_uid": 2004,
-        "metadata": {"uid": "find-1",
-                     "product": {"feature": {"name": "detect-aws-open-security-group"}}},
+        "metadata": {
+            "uid": "find-1",
+            "product": {"feature": {"name": "detect-aws-open-security-group"}},
+        },
         "finding_info": {"uid": "find-1"},
         "observables": obs,
     }
@@ -80,10 +82,20 @@ class _FakeAudit:
     writes: list[dict] = field(default_factory=list)
 
     def record(self, *, target, step, status, detail, incident_id, approver):
-        self.writes.append({"sg_id": target.sg_id, "step": step, "status": status,
-                            "detail": detail, "incident_id": incident_id, "approver": approver})
-        return {"row_uid": f"row-{len(self.writes)}",
-                "s3_evidence_uri": f"s3://bucket/{target.sg_id}-{len(self.writes)}.json"}
+        self.writes.append(
+            {
+                "sg_id": target.sg_id,
+                "step": step,
+                "status": status,
+                "detail": detail,
+                "incident_id": incident_id,
+                "approver": approver,
+            }
+        )
+        return {
+            "row_uid": f"row-{len(self.writes)}",
+            "s3_evidence_uri": f"s3://bucket/{target.sg_id}-{len(self.writes)}.json",
+        }
 
 
 @dataclass
@@ -103,18 +115,25 @@ class _FakeEC2:
             raise RuntimeError("simulated ec2 403")
         self.revokes.append((sg_id, list(cidrs), ip_protocol, from_port, to_port))
         # Update the in-memory SG to reflect the revoke
-        sg = self.sgs.setdefault(sg_id, {"GroupId": sg_id, "GroupName": "x", "IpPermissions": [], "Tags": []})
+        sg = self.sgs.setdefault(
+            sg_id, {"GroupId": sg_id, "GroupName": "x", "IpPermissions": [], "Tags": []}
+        )
         keep = []
         for perm in sg.get("IpPermissions") or []:
             perm_protocol = str(perm.get("IpProtocol") or "")
             if perm_protocol == ip_protocol and (
-                ip_protocol == "-1" or (perm.get("FromPort") == from_port and perm.get("ToPort") == to_port)
+                ip_protocol == "-1"
+                or (perm.get("FromPort") == from_port and perm.get("ToPort") == to_port)
             ):
                 # Drop cidrs that match
-                new_v4 = [r for r in perm.get("IpRanges") or []
-                          if (r or {}).get("CidrIp") not in cidrs]
-                new_v6 = [r for r in perm.get("Ipv6Ranges") or []
-                          if (r or {}).get("CidrIpv6") not in cidrs]
+                new_v4 = [
+                    r for r in perm.get("IpRanges") or [] if (r or {}).get("CidrIp") not in cidrs
+                ]
+                new_v6 = [
+                    r
+                    for r in perm.get("Ipv6Ranges") or []
+                    if (r or {}).get("CidrIpv6") not in cidrs
+                ]
                 if new_v4 or new_v6:
                     perm["IpRanges"] = new_v4
                     perm["Ipv6Ranges"] = new_v6
@@ -187,38 +206,70 @@ def test_parse_targets_rejects_wrong_producer(capsys):
 
 
 def _t(**overrides) -> Target:
-    base = dict(sg_id="sg-x", sg_name="x", region="us-east-1", account_uid="1",
-                cidrs=("0.0.0.0/0",), ports=(22,), ip_protocol="tcp", from_port=22, to_port=22, actor="a", rule="r",
-                producer_skill="detect-aws-open-security-group", finding_uid="f")
+    base = dict(
+        sg_id="sg-x",
+        sg_name="x",
+        region="us-east-1",
+        account_uid="1",
+        cidrs=("0.0.0.0/0",),
+        ports=(22,),
+        ip_protocol="tcp",
+        from_port=22,
+        to_port=22,
+        actor="a",
+        rule="r",
+        producer_skill="detect-aws-open-security-group",
+        finding_uid="f",
+    )
     base.update(overrides)
     return Target(**base)
 
 
 def test_protected_default_sg_by_name():
-    p, why = is_protected_sg(_t(sg_name="default"), name_prefixes=("default",), sg_ids=(),
-                              intentionally_open_tag="intentionally-open", sg_describe=None)
+    p, why = is_protected_sg(
+        _t(sg_name="default"),
+        name_prefixes=("default",),
+        sg_ids=(),
+        intentionally_open_tag="intentionally-open",
+        sg_describe=None,
+    )
     assert p is True
     assert "default" in why
 
 
 def test_protected_via_env_id_allowlist():
-    p, why = is_protected_sg(_t(sg_id="sg-allow"), name_prefixes=(), sg_ids=("sg-allow",),
-                              intentionally_open_tag="intentionally-open", sg_describe=None)
+    p, why = is_protected_sg(
+        _t(sg_id="sg-allow"),
+        name_prefixes=(),
+        sg_ids=("sg-allow",),
+        intentionally_open_tag="intentionally-open",
+        sg_describe=None,
+    )
     assert p is True
     assert "sg-allow" in why
 
 
 def test_protected_via_intentionally_open_tag():
     sg = {"Tags": [{"Key": "intentionally-open", "Value": "alb-443"}]}
-    p, why = is_protected_sg(_t(), name_prefixes=(), sg_ids=(),
-                              intentionally_open_tag="intentionally-open", sg_describe=sg)
+    p, why = is_protected_sg(
+        _t(),
+        name_prefixes=(),
+        sg_ids=(),
+        intentionally_open_tag="intentionally-open",
+        sg_describe=sg,
+    )
     assert p is True
     assert "intentionally-open" in why
 
 
 def test_unprotected_when_no_match():
-    p, _ = is_protected_sg(_t(sg_name="my-prod-sg"), name_prefixes=("default",), sg_ids=(),
-                           intentionally_open_tag="intentionally-open", sg_describe={"Tags": []})
+    p, _ = is_protected_sg(
+        _t(sg_name="my-prod-sg"),
+        name_prefixes=("default",),
+        sg_ids=(),
+        intentionally_open_tag="intentionally-open",
+        sg_describe={"Tags": []},
+    )
     assert p is False
 
 
@@ -251,27 +302,45 @@ def test_run_skips_finding_without_sg_id():
 
 
 def test_run_skips_default_sg_in_dry_run():
-    records = list(run([_finding(sg_id="sg-default-vpc", sg_name="default")],
-                       ec2_client=_FakeEC2()))
+    records = list(
+        run([_finding(sg_id="sg-default-vpc", sg_name="default")], ec2_client=_FakeEC2())
+    )
     assert records[0]["status"] == STATUS_WOULD_VIOLATE_PROTECTED
     assert "default" in records[0]["status_detail"]
 
 
 def test_run_skips_intentionally_open_tagged_sg_in_apply():
     audit = _FakeAudit()
-    ec2 = _FakeEC2(sgs={"sg-rogue": {"GroupId": "sg-rogue", "Tags": [{"Key": "intentionally-open", "Value": "yes"}], "IpPermissions": []}})
-    records = list(run([_finding()], ec2_client=ec2, apply=True, audit=audit,
-                       incident_id="INC-1", approver="alice",
-                       allowed_account_ids=("111122223333",),
-                       current_account_id="111122223333"))
+    ec2 = _FakeEC2(
+        sgs={
+            "sg-rogue": {
+                "GroupId": "sg-rogue",
+                "Tags": [{"Key": "intentionally-open", "Value": "yes"}],
+                "IpPermissions": [],
+            }
+        }
+    )
+    records = list(
+        run(
+            [_finding()],
+            ec2_client=ec2,
+            apply=True,
+            audit=audit,
+            incident_id="INC-1",
+            approver="alice",
+            allowed_account_ids=("111122223333",),
+            current_account_id="111122223333",
+        )
+    )
     assert records[0]["status"] == STATUS_SKIPPED_PROTECTED
     assert ec2.revokes == []
     assert audit.writes == []
 
 
 def test_run_skips_via_env_protected_id():
-    records = list(run([_finding(sg_id="sg-bootstrap")], ec2_client=_FakeEC2(),
-                       sg_ids=("sg-bootstrap",)))
+    records = list(
+        run([_finding(sg_id="sg-bootstrap")], ec2_client=_FakeEC2(), sg_ids=("sg-bootstrap",))
+    )
     assert records[0]["status"] == STATUS_WOULD_VIOLATE_PROTECTED
 
 
@@ -280,13 +349,34 @@ def test_run_skips_via_env_protected_id():
 
 def test_run_apply_revokes_with_dual_audit():
     audit = _FakeAudit()
-    ec2 = _FakeEC2(sgs={"sg-rogue": {"GroupId": "sg-rogue", "Tags": [],
-        "IpPermissions": [{"IpProtocol": "tcp", "FromPort": 22, "ToPort": 22,
-                           "IpRanges": [{"CidrIp": "0.0.0.0/0"}]}]}})
-    records = list(run([_finding()], ec2_client=ec2, apply=True, audit=audit,
-                       incident_id="INC-1", approver="alice@security",
-                       allowed_account_ids=("111122223333",),
-                       current_account_id="111122223333"))
+    ec2 = _FakeEC2(
+        sgs={
+            "sg-rogue": {
+                "GroupId": "sg-rogue",
+                "Tags": [],
+                "IpPermissions": [
+                    {
+                        "IpProtocol": "tcp",
+                        "FromPort": 22,
+                        "ToPort": 22,
+                        "IpRanges": [{"CidrIp": "0.0.0.0/0"}],
+                    }
+                ],
+            }
+        }
+    )
+    records = list(
+        run(
+            [_finding()],
+            ec2_client=ec2,
+            apply=True,
+            audit=audit,
+            incident_id="INC-1",
+            approver="alice@security",
+            allowed_account_ids=("111122223333",),
+            current_account_id="111122223333",
+        )
+    )
     rec = records[0]
     assert rec["status"] == STATUS_SUCCESS
     assert rec["dry_run"] is False
@@ -328,10 +418,18 @@ def test_run_apply_revokes_all_protocol_permission_with_exact_shape():
 def test_run_apply_writes_failure_audit_when_revoke_throws():
     audit = _FakeAudit()
     ec2 = _FakeEC2(raise_on_revoke=True)
-    records = list(run([_finding()], ec2_client=ec2, apply=True, audit=audit,
-                       incident_id="INC-1", approver="alice",
-                       allowed_account_ids=("111122223333",),
-                       current_account_id="111122223333"))
+    records = list(
+        run(
+            [_finding()],
+            ec2_client=ec2,
+            apply=True,
+            audit=audit,
+            incident_id="INC-1",
+            approver="alice",
+            allowed_account_ids=("111122223333",),
+            current_account_id="111122223333",
+        )
+    )
     assert records[0]["status"] == STATUS_FAILURE
     assert len(audit.writes) == 2
     assert audit.writes[1]["status"] == STATUS_FAILURE
@@ -339,18 +437,35 @@ def test_run_apply_writes_failure_audit_when_revoke_throws():
 
 def test_run_apply_requires_audit_writer():
     import pytest
+
     with pytest.raises(ValueError, match="audit writer is required"):
-        list(run([_finding()], ec2_client=_FakeEC2(), apply=True, audit=None,
-                 allowed_account_ids=("111122223333",), current_account_id="111122223333"))
+        list(
+            run(
+                [_finding()],
+                ec2_client=_FakeEC2(),
+                apply=True,
+                audit=None,
+                allowed_account_ids=("111122223333",),
+                current_account_id="111122223333",
+            )
+        )
 
 
 def test_run_apply_skips_wrong_account_boundary():
     audit = _FakeAudit()
     ec2 = _FakeEC2()
-    records = list(run([_finding()], ec2_client=ec2, apply=True, audit=audit,
-                       incident_id="INC-1", approver="alice",
-                       allowed_account_ids=("444455556666",),
-                       current_account_id="111122223333"))
+    records = list(
+        run(
+            [_finding()],
+            ec2_client=ec2,
+            apply=True,
+            audit=audit,
+            incident_id="INC-1",
+            approver="alice",
+            allowed_account_ids=("444455556666",),
+            current_account_id="111122223333",
+        )
+    )
     assert records[0]["status"] == STATUS_SKIPPED_ACCOUNT_BOUNDARY
     assert ec2.revokes == []
     assert audit.writes == []
@@ -376,9 +491,22 @@ def test_run_reverify_verified_when_sg_deleted():
 
 
 def test_run_reverify_drift_emits_ocsf_finding_alongside_verification():
-    ec2 = _FakeEC2(sgs={"sg-rogue": {"GroupId": "sg-rogue", "Tags": [],
-        "IpPermissions": [{"IpProtocol": "tcp", "FromPort": 22, "ToPort": 22,
-                           "IpRanges": [{"CidrIp": "0.0.0.0/0"}]}]}})
+    ec2 = _FakeEC2(
+        sgs={
+            "sg-rogue": {
+                "GroupId": "sg-rogue",
+                "Tags": [],
+                "IpPermissions": [
+                    {
+                        "IpProtocol": "tcp",
+                        "FromPort": 22,
+                        "ToPort": 22,
+                        "IpRanges": [{"CidrIp": "0.0.0.0/0"}],
+                    }
+                ],
+            }
+        }
+    )
     records = list(run([_finding()], ec2_client=ec2, reverify=True))
     assert len(records) == 2
     verification, finding = records

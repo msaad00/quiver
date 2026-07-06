@@ -88,10 +88,7 @@ def _replace_placeholders(payload: Any, replacements: dict[str, str]) -> Any:
     if isinstance(payload, list):
         return [_replace_placeholders(item, replacements) for item in payload]
     if isinstance(payload, dict):
-        return {
-            key: _replace_placeholders(value, replacements)
-            for key, value in payload.items()
-        }
+        return {key: _replace_placeholders(value, replacements) for key, value in payload.items()}
     return payload
 
 
@@ -141,12 +138,30 @@ def run_case(case: dict[str, Any]) -> dict[str, Any]:
     checks = [
         _check("profile_id", summary["profile"]["profile_id"], expected["profile_id"]),
         _check("harness_mode", summary["harness"]["mode"], expected["harness_mode"]),
-        _check("recommendation_action", recommendation.get("recommended_action"), expected["recommendation_action"]),
-        _check("recommendation_priority", recommendation.get("priority"), expected["recommendation_priority"]),
+        _check(
+            "recommendation_action",
+            recommendation.get("recommended_action"),
+            expected["recommendation_action"],
+        ),
+        _check(
+            "recommendation_priority",
+            recommendation.get("priority"),
+            expected["recommendation_priority"],
+        ),
         _check("review_status", summary["review"]["status"], expected["review_status"]),
-        _check("remediation_status", summary["remediation"]["status"], expected["remediation_status"]),
-        _check("route_after_review", summary["audit"]["route"]["after_review"], expected["route_after_review"]),
-        _check("planned_steps_absent", "planned_steps" not in summary["remediation"], expected["planned_steps_absent"]),
+        _check(
+            "remediation_status", summary["remediation"]["status"], expected["remediation_status"]
+        ),
+        _check(
+            "route_after_review",
+            summary["audit"]["route"]["after_review"],
+            expected["route_after_review"],
+        ),
+        _check(
+            "planned_steps_absent",
+            "planned_steps" not in summary["remediation"],
+            expected["planned_steps_absent"],
+        ),
     ]
     token_usage = summary.get("token_budget_usage") or {}
     token_budget = (summary.get("harness") or {}).get("token_budget") or {}
@@ -154,242 +169,333 @@ def run_case(case: dict[str, Any]) -> dict[str, Any]:
     agents = {agent.get("agent_id"): agent for agent in summary.get("agents") or []}
     remediation_agent = agents.get("remediation-planner") or {}
     agent_policy = summary.get("agent_policy") or {}
-    policy_entries = {
-        entry.get("agent_id"): entry
-        for entry in agent_policy.get("entries") or []
-    }
+    policy_entries = {entry.get("agent_id"): entry for entry in agent_policy.get("entries") or []}
     triage_policy = policy_entries.get("triage-agent") or {}
     remediation_policy = policy_entries.get("remediation-planner") or {}
-    checks.extend([
-        _check("token_budget_status_present", token_usage.get("status") in {"within_budget", "fallback"}, True),
-        _check(
-            "token_budget_input_within_limit_or_fallback",
-            token_usage.get("compact_input_tokens_estimate", 0) <= token_budget.get("max_input_tokens", 0)
-            or token_usage.get("status") == "fallback",
-            True,
-        ),
-        _check(
-            "token_budget_evidence_within_limit_or_fallback",
-            token_usage.get("compact_evidence_chars", 0) <= token_budget.get("max_evidence_chars", 0)
-            or token_usage.get("status") == "fallback",
-            True,
-        ),
-        _check("token_budget_model_tier_bounded", token_budget.get("model_tier") in {"tiny", "small"}, True),
-        _check(
-            "model_policy_selected_tier_matches_budget",
-            model_policy.get("selected_model_tier") == token_budget.get("model_tier"),
-            True,
-        ),
-        _check(
-            "model_policy_selection_source_recorded",
-            model_policy.get("selection_source") in {"profile_model_policy", "env_override"},
-            True,
-        ),
-        _check(
-            "llm_evidence_cards_compact",
-            all("raw_events" not in card and "ocsf_events" not in card for card in summary.get("llm_evidence_cards") or []),
-            True,
-        ),
-        _check("triage_agent_no_write_privilege", triage_agent.get("privilege_boundary"), "no_tool_writes"),
-        _check("triage_agent_no_skill_scope", triage_agent.get("skill_scope"), []),
-        _check(
-            "triage_agent_model_tier_allowed",
-            triage_agent.get("model_tier") in set(model_policy.get("allowed_model_tiers") or []),
-            True,
-        ),
-        _check("remediation_agent_requires_hitl", remediation_agent.get("requires_human_approval"), True),
-        _check("remediation_agent_dry_run_boundary", remediation_agent.get("privilege_boundary"), "dry_run_write_planning"),
-        _check("agent_policy_schema_version", agent_policy.get("schema_version"), "langgraph-agent-policy-v1"),
-        _check("agent_policy_hash_present", bool(agent_policy.get("policy_hash")), True),
-        _check("triage_policy_grants_no_skills", triage_policy.get("effective_skill_grants"), []),
-        _check("triage_policy_decision_no_direct_tools", triage_policy.get("decision"), "no_direct_tools"),
-        _check("remediation_policy_write_boundary", remediation_policy.get("write_policy"), "dry_run_only_after_hitl"),
-    ])
+    checks.extend(
+        [
+            _check(
+                "token_budget_status_present",
+                token_usage.get("status") in {"within_budget", "fallback"},
+                True,
+            ),
+            _check(
+                "token_budget_input_within_limit_or_fallback",
+                token_usage.get("compact_input_tokens_estimate", 0)
+                <= token_budget.get("max_input_tokens", 0)
+                or token_usage.get("status") == "fallback",
+                True,
+            ),
+            _check(
+                "token_budget_evidence_within_limit_or_fallback",
+                token_usage.get("compact_evidence_chars", 0)
+                <= token_budget.get("max_evidence_chars", 0)
+                or token_usage.get("status") == "fallback",
+                True,
+            ),
+            _check(
+                "token_budget_model_tier_bounded",
+                token_budget.get("model_tier") in {"tiny", "small"},
+                True,
+            ),
+            _check(
+                "model_policy_selected_tier_matches_budget",
+                model_policy.get("selected_model_tier") == token_budget.get("model_tier"),
+                True,
+            ),
+            _check(
+                "model_policy_selection_source_recorded",
+                model_policy.get("selection_source") in {"profile_model_policy", "env_override"},
+                True,
+            ),
+            _check(
+                "llm_evidence_cards_compact",
+                all(
+                    "raw_events" not in card and "ocsf_events" not in card
+                    for card in summary.get("llm_evidence_cards") or []
+                ),
+                True,
+            ),
+            _check(
+                "triage_agent_no_write_privilege",
+                triage_agent.get("privilege_boundary"),
+                "no_tool_writes",
+            ),
+            _check("triage_agent_no_skill_scope", triage_agent.get("skill_scope"), []),
+            _check(
+                "triage_agent_model_tier_allowed",
+                triage_agent.get("model_tier")
+                in set(model_policy.get("allowed_model_tiers") or []),
+                True,
+            ),
+            _check(
+                "remediation_agent_requires_hitl",
+                remediation_agent.get("requires_human_approval"),
+                True,
+            ),
+            _check(
+                "remediation_agent_dry_run_boundary",
+                remediation_agent.get("privilege_boundary"),
+                "dry_run_write_planning",
+            ),
+            _check(
+                "agent_policy_schema_version",
+                agent_policy.get("schema_version"),
+                "langgraph-agent-policy-v1",
+            ),
+            _check("agent_policy_hash_present", bool(agent_policy.get("policy_hash")), True),
+            _check(
+                "triage_policy_grants_no_skills", triage_policy.get("effective_skill_grants"), []
+            ),
+            _check(
+                "triage_policy_decision_no_direct_tools",
+                triage_policy.get("decision"),
+                "no_direct_tools",
+            ),
+            _check(
+                "remediation_policy_write_boundary",
+                remediation_policy.get("write_policy"),
+                "dry_run_only_after_hitl",
+            ),
+        ]
+    )
 
     if "recommendation_generated_by" in expected:
-        checks.append(_check(
-            "recommendation_generated_by",
-            recommendation.get("generated_by"),
-            expected["recommendation_generated_by"],
-        ))
+        checks.append(
+            _check(
+                "recommendation_generated_by",
+                recommendation.get("generated_by"),
+                expected["recommendation_generated_by"],
+            )
+        )
 
     if "llm_validation_status" in expected:
         validation = (summary.get("llm_validation") or [{}])[0]
-        checks.append(_check(
-            "llm_validation_status",
-            validation.get("status"),
-            expected["llm_validation_status"],
-        ))
-        checks.append(_check(
-            "llm_validation_reason",
-            validation.get("reason"),
-            expected["llm_validation_reason"],
-        ))
+        checks.append(
+            _check(
+                "llm_validation_status",
+                validation.get("status"),
+                expected["llm_validation_status"],
+            )
+        )
+        checks.append(
+            _check(
+                "llm_validation_reason",
+                validation.get("reason"),
+                expected["llm_validation_reason"],
+            )
+        )
 
     if "llm_adapter_accepted" in expected:
-        checks.append(_check(
-            "llm_adapter_accepted",
-            summary["audit"]["llm_adapter_accepted"],
-            expected["llm_adapter_accepted"],
-        ))
-        checks.append(_check(
-            "llm_adapter_rejected",
-            summary["audit"]["llm_adapter_rejected"],
-            expected["llm_adapter_rejected"],
-        ))
+        checks.append(
+            _check(
+                "llm_adapter_accepted",
+                summary["audit"]["llm_adapter_accepted"],
+                expected["llm_adapter_accepted"],
+            )
+        )
+        checks.append(
+            _check(
+                "llm_adapter_rejected",
+                summary["audit"]["llm_adapter_rejected"],
+                expected["llm_adapter_rejected"],
+            )
+        )
 
     for key in expected.get("integrity_keys_present", []):
-        checks.append(_check(
-            f"integrity_key_present:{key}",
-            bool((summary.get("integrity") or {}).get(key)),
-            True,
-        ))
+        checks.append(
+            _check(
+                f"integrity_key_present:{key}",
+                bool((summary.get("integrity") or {}).get(key)),
+                True,
+            )
+        )
 
     for key in expected.get("idempotency_keys_present", []):
-        checks.append(_check(
-            f"idempotency_key_present:{key}",
-            bool((summary.get("idempotency") or {}).get(key)),
-            True,
-        ))
+        checks.append(
+            _check(
+                f"idempotency_key_present:{key}",
+                bool((summary.get("idempotency") or {}).get(key)),
+                True,
+            )
+        )
 
     if "idempotency_duplicate_write_suppressed" in expected:
-        checks.append(_check(
-            "idempotency_duplicate_write_suppressed",
-            (summary.get("idempotency") or {}).get("duplicate_write_suppressed"),
-            expected["idempotency_duplicate_write_suppressed"],
-        ))
+        checks.append(
+            _check(
+                "idempotency_duplicate_write_suppressed",
+                (summary.get("idempotency") or {}).get("duplicate_write_suppressed"),
+                expected["idempotency_duplicate_write_suppressed"],
+            )
+        )
 
     if "remediation_dry_run" in expected:
-        checks.append(_check(
-            "remediation_dry_run",
-            summary["remediation"].get("dry_run"),
-            expected["remediation_dry_run"],
-        ))
+        checks.append(
+            _check(
+                "remediation_dry_run",
+                summary["remediation"].get("dry_run"),
+                expected["remediation_dry_run"],
+            )
+        )
 
     if expected.get("remediation_key_matches_idempotency"):
-        checks.append(_check(
-            "remediation_key_matches_idempotency",
-            summary["remediation"].get("idempotency_key"),
-            (summary.get("idempotency") or {}).get("remediation_key"),
-        ))
+        checks.append(
+            _check(
+                "remediation_key_matches_idempotency",
+                summary["remediation"].get("idempotency_key"),
+                (summary.get("idempotency") or {}).get("remediation_key"),
+            )
+        )
 
     if expected.get("audit_key_matches_remediation"):
-        checks.append(_check(
-            "audit_key_matches_remediation",
-            summary["audit"].get("idempotency_key"),
-            summary["remediation"].get("idempotency_key"),
-        ))
+        checks.append(
+            _check(
+                "audit_key_matches_remediation",
+                summary["audit"].get("idempotency_key"),
+                summary["remediation"].get("idempotency_key"),
+            )
+        )
 
     if "route_after_remediation" in expected:
-        checks.append(_check(
-            "route_after_remediation",
-            summary["audit"]["route"]["after_remediation"],
-            expected["route_after_remediation"],
-        ))
+        checks.append(
+            _check(
+                "route_after_remediation",
+                summary["audit"]["route"]["after_remediation"],
+                expected["route_after_remediation"],
+            )
+        )
 
     if "eval_status" in expected:
-        checks.append(_check(
-            "eval_status",
-            summary["eval"]["status"],
-            expected["eval_status"],
-        ))
+        checks.append(
+            _check(
+                "eval_status",
+                summary["eval"]["status"],
+                expected["eval_status"],
+            )
+        )
 
     if "audit_api_error_count" in expected:
-        checks.append(_check(
-            "audit_api_error_count",
-            summary["audit"]["api_error_count"],
-            expected["audit_api_error_count"],
-        ))
-        checks.append(_check(
-            "audit_retryable_api_error_count",
-            summary["audit"]["retryable_api_error_count"],
-            expected.get("audit_retryable_api_error_count", 0),
-        ))
+        checks.append(
+            _check(
+                "audit_api_error_count",
+                summary["audit"]["api_error_count"],
+                expected["audit_api_error_count"],
+            )
+        )
+        checks.append(
+            _check(
+                "audit_retryable_api_error_count",
+                summary["audit"]["retryable_api_error_count"],
+                expected.get("audit_retryable_api_error_count", 0),
+            )
+        )
 
     if "api_error_classification" in expected:
         api_error = (summary.get("api_errors") or [{}])[0]
-        checks.append(_check(
-            "api_error_classification",
-            api_error.get("classification"),
-            expected["api_error_classification"],
-        ))
-        checks.append(_check(
-            "api_error_status_code",
-            api_error.get("status_code"),
-            expected["api_error_status_code"],
-        ))
+        checks.append(
+            _check(
+                "api_error_classification",
+                api_error.get("classification"),
+                expected["api_error_classification"],
+            )
+        )
+        checks.append(
+            _check(
+                "api_error_status_code",
+                api_error.get("status_code"),
+                expected["api_error_status_code"],
+            )
+        )
 
     if "retry_status" in expected:
-        checks.append(_check(
-            "retry_status",
-            (summary.get("retry") or {}).get("status"),
-            expected["retry_status"],
-        ))
-        checks.append(_check(
-            "retry_policy",
-            (summary.get("retry") or {}).get("policy"),
-            expected["retry_policy"],
-        ))
+        checks.append(
+            _check(
+                "retry_status",
+                (summary.get("retry") or {}).get("status"),
+                expected["retry_status"],
+            )
+        )
+        checks.append(
+            _check(
+                "retry_policy",
+                (summary.get("retry") or {}).get("policy"),
+                expected["retry_policy"],
+            )
+        )
 
     if expected.get("retry_key_matches_remediation"):
-        checks.append(_check(
-            "retry_key_matches_remediation",
-            (summary.get("retry") or {}).get("idempotency_key"),
-            summary["remediation"].get("idempotency_key"),
-        ))
+        checks.append(
+            _check(
+                "retry_key_matches_remediation",
+                (summary.get("retry") or {}).get("idempotency_key"),
+                summary["remediation"].get("idempotency_key"),
+            )
+        )
 
     if "escalation_status" in expected:
-        checks.append(_check(
-            "escalation_status",
-            (summary.get("escalation") or {}).get("status"),
-            expected["escalation_status"],
-        ))
-        checks.append(_check(
-            "escalation_reason",
-            (summary.get("escalation") or {}).get("reason"),
-            expected["escalation_reason"],
-        ))
+        checks.append(
+            _check(
+                "escalation_status",
+                (summary.get("escalation") or {}).get("status"),
+                expected["escalation_status"],
+            )
+        )
+        checks.append(
+            _check(
+                "escalation_reason",
+                (summary.get("escalation") or {}).get("reason"),
+                expected["escalation_reason"],
+            )
+        )
 
     for skill in expected.get("effective_allowed_includes", []):
-        checks.append(_check(
-            f"effective_allowed_includes:{skill}",
-            skill in summary["effective_allowed_skills"],
-            True,
-        ))
+        checks.append(
+            _check(
+                f"effective_allowed_includes:{skill}",
+                skill in summary["effective_allowed_skills"],
+                True,
+            )
+        )
 
     for skill in expected.get("effective_allowed_excludes", []):
-        checks.append(_check(
-            f"effective_allowed_excludes:{skill}",
-            skill not in summary["effective_allowed_skills"],
-            True,
-        ))
+        checks.append(
+            _check(
+                f"effective_allowed_excludes:{skill}",
+                skill not in summary["effective_allowed_skills"],
+                True,
+            )
+        )
 
     for field in expected.get("triage_forbidden_outputs", []):
-        checks.append(_check(
-            f"triage_forbidden_output:{field}",
-            field in triage_agent.get("forbidden_outputs", []),
-            True,
-        ))
+        checks.append(
+            _check(
+                f"triage_forbidden_output:{field}",
+                field in triage_agent.get("forbidden_outputs", []),
+                True,
+            )
+        )
 
     passed = all(check["passed"] for check in checks)
     return {
         "case_id": case["case_id"],
         "status": "pass" if passed else "fail",
-        "output_hash": _stable_hash({
-            "profile": summary["profile"]["profile_id"],
-            "recommendation": recommendation,
-            "review": summary["review"],
-            "remediation": summary["remediation"],
-            "route": summary["audit"]["route"],
-            "effective_allowed_skills": summary["effective_allowed_skills"],
-            "llm_validation": summary.get("llm_validation"),
-            "integrity": summary.get("integrity"),
-            "idempotency": summary.get("idempotency"),
-            "api_errors": summary.get("api_errors"),
-            "retry": summary.get("retry"),
-            "escalation": summary.get("escalation"),
-            "token_budget_usage": summary.get("token_budget_usage"),
-        })[:16],
+        "output_hash": _stable_hash(
+            {
+                "profile": summary["profile"]["profile_id"],
+                "recommendation": recommendation,
+                "review": summary["review"],
+                "remediation": summary["remediation"],
+                "route": summary["audit"]["route"],
+                "effective_allowed_skills": summary["effective_allowed_skills"],
+                "llm_validation": summary.get("llm_validation"),
+                "integrity": summary.get("integrity"),
+                "idempotency": summary.get("idempotency"),
+                "api_errors": summary.get("api_errors"),
+                "retry": summary.get("retry"),
+                "escalation": summary.get("escalation"),
+                "token_budget_usage": summary.get("token_budget_usage"),
+            }
+        )[:16],
         "checks": checks,
     }
 
@@ -423,12 +529,7 @@ def _write_json(path: Path, payload: str) -> None:
 
 def _append_history(path: Path, report: dict[str, Any]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    recorded_at = (
-        datetime.now(UTC)
-        .replace(microsecond=0)
-        .isoformat()
-        .replace("+00:00", "Z")
-    )
+    recorded_at = datetime.now(UTC).replace(microsecond=0).isoformat().replace("+00:00", "Z")
     record = {
         "recorded_at": recorded_at,
         "report_hash": _stable_hash(report)[:16],
@@ -442,7 +543,9 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--dataset", type=Path, default=DEFAULT_DATASET)
     parser.add_argument("--min-pass-rate", type=float, default=1.0)
-    parser.add_argument("--check", action="store_true", help="exit nonzero when pass rate is below threshold")
+    parser.add_argument(
+        "--check", action="store_true", help="exit nonzero when pass rate is below threshold"
+    )
     parser.add_argument(
         "--output",
         type=Path,

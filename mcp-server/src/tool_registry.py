@@ -99,9 +99,7 @@ def _parse_frontmatter(frontmatter: str) -> dict[str, str]:
     if raw is None:
         return {}
     if not isinstance(raw, dict):
-        raise ValueError(
-            f"SKILL.md frontmatter must parse to a mapping, got {type(raw).__name__}"
-        )
+        raise ValueError(f"SKILL.md frontmatter must parse to a mapping, got {type(raw).__name__}")
     return {str(key): _flatten_value(value) for key, value in raw.items()}
 
 
@@ -165,7 +163,9 @@ def discover_skills(root: Path | None = None) -> list[SkillSpec]:
                 caller_roles=_parse_modes(metadata.get("caller_roles")),
                 approver_roles=_parse_modes(metadata.get("approver_roles")),
                 min_approvers=_parse_min_approvers(metadata.get("min_approvers"), skill_dir),
-                mcp_timeout_seconds=_parse_mcp_timeout(metadata.get("mcp_timeout_seconds"), skill_dir),
+                mcp_timeout_seconds=_parse_mcp_timeout(
+                    metadata.get("mcp_timeout_seconds"), skill_dir
+                ),
                 worker_mode=_parse_bool(metadata.get("worker_mode")),
             )
         )
@@ -181,13 +181,15 @@ def _parse_bool(raw: str | None) -> bool:
 # Hard-coded list of evaluation-layer skills wired to the worker
 # harness today. Kept in sync with `worker_pool.SUPPORTED_SKILL_NAMES`
 # and the `__main__` blocks in each skill's `checks.py`.
-WORKER_MODE_SKILL_NAMES: frozenset[str] = frozenset({
-    "cspm-aws-cis-benchmark",
-    "cspm-gcp-cis-benchmark",
-    "cspm-azure-cis-benchmark",
-    "k8s-security-benchmark",
-    "container-security",
-})
+WORKER_MODE_SKILL_NAMES: frozenset[str] = frozenset(
+    {
+        "cspm-aws-cis-benchmark",
+        "cspm-gcp-cis-benchmark",
+        "cspm-azure-cis-benchmark",
+        "k8s-security-benchmark",
+        "container-security",
+    }
+)
 
 
 def supports_worker_mode(skill: SkillSpec) -> bool:
@@ -246,7 +248,9 @@ def supported_skills(root: Path | None = None) -> list[SkillSpec]:
 def tool_input_schema(skill: SkillSpec) -> dict[str, object]:
     description = "Inline stdin payload for the skill. Use this for JSON or JSONL filters."
     if skill.entrypoint and skill.entrypoint.name == "checks.py":
-        description = "Optional stdin payload. Most benchmark/check skills use explicit CLI args instead."
+        description = (
+            "Optional stdin payload. Most benchmark/check skills use explicit CLI args instead."
+        )
     properties: dict[str, object] = {
         "input": {
             "type": "string",
@@ -363,7 +367,9 @@ def build_command(skill: SkillSpec, args: list[str], output_format: str | None =
     command = [sys.executable, str(skill.entrypoint), *args]
     if output_format:
         if output_format not in skill.output_formats:
-            raise ValueError(f"skill `{skill.name}` does not support output_format `{output_format}`")
+            raise ValueError(
+                f"skill `{skill.name}` does not support output_format `{output_format}`"
+            )
         if "--output-format" not in args:
             command.extend(["--output-format", output_format])
     return command

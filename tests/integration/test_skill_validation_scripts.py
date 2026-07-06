@@ -109,8 +109,15 @@ class TestValidationScripts:
 class TestRuntimeContractGuardrails:
     """Unit tests for the SKILL.md frontmatter ↔ src/ runtime contract checks."""
 
-    def _fake_skill(self, tmp_path: Path, *, writable: bool, category: str = "remediation",
-                    capability: str = "", src_contents: str = "") -> object:
+    def _fake_skill(
+        self,
+        tmp_path: Path,
+        *,
+        writable: bool,
+        category: str = "remediation",
+        capability: str = "",
+        src_contents: str = "",
+    ) -> object:
         skill_dir = tmp_path / "skills" / category / "fake-skill"
         (skill_dir / "src").mkdir(parents=True, exist_ok=True)
         (skill_dir / "src" / "handler.py").write_text(src_contents or "# empty\n")
@@ -148,10 +155,7 @@ class TestRuntimeContractGuardrails:
         fake = self._fake_skill(
             tmp_path,
             writable=True,
-            src_contents=(
-                "def run(dry_run=True):\n"
-                "    audit.put_item(Table='audit-table')\n"
-            ),
+            src_contents=("def run(dry_run=True):\n    audit.put_item(Table='audit-table')\n"),
         )
         assert self._run_source_guards(tmp_path, fake) == []
 
@@ -198,10 +202,7 @@ class TestRuntimeContractGuardrails:
             tmp_path,
             writable=False,
             category="detection",
-            src_contents=(
-                "def detect():\n"
-                "    iam.delete_user(UserName='alice')\n"
-            ),
+            src_contents=("def detect():\n    iam.delete_user(UserName='alice')\n"),
         )
         errors = self._run_read_only_no_writes(tmp_path, fake)
         assert any("cloud-write method" in e and "delete" in e for e in errors)
@@ -246,7 +247,7 @@ class TestRuntimeContractGuardrails:
             writable=False,
             category="detection",
             src_contents=(
-                'def detect():\n'
+                "def detect():\n"
                 '    """This detector does NOT call iam.delete_user itself."""\n'
                 '    msg = "Would call iam.delete_user to fix this"\n'
                 '    log.info("Consider iam.remove_user_from_group")\n'
@@ -264,8 +265,9 @@ class TestHITLEnvVarGuardrail:
     backing up the human_required approval model declared in frontmatter.
     """
 
-    def _fake_remediation(self, tmp_path: Path, *, src_contents: str,
-                          capability: str = "") -> object:
+    def _fake_remediation(
+        self, tmp_path: Path, *, src_contents: str, capability: str = ""
+    ) -> object:
         skill_dir = tmp_path / "skills" / "remediation" / "fake-remediation"
         (skill_dir / "src").mkdir(parents=True, exist_ok=True)
         (skill_dir / "src" / "handler.py").write_text(src_contents or "# empty\n")
@@ -316,10 +318,7 @@ class TestHITLEnvVarGuardrail:
     def test_fails_when_incident_var_missing(self, tmp_path: Path):
         fake = self._fake_remediation(
             tmp_path,
-            src_contents=(
-                "import os\n"
-                "APPROVER = os.environ['MY_SKILL_APPROVER']\n"
-            ),
+            src_contents=("import os\nAPPROVER = os.environ['MY_SKILL_APPROVER']\n"),
         )
         errors = self._run(tmp_path, fake)
         assert any("incident env var" in e for e in errors)
@@ -327,10 +326,7 @@ class TestHITLEnvVarGuardrail:
     def test_fails_when_approver_var_missing(self, tmp_path: Path):
         fake = self._fake_remediation(
             tmp_path,
-            src_contents=(
-                "import os\n"
-                "INCIDENT_ID = os.environ['MY_SKILL_INCIDENT_ID']\n"
-            ),
+            src_contents=("import os\nINCIDENT_ID = os.environ['MY_SKILL_INCIDENT_ID']\n"),
         )
         errors = self._run(tmp_path, fake)
         assert any("approver env var" in e for e in errors)
@@ -489,11 +485,11 @@ class TestAssumeRoleBoundaryGuardrail:
                 [
                     "{",
                     "  // ASSUME_ROLE_CONDITION_OK: justified because ...",
-                    "  \"Statement\": [",
+                    '  "Statement": [',
                     "    {",
-                    "      \"Effect\": \"Allow\",",
-                    "      \"Action\": \"sts:AssumeRole\",",
-                    "      \"Resource\": \"arn:aws:iam::*:role/target\"",
+                    '      "Effect": "Allow",',
+                    '      "Action": "sts:AssumeRole",',
+                    '      "Resource": "arn:aws:iam::*:role/target"',
                     "    }",
                     "  ]",
                     "}",
@@ -508,13 +504,13 @@ class TestAssumeRoleBoundaryGuardrail:
             "main.tf",
             "\n".join(
                 [
-                    "resource \"aws_iam_role_policy\" \"worker\" {",
+                    'resource "aws_iam_role_policy" "worker" {',
                     "  policy = jsonencode({",
                     "    Statement = [",
                     "      {",
-                    "        Effect   = \"Allow\"",
-                    "        Action   = \"sts:AssumeRole\"",
-                    "        Resource = \"arn:aws:iam::*:role/target\"",
+                    '        Effect   = "Allow"',
+                    '        Action   = "sts:AssumeRole"',
+                    '        Resource = "arn:aws:iam::*:role/target"',
                     "      }",
                     "    ]",
                     "  })",
@@ -531,15 +527,15 @@ class TestAssumeRoleBoundaryGuardrail:
             "main.tf",
             "\n".join(
                 [
-                    "resource \"aws_iam_role_policy\" \"worker\" {",
+                    'resource "aws_iam_role_policy" "worker" {',
                     "  policy = jsonencode({",
                     "    Statement = [",
                     "      {",
-                    "        Effect   = \"Allow\"",
-                    "        Action   = \"sts:AssumeRole\"",
-                    "        Resource = \"arn:aws:iam::*:role/target\"",
+                    '        Effect   = "Allow"',
+                    '        Action   = "sts:AssumeRole"',
+                    '        Resource = "arn:aws:iam::*:role/target"',
                     "        Condition = {",
-                    "          StringEquals = { \"aws:PrincipalOrgID\" = \"o-abc\" }",
+                    '          StringEquals = { "aws:PrincipalOrgID" = "o-abc" }',
                     "        }",
                     "      }",
                     "    ]",
@@ -596,24 +592,23 @@ class TestAssumeRoleBoundaryGuardrail:
         class_blocks: list[str] = []
         for layer, (hit, total) in layers.items():
             lines = "\n            ".join(
-                f'<line number="{i + 1}" hits="{1 if i < hit else 0}" />'
-                for i in range(total)
+                f'<line number="{i + 1}" hits="{1 if i < hit else 0}" />' for i in range(total)
             )
             class_blocks.append(
                 f'        <class filename="skills/{layer}/example/src/example.py">\n'
-                f'          <lines>\n            {lines}\n          </lines>\n'
-                f'        </class>'
+                f"          <lines>\n            {lines}\n          </lines>\n"
+                f"        </class>"
             )
         joined = "\n".join(class_blocks)
         return (
             f'<?xml version="1.0" ?>\n'
             f'<coverage line-rate="{overall_line_rate}">\n'
-            f'  <packages>\n'
+            f"  <packages>\n"
             f'    <package name="skills">\n'
-            f'      <classes>\n{joined}\n      </classes>\n'
-            f'    </package>\n'
-            f'  </packages>\n'
-            f'</coverage>\n'
+            f"      <classes>\n{joined}\n      </classes>\n"
+            f"    </package>\n"
+            f"  </packages>\n"
+            f"</coverage>\n"
         )
 
     def test_test_coverage_validator_fails_low_detection_floor(self, tmp_path: Path):
@@ -641,19 +636,31 @@ class TestAssumeRoleBoundaryGuardrail:
 
     def test_gpu_skill_ai_framework_depth_is_registered(self):
         registry = json.loads((ROOT / "docs" / "framework-coverage.json").read_text())
-        gpu = next(item for item in registry["skills"] if item["path"] == "skills/evaluation/gpu-cluster-security")
+        gpu = next(
+            item
+            for item in registry["skills"]
+            if item["path"] == "skills/evaluation/gpu-cluster-security"
+        )
         assert "mitre-atlas" in gpu["frameworks"]
         assert "nist-ai-rmf" in gpu["frameworks"]
 
     def test_model_serving_ai_framework_depth_is_registered(self):
         registry = json.loads((ROOT / "docs" / "framework-coverage.json").read_text())
-        model_serving = next(item for item in registry["skills"] if item["path"] == "skills/evaluation/model-serving-security")
+        model_serving = next(
+            item
+            for item in registry["skills"]
+            if item["path"] == "skills/evaluation/model-serving-security"
+        )
         assert "mitre-atlas" in model_serving["frameworks"]
         assert "nist-ai-rmf" in model_serving["frameworks"]
 
     def test_lateral_movement_identity_assets_are_registered(self):
         registry = json.loads((ROOT / "docs" / "framework-coverage.json").read_text())
-        skill = next(item for item in registry["skills"] if item["path"] == "skills/detection/detect-lateral-movement")
+        skill = next(
+            item
+            for item in registry["skills"]
+            if item["path"] == "skills/detection/detect-lateral-movement"
+        )
         assert "service-accounts" in skill["asset_classes"]
         assert "service-principals" in skill["asset_classes"]
         assert "managed-identities" in skill["asset_classes"]

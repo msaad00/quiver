@@ -95,8 +95,7 @@ def render_compliance_finding(
         desc_parts.append(f"Remediation: {remediation}")
 
     observables = [
-        {"name": "resource", "type": "Other", "value": resource}
-        for resource in resources
+        {"name": "resource", "type": "Other", "value": resource} for resource in resources
     ]
 
     evidence = {

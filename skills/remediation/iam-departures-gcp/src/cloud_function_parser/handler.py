@@ -75,7 +75,9 @@ def handler(event: dict, context: Any | None = None) -> dict:
 
     if not isinstance(bucket, str) or not bucket or not isinstance(obj_name, str) or not obj_name:
         logger.error("Invalid parser event payload: missing bucket/name")
-        return _error_payload(bucket, obj_name, "Invalid event payload: bucket and name are required")
+        return _error_payload(
+            bucket, obj_name, "Invalid event payload: bucket and name are required"
+        )
 
     logger.info("Parsing manifest: gs://%s/%s", bucket, obj_name)
     try:

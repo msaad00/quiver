@@ -174,7 +174,9 @@ def _now_ms() -> int:
     return int(datetime.now(timezone.utc).timestamp() * 1000)
 
 
-def _finding_uid(session_uid: str, tool_name: str, event_uid: str, matched_signals: list[str]) -> str:
+def _finding_uid(
+    session_uid: str, tool_name: str, event_uid: str, matched_signals: list[str]
+) -> str:
     material = f"{session_uid}|{tool_name}|{event_uid}|{'|'.join(sorted(matched_signals))}"
     return f"det-mcp-prompt-injection-{hashlib.sha256(material.encode('utf-8')).hexdigest()[:16]}"
 
@@ -297,7 +299,9 @@ def _render_ocsf_finding(native_finding: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def detect(events: Iterable[dict[str, Any]], output_format: str = "ocsf") -> Iterable[dict[str, Any]]:
+def detect(
+    events: Iterable[dict[str, Any]], output_format: str = "ocsf"
+) -> Iterable[dict[str, Any]]:
     if output_format not in OUTPUT_FORMATS:
         raise ValueError(f"unsupported output_format `{output_format}`")
 
@@ -307,7 +311,13 @@ def detect(events: Iterable[dict[str, Any]], output_format: str = "ocsf") -> Ite
         suspicious = _suspicious_tool_declaration(event)
         if suspicious is not None:
             listed.append(suspicious)
-    listed.sort(key=lambda e: (str(e.get("session_uid") or ""), int(e.get("time_ms") or 0), str(e.get("tool_name") or "")))
+    listed.sort(
+        key=lambda e: (
+            str(e.get("session_uid") or ""),
+            int(e.get("time_ms") or 0),
+            str(e.get("tool_name") or ""),
+        )
+    )
 
     for event in listed:
         native_finding = _build_native_finding(event)
@@ -332,7 +342,9 @@ def load_jsonl(path: str | None) -> list[dict[str, Any]]:
         try:
             loaded = json.loads(stripped)
         except json.JSONDecodeError as exc:
-            print(f"[{SKILL_NAME}] skipping line {lineno}: json parse failed: {exc}", file=sys.stderr)
+            print(
+                f"[{SKILL_NAME}] skipping line {lineno}: json parse failed: {exc}", file=sys.stderr
+            )
             continue
         if not isinstance(loaded, dict):
             print(f"[{SKILL_NAME}] skipping line {lineno}: expected JSON object", file=sys.stderr)

@@ -11,7 +11,9 @@ import pytest
 # Mock googleapiclient before steps imports run.
 sys.modules.setdefault("googleapiclient", types.ModuleType("googleapiclient"))
 sys.modules.setdefault("googleapiclient.discovery", types.SimpleNamespace(build=MagicMock()))
-sys.modules.setdefault("googleapiclient.http", types.SimpleNamespace(MediaInMemoryUpload=MagicMock()))
+sys.modules.setdefault(
+    "googleapiclient.http", types.SimpleNamespace(MediaInMemoryUpload=MagicMock())
+)
 
 from cloud_function_worker import steps  # noqa: E402
 
@@ -42,9 +44,12 @@ class TestProtectedPrincipals:
         assert steps.is_protected_principal("workspace_user", "emergency-bob@acme.example") is True
 
     def test_terraform_sa_protected(self):
-        assert steps.is_protected_principal(
-            "service_account", "terraform-cd@acme-prod.iam.gserviceaccount.com"
-        ) is True
+        assert (
+            steps.is_protected_principal(
+                "service_account", "terraform-cd@acme-prod.iam.gserviceaccount.com"
+            )
+            is True
+        )
 
     def test_normal_user_not_protected(self):
         assert steps.is_protected_principal("workspace_user", "jane@acme.example") is False
@@ -85,7 +90,10 @@ class TestStepsBranching:
         actions: list = []
         steps.step_revoke_oauth_tokens(
             clients,
-            _entry(principal_type="service_account", principal_id="ci@acme-prod.iam.gserviceaccount.com"),
+            _entry(
+                principal_type="service_account",
+                principal_id="ci@acme-prod.iam.gserviceaccount.com",
+            ),
             actions,
         )
         assert actions[0]["skipped"] == "n/a-for-service-account"
@@ -105,7 +113,10 @@ class TestStepsBranching:
         clients = MagicMock()
         clients.crm.projects.return_value.getIamPolicy.return_value.execute.return_value = {
             "bindings": [
-                {"role": "roles/viewer", "members": ["user:jane@acme.example", "user:bob@acme.example"]},
+                {
+                    "role": "roles/viewer",
+                    "members": ["user:jane@acme.example", "user:bob@acme.example"],
+                },
                 {"role": "roles/editor", "members": ["user:bob@acme.example"]},
             ]
         }
@@ -152,7 +163,9 @@ class TestStepsBranching:
             "items": [{"name": "bucket-a"}, {"name": "bucket-b"}]
         }
         clients.storage.buckets.return_value.getIamPolicy.return_value.execute.return_value = {
-            "bindings": [{"role": "roles/storage.objectViewer", "members": ["user:jane@acme.example"]}]
+            "bindings": [
+                {"role": "roles/storage.objectViewer", "members": ["user:jane@acme.example"]}
+            ]
         }
         actions: list = []
         steps.step_revoke_storage_iam(clients, _entry(), actions)
@@ -172,7 +185,9 @@ class TestStepsBranching:
         clients = MagicMock()
         actions: list = []
         steps.step_final_disable_or_delete(clients, _entry(), actions)
-        clients.admin_directory.users.return_value.delete.assert_called_once_with(userKey="jane@acme.example")
+        clients.admin_directory.users.return_value.delete.assert_called_once_with(
+            userKey="jane@acme.example"
+        )
         assert actions[0]["action"] == "delete_workspace_user"
 
     def test_final_disable_or_delete_service_account_drops_keys_first(self):
@@ -186,7 +201,10 @@ class TestStepsBranching:
         actions: list = []
         steps.step_final_disable_or_delete(
             clients,
-            _entry(principal_type="service_account", principal_id="ci@acme-prod.iam.gserviceaccount.com"),
+            _entry(
+                principal_type="service_account",
+                principal_id="ci@acme-prod.iam.gserviceaccount.com",
+            ),
             actions,
         )
         # Only the USER_MANAGED key was deleted, then the SA itself.
@@ -200,7 +218,10 @@ class TestStepsBranching:
         policy = {
             "bindings": [
                 {"role": "roles/viewer", "members": ["user:jane@acme.example"]},
-                {"role": "roles/editor", "members": ["user:bob@acme.example", "user:jane@acme.example"]},
+                {
+                    "role": "roles/editor",
+                    "members": ["user:bob@acme.example", "user:jane@acme.example"],
+                },
             ]
         }
         new_policy, removed = steps._strip_member_from_policy(policy, "user:jane@acme.example")

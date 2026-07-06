@@ -127,11 +127,7 @@ def test_valid_signature_routes_to_skill(monkeypatch, tmp_path):
     client = TestClient(server.app)
 
     body = (
-        REPO_ROOT
-        / "skills"
-        / "detection-engineering"
-        / "golden"
-        / "cloudtrail_raw_sample.jsonl"
+        REPO_ROOT / "skills" / "detection-engineering" / "golden" / "cloudtrail_raw_sample.jsonl"
     ).read_bytes()
     sig = _hex_hmac("secret", body)
     resp = client.post(

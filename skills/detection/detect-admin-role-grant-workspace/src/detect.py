@@ -113,7 +113,13 @@ def _actor(event: dict[str, Any]) -> tuple[str, str]:
 def _grantee(event: dict[str, Any]) -> tuple[str, str]:
     params = _params(event)
     user = event.get("user") or {}
-    uid = str(params.get("assigned_to") or params.get("target_user") or user.get("uid") or user.get("name") or "").strip()
+    uid = str(
+        params.get("assigned_to")
+        or params.get("target_user")
+        or user.get("uid")
+        or user.get("name")
+        or ""
+    ).strip()
     name = str(
         params.get("assigned_to")
         or params.get("target_user")
@@ -176,7 +182,10 @@ def _is_relevant(
     authorized: frozenset[str],
     protected_roles: frozenset[str],
 ) -> tuple[bool, str]:
-    if event.get("class_uid") != ACCOUNT_CHANGE_CLASS_UID and event.get("record_type") != "account_change":
+    if (
+        event.get("class_uid") != ACCOUNT_CHANGE_CLASS_UID
+        and event.get("record_type") != "account_change"
+    ):
         return False, ""
     if _producer(event) != WORKSPACE_INGEST_SKILL:
         return False, ""
@@ -310,7 +319,13 @@ def iter_records(stream: Iterable[str]) -> Iterable[dict[str, Any]]:
         try:
             obj = json.loads(line)
         except json.JSONDecodeError as exc:
-            emit_stderr_event(SKILL_NAME, level="warning", event="json_parse_failed", message=str(exc), line=lineno)
+            emit_stderr_event(
+                SKILL_NAME,
+                level="warning",
+                event="json_parse_failed",
+                message=str(exc),
+                line=lineno,
+            )
             continue
         if isinstance(obj, dict):
             yield obj
@@ -332,7 +347,9 @@ def detect(stream: Iterable[str], output_format: str = "ocsf") -> list[dict[str,
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Detect Google Workspace protected admin role grants.")
+    parser = argparse.ArgumentParser(
+        description="Detect Google Workspace protected admin role grants."
+    )
     parser.add_argument("input", nargs="?", help="Input OCSF/native JSONL. Defaults to stdin.")
     parser.add_argument("--output", "-o", help="Output JSONL file. Defaults to stdout.")
     parser.add_argument("--output-format", choices=OUTPUT_FORMATS, default="ocsf")

@@ -49,15 +49,36 @@ def _load(path: Path) -> list[dict]:
 
 class TestFilter:
     def test_ignores_wrong_class(self):
-        e = {"class_uid": 1234, "mcp": {"method": "tools/list", "direction": "response", "tool": {"name": "x", "fingerprint": "sha256:f"}}}
+        e = {
+            "class_uid": 1234,
+            "mcp": {
+                "method": "tools/list",
+                "direction": "response",
+                "tool": {"name": "x", "fingerprint": "sha256:f"},
+            },
+        }
         assert not _is_tools_list_response_with_fingerprint(e)
 
     def test_ignores_wrong_method(self):
-        e = {"class_uid": 6002, "mcp": {"method": "tools/call", "direction": "response", "tool": {"name": "x", "fingerprint": "sha256:f"}}}
+        e = {
+            "class_uid": 6002,
+            "mcp": {
+                "method": "tools/call",
+                "direction": "response",
+                "tool": {"name": "x", "fingerprint": "sha256:f"},
+            },
+        }
         assert not _is_tools_list_response_with_fingerprint(e)
 
     def test_ignores_wrong_direction(self):
-        e = {"class_uid": 6002, "mcp": {"method": "tools/list", "direction": "request", "tool": {"name": "x", "fingerprint": "sha256:f"}}}
+        e = {
+            "class_uid": 6002,
+            "mcp": {
+                "method": "tools/list",
+                "direction": "request",
+                "tool": {"name": "x", "fingerprint": "sha256:f"},
+            },
+        }
         assert not _is_tools_list_response_with_fingerprint(e)
 
     def test_ignores_missing_tool(self):
@@ -65,11 +86,21 @@ class TestFilter:
         assert not _is_tools_list_response_with_fingerprint(e)
 
     def test_ignores_missing_fingerprint(self):
-        e = {"class_uid": 6002, "mcp": {"method": "tools/list", "direction": "response", "tool": {"name": "x"}}}
+        e = {
+            "class_uid": 6002,
+            "mcp": {"method": "tools/list", "direction": "response", "tool": {"name": "x"}},
+        }
         assert not _is_tools_list_response_with_fingerprint(e)
 
     def test_accepts_valid(self):
-        e = {"class_uid": 6002, "mcp": {"method": "tools/list", "direction": "response", "tool": {"name": "x", "fingerprint": "sha256:f"}}}
+        e = {
+            "class_uid": 6002,
+            "mcp": {
+                "method": "tools/list",
+                "direction": "response",
+                "tool": {"name": "x", "fingerprint": "sha256:f"},
+            },
+        }
         assert _is_tools_list_response_with_fingerprint(e)
 
     def test_accepts_valid_native(self):
@@ -290,7 +321,9 @@ class TestGoldenFixture:
     def test_exactly_one_finding_from_fixture(self):
         events = _load(OCSF_FIXTURE)
         findings = list(detect(events))
-        assert len(findings) == 1, f"expected exactly 1 finding from the fixture (query_db drift in sess-abc), got {len(findings)}"
+        assert len(findings) == 1, (
+            f"expected exactly 1 finding from the fixture (query_db drift in sess-abc), got {len(findings)}"
+        )
 
     def test_finding_is_query_db_in_sess_abc(self):
         events = _load(OCSF_FIXTURE)
@@ -304,14 +337,18 @@ class TestGoldenFixture:
         findings = list(detect(events))
         for f in findings:
             obs = {o["name"]: o["value"] for o in f["observables"]}
-            assert obs["tool.name"] != "read_file", "read_file has stable fingerprint and must not fire"
+            assert obs["tool.name"] != "read_file", (
+                "read_file has stable fingerprint and must not fire"
+            )
 
     def test_sess_xyz_does_not_fire(self):
         events = _load(OCSF_FIXTURE)
         findings = list(detect(events))
         for f in findings:
             obs = {o["name"]: o["value"] for o in f["observables"]}
-            assert obs["session.uid"] != "sess-xyz", "sess-xyz only has one tools/list event — must not fire"
+            assert obs["session.uid"] != "sess-xyz", (
+                "sess-xyz only has one tools/list event — must not fire"
+            )
 
     def test_finding_matches_frozen_golden_exactly(self):
         events = _load(OCSF_FIXTURE)
@@ -319,4 +356,6 @@ class TestGoldenFixture:
         expected = _load(EXPECTED_FINDING)
         assert len(produced) == len(expected)
         for p, e in zip(produced, expected):
-            assert p == e, f"finding mismatch:\n  produced: {json.dumps(p, sort_keys=True)}\n  expected: {json.dumps(e, sort_keys=True)}"
+            assert p == e, (
+                f"finding mismatch:\n  produced: {json.dumps(p, sort_keys=True)}\n  expected: {json.dumps(e, sort_keys=True)}"
+            )

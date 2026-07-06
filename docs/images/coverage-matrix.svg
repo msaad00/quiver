@@ -22,7 +22,7 @@
 
   <!-- Summary cards: keep the main truth visible before the long table. -->
   <g font-family="Inter, system-ui, sans-serif">
-    <rect x="1010" y="42" width="154" height="70" rx="14" fill="#052e2b" stroke="#22c55e"/>
+    <rect x="1010" y="42" width="166" height="70" rx="14" fill="#052e2b" stroke="#22c55e"/>
     <text x="1030" y="72" fill="#5eead4" font-size="24" font-weight="900">13 / 71</text>
     <text x="1030" y="94" fill="#bbf7d0" font-size="12" font-weight="800">closed-loop detections</text>
 
@@ -30,7 +30,7 @@
     <text x="1202" y="72" fill="#fbbf24" font-size="19" font-weight="900">HITL gated</text>
     <text x="1202" y="94" fill="#fed7aa" font-size="12" font-weight="800">dry-run before writes</text>
 
-    <rect x="1364" y="42" width="188" height="70" rx="14" fill="#2a0b1e" stroke="#ef4444"/>
+    <rect x="1364" y="42" width="208" height="70" rx="14" fill="#2a0b1e" stroke="#ef4444"/>
     <text x="1384" y="72" fill="#f87171" font-size="19" font-weight="900">Red = detect-first</text>
     <text x="1384" y="94" fill="#fecaca" font-size="12" font-weight="800">no autonomous action implied</text>
   </g>
@@ -480,7 +480,7 @@
     <text x="430"  y="1914" fill="#cbd5e1" font-size="14">OWASP LLM05 · OWASP MCP Top 10</text>
     <rect x="760"  y="1898" width="40" height="22" rx="4" fill="#16a34a" stroke="#22c55e"/>
     <rect x="880"  y="1898" width="40" height="22" rx="4" fill="#7f1d1d" stroke="#ef4444"/>
-    <text x="1020" y="1914" fill="#fee2e2" font-size="13">detection-only — MCP tool schema references a host outside MCP_PLUGIN_ALLOWED_HOSTS (#255)</text>
+    <text x="1020" y="1914" fill="#fee2e2" font-size="13">detection-only — MCP tool schema references a non-allowlisted host (#255)</text>
   </g>
   <g font-family="Inter, system-ui, sans-serif">
     <text x="48"   y="1934" fill="#f1f5f9" font-size="14">detect-mcp-adversarial-input-corpus</text>
@@ -501,14 +501,14 @@
     <text x="430"  y="1974" fill="#cbd5e1" font-size="14">OWASP LLM10 · ATLAS AML.T0034</text>
     <rect x="760"  y="1958" width="40" height="22" rx="4" fill="#16a34a" stroke="#22c55e"/>
     <rect x="880"  y="1958" width="40" height="22" rx="4" fill="#7f1d1d" stroke="#ef4444"/>
-    <text x="1020" y="1974" fill="#fee2e2" font-size="13">detection-only — MCP tool responses repeatedly breach output ceilings in the same session (#255)</text>
+    <text x="1020" y="1974" fill="#fee2e2" font-size="13">detection-only — MCP tool responses repeatedly breach output ceilings (#255)</text>
   </g>
   <g font-family="Inter, system-ui, sans-serif">
     <text x="48"   y="1994" fill="#f1f5f9" font-size="14">detect-azure-private-endpoint-to-external-sub</text>
     <text x="430"  y="1994" fill="#cbd5e1" font-size="14">T1071.001 / T1567 (TA0010)</text>
     <rect x="760"  y="1978" width="40" height="22" rx="4" fill="#16a34a" stroke="#22c55e"/>
     <rect x="880"  y="1978" width="40" height="22" rx="4" fill="#7f1d1d" stroke="#ef4444"/>
-    <text x="1020" y="1994" fill="#fee2e2" font-size="13">detection-only — Azure private endpoint pinned to a subscription outside the authorized set (#253)</text>
+    <text x="1020" y="1994" fill="#fee2e2" font-size="13">detection-only — Azure private endpoint pinned to an unauthorized subscription (#253)</text>
   </g>
   <g font-family="Inter, system-ui, sans-serif">
     <text x="48"   y="2014" fill="#f1f5f9" font-size="14">detect-aws-cloudtrail-event-selector-tampering</text>

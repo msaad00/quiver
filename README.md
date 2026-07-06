@@ -45,7 +45,7 @@ git clone --branch v0.11.0 https://github.com/msaad00/cloud-ai-security-skills.g
 cd cloud-ai-security-skills
 
 # 2 · Install only the deps the skills you'll run need
-uv sync --group dev --group aws --group k8s        # or --group gcp / --group azure / --group ai-runtime / --group databricks / --group snowflake / --group clickhouse / --group identity / --group saas
+uv sync --group dev --group aws        # or --group gcp / --group azure / --group mcp / --group iam_departures / --group langgraph / --group webhook — see docs/INSTALL.md
 
 # 3 · Run a detection on a captured fixture (no cloud creds needed)
 python skills/ingestion/ingest-cloudtrail-ocsf/src/ingest.py \

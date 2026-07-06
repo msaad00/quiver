@@ -33,15 +33,21 @@ class _FakeKube:
     pods: list[object] = field(default_factory=list)
 
     def get_pod_labels(self, namespace: str, pod_name: str):
-        return {("payments", "api-7d9b"): {"app": "api", "pod-template-hash": "7d9b"}}.get((namespace, pod_name))
+        return {("payments", "api-7d9b"): {"app": "api", "pod-template-hash": "7d9b"}}.get(
+            (namespace, pod_name)
+        )
 
     def get_workload_selector(self, namespace: str, resource_type: str, resource_name: str):
-        return {("payments", "deployments", "api"): {"app": "api"}}.get((namespace, resource_type, resource_name))
+        return {("payments", "deployments", "api"): {"app": "api"}}.get(
+            (namespace, resource_type, resource_name)
+        )
 
     def list_target_pods(self, namespace: str, selector: dict[str, str]):
         return [pod for pod in self.pods if pod.namespace == namespace]
 
-    def create_volume_snapshot(self, namespace: str, pvc_name: str, snapshot_name: str, snapshot_class_name: str | None):
+    def create_volume_snapshot(
+        self, namespace: str, pvc_name: str, snapshot_name: str, snapshot_class_name: str | None
+    ):
         raise AssertionError("dry-run integration test must not create snapshots")
 
 
@@ -49,7 +55,11 @@ class TestK8sContainerEscapeForensicsPipeline:
     def setup_method(self):
         self.collector = _load_module(
             "_int_collect_container_escape_k8s",
-            SKILLS_ROOT / "remediation" / "remediate-container-escape-k8s" / "src" / "forensic_collector.py",
+            SKILLS_ROOT
+            / "remediation"
+            / "remediate-container-escape-k8s"
+            / "src"
+            / "forensic_collector.py",
         )
 
     def test_frozen_findings_produce_dry_run_forensic_plans(self, tmp_path: Path):
@@ -68,7 +78,9 @@ class TestK8sContainerEscapeForensicsPipeline:
             (root_fs / "etc").mkdir()
             (pid_root / "root").symlink_to(root_fs, target_is_directory=True)
 
-        (log_root / "containers" / "api-7d9b_payments_api-abcd1234.log").write_text("runtime log line\n")
+        (log_root / "containers" / "api-7d9b_payments_api-abcd1234.log").write_text(
+            "runtime log line\n"
+        )
 
         pods = [
             self.collector.PodContext(

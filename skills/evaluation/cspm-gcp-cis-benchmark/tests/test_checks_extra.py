@@ -410,9 +410,7 @@ def _install_fake_google_modules(monkeypatch):
     monkeypatch.setitem(
         sys.modules, "google.cloud.compute_v1.services.subnetworks", subnetworks_mod
     )
-    monkeypatch.setitem(
-        sys.modules, "google.cloud.compute_v1.services.instances", instances_mod
-    )
+    monkeypatch.setitem(sys.modules, "google.cloud.compute_v1.services.instances", instances_mod)
 
 
 def test_run_assessment_full_and_section_filter(monkeypatch):
@@ -464,9 +462,7 @@ def test_status_symbol_handles_unknown():
 
 def test_print_summary_renders_findings():
     findings = [
-        _CHECKS.Finding(
-            control_id="1.1", title="t", section="iam", severity="HIGH", status="PASS"
-        ),
+        _CHECKS.Finding(control_id="1.1", title="t", section="iam", severity="HIGH", status="PASS"),
         _CHECKS.Finding(
             control_id="2.1",
             title="t",

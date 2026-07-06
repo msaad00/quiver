@@ -33,13 +33,17 @@ parse_records = _CHECKS.parse_records
 run_benchmark = _CHECKS.run_benchmark
 
 
-def _item(resource_type: str, resource_id: str, config: dict[str, object], *, region: str = "us-east-1") -> dict[str, object]:
+def _item(
+    resource_type: str, resource_id: str, config: dict[str, object], *, region: str = "us-east-1"
+) -> dict[str, object]:
     return {
         "class_uid": 6003,
         "time": 1776572400000,
         "metadata": {"uid": f"ci-{resource_id}"},
         "cloud": {"provider": "AWS", "account": {"uid": "111122223333"}, "region": region},
-        "resources": [{"uid": resource_id, "name": resource_id, "type": resource_type, "region": region}],
+        "resources": [
+            {"uid": resource_id, "name": resource_id, "type": resource_type, "region": region}
+        ],
         "unmapped": {
             "aws_config": {
                 "configuration": config,
@@ -56,7 +60,9 @@ def _passing_records() -> list[dict[str, object]]:
             "AWS::S3::Bucket",
             "prod-logs",
             {
-                "bucketEncryption": {"serverSideEncryptionConfiguration": [{"rule": {"sse": "AES256"}}]},
+                "bucketEncryption": {
+                    "serverSideEncryptionConfiguration": [{"rule": {"sse": "AES256"}}]
+                },
                 "loggingConfiguration": {"destinationBucketName": "central-logs"},
                 "publicAccessBlockConfiguration": {
                     "blockPublicAcls": True,
@@ -166,15 +172,29 @@ class TestEvaluation:
             {
                 "class_uid": 2003,
                 "time": 1776572760000,
-                "cloud": {"provider": "AWS", "account": {"uid": "111122223333"}, "region": "us-east-1"},
-                "resources": [{"uid": "prod-logs", "name": "prod-logs", "type": "AWS::S3::Bucket", "region": "us-east-1"}],
+                "cloud": {
+                    "provider": "AWS",
+                    "account": {"uid": "111122223333"},
+                    "region": "us-east-1",
+                },
+                "resources": [
+                    {
+                        "uid": "prod-logs",
+                        "name": "prod-logs",
+                        "type": "AWS::S3::Bucket",
+                        "region": "us-east-1",
+                    }
+                ],
                 "finding_info": {"desc": "Bucket encryption missing."},
                 "compliance": {
                     "status": "FAIL",
                     "control": "s3-bucket-server-side-encryption-enabled",
                     "frameworks": ["AWS Config"],
                 },
-                "evidence": {"source": "AWS Config", "rule_name": "s3-bucket-server-side-encryption-enabled"},
+                "evidence": {
+                    "source": "AWS Config",
+                    "rule_name": "s3-bucket-server-side-encryption-enabled",
+                },
             }
         ]
         findings = {finding.control_id: finding for finding in run_benchmark(records)}

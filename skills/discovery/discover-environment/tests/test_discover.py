@@ -92,7 +92,12 @@ class TestStaticConfigDiscovery:
         config = {
             "provider": "static",
             "resources": [
-                {"id": "res:1", "type": "cloud_resource", "name": "My VPC", "dimensions": {"cloud_provider": "aws"}},
+                {
+                    "id": "res:1",
+                    "type": "cloud_resource",
+                    "name": "My VPC",
+                    "dimensions": {"cloud_provider": "aws"},
+                },
                 {"id": "res:2", "type": "user", "name": "admin"},
             ],
             "relationships": [
@@ -222,9 +227,15 @@ class TestOcsfCloudInventoryBridge:
         assert event["count"] == 1
 
     def test_ocsf_bridge_metadata_uid_is_deterministic(self):
-        graph = EnvironmentGraph(provider="aws", region="us-east-1", discovered_at="2026-04-13T12:00:00+00:00")
-        graph.add_node(GraphNode(id="aws:account:123456789012", entity_type="cloud_resource", label="acct"))
-        graph.add_node(GraphNode(id="aws:s3:prod-bucket", entity_type="cloud_resource", label="bucket"))
+        graph = EnvironmentGraph(
+            provider="aws", region="us-east-1", discovered_at="2026-04-13T12:00:00+00:00"
+        )
+        graph.add_node(
+            GraphNode(id="aws:account:123456789012", entity_type="cloud_resource", label="acct")
+        )
+        graph.add_node(
+            GraphNode(id="aws:s3:prod-bucket", entity_type="cloud_resource", label="bucket")
+        )
 
         a = to_ocsf_cloud_resources_inventory(graph)["metadata"]["uid"]
         b = to_ocsf_cloud_resources_inventory(graph)["metadata"]["uid"]

@@ -57,7 +57,9 @@ def build_harness_config(
     profile_llm = profile_llm or {}
     token_budget = dict(profile_token_budget or {})
     model_policy = dict(profile_model_policy or {})
-    model_tier = str(token_budget.get("model_tier") or model_policy.get("default_model_tier") or "tiny")
+    model_tier = str(
+        token_budget.get("model_tier") or model_policy.get("default_model_tier") or "tiny"
+    )
     allowed_tiers = set(model_policy.get("allowed_model_tiers") or [model_tier])
     if model_tier not in allowed_tiers:
         model_tier = str(model_policy.get("default_model_tier") or "tiny")
@@ -103,25 +105,29 @@ def build_harness_config(
         "token_budget": token_budget,
         "model_policy": {
             "policy_version": model_policy.get("policy_version", "langgraph-model-policy-v1"),
-            "task_class": model_policy.get("task_class", token_budget.get("task_class", "triage_summary")),
+            "task_class": model_policy.get(
+                "task_class", token_budget.get("task_class", "triage_summary")
+            ),
             "selection_strategy": model_policy.get("selection_strategy", "smallest_sufficient"),
             "selected_model_tier": model_tier,
             "allowed_model_tiers": sorted(allowed_tiers),
             "selection_source": "env_override" if env_override else "profile_model_policy",
         },
         "allowed_outputs": allowed_outputs,
-        "prompt_hash": stable_hash({
-            "system": "llm may rank, summarize, and draft only",
-            "forbidden": [
-                "approve",
-                "set_security_facts",
-                "change_cvss_mitre_epss_kev",
-                "call_write_tools",
-                "write_audit",
-            ],
-            "allowed_outputs": allowed_outputs,
-            "model_policy": model_policy.get("policy_version", "langgraph-model-policy-v1"),
-        })[:16],
+        "prompt_hash": stable_hash(
+            {
+                "system": "llm may rank, summarize, and draft only",
+                "forbidden": [
+                    "approve",
+                    "set_security_facts",
+                    "change_cvss_mitre_epss_kev",
+                    "call_write_tools",
+                    "write_audit",
+                ],
+                "allowed_outputs": allowed_outputs,
+                "model_policy": model_policy.get("policy_version", "langgraph-model-policy-v1"),
+            }
+        )[:16],
     }
 
 

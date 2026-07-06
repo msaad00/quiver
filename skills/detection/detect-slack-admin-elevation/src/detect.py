@@ -181,7 +181,9 @@ def _build_native_finding(
 ) -> dict[str, Any]:
     granter_uid, granter_name = _granter(event)
     grantee_uid, grantee_name = _grantee(event)
-    new_role = _new_role(event) or ("admin" if _action(event) == "role_change_to_admin" else "owner")
+    new_role = _new_role(event) or (
+        "admin" if _action(event) == "role_change_to_admin" else "owner"
+    )
     time_ms = _event_time(event) or _now_ms()
     event_uid = _metadata_uid(event)
     finding_uid = _finding_uid(granter_uid, grantee_uid, new_role, time_ms)
@@ -311,7 +313,9 @@ def coverage_metadata() -> dict[str, Any]:
     }
 
 
-def detect(events: Iterable[dict[str, Any]], output_format: str = "ocsf") -> Iterable[dict[str, Any]]:
+def detect(
+    events: Iterable[dict[str, Any]], output_format: str = "ocsf"
+) -> Iterable[dict[str, Any]]:
     if output_format not in OUTPUT_FORMATS:
         raise ContractError(
             f"unsupported output_format: {output_format}",
@@ -346,7 +350,9 @@ def detect(events: Iterable[dict[str, Any]], output_format: str = "ocsf") -> Ite
         if allowlist:
             if granter_authorized and not window_violation:
                 continue
-            allowlist_mode = "enforced-violation" if not granter_authorized else "enforced-window-only"
+            allowlist_mode = (
+                "enforced-violation" if not granter_authorized else "enforced-window-only"
+            )
         else:
             allowlist_mode = "fail-open"
         native = _build_native_finding(event, allowlist_mode, window_violation, window)
@@ -389,9 +395,17 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         description="Detect Slack admin/owner role grants by unauthorized identities or outside the change window."
     )
-    parser.add_argument("input", nargs="?", help="OCSF 1.8 User Access Management 3005 JSONL input. Defaults to stdin.")
-    parser.add_argument("--output", "-o", help="Detection Finding JSONL output. Defaults to stdout.")
-    parser.add_argument("--output-format", choices=OUTPUT_FORMATS, default="ocsf", help="Output format.")
+    parser.add_argument(
+        "input",
+        nargs="?",
+        help="OCSF 1.8 User Access Management 3005 JSONL input. Defaults to stdin.",
+    )
+    parser.add_argument(
+        "--output", "-o", help="Detection Finding JSONL output. Defaults to stdout."
+    )
+    parser.add_argument(
+        "--output-format", choices=OUTPUT_FORMATS, default="ocsf", help="Output format."
+    )
     args = parser.parse_args(argv)
 
     in_stream = sys.stdin if not args.input else open(args.input, "r", encoding="utf-8")

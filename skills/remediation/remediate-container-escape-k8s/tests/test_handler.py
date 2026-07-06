@@ -215,7 +215,13 @@ class TestDenyList:
         kube = _FakeKube()
         records = list(
             run(
-                [_finding(namespace="kube-system", target="deployments/kube-system/coredns", resource_name="coredns")],
+                [
+                    _finding(
+                        namespace="kube-system",
+                        target="deployments/kube-system/coredns",
+                        resource_name="coredns",
+                    )
+                ],
                 kube_client=kube,
             )
         )
@@ -228,7 +234,13 @@ class TestDenyList:
         audit = _FakeAudit()
         records = list(
             run(
-                [_finding(namespace="istio-system", target="deployments/istio-system/istiod", resource_name="istiod")],
+                [
+                    _finding(
+                        namespace="istio-system",
+                        target="deployments/istio-system/istiod",
+                        resource_name="istiod",
+                    )
+                ],
                 kube_client=kube,
                 apply=True,
                 audit=audit,
@@ -257,7 +269,9 @@ class TestDryRunDefault:
         assert record["manifest"]["spec"]["egress"] == []
 
     def test_pod_target_dry_run_tolerates_legacy_kube_client_without_node_lookup(self):
-        kube = _LegacyPodOnlyKube(pod_labels={("payments", "api-7d9b"): {"app": "api", "pod-template-hash": "7d9b"}})
+        kube = _LegacyPodOnlyKube(
+            pod_labels={("payments", "api-7d9b"): {"app": "api", "pod-template-hash": "7d9b"}}
+        )
         records = list(
             run(
                 [
@@ -387,9 +401,7 @@ class TestApplyAndReverify:
         assert kube.order == []
 
     def test_reverify_reports_verified_when_policy_matches(self):
-        kube = _FakeKube(
-            workload_selectors={("payments", "deployments", "api"): {"app": "api"}}
-        )
+        kube = _FakeKube(workload_selectors={("payments", "deployments", "api"): {"app": "api"}})
         plan = next(run([_finding()], kube_client=kube))
         kube.policies[("payments", plan["policy_name"])] = plan["manifest"]
         record = next(run([_finding()], kube_client=kube, reverify=True))
@@ -397,9 +409,7 @@ class TestApplyAndReverify:
         assert record["status"] == STATUS_VERIFIED
 
     def test_reverify_reports_drift_when_policy_selector_changes(self):
-        kube = _FakeKube(
-            workload_selectors={("payments", "deployments", "api"): {"app": "api"}}
-        )
+        kube = _FakeKube(workload_selectors={("payments", "deployments", "api"): {"app": "api"}})
         plan = next(run([_finding()], kube_client=kube))
         drifted = dict(plan["manifest"])
         drifted["spec"] = dict(plan["manifest"]["spec"])
@@ -412,9 +422,7 @@ class TestApplyAndReverify:
         """DRIFT outcome must emit BOTH a remediation_verification record
         AND an OCSF Detection Finding (class_uid 2004) so the drift flows
         through the same SIEM/SOAR pipeline as every other finding."""
-        kube = _FakeKube(
-            workload_selectors={("payments", "deployments", "api"): {"app": "api"}}
-        )
+        kube = _FakeKube(workload_selectors={("payments", "deployments", "api"): {"app": "api"}})
         # Quarantine policy is missing entirely → DRIFT
         records = list(run([_finding()], kube_client=kube, reverify=True))
         assert len(records) == 2
@@ -437,9 +445,7 @@ class TestApplyAndReverify:
         )
 
     def test_reverify_verified_path_does_not_emit_drift_finding(self):
-        kube = _FakeKube(
-            workload_selectors={("payments", "deployments", "api"): {"app": "api"}}
-        )
+        kube = _FakeKube(workload_selectors={("payments", "deployments", "api"): {"app": "api"}})
         plan = next(run([_finding()], kube_client=kube))
         kube.policies[("payments", plan["policy_name"])] = plan["manifest"]
         records = list(run([_finding()], kube_client=kube, reverify=True))
@@ -451,7 +457,11 @@ class TestApplyAndReverify:
         kube = _FakeKube(
             pod_labels={("payments", "api-7d9b"): {"app": "api"}},
             pod_nodes={("payments", "api-7d9b"): "node-a"},
-            pods={("payments", "api-7d9b"): {"metadata": {"name": "api-7d9b", "namespace": "payments"}}},
+            pods={
+                ("payments", "api-7d9b"): {
+                    "metadata": {"name": "api-7d9b", "namespace": "payments"}
+                }
+            },
             audit=audit,
         )
         finding = _finding(
@@ -488,7 +498,11 @@ class TestApplyAndReverify:
         kube = _FakeKube(
             pod_labels={("payments", "api-7d9b"): {"app": "api"}},
             pod_nodes={("payments", "api-7d9b"): "node-a"},
-            pods={("payments", "api-7d9b"): {"metadata": {"name": "api-7d9b", "namespace": "payments"}}},
+            pods={
+                ("payments", "api-7d9b"): {
+                    "metadata": {"name": "api-7d9b", "namespace": "payments"}
+                }
+            },
             node_pods={
                 "node-a": [
                     {"metadata": {"namespace": "payments", "name": "api-7d9b"}},
@@ -526,7 +540,9 @@ class TestApplyAndReverify:
         assert audit.writes[-1]["secondary_approver"] == "bob@example.com"
         assert kube.nodes["node-a"]["spec"]["unschedulable"] is True
 
-        verify = list(run([finding], kube_client=kube, reverify=True, action_mode=ACTION_NODE_DRAIN))
+        verify = list(
+            run([finding], kube_client=kube, reverify=True, action_mode=ACTION_NODE_DRAIN)
+        )
         assert len(verify) == 1
         assert verify[0]["status"] == STATUS_VERIFIED
 

@@ -229,10 +229,14 @@ def _qualifier(message: dict[str, Any]) -> dict[str, str]:
     qualifier = identifier.get("evaluationResultQualifier") or {}
     qualifier = qualifier if isinstance(qualifier, dict) else {}
     return {
-        "configRuleName": str(message.get("configRuleName") or qualifier.get("configRuleName") or ""),
+        "configRuleName": str(
+            message.get("configRuleName") or qualifier.get("configRuleName") or ""
+        ),
         "resourceType": str(message.get("resourceType") or qualifier.get("resourceType") or ""),
         "resourceId": str(message.get("resourceId") or qualifier.get("resourceId") or ""),
-        "orderingTimestamp": str(identifier.get("orderingTimestamp") or result.get("orderingTimestamp") or ""),
+        "orderingTimestamp": str(
+            identifier.get("orderingTimestamp") or result.get("orderingTimestamp") or ""
+        ),
     }
 
 
@@ -251,7 +255,9 @@ def _canonical_compliance(message: dict[str, Any]) -> dict[str, Any]:
     result = message.get("newEvaluationResult") or message.get("evaluationResult") or {}
     result = result if isinstance(result, dict) else {}
     qualifier = _qualifier(message)
-    status, status_id = _compliance_status(str(message.get("newComplianceType") or result.get("complianceType") or ""))
+    status, status_id = _compliance_status(
+        str(message.get("newComplianceType") or result.get("complianceType") or "")
+    )
     recorded_time = str(
         result.get("resultRecordedTime")
         or message.get("notificationCreationTime")
@@ -274,7 +280,9 @@ def _canonical_compliance(message: dict[str, Any]) -> dict[str, Any]:
         "finding_uid": event_uid,
         "message_type": str(message.get("messageType") or "ComplianceChangeNotification"),
         "time_ms": parse_ts_ms(recorded_time),
-        "severity_id": SEVERITY_HIGH if status == "FAIL" else (SEVERITY_LOW if status == "NOT_APPLICABLE" else SEVERITY_INFORMATIONAL),
+        "severity_id": SEVERITY_HIGH
+        if status == "FAIL"
+        else (SEVERITY_LOW if status == "NOT_APPLICABLE" else SEVERITY_INFORMATIONAL),
         "status": status,
         "status_id": status_id,
         "account_uid": account_id,
@@ -283,11 +291,19 @@ def _canonical_compliance(message: dict[str, Any]) -> dict[str, Any]:
         "resource_type": resource_type,
         "resource_id": resource_id,
         "title": f"AWS Config rule {rule_name} {status}".strip(),
-        "description": str(result.get("annotation") or f"{resource_type} {resource_id} evaluated as {status} by AWS Config."),
+        "description": str(
+            result.get("annotation")
+            or f"{resource_type} {resource_id} evaluated as {status} by AWS Config."
+        ),
         "result_recorded_time": recorded_time,
         "ordering_time": qualifier["orderingTimestamp"],
         "cloud": {"provider": "AWS", "account": {"uid": account_id}, "region": region},
-        "resource": {"uid": resource_id, "name": resource_id, "type": resource_type, "region": region},
+        "resource": {
+            "uid": resource_id,
+            "name": resource_id,
+            "type": resource_type,
+            "region": region,
+        },
         "raw": {"message": message},
     }
 
@@ -325,7 +341,11 @@ def _render_config_ocsf(canonical: dict[str, Any]) -> dict[str, Any]:
         "observables": [
             {"name": "aws.account", "type": "Other", "value": canonical["account_uid"]},
             {"name": "aws.region", "type": "Other", "value": canonical["region"]},
-            {"name": "aws.config.resource_type", "type": "Other", "value": canonical["resource_type"]},
+            {
+                "name": "aws.config.resource_type",
+                "type": "Other",
+                "value": canonical["resource_type"],
+            },
             {"name": "aws.config.resource_id", "type": "Other", "value": canonical["resource_id"]},
             {"name": "aws.config.change_type", "type": "Other", "value": canonical["change_type"]},
         ],
@@ -386,7 +406,11 @@ def _render_compliance_ocsf(canonical: dict[str, Any]) -> dict[str, Any]:
             {"name": "aws.account", "type": "Other", "value": canonical["account_uid"]},
             {"name": "aws.region", "type": "Other", "value": canonical["region"]},
             {"name": "aws.config.rule_name", "type": "Other", "value": canonical["rule_name"]},
-            {"name": "aws.config.resource_type", "type": "Other", "value": canonical["resource_type"]},
+            {
+                "name": "aws.config.resource_type",
+                "type": "Other",
+                "value": canonical["resource_type"],
+            },
             {"name": "aws.config.resource_id", "type": "Other", "value": canonical["resource_id"]},
             {"name": "aws.config.compliance_status", "type": "Other", "value": canonical["status"]},
         ],
@@ -397,7 +421,12 @@ def _render_compliance_ocsf(canonical: dict[str, Any]) -> dict[str, Any]:
             "result_recorded_time": canonical["result_recorded_time"],
             "ordering_time": canonical["ordering_time"],
         },
-        "unmapped": {"aws_config": {"message_type": canonical["message_type"], "raw_message": canonical["raw"]["message"]}},
+        "unmapped": {
+            "aws_config": {
+                "message_type": canonical["message_type"],
+                "raw_message": canonical["raw"]["message"],
+            }
+        },
     }
 
 
@@ -411,7 +440,11 @@ def _native(canonical: dict[str, Any]) -> dict[str, Any]:
 
 def convert_message(message: dict[str, Any], output_format: str = "ocsf") -> list[dict[str, Any]]:
     message_type = str(message.get("messageType") or "")
-    if message_type in _CONFIG_MESSAGE_TYPES or "configurationItem" in message or "configurationItems" in message:
+    if (
+        message_type in _CONFIG_MESSAGE_TYPES
+        or "configurationItem" in message
+        or "configurationItems" in message
+    ):
         items = message.get("configurationItems", message.get("configurationItem"))
         if isinstance(items, dict):
             items = [items]
@@ -420,11 +453,17 @@ def convert_message(message: dict[str, Any], output_format: str = "ocsf") -> lis
             for item in items:
                 if isinstance(item, dict):
                     canonical = _canonical_config_item(message, item)
-                    converted.append(_native(canonical) if output_format == "native" else _render_config_ocsf(canonical))
+                    converted.append(
+                        _native(canonical)
+                        if output_format == "native"
+                        else _render_config_ocsf(canonical)
+                    )
             return converted
     if message_type == "ComplianceChangeNotification" or "newEvaluationResult" in message:
         canonical = _canonical_compliance(message)
-        return [_native(canonical) if output_format == "native" else _render_compliance_ocsf(canonical)]
+        return [
+            _native(canonical) if output_format == "native" else _render_compliance_ocsf(canonical)
+        ]
     if {"resourceType", "resourceId", "configurationItemCaptureTime"} <= set(message):
         canonical = _canonical_config_item({"messageType": "ConfigurationItem"}, message)
         return [_native(canonical) if output_format == "native" else _render_config_ocsf(canonical)]
@@ -443,7 +482,9 @@ def _unwrap(obj: Any) -> Iterable[dict[str, Any]]:
         yield from _unwrap(obj["Message"])
         return
     detail = obj.get("detail")
-    if isinstance(detail, dict) and ("configurationItem" in detail or "newEvaluationResult" in detail):
+    if isinstance(detail, dict) and (
+        "configurationItem" in detail or "newEvaluationResult" in detail
+    ):
         yield detail
         return
     if "Records" in obj and isinstance(obj["Records"], list):
@@ -471,7 +512,9 @@ def iter_raw_messages(stream: Iterable[str]) -> Iterable[dict[str, Any]]:
         try:
             yield from _unwrap(json.loads(raw_line))
         except json.JSONDecodeError as exc:
-            print(f"[{SKILL_NAME}] skipping line {lineno}: json parse failed: {exc}", file=sys.stderr)
+            print(
+                f"[{SKILL_NAME}] skipping line {lineno}: json parse failed: {exc}", file=sys.stderr
+            )
 
 
 def ingest(stream: Iterable[str], output_format: str = "ocsf") -> Iterable[dict[str, Any]]:
@@ -482,11 +525,15 @@ def ingest(stream: Iterable[str], output_format: str = "ocsf") -> Iterable[dict[
             yield from convert_message(message, output_format=output_format)
         except Exception as exc:
             marker = message.get("messageType") or message.get("resourceId") or "?"
-            print(f"[{SKILL_NAME}] skipping message {marker}: convert error: {exc}", file=sys.stderr)
+            print(
+                f"[{SKILL_NAME}] skipping message {marker}: convert error: {exc}", file=sys.stderr
+            )
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Convert AWS Config notifications to OCSF 1.8 JSONL.")
+    parser = argparse.ArgumentParser(
+        description="Convert AWS Config notifications to OCSF 1.8 JSONL."
+    )
     parser.add_argument("input", nargs="?", help="Input JSON/JSONL file. Defaults to stdin.")
     parser.add_argument("--output", "-o", help="Output JSONL file. Defaults to stdout.")
     parser.add_argument("--output-format", choices=OUTPUT_FORMATS, default="ocsf")

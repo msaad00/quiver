@@ -157,7 +157,9 @@ def _process_entry(entry: dict, *, dry_run: bool, context: Any | None = None) ->
             actions_taken=[],
             error=str(exc),
         )
-        _write_audit(_build_audit_record(entry, [], STATUS_REFUSED, error=str(exc), context=context))
+        _write_audit(
+            _build_audit_record(entry, [], STATUS_REFUSED, error=str(exc), context=context)
+        )
         return result
     except ValueError as exc:
         logger.warning("Invalid worker payload: %s", exc)
@@ -170,9 +172,7 @@ def _process_entry(entry: dict, *, dry_run: bool, context: Any | None = None) ->
             actions_taken=[],
             error=f"Invalid worker payload: {exc}",
         )
-        _write_audit(
-            _build_audit_record(entry, [], STATUS_ERROR, error=str(exc), context=context)
-        )
+        _write_audit(_build_audit_record(entry, [], STATUS_ERROR, error=str(exc), context=context))
         return result
 
     # HITL gate: --apply path must have both env vars; --dry-run is exempt.
@@ -188,11 +188,16 @@ def _process_entry(entry: dict, *, dry_run: bool, context: Any | None = None) ->
                 actions_taken=[],
                 error=gate_error,
             )
-            _write_audit(_build_audit_record(entry, [], STATUS_ERROR, error=gate_error, context=context))
+            _write_audit(
+                _build_audit_record(entry, [], STATUS_ERROR, error=gate_error, context=context)
+            )
             return result
 
     if dry_run:
-        plan = [{"step": name, "status": RemediationStatus.DRY_RUN.value} for name, _ in steps_module.remediation_steps()]
+        plan = [
+            {"step": name, "status": RemediationStatus.DRY_RUN.value}
+            for name, _ in steps_module.remediation_steps()
+        ]
         return WorkerResult(
             email=email,
             principal_id=principal_id,
@@ -260,7 +265,9 @@ def _process_entry(entry: dict, *, dry_run: bool, context: Any | None = None) ->
     except Exception as exc:  # noqa: BLE001 — top-level capture for audit
         logger.exception("Remediation failed for %s", principal_id)
         _save_checkpoint(entry, actions_taken, completed_steps, status=STATUS_ERROR, error=str(exc))
-        _write_audit(_build_audit_record(entry, actions_taken, STATUS_ERROR, error=str(exc), context=context))
+        _write_audit(
+            _build_audit_record(entry, actions_taken, STATUS_ERROR, error=str(exc), context=context)
+        )
         return WorkerResult(
             email=email,
             principal_id=principal_id,
@@ -544,8 +551,12 @@ def _build_argparser() -> argparse.ArgumentParser:
     parser.add_argument("manifest", help="Path to local manifest JSON or `gs://bucket/object` URI")
     mode = parser.add_mutually_exclusive_group(required=True)
     mode.add_argument("--dry-run", action="store_true", help="Plan-only, no GCP calls")
-    mode.add_argument("--apply", action="store_true", help="Execute the teardown (HITL env vars required)")
-    mode.add_argument("--reverify", action="store_true", help="Re-read and emit verification records")
+    mode.add_argument(
+        "--apply", action="store_true", help="Execute the teardown (HITL env vars required)"
+    )
+    mode.add_argument(
+        "--reverify", action="store_true", help="Re-read and emit verification records"
+    )
     return parser
 
 

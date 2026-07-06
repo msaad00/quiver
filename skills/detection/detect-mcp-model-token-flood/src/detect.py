@@ -276,7 +276,9 @@ def detect(
         n = _normalize_event(event)
         if n is not None:
             normalized.append(n)
-    normalized.sort(key=lambda e: (e.get("user_uid", ""), e.get("model_name", ""), e.get("time_ms", 0)))
+    normalized.sort(
+        key=lambda e: (e.get("user_uid", ""), e.get("model_name", ""), e.get("time_ms", 0))
+    )
 
     # Group by (user, model)
     groups: dict[tuple[str, str], list[dict[str, Any]]] = {}
@@ -321,7 +323,9 @@ def load_jsonl(stream: Iterable[str]) -> Iterable[dict[str, Any]]:
         try:
             obj = json.loads(line)
         except json.JSONDecodeError as exc:
-            print(f"[{SKILL_NAME}] skipping line {lineno}: json parse failed: {exc}", file=sys.stderr)
+            print(
+                f"[{SKILL_NAME}] skipping line {lineno}: json parse failed: {exc}", file=sys.stderr
+            )
             continue
         if isinstance(obj, dict):
             yield obj

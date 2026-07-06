@@ -159,4 +159,8 @@ def handle_pubsub_event(event: dict[str, Any], _context: Any) -> dict[str, int]:
     if to_publish:
         _publish_findings(publisher, topic, to_publish)
 
-    return {"messages_processed": len(input_lines), "published": len(to_publish), "duplicates": duplicates}
+    return {
+        "messages_processed": len(input_lines),
+        "published": len(to_publish),
+        "duplicates": duplicates,
+    }

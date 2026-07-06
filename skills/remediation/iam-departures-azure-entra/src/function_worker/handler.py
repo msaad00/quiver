@@ -89,7 +89,9 @@ class ProtectedPrincipalError(ValueError):
     """Raised when a remediation target matches the protected-principal deny list."""
 
 
-def is_protected_user(*, upn: str, object_id: str, extra_object_ids: Iterable[str] = ()) -> tuple[bool, str]:
+def is_protected_user(
+    *, upn: str, object_id: str, extra_object_ids: Iterable[str] = ()
+) -> tuple[bool, str]:
     """True (with reason) if this UPN/objectId is on the deny list."""
     upn_lc = (upn or "").strip().lower()
     if upn_lc:
@@ -358,6 +360,7 @@ class EntraRemediationClient:
         from urllib import parse as urllib_parse
 
         from azure.identity import ClientSecretCredential
+
         credential = ClientSecretCredential(
             tenant_id=self.tenant_id, client_id=self.client_id, client_secret=self.client_secret
         )
@@ -391,6 +394,7 @@ class EntraRemediationClient:
         from urllib import parse as urllib_parse
 
         from azure.identity import ClientSecretCredential
+
         credential = ClientSecretCredential(
             tenant_id=self.tenant_id, client_id=self.client_id, client_secret=self.client_secret
         )
@@ -436,7 +440,9 @@ class WorkerConfig:
 
     @classmethod
     def from_args(cls, *, apply: bool, reverify: bool, hard_delete: bool) -> "WorkerConfig":
-        return cls(apply=apply, reverify=reverify, hard_delete=hard_delete, dry_run=not (apply or reverify))
+        return cls(
+            apply=apply, reverify=reverify, hard_delete=hard_delete, dry_run=not (apply or reverify)
+        )
 
 
 def remediate_one(
@@ -464,7 +470,9 @@ def remediate_one(
     # Validate the shape one more time as a defense-in-depth gate; the
     # parser is the primary check.
     if not upn or not object_id or not ENTRA_OBJECT_ID_RE.fullmatch(object_id):
-        return _error_result(entry, status="error", error="Invalid entry: upn / object_id missing or malformed")
+        return _error_result(
+            entry, status="error", error="Invalid entry: upn / object_id missing or malformed"
+        )
 
     protected, why = is_protected_user(
         upn=upn, object_id=object_id, extra_object_ids=extra_protected_object_ids
@@ -496,10 +504,14 @@ def remediate_one(
     for step_name, step_fn in remediation_steps(hard_delete=config.hard_delete):
         # BEFORE write
         audit.record(
-            upn=upn, object_id=object_id, tenant_id=tenant_id,
-            step=step_name, status="in_progress",
+            upn=upn,
+            object_id=object_id,
+            tenant_id=tenant_id,
+            step=step_name,
+            status="in_progress",
             detail=f"about to run step `{step_name}`",
-            incident_id=incident_id, approver=approver,
+            incident_id=incident_id,
+            approver=approver,
             actions_so_far=actions,
         )
         try:
@@ -507,9 +519,14 @@ def remediate_one(
         except Exception as exc:  # noqa: BLE001
             logger.exception("Step %s failed for %s", step_name, object_id)
             audit.record(
-                upn=upn, object_id=object_id, tenant_id=tenant_id,
-                step=step_name, status="failure", detail=str(exc),
-                incident_id=incident_id, approver=approver,
+                upn=upn,
+                object_id=object_id,
+                tenant_id=tenant_id,
+                step=step_name,
+                status="failure",
+                detail=str(exc),
+                incident_id=incident_id,
+                approver=approver,
                 actions_so_far=actions,
             )
             return {
@@ -524,10 +541,14 @@ def remediate_one(
             }
         completed.append(step_name)
         audit.record(
-            upn=upn, object_id=object_id, tenant_id=tenant_id,
-            step=step_name, status="success",
+            upn=upn,
+            object_id=object_id,
+            tenant_id=tenant_id,
+            step=step_name,
+            status="success",
             detail=f"completed step `{step_name}`",
-            incident_id=incident_id, approver=approver,
+            incident_id=incident_id,
+            approver=approver,
             actions_so_far=actions,
         )
 
@@ -550,7 +571,9 @@ def _reverify_one(entry: dict[str, Any], *, client: Any) -> dict[str, Any]:
     object_id = str(entry.get("object_id") or "")
     try:
         # Two acceptable terminal states: user gone (hard-deleted) OR user disabled.
-        present = client.user_exists(object_id=object_id) if hasattr(client, "user_exists") else None
+        present = (
+            client.user_exists(object_id=object_id) if hasattr(client, "user_exists") else None
+        )
     except Exception as exc:  # noqa: BLE001
         return {
             "upn": upn,
@@ -641,7 +664,9 @@ def handler(event: dict[str, Any], context: Any | None = None) -> dict[str, Any]
     reverify_flag = bool(event.get("reverify", False)) if isinstance(event, dict) else False
     hard_delete_flag = bool(event.get("hard_delete", False)) if isinstance(event, dict) else False
 
-    config = WorkerConfig.from_args(apply=apply_flag, reverify=reverify_flag, hard_delete=hard_delete_flag)
+    config = WorkerConfig.from_args(
+        apply=apply_flag, reverify=reverify_flag, hard_delete=hard_delete_flag
+    )
     incident_id = os.environ.get("IAM_DEPARTURES_AZURE_INCIDENT_ID", "").strip()
     approver = os.environ.get("IAM_DEPARTURES_AZURE_APPROVER", "").strip()
     if config.apply:
@@ -693,10 +718,18 @@ def main(argv: list[str] | None = None) -> int:
     operators and CI to exercise the worker). For --apply, both HITL env
     vars must be set or the CLI returns 2 without firing anything.
     """
-    parser = argparse.ArgumentParser(description="Run the Entra IAM departures worker against a manifest file.")
-    parser.add_argument("manifest", help="Path to a manifest JSON file (see examples/manifest.json).")
-    parser.add_argument("--apply", action="store_true", help="Run the destructive teardown after HITL gates pass.")
-    parser.add_argument("--reverify", action="store_true", help="Read-only verification (no writes).")
+    parser = argparse.ArgumentParser(
+        description="Run the Entra IAM departures worker against a manifest file."
+    )
+    parser.add_argument(
+        "manifest", help="Path to a manifest JSON file (see examples/manifest.json)."
+    )
+    parser.add_argument(
+        "--apply", action="store_true", help="Run the destructive teardown after HITL gates pass."
+    )
+    parser.add_argument(
+        "--reverify", action="store_true", help="Read-only verification (no writes)."
+    )
     parser.add_argument(
         "--hard-delete",
         action="store_true",
@@ -712,7 +745,9 @@ def main(argv: list[str] | None = None) -> int:
         print("--hard-delete is only valid with --apply", file=sys.stderr)
         return 2
 
-    config = WorkerConfig.from_args(apply=args.apply, reverify=args.reverify, hard_delete=args.hard_delete)
+    config = WorkerConfig.from_args(
+        apply=args.apply, reverify=args.reverify, hard_delete=args.hard_delete
+    )
     incident_id = ""
     approver = ""
     audit: DualAuditWriter | None = None

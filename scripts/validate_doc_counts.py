@@ -8,6 +8,7 @@ when you add a new hard-coded count.
 
 Exit codes: 0 on match, 1 on drift.
 """
+
 from __future__ import annotations
 
 import json
@@ -52,7 +53,9 @@ def check(path: Path, pattern: str, expected: int, label: str) -> str | None:
     text = path.read_text()
     m = re.search(pattern, text)
     if not m:
-        return f"{path.relative_to(REPO_ROOT)}: pattern not found for {label!r} (pattern={pattern!r})"
+        return (
+            f"{path.relative_to(REPO_ROOT)}: pattern not found for {label!r} (pattern={pattern!r})"
+        )
     got = int(m.group(1))
     if got != expected:
         return (
@@ -86,12 +89,42 @@ def main() -> int:
         check(readme, r"\*\*Output\*\*\s+\|\s+(\d+)", layers["output"], "README output"),
         check(readme, r"\*\*Sources\*\*\s+\|\s+(\d+)", layers["sources"], "README sources"),
         check(skill_index, r"The same (\d+) skill bundles", total, "SKILL_INDEX total"),
-        check(agents, r"`ingestion/`\*\*:\s+(\d+)\s+ingest skills", layers["ingestion"], "AGENTS ingestion"),
-        check(agents, r"ingest skills plus (\d+)\s+source adapters", layers["sources"], "AGENTS sources"),
-        check(agents, r"`discovery/`\*\*:\s+(\d+)\s+read-only", layers["discovery"], "AGENTS discovery"),
-        check(agents, r"`detection/`\*\*:\s+(\d+)\s+deterministic", layers["detection"], "AGENTS detection"),
-        check(agents, r"`evaluation/`\*\*:\s+(\d+)\s+posture", layers["evaluation"], "AGENTS evaluation"),
-        check(agents, r"`remediation/`\*\*:\s+(\d+)\s+HITL", layers["remediation"], "AGENTS remediation"),
+        check(
+            agents,
+            r"`ingestion/`\*\*:\s+(\d+)\s+ingest skills",
+            layers["ingestion"],
+            "AGENTS ingestion",
+        ),
+        check(
+            agents,
+            r"ingest skills plus (\d+)\s+source adapters",
+            layers["sources"],
+            "AGENTS sources",
+        ),
+        check(
+            agents,
+            r"`discovery/`\*\*:\s+(\d+)\s+read-only",
+            layers["discovery"],
+            "AGENTS discovery",
+        ),
+        check(
+            agents,
+            r"`detection/`\*\*:\s+(\d+)\s+deterministic",
+            layers["detection"],
+            "AGENTS detection",
+        ),
+        check(
+            agents,
+            r"`evaluation/`\*\*:\s+(\d+)\s+posture",
+            layers["evaluation"],
+            "AGENTS evaluation",
+        ),
+        check(
+            agents,
+            r"`remediation/`\*\*:\s+(\d+)\s+HITL",
+            layers["remediation"],
+            "AGENTS remediation",
+        ),
         check(agents, r"`output/`\*\*:\s+(\d+)\s+append-only", layers["output"], "AGENTS output"),
         check(
             mappings,
@@ -100,8 +133,15 @@ def main() -> int:
             "FRAMEWORK_MAPPINGS ATT&CK",
         ),
         check(architecture, r"repo ships \*\*(\d+) skills\*\*", total, "ARCHITECTURE total"),
-        check(architecture, r"(\d+) ingest skills plus", layers["ingestion"], "ARCHITECTURE ingest"),
-        check(architecture, r"plus (\d+) `source-\*` adapters", layers["sources"], "ARCHITECTURE sources"),
+        check(
+            architecture, r"(\d+) ingest skills plus", layers["ingestion"], "ARCHITECTURE ingest"
+        ),
+        check(
+            architecture,
+            r"plus (\d+) `source-\*` adapters",
+            layers["sources"],
+            "ARCHITECTURE sources",
+        ),
         check(architecture, r"(\d+) discover", layers["discovery"], "ARCHITECTURE discover"),
         check(architecture, r"(\d+) detect", layers["detection"], "ARCHITECTURE detect"),
         check(architecture, r"(\d+) evaluate", layers["evaluation"], "ARCHITECTURE evaluate"),
@@ -111,7 +151,10 @@ def main() -> int:
     ]
     errors: list[str] = [e for e in candidates if e is not None]
     if errors:
-        print("Doc-count drift detected (source of truth: docs/framework-coverage.json):", file=sys.stderr)
+        print(
+            "Doc-count drift detected (source of truth: docs/framework-coverage.json):",
+            file=sys.stderr,
+        )
         for e in errors:
             print(f"  - {e}", file=sys.stderr)
         print(

@@ -67,11 +67,16 @@ def test_fires_on_model_safetensors_get_object():
     attacks = finding["finding_info"]["attacks"]
     assert any(item["technique_uid"] == "T1530" for item in attacks)
     assert any(item["technique_uid"] == "AML.T0035" for item in attacks)
-    assert any(obs["name"] == "object.key" and obs["value"].endswith("model.safetensors") for obs in finding["observables"])
+    assert any(
+        obs["name"] == "object.key" and obs["value"].endswith("model.safetensors")
+        for obs in finding["observables"]
+    )
 
 
 def test_native_output_includes_bucket_key_and_match():
-    findings = list(MODULE.detect([_event(key="training/run-42/pytorch_model.bin")], output_format="native"))
+    findings = list(
+        MODULE.detect([_event(key="training/run-42/pytorch_model.bin")], output_format="native")
+    )
     assert len(findings) == 1
     finding = findings[0]
     assert finding["rule"] == "aws-model-artifact-download"

@@ -249,7 +249,9 @@ def benchmark_metadata() -> dict[str, Any]:
     }
 
 
-def load_records(path: str | Path | None, stream: Iterable[str] | None = None) -> list[dict[str, Any]]:
+def load_records(
+    path: str | Path | None, stream: Iterable[str] | None = None
+) -> list[dict[str, Any]]:
     if path:
         text = Path(path).read_text(encoding="utf-8")
     elif stream is not None:
@@ -484,7 +486,12 @@ def _aggregate_resource_check(
     failed = [_resource_label(item) for item in items if not predicate(item.configuration, item)]
     if failed:
         return _finding(control, STATUS_FAIL, f"{fail_detail}: {', '.join(failed)}", failed)
-    return _finding(control, STATUS_PASS, f"{len(items)} resource(s) passed", [_resource_label(i) for i in items])
+    return _finding(
+        control,
+        STATUS_PASS,
+        f"{len(items)} resource(s) passed",
+        [_resource_label(i) for i in items],
+    )
 
 
 def _has_s3_encryption(config: dict[str, Any], _item: ConfigItem) -> bool:
@@ -504,7 +511,9 @@ def _has_s3_logging(config: dict[str, Any], _item: ConfigItem) -> bool:
 
 
 def _has_public_access_block(config: dict[str, Any], _item: ConfigItem) -> bool:
-    pab = _dict(config, "publicAccessBlockConfiguration") or _dict(config, "PublicAccessBlockConfiguration")
+    pab = _dict(config, "publicAccessBlockConfiguration") or _dict(
+        config, "PublicAccessBlockConfiguration"
+    )
     required = ("blockpublicacls", "ignorepublicacls", "blockpublicpolicy", "restrictpublicbuckets")
     return bool(pab) and all(pab.get(key) is True for key in required)
 
@@ -587,8 +596,15 @@ def _check_vpc_flow_logs(control: Control, items: list[ConfigItem]) -> Finding:
                 flowlog_vpc_ids.add(str(rel["resource_id"]))
     failed = [_resource_label(vpc) for vpc in vpcs if vpc.resource_id not in flowlog_vpc_ids]
     if failed:
-        return _finding(control, STATUS_FAIL, f"VPCs without flow log evidence: {', '.join(failed)}", failed)
-    return _finding(control, STATUS_PASS, f"{len(vpcs)} VPC(s) have flow log evidence", [_resource_label(v) for v in vpcs])
+        return _finding(
+            control, STATUS_FAIL, f"VPCs without flow log evidence: {', '.join(failed)}", failed
+        )
+    return _finding(
+        control,
+        STATUS_PASS,
+        f"{len(vpcs)} VPC(s) have flow log evidence",
+        [_resource_label(v) for v in vpcs],
+    )
 
 
 def _check_guardduty(control: Control, items: list[ConfigItem]) -> Finding:
@@ -604,15 +620,30 @@ def _check_guardduty(control: Control, items: list[ConfigItem]) -> Finding:
         if not enabled:
             failed.append(_resource_label(detector))
     if failed:
-        return _finding(control, STATUS_FAIL, f"Disabled GuardDuty detector evidence: {', '.join(failed)}", failed)
-    return _finding(control, STATUS_PASS, f"{len(detectors)} GuardDuty detector(s) enabled", [_resource_label(d) for d in detectors])
+        return _finding(
+            control,
+            STATUS_FAIL,
+            f"Disabled GuardDuty detector evidence: {', '.join(failed)}",
+            failed,
+        )
+    return _finding(
+        control,
+        STATUS_PASS,
+        f"{len(detectors)} GuardDuty detector(s) enabled",
+        [_resource_label(d) for d in detectors],
+    )
 
 
 def _check_security_hub(control: Control, items: list[ConfigItem]) -> Finding:
     hubs = _items_of(items, "AWS::SecurityHub::Hub")
     if not hubs:
         return _finding(control, STATUS_FAIL, "No Security Hub hub evidence in input", [])
-    return _finding(control, STATUS_PASS, f"{len(hubs)} Security Hub hub resource(s) present", [_resource_label(h) for h in hubs])
+    return _finding(
+        control,
+        STATUS_PASS,
+        f"{len(hubs)} Security Hub hub resource(s) present",
+        [_resource_label(h) for h in hubs],
+    )
 
 
 def _apply_config_rule_evidence(
@@ -623,7 +654,9 @@ def _apply_config_rule_evidence(
         return finding
     failed = [c for c in compliance if c.status.upper() == STATUS_FAIL]
     if failed:
-        resources = [f"{c.resource_type}:{c.resource_id}:{c.region}" for c in failed if c.resource_id]
+        resources = [
+            f"{c.resource_type}:{c.resource_id}:{c.region}" for c in failed if c.resource_id
+        ]
         finding.status = STATUS_FAIL
         finding.detail = (
             f"{finding.detail}; " if finding.detail else ""
@@ -633,8 +666,12 @@ def _apply_config_rule_evidence(
     passed = [c for c in compliance if c.status.upper() == STATUS_PASS]
     if finding.status == STATUS_NA and passed:
         finding.status = STATUS_PASS
-        finding.detail = f"AWS Config rule evidence passed: {', '.join(c.rule_name for c in passed)}"
-        finding.resources = [f"{c.resource_type}:{c.resource_id}:{c.region}" for c in passed if c.resource_id]
+        finding.detail = (
+            f"AWS Config rule evidence passed: {', '.join(c.rule_name for c in passed)}"
+        )
+        finding.resources = [
+            f"{c.resource_type}:{c.resource_id}:{c.region}" for c in passed if c.resource_id
+        ]
     return finding
 
 
@@ -725,7 +762,9 @@ def run_benchmark(records: list[dict[str, Any]], *, control_id: str | None = Non
             finding = _check_security_hub(control, items)
         else:  # pragma: no cover - keeps future control additions explicit
             finding = _finding(control, STATUS_ERROR, "Control not wired", [])
-        findings.append(_apply_config_rule_evidence(finding, compliance.get(control.control_id, [])))
+        findings.append(
+            _apply_config_rule_evidence(finding, compliance.get(control.control_id, []))
+        )
     return findings
 
 
@@ -739,10 +778,14 @@ def print_summary(findings: list[Finding]) -> None:
     print(f"{'=' * 72}\n")
     icon = {STATUS_PASS: "+", STATUS_FAIL: "x", STATUS_NA: "-", STATUS_ERROR: "?"}
     for finding in findings:
-        print(f"  [{icon.get(finding.status, '?')}] {finding.control_id:4s} [{finding.severity:8s}] {finding.title}")
+        print(
+            f"  [{icon.get(finding.status, '?')}] {finding.control_id:4s} [{finding.severity:8s}] {finding.title}"
+        )
         if finding.status != STATUS_PASS:
             print(f"      {finding.detail}")
-    print(f"\n  Total: {len(findings)} | PASS {counts[STATUS_PASS]} | FAIL {counts[STATUS_FAIL]} | NA {counts[STATUS_NA]}")
+    print(
+        f"\n  Total: {len(findings)} | PASS {counts[STATUS_PASS]} | FAIL {counts[STATUS_FAIL]} | NA {counts[STATUS_NA]}"
+    )
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -776,7 +819,9 @@ def main(argv: list[str] | None = None) -> int:
     else:
         print_summary(findings)
 
-    high_fails = [f for f in findings if f.status == STATUS_FAIL and f.severity in {"HIGH", "CRITICAL"}]
+    high_fails = [
+        f for f in findings if f.status == STATUS_FAIL and f.severity in {"HIGH", "CRITICAL"}
+    ]
     return 1 if high_fails else 0
 
 

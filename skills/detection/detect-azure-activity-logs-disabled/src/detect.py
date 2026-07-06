@@ -123,7 +123,9 @@ def _finding_uid(event_uid: str, resource_id: str, time_ms: int) -> str:
     return f"aad-{hashlib.sha256(material.encode('utf-8')).hexdigest()[:16]}"
 
 
-def _build_native_finding(*, event: dict[str, Any], resource_id: str, setting_name: str) -> dict[str, Any]:
+def _build_native_finding(
+    *, event: dict[str, Any], resource_id: str, setting_name: str
+) -> dict[str, Any]:
     time_ms = int(event.get("time") or datetime.now(timezone.utc).timestamp() * 1000)
     event_uid = str((event.get("metadata") or {}).get("uid") or "")
     finding_uid = _finding_uid(event_uid, resource_id, time_ms)
@@ -214,7 +216,9 @@ def _to_ocsf(native: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def detect(events: Iterable[dict[str, Any]], *, output_format: str = "ocsf") -> Iterator[dict[str, Any]]:
+def detect(
+    events: Iterable[dict[str, Any]], *, output_format: str = "ocsf"
+) -> Iterator[dict[str, Any]]:
     if output_format not in OUTPUT_FORMATS:
         raise ContractError(
             f"unsupported output_format `{output_format}`",
@@ -245,7 +249,9 @@ def detect(events: Iterable[dict[str, Any]], *, output_format: str = "ocsf") -> 
             )
             continue
         setting_name = _setting_name(resource_id)
-        native = _build_native_finding(event=event, resource_id=resource_id, setting_name=setting_name)
+        native = _build_native_finding(
+            event=event, resource_id=resource_id, setting_name=setting_name
+        )
         yield native if output_format == "native" else _to_ocsf(native)
 
 

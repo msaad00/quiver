@@ -118,18 +118,14 @@ class TestDetection:
     def test_cross_account_fires(self, monkeypatch) -> None:
         # same region, different account; allowlist enforced and empty of the dest
         monkeypatch.setenv(AUTHORIZED_BUCKETS_ENV, "approved-dr-bucket")
-        findings = list(
-            detect([_event(dest_region="us-east-1", dest_account="999988887777")])
-        )
+        findings = list(detect([_event(dest_region="us-east-1", dest_account="999988887777")]))
         assert len(findings) == 1
         assert findings[0]["evidence"]["boundary"] == "cross-account"
         assert findings[0]["evidence"]["allowlist_mode"] == "enforced"
 
     def test_cross_account_and_region_classification(self, monkeypatch) -> None:
         monkeypatch.setenv(AUTHORIZED_BUCKETS_ENV, "approved-dr-bucket")
-        findings = list(
-            detect([_event(dest_account="999988887777", dest_region="eu-west-1")])
-        )
+        findings = list(detect([_event(dest_account="999988887777", dest_region="eu-west-1")]))
         assert len(findings) == 1
         assert findings[0]["evidence"]["boundary"] == "cross-account-and-region"
 

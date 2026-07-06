@@ -68,9 +68,7 @@ DISPATCH = importlib.util.module_from_spec(DISPATCH_SPEC)
 sys.modules["dispatch"] = DISPATCH
 DISPATCH_SPEC.loader.exec_module(DISPATCH)
 
-TRANSPORT_SPEC = importlib.util.spec_from_file_location(
-    "cloud_security_sse_test", TRANSPORT_PATH
-)
+TRANSPORT_SPEC = importlib.util.spec_from_file_location("cloud_security_sse_test", TRANSPORT_PATH)
 assert TRANSPORT_SPEC and TRANSPORT_SPEC.loader
 TRANSPORT = importlib.util.module_from_spec(TRANSPORT_SPEC)
 sys.modules[TRANSPORT_SPEC.name] = TRANSPORT
@@ -130,6 +128,7 @@ def _stdio_call(tool: str, args: list[str], stdin_text: str) -> dict:
         cwd=REPO_ROOT,
     )
     try:
+
         def send(payload):
             body = json.dumps(payload).encode("utf-8")
             assert proc.stdin is not None
@@ -153,15 +152,17 @@ def _stdio_call(tool: str, args: list[str], stdin_text: str) -> dict:
         send({"jsonrpc": "2.0", "id": 1, "method": "initialize", "params": {}})
         read()
         send({"jsonrpc": "2.0", "method": "notifications/initialized", "params": {}})
-        send({
-            "jsonrpc": "2.0",
-            "id": 2,
-            "method": "tools/call",
-            "params": {
-                "name": tool,
-                "arguments": {"args": args, "input": stdin_text},
-            },
-        })
+        send(
+            {
+                "jsonrpc": "2.0",
+                "id": 2,
+                "method": "tools/call",
+                "params": {
+                    "name": tool,
+                    "arguments": {"args": args, "input": stdin_text},
+                },
+            }
+        )
         return read()
     finally:
         proc.terminate()
@@ -284,7 +285,9 @@ class TestStdioSseParity:
 
 
 def _read_audit_records(path: Path) -> list[dict]:
-    return [json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line.strip()]
+    return [
+        json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line.strip()
+    ]
 
 
 class TestAuditChain:
@@ -322,13 +325,15 @@ class TestAuditChain:
         # Synthetic stdio audit event — bypass tool subprocess so the
         # test stays hermetic. The shape matches `_call_tool` enough for
         # the verifier; in production the full event is richer.
-        SERVER._emit_audit_event({
-            "event": "mcp_tool_call",
-            "transport": "stdio",
-            "tool": "synthetic-stdio",
-            "result": "success",
-            "correlation_id": "stdio-1",
-        })
+        SERVER._emit_audit_event(
+            {
+                "event": "mcp_tool_call",
+                "transport": "stdio",
+                "tool": "synthetic-stdio",
+                "result": "success",
+                "correlation_id": "stdio-1",
+            }
+        )
 
         # Now the SSE call goes into the same sink. Reuse the cached
         # sink instance — that's the production behaviour: one process,

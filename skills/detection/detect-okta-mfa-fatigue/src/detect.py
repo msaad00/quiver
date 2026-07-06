@@ -89,8 +89,14 @@ def _event_time(event: dict[str, Any]) -> int:
 def _metadata_uid(event: dict[str, Any]) -> str:
     return str(event.get("event_uid") or (event.get("metadata") or {}).get("uid") or "")
 
+
 def _okta_event_type(event: dict[str, Any]) -> str:
-    return str(event.get("event_type") or (((event.get("unmapped") or {}).get("okta")) or {}).get("event_type") or "")
+    return str(
+        event.get("event_type")
+        or (((event.get("unmapped") or {}).get("okta")) or {}).get("event_type")
+        or ""
+    )
+
 
 def _source_skill(event: dict[str, Any]) -> str:
     if event.get("source_skill"):
@@ -201,7 +207,9 @@ def _finding_uid(user_uid: str, first_uid: str, last_uid: str) -> str:
     return f"det-okta-mfa-fatigue-{hashlib.sha256(material.encode('utf-8')).hexdigest()[:16]}"
 
 
-def _build_native_finding(user_uid: str, user_name: str, burst: list[dict[str, Any]]) -> dict[str, Any]:
+def _build_native_finding(
+    user_uid: str, user_name: str, burst: list[dict[str, Any]]
+) -> dict[str, Any]:
     first = burst[0]
     last = burst[-1]
     first_uid = first["event_uid"]
@@ -210,8 +218,20 @@ def _build_native_finding(user_uid: str, user_name: str, burst: list[dict[str, A
 
     challenge_count = sum(1 for item in burst if item["kind"] == "challenge")
     denial_count = sum(1 for item in burst if item["kind"] == "deny")
-    source_ips = sorted({str((item["src_endpoint"] or {}).get("ip") or "") for item in burst if (item["src_endpoint"] or {}).get("ip")})
-    session_uids = sorted({str((item["session"] or {}).get("uid") or "") for item in burst if (item["session"] or {}).get("uid")})
+    source_ips = sorted(
+        {
+            str((item["src_endpoint"] or {}).get("ip") or "")
+            for item in burst
+            if (item["src_endpoint"] or {}).get("ip")
+        }
+    )
+    session_uids = sorted(
+        {
+            str((item["session"] or {}).get("uid") or "")
+            for item in burst
+            if (item["session"] or {}).get("uid")
+        }
+    )
     event_uids = [item["event_uid"] for item in burst]
     window_ms = _window_ms()
 
@@ -228,7 +248,9 @@ def _build_native_finding(user_uid: str, user_name: str, burst: list[dict[str, A
         {"name": "denial.count", "type": "Other", "value": str(denial_count)},
     ]
     observables.extend({"name": "src.ip", "type": "IP Address", "value": ip} for ip in source_ips)
-    observables.extend({"name": "session.uid", "type": "Other", "value": uid} for uid in session_uids)
+    observables.extend(
+        {"name": "session.uid", "type": "Other", "value": uid} for uid in session_uids
+    )
 
     return {
         "schema_mode": "native",
@@ -321,7 +343,9 @@ def coverage_metadata() -> dict[str, Any]:
         "attack_coverage": {
             "okta": {
                 "principal_types": ["human-users"],
-                "anchor_event_types": sorted(CHALLENGE_EVENT_TYPES | DENY_EVENT_TYPES | {GENERIC_MFA_EVENT_TYPE}),
+                "anchor_event_types": sorted(
+                    CHALLENGE_EVENT_TYPES | DENY_EVENT_TYPES | {GENERIC_MFA_EVENT_TYPE}
+                ),
                 "techniques": [MITRE_TECHNIQUE_UID],
             }
         },
@@ -334,7 +358,9 @@ def coverage_metadata() -> dict[str, Any]:
     }
 
 
-def detect(events: Iterable[dict[str, Any]], output_format: str = "ocsf") -> Iterable[dict[str, Any]]:
+def detect(
+    events: Iterable[dict[str, Any]], output_format: str = "ocsf"
+) -> Iterable[dict[str, Any]]:
     if output_format not in OUTPUT_FORMATS:
         raise ContractError(
             f"unsupported output_format: {output_format}",
@@ -449,10 +475,16 @@ def load_jsonl(stream: Iterable[str]) -> Iterable[dict[str, Any]]:
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Detect repeated Okta Verify MFA push-denial bursts from native or OCSF input.")
+    parser = argparse.ArgumentParser(
+        description="Detect repeated Okta Verify MFA push-denial bursts from native or OCSF input."
+    )
     parser.add_argument("input", nargs="?", help="Authentication JSONL input. Defaults to stdin.")
-    parser.add_argument("--output", "-o", help="Detection Finding JSONL output. Defaults to stdout.")
-    parser.add_argument("--output-format", choices=OUTPUT_FORMATS, default="ocsf", help="Output format.")
+    parser.add_argument(
+        "--output", "-o", help="Detection Finding JSONL output. Defaults to stdout."
+    )
+    parser.add_argument(
+        "--output-format", choices=OUTPUT_FORMATS, default="ocsf", help="Output format."
+    )
     args = parser.parse_args(argv)
 
     in_stream = sys.stdin if not args.input else open(args.input, "r", encoding="utf-8")

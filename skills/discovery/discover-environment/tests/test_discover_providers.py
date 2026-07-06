@@ -73,13 +73,16 @@ def test_discover_aws_builds_full_graph():
 
     ec2 = boto3.client("ec2", region_name=region)
     vpc = ec2.create_vpc(CidrBlock="10.0.0.0/16")["Vpc"]
-    sg = ec2.create_security_group(
-        GroupName="open", Description="open", VpcId=vpc["VpcId"]
-    )
+    sg = ec2.create_security_group(GroupName="open", Description="open", VpcId=vpc["VpcId"])
     ec2.authorize_security_group_ingress(
         GroupId=sg["GroupId"],
         IpPermissions=[
-            {"FromPort": 22, "ToPort": 22, "IpProtocol": "tcp", "IpRanges": [{"CidrIp": "0.0.0.0/0"}]}
+            {
+                "FromPort": 22,
+                "ToPort": 22,
+                "IpProtocol": "tcp",
+                "IpRanges": [{"CidrIp": "0.0.0.0/0"}],
+            }
         ],
     )
 
@@ -205,7 +208,9 @@ def test_discover_aws_missing_boto3_exits(monkeypatch):
 # ---------------------------------------------------------------------------
 
 
-def _install_fake_gcp(monkeypatch, sa_items=None, bucket_items=None, sa_raises=False, gcs_raises=False):
+def _install_fake_gcp(
+    monkeypatch, sa_items=None, bucket_items=None, sa_raises=False, gcs_raises=False
+):
     google = types.ModuleType("google")
     cloud = types.ModuleType("google.cloud")
 
@@ -319,9 +324,9 @@ def _install_fake_azure(monkeypatch, resource_raises=False, rgs=None, resources_
                 self.resource_groups.list.side_effect = RuntimeError("boom")
             else:
                 self.resource_groups.list.return_value = rgs or []
-                self.resources.list_by_resource_group.side_effect = (
-                    lambda name: (resources_by_rg or {}).get(name, [])
-                )
+                self.resources.list_by_resource_group.side_effect = lambda name: (
+                    resources_by_rg or {}
+                ).get(name, [])
 
     resource_pkg.ResourceManagementClient = _Client
     monkeypatch.setitem(sys.modules, "azure.mgmt", mgmt)
@@ -570,9 +575,7 @@ def test_cli_gcp_with_stubbed_sdk(monkeypatch):
 
 def test_cli_azure_with_stubbed_sdk(monkeypatch):
     _install_fake_azure(monkeypatch, rgs=[])
-    code, out, _ = _run_cli(
-        monkeypatch, ["azure", "--subscription-id", "sub-cli"]
-    )
+    code, out, _ = _run_cli(monkeypatch, ["azure", "--subscription-id", "sub-cli"])
     assert code == 0
     payload = json.loads(out)
     assert payload["provider"] == "azure"

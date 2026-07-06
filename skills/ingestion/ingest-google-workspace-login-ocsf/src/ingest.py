@@ -196,7 +196,9 @@ def _metadata_uid(activity: dict[str, Any], event_name: str) -> str:
         "uniqueQualifier": identity.get("uniqueQualifier"),
         "event": event_name,
     }
-    return hashlib.sha256(json.dumps(stable, sort_keys=True, separators=(",", ":")).encode("utf-8")).hexdigest()
+    return hashlib.sha256(
+        json.dumps(stable, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    ).hexdigest()
 
 
 def _status_name(status_id: int) -> str:
@@ -267,7 +269,11 @@ def _build_canonical_event(activity: dict[str, Any], event: dict[str, Any]) -> d
         "activity_id": activity_id,
         "activity_name": event_name,
         "severity_id": severity_id,
-        "severity": "low" if severity_id == SEVERITY_LOW else "informational" if severity_id == SEVERITY_INFORMATIONAL else "unknown",
+        "severity": "low"
+        if severity_id == SEVERITY_LOW
+        else "informational"
+        if severity_id == SEVERITY_INFORMATIONAL
+        else "unknown",
         "status_id": status_id,
         "status": _status_name(status_id),
         "time_ms": parse_ts_ms((activity.get("id") or {}).get("time")),
@@ -300,9 +306,19 @@ def _render_ocsf_event(canonical: dict[str, Any]) -> dict[str, Any]:
         "activity_id": canonical["activity_id"],
         "category_uid": CATEGORY_UID,
         "category_name": CATEGORY_NAME,
-        "class_uid": AUTH_CLASS_UID if canonical["record_type"] == "authentication" else ACCOUNT_CHANGE_CLASS_UID,
-        "class_name": "Authentication" if canonical["record_type"] == "authentication" else "Account Change",
-        "type_uid": (AUTH_CLASS_UID if canonical["record_type"] == "authentication" else ACCOUNT_CHANGE_CLASS_UID) * 100 + canonical["activity_id"],
+        "class_uid": AUTH_CLASS_UID
+        if canonical["record_type"] == "authentication"
+        else ACCOUNT_CHANGE_CLASS_UID,
+        "class_name": "Authentication"
+        if canonical["record_type"] == "authentication"
+        else "Account Change",
+        "type_uid": (
+            AUTH_CLASS_UID
+            if canonical["record_type"] == "authentication"
+            else ACCOUNT_CHANGE_CLASS_UID
+        )
+        * 100
+        + canonical["activity_id"],
         "severity_id": canonical["severity_id"],
         "status_id": canonical["status_id"],
         "time": canonical["time_ms"],
@@ -340,7 +356,9 @@ def _render_native_event(canonical: dict[str, Any]) -> dict[str, Any]:
     return native
 
 
-def convert_activity_event(activity: dict[str, Any], event: dict[str, Any], output_format: str = "ocsf") -> dict[str, Any]:
+def convert_activity_event(
+    activity: dict[str, Any], event: dict[str, Any], output_format: str = "ocsf"
+) -> dict[str, Any]:
     canonical = _build_canonical_event(activity, event)
     if output_format == "native":
         return _render_native_event(canonical)
@@ -439,7 +457,9 @@ def ingest(stream: Iterable[str], output_format: str = "ocsf") -> Iterable[dict[
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Convert raw Google Workspace login audit JSON to OCSF or native IAM JSONL.")
+    parser = argparse.ArgumentParser(
+        description="Convert raw Google Workspace login audit JSON to OCSF or native IAM JSONL."
+    )
     parser.add_argument("input", nargs="?", help="Input JSON/JSONL file. Defaults to stdin.")
     parser.add_argument("--output", "-o", help="Output JSONL file. Defaults to stdout.")
     parser.add_argument(

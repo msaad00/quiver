@@ -100,7 +100,9 @@ def fetch_rows(
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Run a read-only S3 Select query and emit raw JSONL rows.")
+    parser = argparse.ArgumentParser(
+        description="Run a read-only S3 Select query and emit raw JSONL rows."
+    )
     parser.add_argument("--bucket", required=True, help="S3 bucket containing the object to query.")
     parser.add_argument("--key", required=True, help="S3 object key to query with S3 Select.")
     parser.add_argument(

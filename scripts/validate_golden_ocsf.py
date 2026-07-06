@@ -47,9 +47,7 @@ def main() -> int:
             try:
                 event = json.loads(line)
             except json.JSONDecodeError as exc:
-                errors.append(
-                    f"{path.relative_to(ROOT)}:{lineno}: JSON parse failed: {exc}"
-                )
+                errors.append(f"{path.relative_to(ROOT)}:{lineno}: JSON parse failed: {exc}")
                 continue
             if not isinstance(event, dict):
                 errors.append(
@@ -65,7 +63,10 @@ def main() -> int:
         print("OCSF golden-fixture validation FAILED:", file=sys.stderr)
         for err in errors:
             print(f" - {err}", file=sys.stderr)
-        print(f"\n{len(errors)} violation(s) across {total_fixtures} fixture(s) / {total_events} events", file=sys.stderr)
+        print(
+            f"\n{len(errors)} violation(s) across {total_fixtures} fixture(s) / {total_events} events",
+            file=sys.stderr,
+        )
         return 1
 
     print(

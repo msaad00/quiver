@@ -65,7 +65,9 @@ class TestWalker:
         assert any("nested.example.com" in u for u, _ in urls)
 
     def test_extracts_url_from_description(self):
-        schema = {"properties": {"x": {"description": "see https://desc.example.com/d for details"}}}
+        schema = {
+            "properties": {"x": {"description": "see https://desc.example.com/d for details"}}
+        }
         urls = list(_walk_schema_for_urls(schema))
         assert any("desc.example.com" in u for u, _ in urls)
 
@@ -168,9 +170,7 @@ class TestGoldenFixture:
     def test_hosts_correct(self):
         events = _load(INPUT_FIXTURE)
         findings = list(detect(events, allowlist=ALLOWLIST))
-        hosts = sorted(
-            f["observables"][2]["value"] for f in findings
-        )
+        hosts = sorted(f["observables"][2]["value"] for f in findings)
         assert hosts == ["evil-registry.example.com", "malicious-cdn.example.net"]
 
     def test_finding_matches_frozen_golden(self):

@@ -57,6 +57,7 @@ def _structural_canonical(text: str) -> str:
         canonical = pattern.sub("<dynamic>", canonical)
     return canonical
 
+
 REPO_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_RESULTS = REPO_ROOT / "runtime-profile-results.jsonl"
 DEFAULT_OUTPUT = REPO_ROOT / "docs" / "RUNTIME_PROFILES.md"
@@ -71,8 +72,7 @@ BANNER = (
 def _load_records(path: Path) -> list[dict[str, Any]]:
     if not path.exists():
         raise FileNotFoundError(
-            f"results file not found: {path}. Run "
-            "`bash scripts/runner_e2e.sh` first."
+            f"results file not found: {path}. Run `bash scripts/runner_e2e.sh` first."
         )
     records: list[dict[str, Any]] = []
     for lineno, raw in enumerate(path.read_text(encoding="utf-8").splitlines(), start=1):
@@ -111,9 +111,7 @@ def _render_measured_table(records: list[dict[str, Any]]) -> str:
     rows.append(
         "| Runner | Scenario | Samples | p50 | p95 | Mean | Sink arrival | Audit chain | Captured |"
     )
-    rows.append(
-        "|---|---|---:|---:|---:|---:|---:|:---:|---|"
-    )
+    rows.append("|---|---|---:|---:|---:|---:|---:|:---:|---|")
     for rec in records:
         runner = rec.get("runner", "?")
         scenario = rec.get("scenario", "?")
@@ -164,20 +162,12 @@ def _render_subgaps(records: list[dict[str, Any]]) -> str:
 
 
 def render_doc(records: list[dict[str, Any]]) -> str:
-    measured = [
-        rec
-        for rec in records
-        if rec.get("status") == "ok" or rec.get("status") == "fail"
-    ]
+    measured = [rec for rec in records if rec.get("status") == "ok" or rec.get("status") == "fail"]
     gaps = [rec for rec in records if rec.get("status") == "gap"]
     errors = [rec for rec in records if rec.get("status") == "error"]
 
-    measured_sorted = sorted(
-        measured, key=lambda r: (r.get("runner", ""), r.get("scenario", ""))
-    )
-    gaps_sorted = sorted(
-        gaps, key=lambda r: (r.get("runner", ""), r.get("scenario", ""))
-    )
+    measured_sorted = sorted(measured, key=lambda r: (r.get("runner", ""), r.get("scenario", "")))
+    gaps_sorted = sorted(gaps, key=lambda r: (r.get("runner", ""), r.get("scenario", "")))
 
     parts: list[str] = []
     parts.append(BANNER)
@@ -191,9 +181,7 @@ def render_doc(records: list[dict[str, Any]]) -> str:
         "raw numbers."
     )
     parts.append("")
-    parts.append(
-        "Closes:"
-    )
+    parts.append("Closes:")
     parts.append(
         "- [#198](https://github.com/msaad00/cloud-ai-security-skills/issues/198) — "
         "deploy and verify all three runner templates end to end (CI surface)."
@@ -229,13 +217,9 @@ def render_doc(records: list[dict[str, Any]]) -> str:
     parts.append("")
     parts.append("### Per-scenario assertions")
     parts.append("")
-    parts.append(
-        "Each `ok` record above means **all** of the following held for the run:"
-    )
+    parts.append("Each `ok` record above means **all** of the following held for the run:")
     parts.append("")
-    parts.append(
-        "- the runner accepted every one of the N requests with no failures;"
-    )
+    parts.append("- the runner accepted every one of the N requests with no failures;")
     parts.append(
         "- the audit assertion for that runner passed (the receiver writes a "
         "single-line JSONL audit; the SSE runner writes an HMAC-chained log and "
@@ -274,8 +258,8 @@ def render_doc(records: list[dict[str, Any]]) -> str:
         parts.append("")
         for rec in errors:
             parts.append(
-                f"- `{rec.get('runner','?')}` / `{rec.get('scenario','?')}`: "
-                f"{rec.get('error','(no detail)')}"
+                f"- `{rec.get('runner', '?')}` / `{rec.get('scenario', '?')}`: "
+                f"{rec.get('error', '(no detail)')}"
             )
         parts.append("")
     parts.append("## How to run")
@@ -330,9 +314,7 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.check:
         if not args.output.exists():
-            sys.stderr.write(
-                f"error: {args.output} does not exist — run without --check first\n"
-            )
+            sys.stderr.write(f"error: {args.output} does not exist — run without --check first\n")
             return 1
         current = args.output.read_text(encoding="utf-8")
         # Structural comparison — strip the per-row `Captured` ISO

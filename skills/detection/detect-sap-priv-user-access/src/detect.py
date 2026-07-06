@@ -135,18 +135,25 @@ def _matches_any(value: str, patterns: Iterable[str]) -> bool:
     short_value = value_upper.split(":", 1)[-1]
     for pattern in patterns:
         pattern_upper = pattern.upper()
-        if fnmatch.fnmatchcase(value_upper, pattern_upper) or fnmatch.fnmatchcase(short_value, pattern_upper):
+        if fnmatch.fnmatchcase(value_upper, pattern_upper) or fnmatch.fnmatchcase(
+            short_value, pattern_upper
+        ):
             return True
     return False
 
 
 def _is_sap_event(event: dict[str, Any]) -> bool:
-    if event.get("class_uid") != APP_ACTIVITY_CLASS_UID and event.get("record_type") != "application_activity":
+    if (
+        event.get("class_uid") != APP_ACTIVITY_CLASS_UID
+        and event.get("record_type") != "application_activity"
+    ):
         return False
     return _producer(event) == SAP_INGEST_SKILL
 
 
-def _is_privileged_access(event: dict[str, Any], privileged_users: tuple[str, ...], privileged_profiles: tuple[str, ...]) -> bool:
+def _is_privileged_access(
+    event: dict[str, Any], privileged_users: tuple[str, ...], privileged_profiles: tuple[str, ...]
+) -> bool:
     if not _is_sap_event(event):
         return False
     if _family(event) not in {"login", "privileged_access", "transaction"}:
@@ -164,7 +171,9 @@ def _finding_uid(event: dict[str, Any]) -> str:
     return f"det-sap-priv-user-access-{digest}"
 
 
-def _build_native_finding(event: dict[str, Any], matched_users: tuple[str, ...], matched_profiles: tuple[str, ...]) -> dict[str, Any]:
+def _build_native_finding(
+    event: dict[str, Any], matched_users: tuple[str, ...], matched_profiles: tuple[str, ...]
+) -> dict[str, Any]:
     time_ms = _event_time(event) or _now_ms()
     finding_uid = _finding_uid(event)
     actor_uid = _actor_id(event)
@@ -183,7 +192,9 @@ def _build_native_finding(event: dict[str, Any], matched_users: tuple[str, ...],
         {"name": "sap.client", "type": "Resource Name", "value": client},
     ]
     if tx_code:
-        observables.append({"name": "sap.transaction_code", "type": "Process Name", "value": tx_code})
+        observables.append(
+            {"name": "sap.transaction_code", "type": "Process Name", "value": tx_code}
+        )
     if src_ip:
         observables.append({"name": "src.ip", "type": "IP Address", "value": src_ip})
     for profile in profiles:
@@ -243,7 +254,11 @@ def _render_ocsf_finding(native_finding: dict[str, Any]) -> dict[str, Any]:
         "metadata": {
             "version": OCSF_VERSION,
             "uid": native_finding["event_uid"],
-            "product": {"name": REPO_NAME, "vendor_name": REPO_VENDOR, "feature": {"name": SKILL_NAME}},
+            "product": {
+                "name": REPO_NAME,
+                "vendor_name": REPO_VENDOR,
+                "feature": {"name": SKILL_NAME},
+            },
             "labels": ["sap", "privileged-access", "detection"],
         },
         "finding_info": {
@@ -272,7 +287,13 @@ def iter_records(stream: Iterable[str]) -> Iterable[dict[str, Any]]:
         try:
             obj = json.loads(line)
         except json.JSONDecodeError as exc:
-            emit_stderr_event(SKILL_NAME, level="warning", event="json_parse_failed", message=str(exc), line=lineno)
+            emit_stderr_event(
+                SKILL_NAME,
+                level="warning",
+                event="json_parse_failed",
+                message=str(exc),
+                line=lineno,
+            )
             continue
         if isinstance(obj, dict):
             yield obj

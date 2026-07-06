@@ -104,7 +104,9 @@ class DualAuditWriter:
         approver: str,
     ) -> dict[str, str]:
         action_at = datetime.now(UTC).isoformat()
-        row_uid = _deterministic_uid(target.control_id, target.resource_id, target.action, action_at)
+        row_uid = _deterministic_uid(
+            target.control_id, target.resource_id, target.action, action_at
+        )
         evidence_key = (
             "cspm-aws-cis-benchmark/audit/"
             f"{action_at[:4]}/{action_at[5:7]}/{action_at[8:10]}/"
@@ -215,7 +217,9 @@ def _bucket_tags(s3: Any, bucket_name: str) -> dict[str, str]:
         tag_set = s3.get_bucket_tagging(Bucket=bucket_name).get("TagSet", [])
     except Exception:
         return {}
-    return {str(tag["Key"]): str(tag["Value"]) for tag in tag_set if "Key" in tag and "Value" in tag}
+    return {
+        str(tag["Key"]): str(tag["Value"]) for tag in tag_set if "Key" in tag and "Value" in tag
+    }
 
 
 def _sg_tags(group: dict[str, Any]) -> dict[str, str]:
@@ -249,7 +253,10 @@ def _is_protected_security_group(group: dict[str, Any]) -> tuple[bool, str]:
         return True, "security group matches protected prefix"
     tags = _sg_tags(group)
     if _truthy(tags.get(DEFAULT_INTENTIONALLY_OPEN_TAG, "")):
-        return True, f"security group tag `{DEFAULT_INTENTIONALLY_OPEN_TAG}` marks it intentionally open"
+        return (
+            True,
+            f"security group tag `{DEFAULT_INTENTIONALLY_OPEN_TAG}` marks it intentionally open",
+        )
     for key in DEFAULT_PROTECTED_TAG_KEYS:
         if key in tags and _truthy(tags[key]):
             return True, f"security group tag `{key}` marks it protected"
@@ -1405,15 +1412,13 @@ def check_4_3_vpc_flow_logs(ec2) -> Finding:
 def check_5_4_default_sg_restricts_traffic(ec2) -> Finding:
     """CIS 5.4 — Default VPC security group restricts all traffic."""
     try:
-        sgs = ec2.describe_security_groups(
-            Filters=[{"Name": "group-name", "Values": ["default"]}]
-        )["SecurityGroups"]
+        sgs = ec2.describe_security_groups(Filters=[{"Name": "group-name", "Values": ["default"]}])[
+            "SecurityGroups"
+        ]
         offenders: list[str] = []
         for sg in sgs:
             if sg.get("IpPermissions") or sg.get("IpPermissionsEgress"):
-                offenders.append(
-                    f"{sg.get('GroupId', '')} (vpc {sg.get('VpcId', '')})"
-                )
+                offenders.append(f"{sg.get('GroupId', '')} (vpc {sg.get('VpcId', '')})")
         return Finding(
             control_id="5.4",
             title="Default VPC SG restricts all traffic",
@@ -1569,7 +1574,9 @@ def _build_sg_targets(
             to_port = perm.get("ToPort")
             if from_port is None or to_port is None or not (from_port <= port <= to_port):
                 continue
-            cidrs = [r["CidrIp"] for r in perm.get("IpRanges", []) if r.get("CidrIp") == "0.0.0.0/0"]
+            cidrs = [
+                r["CidrIp"] for r in perm.get("IpRanges", []) if r.get("CidrIp") == "0.0.0.0/0"
+            ]
             cidrs.extend(
                 r["CidrIpv6"] for r in perm.get("Ipv6Ranges", []) if r.get("CidrIpv6") == "::/0"
             )
@@ -1755,7 +1762,9 @@ def _apply_target(target: RemediationTarget, clients: dict[str, Any]) -> None:
     if target.action == "put_bucket_encryption":
         clients["s3"].put_bucket_encryption(
             Bucket=target.resource_id,
-            ServerSideEncryptionConfiguration=target.parameters["ServerSideEncryptionConfiguration"],
+            ServerSideEncryptionConfiguration=target.parameters[
+                "ServerSideEncryptionConfiguration"
+            ],
         )
         return
     if target.action == "put_public_access_block":
@@ -1784,7 +1793,9 @@ def _apply_target(target: RemediationTarget, clients: dict[str, Any]) -> None:
             del permission["IpRanges"]
         if not permission["Ipv6Ranges"]:
             del permission["Ipv6Ranges"]
-        clients["ec2"].revoke_security_group_ingress(GroupId=target.resource_id, IpPermissions=[permission])
+        clients["ec2"].revoke_security_group_ingress(
+            GroupId=target.resource_id, IpPermissions=[permission]
+        )
         return
     raise ValueError(f"unsupported remediation action `{target.action}`")
 
@@ -1970,9 +1981,12 @@ def _auto_remediation_exit_code(
     if not records:
         return 1 if critical_high_fails else 0
     if apply:
-        failed_records = [r for r in records if r["status"] in {STATUS_FAILURE, STATUS_WOULD_VIOLATE_PROTECTED}]
+        failed_records = [
+            r for r in records if r["status"] in {STATUS_FAILURE, STATUS_WOULD_VIOLATE_PROTECTED}
+        ]
         return 1 if failed_records or critical_high_fails else 0
     return 1 if critical_high_fails else 0
+
 
 # ---------------------------------------------------------------------------
 # Runner

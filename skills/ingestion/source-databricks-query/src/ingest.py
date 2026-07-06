@@ -69,8 +69,12 @@ def fetch_rows(query: str) -> list[dict[str, Any]]:
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Run a read-only Databricks SQL query and emit raw JSONL rows.")
-    parser.add_argument("--query", help="Read-only SQL query to run. If omitted, the query is read from stdin.")
+    parser = argparse.ArgumentParser(
+        description="Run a read-only Databricks SQL query and emit raw JSONL rows."
+    )
+    parser.add_argument(
+        "--query", help="Read-only SQL query to run. If omitted, the query is read from stdin."
+    )
     parser.add_argument(
         "--output-format",
         choices=("raw",),

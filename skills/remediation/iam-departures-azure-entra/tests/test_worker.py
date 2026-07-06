@@ -97,7 +97,9 @@ def _entry(**overrides):
 
 def test_dry_run_lists_steps_and_does_not_call_client():
     client = _StubClient()
-    config = worker_handler.WorkerConfig(apply=False, reverify=False, dry_run=True, hard_delete=False)
+    config = worker_handler.WorkerConfig(
+        apply=False, reverify=False, dry_run=True, hard_delete=False
+    )
     out = worker_handler.remediate_one(
         _entry(),
         config=config,
@@ -116,7 +118,9 @@ def test_dry_run_lists_steps_and_does_not_call_client():
 def test_apply_runs_all_steps_and_writes_dual_audit():
     client = _StubClient()
     audit = _StubAudit()
-    config = worker_handler.WorkerConfig(apply=True, reverify=False, dry_run=False, hard_delete=False)
+    config = worker_handler.WorkerConfig(
+        apply=True, reverify=False, dry_run=False, hard_delete=False
+    )
     out = worker_handler.remediate_one(
         _entry(),
         config=config,
@@ -138,7 +142,9 @@ def test_apply_failure_writes_failure_audit_and_stops():
     client = _StubClient()
     client.fail_step = "tag_user"
     audit = _StubAudit()
-    config = worker_handler.WorkerConfig(apply=True, reverify=False, dry_run=False, hard_delete=False)
+    config = worker_handler.WorkerConfig(
+        apply=True, reverify=False, dry_run=False, hard_delete=False
+    )
     out = worker_handler.remediate_one(
         _entry(),
         config=config,
@@ -255,8 +261,10 @@ def test_reverify_returns_drift_when_user_enabled():
 
 def test_reverify_returns_unreachable_on_exception():
     client = _StubClient()
+
     def raiser(**_kwargs):
         raise RuntimeError("graph down")
+
     client.get_user_state = raiser
     out = worker_handler.remediate_one(
         _entry(),

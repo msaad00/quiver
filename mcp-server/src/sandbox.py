@@ -80,9 +80,7 @@ def _warn_fallback(reason: str) -> None:
     if reason in _FALLBACK_WARNED:
         return
     _FALLBACK_WARNED.add(reason)
-    sys.stderr.write(
-        f'{{"event":"mcp_sandbox_fallback","reason":"{reason}"}}\n'
-    )
+    sys.stderr.write(f'{{"event":"mcp_sandbox_fallback","reason":"{reason}"}}\n')
     sys.stderr.flush()
 
 
@@ -105,10 +103,15 @@ def _bwrap_command(cmd: list[str], skill: SkillSpec, repo: Path) -> list[str]:
     # B108 hardcoded-tmp-directory check is a false positive on this
     # well-known bwrap argument shape.
     args += [
-        "--bind", repo_str, repo_str,
-        "--tmpfs", "/tmp",  # nosec B108
-        "--proc", "/proc",
-        "--dev", "/dev",
+        "--bind",
+        repo_str,
+        repo_str,
+        "--tmpfs",
+        "/tmp",  # nosec B108
+        "--proc",
+        "/proc",
+        "--dev",
+        "/dev",
         "--unshare-all",
     ]
     args += ["--unshare-net"] if _network_locked_down(skill) else ["--share-net"]

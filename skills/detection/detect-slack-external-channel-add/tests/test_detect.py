@@ -176,7 +176,9 @@ class TestMetadata:
     def test_coverage_metadata(self) -> None:
         metadata = coverage_metadata()
         assert metadata["providers"] == ("slack",)
-        assert "private_channel_member_added" in metadata["attack_coverage"]["slack"]["anchor_actions"]
+        assert (
+            "private_channel_member_added" in metadata["attack_coverage"]["slack"]["anchor_actions"]
+        )
         assert "ingest-slack-audit-ocsf" in ACCEPTED_PRODUCERS
         assert "private_channel_member_added" in ANCHOR_ACTIONS
         assert DEFAULT_SENSITIVE_PATTERN.startswith("(?i)")

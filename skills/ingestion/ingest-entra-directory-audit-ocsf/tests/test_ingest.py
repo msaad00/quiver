@@ -151,7 +151,9 @@ class TestConvert:
         assert event["api"]["operation"] == "Add service principal credentials"
         assert event["api"]["service"]["name"] == "Core Directory"
         assert event["api"]["request"]["uid"] == "corr-entra-1"
-        assert event["resources"] == [{"name": "payments-api", "type": "ServicePrincipal", "uid": "spn-target-1"}]
+        assert event["resources"] == [
+            {"name": "payments-api", "type": "ServicePrincipal", "uid": "spn-target-1"}
+        ]
 
     def test_failure_status_detail(self):
         event = convert_event(_entry(result="failure", resultReason="Authorization_RequestDenied"))

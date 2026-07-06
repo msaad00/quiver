@@ -63,7 +63,9 @@ def test_call_tool_injects_caller_and_approval_context(monkeypatch):
     audit_events: list[dict[str, object]] = []
 
     monkeypatch.setattr(MODULE, "tool_map", lambda: {"fake-skill": _FakeSkill(read_only=True)})
-    monkeypatch.setattr(MODULE, "build_command", lambda skill, args, output_format=None: ["python", "fake.py"])
+    monkeypatch.setattr(
+        MODULE, "build_command", lambda skill, args, output_format=None: ["python", "fake.py"]
+    )
     monkeypatch.setattr(MODULE, "_emit_audit_event", lambda event: audit_events.append(event))
 
     def _fake_run(*args, **kwargs):
@@ -125,7 +127,9 @@ def test_call_tool_scrubs_ambient_secret_env(monkeypatch):
     monkeypatch.setenv("PATH", "/usr/bin")
     monkeypatch.setenv("LANG", "en_US.UTF-8")
     monkeypatch.setattr(MODULE, "tool_map", lambda: {"fake-skill": _FakeSkill(read_only=True)})
-    monkeypatch.setattr(MODULE, "build_command", lambda skill, args, output_format=None: ["python", "fake.py"])
+    monkeypatch.setattr(
+        MODULE, "build_command", lambda skill, args, output_format=None: ["python", "fake.py"]
+    )
     monkeypatch.setattr(MODULE, "_emit_audit_event", lambda event: None)
 
     def _fake_run(*args, **kwargs):
@@ -149,7 +153,9 @@ def test_call_tool_preserves_cloud_security_control_env(monkeypatch):
 
     monkeypatch.setenv("CLOUD_SECURITY_CONFORMANCE_MOTO_FIXTURE", "aws-cis-storage")
     monkeypatch.setattr(MODULE, "tool_map", lambda: {"fake-skill": _FakeSkill(read_only=True)})
-    monkeypatch.setattr(MODULE, "build_command", lambda skill, args, output_format=None: ["python", "fake.py"])
+    monkeypatch.setattr(
+        MODULE, "build_command", lambda skill, args, output_format=None: ["python", "fake.py"]
+    )
     monkeypatch.setattr(MODULE, "_emit_audit_event", lambda event: None)
 
     def _fake_run(*args, **kwargs):
@@ -265,7 +271,9 @@ def test_call_tool_accepts_multi_approver_context(monkeypatch):
             )
         },
     )
-    monkeypatch.setattr(MODULE, "build_command", lambda skill, args, output_format=None: ["python", "fake.py"])
+    monkeypatch.setattr(
+        MODULE, "build_command", lambda skill, args, output_format=None: ["python", "fake.py"]
+    )
     monkeypatch.setattr(MODULE, "_emit_audit_event", lambda event: audit_events.append(event))
 
     def _fake_run(*args, **kwargs):
@@ -360,7 +368,9 @@ def test_checks_evaluation_dry_run_does_not_require_approval_context(monkeypatch
             )
         },
     )
-    monkeypatch.setattr(MODULE, "build_command", lambda skill, args, output_format=None: ["python", "fake.py"])
+    monkeypatch.setattr(
+        MODULE, "build_command", lambda skill, args, output_format=None: ["python", "fake.py"]
+    )
     monkeypatch.setattr(MODULE.subprocess, "run", lambda *args, **kwargs: _FakeCompleted())
     result = MODULE._call_tool("fake-skill", {"args": []})
     assert result["isError"] is False
@@ -397,7 +407,9 @@ def test_call_tool_audit_records_resolved_timeout(monkeypatch):
         "tool_map",
         lambda: {"fake-skill": _FakeSkill(mcp_timeout_seconds=150)},
     )
-    monkeypatch.setattr(MODULE, "build_command", lambda skill, args, output_format=None: ["python", "fake.py"])
+    monkeypatch.setattr(
+        MODULE, "build_command", lambda skill, args, output_format=None: ["python", "fake.py"]
+    )
     monkeypatch.setattr(MODULE, "_emit_audit_event", lambda event: audit_events.append(event))
 
     def _fake_run(*args, **kwargs):
@@ -510,7 +522,9 @@ def test_call_tool_forwards_caller_allowed_skill_scope(monkeypatch):
     audit_events: list[dict[str, object]] = []
 
     monkeypatch.setattr(MODULE, "tool_map", lambda: {"fake-skill": _FakeSkill(read_only=True)})
-    monkeypatch.setattr(MODULE, "build_command", lambda skill, args, output_format=None: ["python", "fake.py"])
+    monkeypatch.setattr(
+        MODULE, "build_command", lambda skill, args, output_format=None: ["python", "fake.py"]
+    )
     monkeypatch.setattr(MODULE, "_emit_audit_event", lambda event: audit_events.append(event))
 
     def _fake_run(*args, **kwargs):
@@ -566,7 +580,9 @@ def test_handle_request_returns_distinct_timeout_error_code(monkeypatch):
     a slow skill from any other server-side error.
     """
     monkeypatch.setattr(MODULE, "tool_map", lambda: {"fake-skill": _FakeSkill(read_only=True)})
-    monkeypatch.setattr(MODULE, "build_command", lambda skill, args, output_format=None: ["python", "fake.py"])
+    monkeypatch.setattr(
+        MODULE, "build_command", lambda skill, args, output_format=None: ["python", "fake.py"]
+    )
     monkeypatch.setattr(MODULE, "_emit_audit_event", lambda event: None)
 
     def _raise_timeout(*args, **kwargs):

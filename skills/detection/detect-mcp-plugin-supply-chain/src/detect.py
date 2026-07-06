@@ -105,7 +105,9 @@ def _walk_schema_for_urls(node: Any, source_field: str = "schema") -> Iterable[t
             elif key == "items":
                 yield from _walk_schema_for_urls(value, "items")
             elif isinstance(value, (dict, list)):
-                yield from _walk_schema_for_urls(value, key if isinstance(key, str) else source_field)
+                yield from _walk_schema_for_urls(
+                    value, key if isinstance(key, str) else source_field
+                )
             elif isinstance(value, str):
                 # Catch URL-shaped strings anywhere — covers things like enum
                 # entries or any string-typed default that didn't land under
@@ -337,7 +339,9 @@ def load_jsonl(stream: Iterable[str]) -> Iterable[dict[str, Any]]:
         try:
             obj = json.loads(line)
         except json.JSONDecodeError as exc:
-            print(f"[{SKILL_NAME}] skipping line {lineno}: json parse failed: {exc}", file=sys.stderr)
+            print(
+                f"[{SKILL_NAME}] skipping line {lineno}: json parse failed: {exc}", file=sys.stderr
+            )
             continue
         if isinstance(obj, dict):
             yield obj

@@ -263,7 +263,9 @@ def _build_native_finding(
     if repo:
         observables.append({"name": "github.repo", "type": "Resource UID", "value": repo})
     if workflow_id:
-        observables.append({"name": "github.workflow_id", "type": "Resource UID", "value": workflow_id})
+        observables.append(
+            {"name": "github.workflow_id", "type": "Resource UID", "value": workflow_id}
+        )
     observables.append({"name": "api.operation", "type": "Other", "value": operation})
     if src_ip:
         observables.append({"name": "src.ip", "type": "IP Address", "value": src_ip})
@@ -462,8 +464,12 @@ def main(argv: list[str] | None = None) -> int:
             "API Activity 6003 input."
         )
     )
-    parser.add_argument("input", nargs="?", help="OCSF 1.8 API Activity 6003 JSONL input. Defaults to stdin.")
-    parser.add_argument("--output", "-o", help="Detection Finding JSONL output. Defaults to stdout.")
+    parser.add_argument(
+        "input", nargs="?", help="OCSF 1.8 API Activity 6003 JSONL input. Defaults to stdin."
+    )
+    parser.add_argument(
+        "--output", "-o", help="Detection Finding JSONL output. Defaults to stdout."
+    )
     parser.add_argument(
         "--output-format",
         choices=OUTPUT_FORMATS,

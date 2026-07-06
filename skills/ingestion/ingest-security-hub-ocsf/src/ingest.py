@@ -325,9 +325,15 @@ def _build_canonical_finding(raw: dict[str, Any]) -> dict[str, Any]:
     # Compliance passthrough
     compliance = raw.get("Compliance") or {}
     compliance_status = compliance.get("Status", "") if isinstance(compliance, dict) else ""
-    compliance_control = compliance.get("SecurityControlId", "") if isinstance(compliance, dict) else ""
-    compliance_reasons_list = compliance.get("StatusReasons", []) if isinstance(compliance, dict) else []
-    compliance_reasons = ";".join(str((r or {}).get("ReasonCode", "")) for r in compliance_reasons_list if isinstance(r, dict))
+    compliance_control = (
+        compliance.get("SecurityControlId", "") if isinstance(compliance, dict) else ""
+    )
+    compliance_reasons_list = (
+        compliance.get("StatusReasons", []) if isinstance(compliance, dict) else []
+    )
+    compliance_reasons = ";".join(
+        str((r or {}).get("ReasonCode", "")) for r in compliance_reasons_list if isinstance(r, dict)
+    )
 
     return {
         "schema_mode": "canonical",
@@ -386,12 +392,18 @@ def _build_observables(canonical: dict[str, Any]) -> list[dict[str, Any]]:
     observables: list[dict[str, Any]] = [
         {"name": "shub.finding_id", "type": "Other", "value": canonical["source"]["finding_id"]},
         {"name": "shub.product_arn", "type": "Other", "value": canonical["source"]["product_arn"]},
-        {"name": "shub.generator_id", "type": "Other", "value": canonical["source"]["generator_id"]},
+        {
+            "name": "shub.generator_id",
+            "type": "Other",
+            "value": canonical["source"]["generator_id"],
+        },
         {"name": "shub.severity_label", "type": "Other", "value": canonical["severity_label"]},
         {
             "name": "shub.severity_normalized",
             "type": "Other",
-            "value": str(canonical["severity_normalized"]) if canonical["severity_normalized"] is not None else "",
+            "value": str(canonical["severity_normalized"])
+            if canonical["severity_normalized"] is not None
+            else "",
         },
         {"name": "shub.types", "type": "Other", "value": ",".join(canonical["finding_types"])},
         {"name": "aws.account", "type": "Other", "value": canonical["account_uid"]},
@@ -399,11 +411,21 @@ def _build_observables(canonical: dict[str, Any]) -> list[dict[str, Any]]:
     ]
     compliance = canonical["compliance"]
     if compliance["status"]:
-        observables.append({"name": "shub.compliance_status", "type": "Other", "value": compliance["status"]})
+        observables.append(
+            {"name": "shub.compliance_status", "type": "Other", "value": compliance["status"]}
+        )
     if compliance["control_id"]:
-        observables.append({"name": "shub.compliance_control", "type": "Other", "value": compliance["control_id"]})
+        observables.append(
+            {"name": "shub.compliance_control", "type": "Other", "value": compliance["control_id"]}
+        )
     if compliance["reason_codes"]:
-        observables.append({"name": "shub.compliance_reasons", "type": "Other", "value": compliance["reason_codes"]})
+        observables.append(
+            {
+                "name": "shub.compliance_reasons",
+                "type": "Other",
+                "value": compliance["reason_codes"],
+            }
+        )
     return observables
 
 
@@ -427,7 +449,14 @@ def _render_ocsf_finding(canonical: dict[str, Any]) -> dict[str, Any]:
                 "vendor_name": VENDOR_NAME,
                 "feature": {"name": SKILL_NAME},
             },
-            "labels": ["detection-engineering", "aws", "security-hub", "asff", "ingest", "passthrough"],
+            "labels": [
+                "detection-engineering",
+                "aws",
+                "security-hub",
+                "asff",
+                "ingest",
+                "passthrough",
+            ],
         },
         "finding_info": {
             "uid": canonical["finding_uid"],
@@ -554,10 +583,17 @@ def ingest(stream: Iterable[str], output_format: str = "ocsf") -> Iterable[dict[
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Convert AWS Security Hub ASFF findings to OCSF 1.8 Detection Finding JSONL.")
+    parser = argparse.ArgumentParser(
+        description="Convert AWS Security Hub ASFF findings to OCSF 1.8 Detection Finding JSONL."
+    )
     parser.add_argument("input", nargs="?", help="Input JSON/JSONL file. Defaults to stdin.")
     parser.add_argument("--output", "-o", help="Output JSONL file. Defaults to stdout.")
-    parser.add_argument("--output-format", choices=("ocsf", "native"), default="ocsf", help="Output shape. Defaults to ocsf.")
+    parser.add_argument(
+        "--output-format",
+        choices=("ocsf", "native"),
+        default="ocsf",
+        help="Output shape. Defaults to ocsf.",
+    )
     args = parser.parse_args(argv)
 
     in_stream = sys.stdin if not args.input else open(args.input, "r", encoding="utf-8")

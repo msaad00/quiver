@@ -229,8 +229,14 @@ class TestMetadata:
         metadata = coverage_metadata()
         assert metadata["providers"] == ("databricks",)
         assert MITRE_TECHNIQUE_UID in metadata["attack_coverage"]["databricks"]["techniques"]
-        assert ACCOUNT_SET_ADMIN_OPERATION in metadata["attack_coverage"]["databricks"]["anchor_operations"]
-        assert ADD_USER_TO_GROUP_OPERATION in metadata["attack_coverage"]["databricks"]["anchor_operations"]
+        assert (
+            ACCOUNT_SET_ADMIN_OPERATION
+            in metadata["attack_coverage"]["databricks"]["anchor_operations"]
+        )
+        assert (
+            ADD_USER_TO_GROUP_OPERATION
+            in metadata["attack_coverage"]["databricks"]["anchor_operations"]
+        )
         assert "ingest-databricks-audit-ocsf" in ACCEPTED_PRODUCERS
         assert OUTPUT_FORMATS == ("ocsf", "native")
         assert "admins" in ADMIN_GROUP_NAMES

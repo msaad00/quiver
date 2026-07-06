@@ -45,7 +45,9 @@ def _ev(session: str, name: str, description: str, schema: dict, time_ms: int = 
 
 _BASELINE_QUERY = {
     "description_sha256": _sha256_hex("Run a read-only SQL query against the analytics warehouse."),
-    "schema_sha256": _sha256_hex(_stable_schema_json({"type": "object", "properties": {"sql": {"type": "string"}}})),
+    "schema_sha256": _sha256_hex(
+        _stable_schema_json({"type": "object", "properties": {"sql": {"type": "string"}}})
+    ),
     "registered_at": "2026-05-10T12:00:00Z",
 }
 BASELINE = {"query_db": _BASELINE_QUERY}
@@ -77,15 +79,19 @@ class TestLoadBaseline:
 
     def test_loads_valid_baseline(self, tmp_path):
         good = tmp_path / "good.json"
-        good.write_text(json.dumps({
-            "tools": {
-                "x": {
-                    "description_sha256": "deadbeef",
-                    "schema_sha256": "cafefade",
-                    "registered_at": "2026-05-10T12:00:00Z",
+        good.write_text(
+            json.dumps(
+                {
+                    "tools": {
+                        "x": {
+                            "description_sha256": "deadbeef",
+                            "schema_sha256": "cafefade",
+                            "registered_at": "2026-05-10T12:00:00Z",
+                        }
+                    }
                 }
-            }
-        }))
+            )
+        )
         out = load_baseline(good)
         assert out["x"]["description_sha256"] == "deadbeef"
 
@@ -96,14 +102,25 @@ class TestDetect:
         assert list(detect(events, baseline={})) == []
 
     def test_matching_description_and_schema_no_finding(self):
-        events = [_ev("s", "query_db",
-                      "Run a read-only SQL query against the analytics warehouse.",
-                      {"type": "object", "properties": {"sql": {"type": "string"}}})]
+        events = [
+            _ev(
+                "s",
+                "query_db",
+                "Run a read-only SQL query against the analytics warehouse.",
+                {"type": "object", "properties": {"sql": {"type": "string"}}},
+            )
+        ]
         assert list(detect(events, baseline=BASELINE)) == []
 
     def test_description_divergence_fires(self):
-        events = [_ev("s", "query_db", "POISONED DESCRIPTION",
-                      {"type": "object", "properties": {"sql": {"type": "string"}}})]
+        events = [
+            _ev(
+                "s",
+                "query_db",
+                "POISONED DESCRIPTION",
+                {"type": "object", "properties": {"sql": {"type": "string"}}},
+            )
+        ]
         findings = list(detect(events, baseline=BASELINE))
         assert len(findings) == 1
         f = findings[0]
@@ -115,16 +132,30 @@ class TestDetect:
         assert "description" in f["evidence"]["diverged_parts"]
 
     def test_schema_divergence_fires(self):
-        events = [_ev("s", "query_db",
-                      "Run a read-only SQL query against the analytics warehouse.",
-                      {"type": "object", "properties": {"sql": {"type": "string"}, "write": {"type": "boolean"}}})]
+        events = [
+            _ev(
+                "s",
+                "query_db",
+                "Run a read-only SQL query against the analytics warehouse.",
+                {
+                    "type": "object",
+                    "properties": {"sql": {"type": "string"}, "write": {"type": "boolean"}},
+                },
+            )
+        ]
         findings = list(detect(events, baseline=BASELINE))
         assert len(findings) == 1
         assert "schema" in findings[0]["evidence"]["diverged_parts"]
 
     def test_both_divergence_fires_once_with_both_parts(self):
-        events = [_ev("s", "query_db", "POISONED",
-                      {"type": "object", "properties": {"x": {"type": "boolean"}}})]
+        events = [
+            _ev(
+                "s",
+                "query_db",
+                "POISONED",
+                {"type": "object", "properties": {"x": {"type": "boolean"}}},
+            )
+        ]
         f = list(detect(events, baseline=BASELINE))[0]
         assert "description" in f["evidence"]["diverged_parts"]
         assert "schema" in f["evidence"]["diverged_parts"]
@@ -137,41 +168,89 @@ class TestDetect:
     def test_idempotent_same_divergence_in_same_session(self):
         # Two events with the same divergence in the same session → one finding.
         events = [
-            _ev("s", "query_db", "POISONED", {"type": "object", "properties": {"sql": {"type": "string"}}}, time_ms=100),
-            _ev("s", "query_db", "POISONED", {"type": "object", "properties": {"sql": {"type": "string"}}}, time_ms=200),
+            _ev(
+                "s",
+                "query_db",
+                "POISONED",
+                {"type": "object", "properties": {"sql": {"type": "string"}}},
+                time_ms=100,
+            ),
+            _ev(
+                "s",
+                "query_db",
+                "POISONED",
+                {"type": "object", "properties": {"sql": {"type": "string"}}},
+                time_ms=200,
+            ),
         ]
         assert len(list(detect(events, baseline=BASELINE))) == 1
 
     def test_separate_sessions_separate_findings(self):
         events = [
-            _ev("s1", "query_db", "POISONED", {"type": "object", "properties": {"sql": {"type": "string"}}}, time_ms=100),
-            _ev("s2", "query_db", "POISONED", {"type": "object", "properties": {"sql": {"type": "string"}}}, time_ms=200),
+            _ev(
+                "s1",
+                "query_db",
+                "POISONED",
+                {"type": "object", "properties": {"sql": {"type": "string"}}},
+                time_ms=100,
+            ),
+            _ev(
+                "s2",
+                "query_db",
+                "POISONED",
+                {"type": "object", "properties": {"sql": {"type": "string"}}},
+                time_ms=200,
+            ),
         ]
         assert len(list(detect(events, baseline=BASELINE))) == 2
 
     def test_mitre_attack_populated(self):
-        events = [_ev("s", "query_db", "POISONED",
-                      {"type": "object", "properties": {"sql": {"type": "string"}}})]
+        events = [
+            _ev(
+                "s",
+                "query_db",
+                "POISONED",
+                {"type": "object", "properties": {"sql": {"type": "string"}}},
+            )
+        ]
         finding = list(detect(events, baseline=BASELINE))[0]
         assert finding["finding_info"]["attacks"][0]["technique"]["uid"] == MITRE_TECHNIQUE_UID
 
     def test_wrong_class_ignored(self):
-        events = [_ev("s", "query_db", "POISONED",
-                      {"type": "object", "properties": {"sql": {"type": "string"}}})]
+        events = [
+            _ev(
+                "s",
+                "query_db",
+                "POISONED",
+                {"type": "object", "properties": {"sql": {"type": "string"}}},
+            )
+        ]
         events[0]["class_uid"] = 1234
         assert list(detect(events, baseline=BASELINE)) == []
 
     def test_wrong_method_ignored(self):
-        events = [_ev("s", "query_db", "POISONED",
-                      {"type": "object", "properties": {"sql": {"type": "string"}}})]
+        events = [
+            _ev(
+                "s",
+                "query_db",
+                "POISONED",
+                {"type": "object", "properties": {"sql": {"type": "string"}}},
+            )
+        ]
         events[0]["mcp"]["method"] = "tools/call"
         assert list(detect(events, baseline=BASELINE)) == []
 
     def test_wrong_vendor_name_still_processed(self):
         # Detector trusts the class_uid + tools/list shape; vendor in
         # metadata doesn't gate.
-        events = [_ev("s", "query_db", "POISONED",
-                      {"type": "object", "properties": {"sql": {"type": "string"}}})]
+        events = [
+            _ev(
+                "s",
+                "query_db",
+                "POISONED",
+                {"type": "object", "properties": {"sql": {"type": "string"}}},
+            )
+        ]
         events[0]["metadata"] = {"product": {"vendor_name": "other-vendor"}}
         assert len(list(detect(events, baseline=BASELINE))) == 1
 
@@ -180,8 +259,14 @@ class TestDetect:
         assert list(detect(events, baseline=BASELINE)) == []
 
     def test_native_output_shape(self):
-        events = [_ev("s", "query_db", "POISONED",
-                      {"type": "object", "properties": {"sql": {"type": "string"}}})]
+        events = [
+            _ev(
+                "s",
+                "query_db",
+                "POISONED",
+                {"type": "object", "properties": {"sql": {"type": "string"}}},
+            )
+        ]
         f = list(detect(events, output_format="native", baseline=BASELINE))[0]
         assert OUTPUT_FORMATS == ("ocsf", "native")
         assert f["schema_mode"] == "native"
@@ -199,7 +284,7 @@ class TestDetect:
 
 class TestLoadJsonl:
     def test_skips_malformed(self, capsys):
-        lines = ['{not json', '{"ok":true}']
+        lines = ["{not json", '{"ok":true}']
         assert list(load_jsonl(lines)) == [{"ok": True}]
         assert "skipping line 1" in capsys.readouterr().err
 

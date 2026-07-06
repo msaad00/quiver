@@ -201,7 +201,9 @@ def _finding_uid(
     object_key: str,
     time_ms: int,
 ) -> str:
-    material = "|".join([SKILL_NAME, event_uid, actor_account_uid, bucket_name, object_key, str(time_ms)])
+    material = "|".join(
+        [SKILL_NAME, event_uid, actor_account_uid, bucket_name, object_key, str(time_ms)]
+    )
     return f"amad-{hashlib.sha256(material.encode('utf-8')).hexdigest()[:16]}"
 
 

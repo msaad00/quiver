@@ -78,10 +78,7 @@ class TestDetect:
 
     def test_single_breach_does_not_fire(self):
         # One breach is not enough to trigger; need >= repeat threshold.
-        events = [
-            _ev("s", "t", DEFAULT_BYTES_THRESHOLD + 1, time_ms=i * 1000)
-            for i in range(2)
-        ]
+        events = [_ev("s", "t", DEFAULT_BYTES_THRESHOLD + 1, time_ms=i * 1000) for i in range(2)]
         assert list(detect(events)) == []
 
     def test_repeated_breaches_fires_once(self):
@@ -116,10 +113,7 @@ class TestDetect:
 
     def test_multi_event_aggregation_after_first_fire_no_duplicate(self):
         # 8 breaches > 5 should still fire only once (idempotent on the same key).
-        events = [
-            _ev("s", "t", DEFAULT_BYTES_THRESHOLD + 1, time_ms=i * 1000)
-            for i in range(8)
-        ]
+        events = [_ev("s", "t", DEFAULT_BYTES_THRESHOLD + 1, time_ms=i * 1000) for i in range(8)]
         assert len(list(detect(events))) == 1
 
     def test_separate_sessions_counted_separately(self):
@@ -183,7 +177,7 @@ class TestDetect:
 
 class TestLoadJsonl:
     def test_skips_malformed(self, capsys):
-        lines = ['{not json', '{"ok":true}']
+        lines = ["{not json", '{"ok":true}']
         assert list(load_jsonl(lines)) == [{"ok": True}]
         assert "skipping line 1" in capsys.readouterr().err
 

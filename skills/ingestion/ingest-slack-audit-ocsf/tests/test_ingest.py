@@ -85,9 +85,21 @@ class TestParseTs:
 
 class TestClassification:
     def test_authentication_routes(self):
-        assert _classify_action("user_login") == (AUTH_CLASS_UID, "Authentication", AUTH_ACTIVITY_LOGON)
-        assert _classify_action("user_logout") == (AUTH_CLASS_UID, "Authentication", AUTH_ACTIVITY_LOGOFF)
-        assert _classify_action("signout_all_sessions") == (AUTH_CLASS_UID, "Authentication", AUTH_ACTIVITY_LOGOFF)
+        assert _classify_action("user_login") == (
+            AUTH_CLASS_UID,
+            "Authentication",
+            AUTH_ACTIVITY_LOGON,
+        )
+        assert _classify_action("user_logout") == (
+            AUTH_CLASS_UID,
+            "Authentication",
+            AUTH_ACTIVITY_LOGOFF,
+        )
+        assert _classify_action("signout_all_sessions") == (
+            AUTH_CLASS_UID,
+            "Authentication",
+            AUTH_ACTIVITY_LOGOFF,
+        )
 
     def test_user_access_routes(self):
         assert _classify_action("private_channel_member_added") == (
@@ -154,10 +166,19 @@ class TestConvert:
                 action="private_channel_member_added",
                 entity={
                     "type": "user",
-                    "user": {"id": "UEXT", "name": "eve", "email": "eve@partner.com", "team": "TEXT"},
+                    "user": {
+                        "id": "UEXT",
+                        "name": "eve",
+                        "email": "eve@partner.com",
+                        "team": "TEXT",
+                    },
                 },
                 details={
-                    "channel": {"id": "C01234SEC", "name": "security-private", "privacy": "private"},
+                    "channel": {
+                        "id": "C01234SEC",
+                        "name": "security-private",
+                        "privacy": "private",
+                    },
                     "workspace_type": "external",
                     "is_external": True,
                 },
@@ -257,9 +278,7 @@ class TestUnmappedEventCounter:
     """Audit honesty: every unmapped Slack action is counted, not silently dropped."""
 
     def _wrap(self, action: str) -> str:
-        return json.dumps(
-            {"id": f"u-{action}", "date_create": 1718323200, "action": action}
-        )
+        return json.dumps({"id": f"u-{action}", "date_create": 1718323200, "action": action})
 
     def test_unmapped_counts_populated_with_repeats(self):
         unmapped: dict[str, int] = {}

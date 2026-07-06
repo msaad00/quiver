@@ -295,20 +295,23 @@ def _build_canonical_event(entry: dict[str, Any]) -> dict[str, Any] | None:
     activity_id = infer_activity_id(verb)
     status_id, status_detail = _status_id_and_detail(entry.get("responseStatus"))
     obj_ref = entry.get("objectRef") or {}
-    metadata_uid = str(entry.get("auditID") or "").strip() or hashlib.sha256(
-        json.dumps(
-            {
-                "requestReceivedTimestamp": entry.get("requestReceivedTimestamp", ""),
-                "verb": verb,
-                "username": ((entry.get("user") or {}).get("username")) or "",
-                "resource": obj_ref.get("resource", ""),
-                "namespace": obj_ref.get("namespace", ""),
-                "name": obj_ref.get("name", ""),
-            },
-            sort_keys=True,
-            separators=(",", ":"),
-        ).encode("utf-8")
-    ).hexdigest()
+    metadata_uid = (
+        str(entry.get("auditID") or "").strip()
+        or hashlib.sha256(
+            json.dumps(
+                {
+                    "requestReceivedTimestamp": entry.get("requestReceivedTimestamp", ""),
+                    "verb": verb,
+                    "username": ((entry.get("user") or {}).get("username")) or "",
+                    "resource": obj_ref.get("resource", ""),
+                    "namespace": obj_ref.get("namespace", ""),
+                    "name": obj_ref.get("name", ""),
+                },
+                sort_keys=True,
+                separators=(",", ":"),
+            ).encode("utf-8")
+        ).hexdigest()
+    )
 
     canonical: dict[str, Any] = {
         "schema_mode": "canonical",
@@ -495,10 +498,17 @@ def ingest(stream: Iterable[str], output_format: str = "ocsf") -> Iterable[dict[
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Convert raw K8s audit logs to OCSF 1.8 API Activity JSONL.")
+    parser = argparse.ArgumentParser(
+        description="Convert raw K8s audit logs to OCSF 1.8 API Activity JSONL."
+    )
     parser.add_argument("input", nargs="?", help="Input JSON/JSONL file. Defaults to stdin.")
     parser.add_argument("--output", "-o", help="Output JSONL file. Defaults to stdout.")
-    parser.add_argument("--output-format", choices=OUTPUT_FORMATS, default="ocsf", help="Render OCSF events or the native enriched event shape.")
+    parser.add_argument(
+        "--output-format",
+        choices=OUTPUT_FORMATS,
+        default="ocsf",
+        help="Render OCSF events or the native enriched event shape.",
+    )
     args = parser.parse_args(argv)
 
     in_stream = sys.stdin if not args.input else open(args.input, "r", encoding="utf-8")

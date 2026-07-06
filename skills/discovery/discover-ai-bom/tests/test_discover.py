@@ -111,14 +111,22 @@ class TestNormalizedInventory:
 class TestPolicyFindings:
     def test_native_policy_findings_cover_expected_rules(self):
         findings = build_policy_findings(_policy_doc(), output_format="native")
-        assert {finding["check_id"] for finding in findings} == {"AI-BOM-1", "AI-BOM-2", "AI-BOM-3", "AI-BOM-4"}
+        assert {finding["check_id"] for finding in findings} == {
+            "AI-BOM-1",
+            "AI-BOM-2",
+            "AI-BOM-3",
+            "AI-BOM-4",
+        }
         assert all(finding["status"] == "FAIL" for finding in findings)
 
     def test_policy_findings_can_render_as_ocsf_compliance_findings(self):
         findings = build_policy_findings(_policy_doc(), output_format="ocsf")
         assert len(findings) == 4
         assert all(finding["class_uid"] == 2003 for finding in findings)
-        assert all(finding["metadata"]["product"]["feature"]["name"] == "discover-ai-bom" for finding in findings)
+        assert all(
+            finding["metadata"]["product"]["feature"]["name"] == "discover-ai-bom"
+            for finding in findings
+        )
         assert {finding["compliance"]["control"] for finding in findings} == {
             "AI-BOM-1",
             "AI-BOM-2",
@@ -214,7 +222,9 @@ class TestProviderSnapshots:
             {
                 "provider": "gcp",
                 "vertex_ai": {
-                    "models": [{"name": "projects/p/locations/us/models/1", "displayName": "fraud-model"}],
+                    "models": [
+                        {"name": "projects/p/locations/us/models/1", "displayName": "fraud-model"}
+                    ],
                     "endpoints": [
                         {
                             "name": "projects/p/locations/us/endpoints/99",
@@ -222,9 +232,21 @@ class TestProviderSnapshots:
                             "deployedModels": [{"model": "projects/p/locations/us/models/1"}],
                         }
                     ],
-                    "datasets": [{"name": "projects/p/locations/us/datasets/1", "displayName": "fraud-dataset"}],
-                    "training_pipelines": [{"name": "projects/p/locations/us/trainingPipelines/1", "displayName": "fraud-train"}],
-                    "indexes": [{"name": "projects/p/locations/us/indexes/1", "displayName": "fraud-index"}],
+                    "datasets": [
+                        {
+                            "name": "projects/p/locations/us/datasets/1",
+                            "displayName": "fraud-dataset",
+                        }
+                    ],
+                    "training_pipelines": [
+                        {
+                            "name": "projects/p/locations/us/trainingPipelines/1",
+                            "displayName": "fraud-train",
+                        }
+                    ],
+                    "indexes": [
+                        {"name": "projects/p/locations/us/indexes/1", "displayName": "fraud-index"}
+                    ],
                     "index_endpoints": [
                         {
                             "name": "projects/p/locations/us/indexEndpoints/1",
@@ -250,7 +272,13 @@ class TestProviderSnapshots:
                 "provider": "azure",
                 "azure_ml": {
                     "models": [{"id": "/models/fraud", "name": "fraud-model", "version": "3"}],
-                    "deployments": [{"id": "/deployments/fraud-blue", "name": "fraud-blue", "model": "/models/fraud"}],
+                    "deployments": [
+                        {
+                            "id": "/deployments/fraud-blue",
+                            "name": "fraud-blue",
+                            "model": "/models/fraud",
+                        }
+                    ],
                     "online_endpoints": [
                         {
                             "name": "fraud-endpoint",
@@ -258,10 +286,18 @@ class TestProviderSnapshots:
                         }
                     ],
                     "data_assets": [{"id": "/data/fraud", "name": "fraud-data", "version": "1"}],
-                    "compute_clusters": [{"id": "/compute/gpu", "name": "gpu", "vmSize": "Standard_NC6s_v3"}],
+                    "compute_clusters": [
+                        {"id": "/compute/gpu", "name": "gpu", "vmSize": "Standard_NC6s_v3"}
+                    ],
                 },
                 "ai_foundry": {
-                    "deployments": [{"id": "/foundry/deployments/chat", "name": "chat-prod", "model": "/models/fraud"}],
+                    "deployments": [
+                        {
+                            "id": "/foundry/deployments/chat",
+                            "name": "chat-prod",
+                            "model": "/models/fraud",
+                        }
+                    ],
                     "projects": [{"id": "/foundry/projects/ai-sec", "name": "ai-sec"}],
                 },
             }
@@ -288,7 +324,9 @@ class TestErrors:
 
     def test_requires_asset_identity(self):
         try:
-            _normalize_assets({"assets": [{"provider": "aws", "service": "bedrock", "kind": "model"}]})
+            _normalize_assets(
+                {"assets": [{"provider": "aws", "service": "bedrock", "kind": "model"}]}
+            )
         except ValueError as exc:
             assert "at least one of `id` or `name`" in str(exc)
         else:  # pragma: no cover - defensive

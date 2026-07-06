@@ -45,7 +45,10 @@ class TestCheckMode:
         (tmp_repo / "scripts").mkdir()
         (tmp_repo / "skills").mkdir()
         # Copy the script + its dependency
-        for rel in ("scripts/generate_security_bar_matrix.py", "scripts/skill_validation_common.py"):
+        for rel in (
+            "scripts/generate_security_bar_matrix.py",
+            "scripts/skill_validation_common.py",
+        ):
             (tmp_repo / rel).write_text((REPO_ROOT / rel).read_text())
         # Minimal fake skill so discover_skill_contracts has something to enumerate.
         fake_skill_dir = tmp_repo / "skills" / "detection" / "detect-fake"
@@ -91,7 +94,10 @@ class TestCheckMode:
         tmp_repo.mkdir()
         (tmp_repo / "scripts").mkdir()
         (tmp_repo / "skills").mkdir()
-        for rel in ("scripts/generate_security_bar_matrix.py", "scripts/skill_validation_common.py"):
+        for rel in (
+            "scripts/generate_security_bar_matrix.py",
+            "scripts/skill_validation_common.py",
+        ):
             (tmp_repo / rel).write_text((REPO_ROOT / rel).read_text())
         # SECURITY_BAR.md without the markers
         (tmp_repo / "SECURITY_BAR.md").write_text("# Security Bar\n\nno markers here\n")
@@ -114,10 +120,7 @@ class TestGeneratedContent:
         start = content.index("AUTO-GENERATED MATRIX START")
         end = content.index("AUTO-GENERATED MATRIX END")
         matrix = content[start:end]
-        row_count = sum(
-            1 for line in matrix.splitlines()
-            if line.startswith("| `") and "|" in line
-        )
+        row_count = sum(1 for line in matrix.splitlines() if line.startswith("| `") and "|" in line)
         on_disk_count = sum(1 for _ in REPO_ROOT.glob("skills/*/*/SKILL.md"))
         assert row_count == on_disk_count, (
             f"matrix has {row_count} rows; {on_disk_count} skills on disk"

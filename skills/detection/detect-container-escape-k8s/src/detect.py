@@ -212,7 +212,9 @@ def _normalize_runtime_event(event: dict[str, Any]) -> dict[str, Any] | None:
         "event_family": "runtime",
         "source_format": str(event.get("schema_mode") or "runtime"),
         "provider": "Kubernetes",
-        "time_ms": _safe_int(event.get("time_ms") or event.get("time") or event.get("ts") or event.get("timestamp")),
+        "time_ms": _safe_int(
+            event.get("time_ms") or event.get("time") or event.get("ts") or event.get("timestamp")
+        ),
         "actor_name": _first_text(
             event,
             "user.name",
@@ -420,7 +422,12 @@ def _render_ocsf_finding(native_finding: dict[str, Any]) -> dict[str, Any]:
                 "vendor_name": VENDOR_NAME,
                 "feature": {"name": SKILL_NAME},
             },
-            "labels": ["detection-engineering", "kubernetes", "container-escape", native_finding["rule_name"]],
+            "labels": [
+                "detection-engineering",
+                "kubernetes",
+                "container-escape",
+                native_finding["rule_name"],
+            ],
         },
         "finding_info": {
             "uid": native_finding["finding_uid"],
@@ -521,7 +528,11 @@ def _find_risky_host_paths(payload: Any) -> list[str]:
             path = str(op.get("path") or "")
             value = op.get("value")
             path_lower = path.lower()
-            if "/hostpath/path" in path_lower and isinstance(value, str) and _is_risky_host_path(value):
+            if (
+                "/hostpath/path" in path_lower
+                and isinstance(value, str)
+                and _is_risky_host_path(value)
+            ):
                 found.add(value)
             elif path_lower.endswith("/hostpath") and isinstance(value, dict):
                 host_path = value.get("path")
@@ -572,7 +583,9 @@ def _extract_ephemeral_container_names(payload: Any) -> list[str]:
     def walk(node: Any) -> None:
         if isinstance(node, dict):
             for key, value in node.items():
-                if key in {"ephemeralContainers", "ephemeralcontainers"} and isinstance(value, list):
+                if key in {"ephemeralContainers", "ephemeralcontainers"} and isinstance(
+                    value, list
+                ):
                     for item in value:
                         if isinstance(item, dict) and item.get("name"):
                             names.append(str(item["name"]))
@@ -762,7 +775,12 @@ def rule3_ephemeral_container_creation(events: list[dict[str, Any]]) -> Iterable
             continue
 
         actor = event["actor_name"] or "unknown"
-        target = _target(event["resource_type"], event["namespace"], event["resource_name"], "ephemeralcontainers")
+        target = _target(
+            event["resource_type"],
+            event["namespace"],
+            event["resource_name"],
+            "ephemeralcontainers",
+        )
         names_text = ", ".join(names) if names else "<unknown>"
         key = f"r3|{actor}|{target}|{names_text}"
         if key in seen:
@@ -821,7 +839,9 @@ def rule4_unexpected_exec(
         actor = event["actor_name"] or "unknown"
         deploy_actor = _recent_deploy_actor(normalized, event)
         operator_matched = _is_known_operator(event, known_operators)
-        is_service_account = event["actor_type"] == "ServiceAccount" or actor.startswith("system:serviceaccount:")
+        is_service_account = event["actor_type"] == "ServiceAccount" or actor.startswith(
+            "system:serviceaccount:"
+        )
         if deploy_actor and actor == deploy_actor:
             continue
         if operator_matched:
@@ -878,17 +898,25 @@ def rule4_unexpected_exec(
 
 
 def rule5_runtime_fusion(events: list[dict[str, Any]]) -> Iterable[dict[str, Any]]:
-    normalized = [event for event in _normalized_events(events) if event["event_family"] == "runtime"]
+    normalized = [
+        event for event in _normalized_events(events) if event["event_family"] == "runtime"
+    ]
     buckets: dict[str, list[dict[str, Any]]] = {}
     for event in normalized:
-        key = event["container_id"] or f"{event['namespace']}|{event['resource_name']}|{event['runtime_signal']}"
+        key = (
+            event["container_id"]
+            or f"{event['namespace']}|{event['resource_name']}|{event['runtime_signal']}"
+        )
         buckets.setdefault(key, []).append(event)
 
     for bucket_events in buckets.values():
         bucket_events.sort(key=lambda item: item["time_ms"])
         fused_group: list[dict[str, Any]] = []
         for event in bucket_events:
-            if fused_group and event["time_ms"] - fused_group[-1]["time_ms"] > RUNTIME_FUSION_WINDOW_MS:
+            if (
+                fused_group
+                and event["time_ms"] - fused_group[-1]["time_ms"] > RUNTIME_FUSION_WINDOW_MS
+            ):
                 yield from _render_runtime_group(fused_group)
                 fused_group = [event]
             else:
@@ -1021,7 +1049,10 @@ def main(argv: list[str] | None = None) -> int:
     try:
         events = list(load_jsonl(in_stream))
         known_operators = list(DEFAULT_KNOWN_OPERATOR_PRINCIPALS)
-        env_known = [item.strip() for item in os.getenv("K8S_CONTAINER_ESCAPE_KNOWN_OPERATORS", "").split(",")]
+        env_known = [
+            item.strip()
+            for item in os.getenv("K8S_CONTAINER_ESCAPE_KNOWN_OPERATORS", "").split(",")
+        ]
         known_operators.extend(item for item in env_known if item)
         known_operators.extend(args.known_operator_principal)
         for finding in detect(

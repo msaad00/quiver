@@ -113,14 +113,29 @@ _TYPE_TECHNIQUE: dict[str, tuple[str, str, str | None, str | None]] = {
     "Backdoor:EC2/C&CActivity.B": ("T1071", "Application Layer Protocol", None, None),
     "Backdoor:EC2/C&CActivity.B!DNS": ("T1071", "Application Layer Protocol", "T1071.004", "DNS"),
     "Backdoor:EC2/DenialOfService.Tcp": ("T1499", "Endpoint Denial of Service", None, None),
-    "Trojan:EC2/DNSDataExfiltration": ("T1048", "Exfiltration Over Alternative Protocol", None, None),
+    "Trojan:EC2/DNSDataExfiltration": (
+        "T1048",
+        "Exfiltration Over Alternative Protocol",
+        None,
+        None,
+    ),
     "Trojan:EC2/DropPoint": ("T1071", "Application Layer Protocol", None, None),
     "CryptoCurrency:EC2/BitcoinTool.B": ("T1496", "Resource Hijacking", None, None),
     "CryptoCurrency:EC2/BitcoinTool.B!DNS": ("T1496", "Resource Hijacking", None, None),
-    "Recon:IAMUser/MaliciousIPCaller.Custom": ("T1580", "Cloud Infrastructure Discovery", None, None),
+    "Recon:IAMUser/MaliciousIPCaller.Custom": (
+        "T1580",
+        "Cloud Infrastructure Discovery",
+        None,
+        None,
+    ),
     "Recon:EC2/PortProbeUnprotectedPort": ("T1595", "Active Scanning", None, None),
     "Recon:EC2/Portscan": ("T1046", "Network Service Discovery", None, None),
-    "Discovery:S3/MaliciousIPCaller.Custom": ("T1580", "Cloud Infrastructure Discovery", None, None),
+    "Discovery:S3/MaliciousIPCaller.Custom": (
+        "T1580",
+        "Cloud Infrastructure Discovery",
+        None,
+        None,
+    ),
     "Discovery:S3/TorIPCaller": ("T1580", "Cloud Infrastructure Discovery", None, None),
     "Exfiltration:S3/ObjectRead.Unusual": ("T1530", "Data from Cloud Storage Object", None, None),
     "Exfiltration:S3/MaliciousIPCaller": ("T1530", "Data from Cloud Storage Object", None, None),
@@ -429,7 +444,11 @@ def _render_ocsf_finding(canonical: dict[str, Any]) -> dict[str, Any]:
             {"name": "gd.finding_id", "type": "Other", "value": canonical["source"]["finding_id"]},
             {"name": "gd.type", "type": "Other", "value": canonical["source"]["finding_type"]},
             {"name": "gd.severity", "type": "Other", "value": canonical["severity"]},
-            {"name": "resource.type", "type": "Other", "value": canonical["source"]["resource_type"]},
+            {
+                "name": "resource.type",
+                "type": "Other",
+                "value": canonical["source"]["resource_type"],
+            },
             {"name": "aws.account", "type": "Other", "value": canonical["account_uid"]},
             {"name": "aws.region", "type": "Other", "value": canonical["region"]},
         ],
@@ -495,7 +514,9 @@ def iter_raw_findings(stream: Iterable[str]) -> Iterable[dict[str, Any]]:
                         yield f
                 return
             # EventBridge envelope: {"detail-type": "GuardDuty Finding", "detail": {...}}
-            if obj.get("detail-type") == "GuardDuty Finding" and isinstance(obj.get("detail"), dict):
+            if obj.get("detail-type") == "GuardDuty Finding" and isinstance(
+                obj.get("detail"), dict
+            ):
                 yield obj["detail"]
                 return
             yield obj
@@ -536,10 +557,17 @@ def ingest(stream: Iterable[str], output_format: str = "ocsf") -> Iterable[dict[
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Convert raw GuardDuty findings to OCSF 1.8 Detection Finding JSONL.")
+    parser = argparse.ArgumentParser(
+        description="Convert raw GuardDuty findings to OCSF 1.8 Detection Finding JSONL."
+    )
     parser.add_argument("input", nargs="?", help="Input JSON/JSONL file. Defaults to stdin.")
     parser.add_argument("--output", "-o", help="Output JSONL file. Defaults to stdout.")
-    parser.add_argument("--output-format", choices=("ocsf", "native"), default="ocsf", help="Output shape. Defaults to ocsf.")
+    parser.add_argument(
+        "--output-format",
+        choices=("ocsf", "native"),
+        default="ocsf",
+        help="Output shape. Defaults to ocsf.",
+    )
     args = parser.parse_args(argv)
 
     in_stream = sys.stdin if not args.input else open(args.input, "r", encoding="utf-8")

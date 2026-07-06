@@ -98,7 +98,11 @@ def test_native_output_has_no_ocsf_envelope():
 
 def test_eventbridge_detail_is_unwrapped():
     detail = _raw_fixture()[1]
-    wrapped = {"source": "aws.config", "detail-type": "Config Rules Compliance Change", "detail": detail}
+    wrapped = {
+        "source": "aws.config",
+        "detail-type": "Config Rules Compliance Change",
+        "detail": detail,
+    }
     events = list(ingest([json.dumps(wrapped)]))
     assert len(events) == 1
     assert events[0]["class_uid"] == COMPLIANCE_CLASS_UID

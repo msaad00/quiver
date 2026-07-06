@@ -21,7 +21,10 @@ def _event(change_count: int = 12, minutes: int = 0, tx_code: str = "SM30") -> d
     return {
         "class_uid": 6002,
         "time": 1780920000000 + minutes * 60 * 1000,
-        "metadata": {"uid": f"sap-change-{minutes}-{change_count}", "product": {"feature": {"name": "ingest-sap-audit-log-ocsf"}}},
+        "metadata": {
+            "uid": f"sap-change-{minutes}-{change_count}",
+            "product": {"feature": {"name": "ingest-sap-audit-log-ocsf"}},
+        },
         "actor": {"user": {"uid": "100:FI_ADMIN", "name": "FI_ADMIN"}},
         "unmapped": {
             "sap": {
@@ -48,7 +51,12 @@ def test_detects_mass_change_in_window(monkeypatch) -> None:
 def test_ignores_non_sensitive_transaction(monkeypatch) -> None:
     monkeypatch.setenv("SAP_MASS_CHANGE_EVENT_THRESHOLD", "1")
 
-    assert detect_mod.detect(StringIO(json.dumps(_event(5, tx_code="VA01")) + "\n"), output_format="native") == []
+    assert (
+        detect_mod.detect(
+            StringIO(json.dumps(_event(5, tx_code="VA01")) + "\n"), output_format="native"
+        )
+        == []
+    )
 
 
 def test_cli_outputs_ocsf(tmp_path: Path) -> None:

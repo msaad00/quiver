@@ -55,7 +55,10 @@ def _gcp_event(
         "api": {"operation": operation, "service": {"name": "compute.googleapis.com"}},
         "cloud": {"provider": "GCP", "account": {"uid": account_uid}, "region": "global"},
         "resources": [
-            {"name": f"projects/{account_uid}/global/firewalls/{fw_name}", "type": "gce_firewall_rule"}
+            {
+                "name": f"projects/{account_uid}/global/firewalls/{fw_name}",
+                "type": "gce_firewall_rule",
+            }
         ],
         "unmapped": {
             "gcp": {
@@ -108,16 +111,13 @@ def test_fires_on_ssh_open_to_world():
         for obs in f["observables"]
     )
     assert any(
-        obs["name"] == "permission.cidr" and obs["value"] == "0.0.0.0/0"
-        for obs in f["observables"]
+        obs["name"] == "permission.cidr" and obs["value"] == "0.0.0.0/0" for obs in f["observables"]
     )
     assert any(
-        obs["name"] == "permission.port" and obs["value"] == "22"
-        for obs in f["observables"]
+        obs["name"] == "permission.port" and obs["value"] == "22" for obs in f["observables"]
     )
     assert any(
-        obs["name"] == "permission.protocol" and obs["value"] == "tcp"
-        for obs in f["observables"]
+        obs["name"] == "permission.protocol" and obs["value"] == "tcp" for obs in f["observables"]
     )
 
 
@@ -272,18 +272,13 @@ def test_one_event_with_multiple_allowed_emits_per_allowed():
     findings = list(detect([event]))
     assert len(findings) == 2
     fw_names = {
-        obs["value"]
-        for f in findings
-        for obs in f["observables"]
-        if obs["name"] == "target.uid"
+        obs["value"] for f in findings for obs in f["observables"] if obs["name"] == "target.uid"
     }
     assert fw_names == {"allow-ssh-world"}
 
 
 def test_mixed_world_and_corp_source_ranges_only_emits_for_world():
-    findings = list(
-        detect([_gcp_event(source_ranges=["0.0.0.0/0", "10.0.0.0/8"])])
-    )
+    findings = list(detect([_gcp_event(source_ranges=["0.0.0.0/0", "10.0.0.0/8"])]))
     assert len(findings) == 1
     cidr_obs = [
         obs["value"] for obs in findings[0]["observables"] if obs["name"] == "permission.cidr"
@@ -293,6 +288,7 @@ def test_mixed_world_and_corp_source_ranges_only_emits_for_world():
 
 def test_unsupported_output_format_raises():
     import pytest
+
     with pytest.raises(ContractError, match="unsupported output_format") as excinfo:
         list(detect([_gcp_event()], output_format="weird"))
     assert excinfo.value.error_class == "contract"

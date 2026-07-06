@@ -141,9 +141,7 @@ class GoogleComputeClient:
 
     def patch_firewall_disable(self, project: str, rule_name: str) -> None:
         body = {"disabled": True}
-        self._client().firewalls().patch(
-            project=project, firewall=rule_name, body=body
-        ).execute()
+        self._client().firewalls().patch(project=project, firewall=rule_name, body=body).execute()
 
     def delete_firewall(self, project: str, rule_name: str) -> None:
         self._client().firewalls().delete(project=project, firewall=rule_name).execute()
@@ -208,18 +206,27 @@ class DualAuditWriter:
         }
         body = json.dumps(envelope, separators=(",", ":"))
         boto3.client("s3").put_object(
-            Bucket=self.s3_bucket, Key=evidence_key, Body=body.encode("utf-8"),
-            ServerSideEncryption="aws:kms", SSEKMSKeyId=self.kms_key_arn,
+            Bucket=self.s3_bucket,
+            Key=evidence_key,
+            Body=body.encode("utf-8"),
+            ServerSideEncryption="aws:kms",
+            SSEKMSKeyId=self.kms_key_arn,
             ContentType="application/json",
         )
         boto3.client("dynamodb").put_item(
             TableName=self.dynamodb_table,
             Item={
-                "rule_name": {"S": target.rule_name}, "action_at": {"S": action_at},
-                "row_uid": {"S": row_uid}, "step": {"S": step}, "status": {"S": status},
-                "incident_id": {"S": incident_id}, "approver": {"S": approver},
-                "project_id": {"S": target.project_id}, "provider": {"S": "gcp"},
-                "actor": {"S": target.actor}, "rule": {"S": target.rule},
+                "rule_name": {"S": target.rule_name},
+                "action_at": {"S": action_at},
+                "row_uid": {"S": row_uid},
+                "step": {"S": step},
+                "status": {"S": status},
+                "incident_id": {"S": incident_id},
+                "approver": {"S": approver},
+                "project_id": {"S": target.project_id},
+                "provider": {"S": "gcp"},
+                "actor": {"S": target.actor},
+                "rule": {"S": target.rule},
                 "producer_skill": {"S": target.producer_skill},
                 "finding_uid": {"S": target.finding_uid},
                 "s3_evidence_uri": {"S": evidence_uri},
@@ -245,7 +252,11 @@ def _finding_product(event: dict[str, Any]) -> str:
 
 
 def _finding_uid(event: dict[str, Any]) -> str:
-    return str((event.get("finding_info") or {}).get("uid") or (event.get("metadata") or {}).get("uid") or "")
+    return str(
+        (event.get("finding_info") or {}).get("uid")
+        or (event.get("metadata") or {}).get("uid")
+        or ""
+    )
 
 
 def _observable_value(event: dict[str, Any], name: str) -> str:
@@ -289,7 +300,9 @@ def _target_from_event(event: dict[str, Any]) -> Target | None:
     producer = _finding_product(event)
     if producer not in ACCEPTED_PRODUCERS:
         emit_stderr_event(
-            SKILL_NAME, level="warning", event="wrong_source_skill",
+            SKILL_NAME,
+            level="warning",
+            event="wrong_source_skill",
             message=f"skipping finding from unaccepted producer `{producer or '<missing>'}`",
         )
         return None
@@ -310,14 +323,22 @@ def _target_from_event(event: dict[str, Any]) -> Target | None:
             ports.append(parsed)
 
     return Target(
-        rule_name=rule_name, project_id=project_id, network=network,
-        cidrs=cidrs, ports=tuple(ports), ip_protocol=ip_protocol,
-        actor=actor, rule=rule,
-        producer_skill=producer, finding_uid=_finding_uid(event),
+        rule_name=rule_name,
+        project_id=project_id,
+        network=network,
+        cidrs=cidrs,
+        ports=tuple(ports),
+        ip_protocol=ip_protocol,
+        actor=actor,
+        rule=rule,
+        producer_skill=producer,
+        finding_uid=_finding_uid(event),
     )
 
 
-def parse_targets(events: Iterable[dict[str, Any]]) -> Iterator[tuple[Target | None, dict[str, Any]]]:
+def parse_targets(
+    events: Iterable[dict[str, Any]],
+) -> Iterator[tuple[Target | None, dict[str, Any]]]:
     for event in events:
         yield _target_from_event(event), event
 
@@ -405,12 +426,14 @@ def _plan_record(
             "actor": target.actor,
             "rule": target.rule,
         },
-        "actions": [{
-            "step": step,
-            "endpoint": _action_endpoint(target, mode),
-            "status": status,
-            "detail": detail,
-        }],
+        "actions": [
+            {
+                "step": step,
+                "endpoint": _action_endpoint(target, mode),
+                "status": status,
+                "detail": detail,
+            }
+        ],
         "status": status,
         "mode": mode,
         "dry_run": dry_run,
@@ -428,10 +451,16 @@ def _skip_record(
         "record_type": RECORD_PLAN if dry_run else RECORD_ACTION,
         "source_skill": SKILL_NAME,
         "target": {
-            "provider": "GCP", "rule_name": target.rule_name, "project_id": target.project_id,
-            "region": "global", "network": target.network,
-            "cidrs": list(target.cidrs), "ports": list(target.ports),
-            "ip_protocol": target.ip_protocol, "actor": target.actor, "rule": target.rule,
+            "provider": "GCP",
+            "rule_name": target.rule_name,
+            "project_id": target.project_id,
+            "region": "global",
+            "network": target.network,
+            "cidrs": list(target.cidrs),
+            "ports": list(target.ports),
+            "ip_protocol": target.ip_protocol,
+            "actor": target.actor,
+            "rule": target.rule,
         },
         "actions": [],
         "status": status,
@@ -455,12 +484,15 @@ def revoke_firewall(
     step = _step_for_mode(mode)
     action_word = "delete" if mode == MODE_DELETE else "disable"
     first = audit.record(
-        target=target, step=step, status=STATUS_IN_PROGRESS,
+        target=target,
+        step=step,
+        status=STATUS_IN_PROGRESS,
         detail=(
             f"about to {action_word} firewall `{target.rule_name}` in project "
             f"`{target.project_id}` (network={target.network or '<unknown>'})"
         ),
-        incident_id=incident_id, approver=approver,
+        incident_id=incident_id,
+        approver=approver,
     )
     try:
         if mode == MODE_DELETE:
@@ -469,20 +501,24 @@ def revoke_firewall(
             compute_client.patch_firewall_disable(target.project_id, target.rule_name)
     except Exception as exc:
         audit.record(
-            target=target, step=step, status=STATUS_FAILURE,
-            detail=str(exc), incident_id=incident_id, approver=approver,
+            target=target,
+            step=step,
+            status=STATUS_FAILURE,
+            detail=str(exc),
+            incident_id=incident_id,
+            approver=approver,
         )
         rec = _plan_record(target, status=STATUS_FAILURE, detail=str(exc), dry_run=False, mode=mode)
         rec["audit"] = first
         return rec
 
     last = audit.record(
-        target=target, step=step, status=STATUS_SUCCESS,
-        detail=(
-            f"{action_word}d firewall `{target.rule_name}` in project "
-            f"`{target.project_id}`"
-        ),
-        incident_id=incident_id, approver=approver,
+        target=target,
+        step=step,
+        status=STATUS_SUCCESS,
+        detail=(f"{action_word}d firewall `{target.rule_name}` in project `{target.project_id}`"),
+        incident_id=incident_id,
+        approver=approver,
     )
     rec = _plan_record(target, status=STATUS_SUCCESS, detail=None, dry_run=False, mode=mode)
     rec["audit"] = last
@@ -500,7 +536,9 @@ def reverify_target(
 ) -> list[dict[str, Any]]:
     """Re-verify the offending firewall is absent or disabled.
     Emits one verification record; on DRIFT also emits OCSF Detection Finding."""
-    checked_at_ms = now_ms if now_ms is not None else int(datetime.now(timezone.utc).timestamp() * 1000)
+    checked_at_ms = (
+        now_ms if now_ms is not None else int(datetime.now(timezone.utc).timestamp() * 1000)
+    )
     remediated_at_ms_resolved = remediated_at_ms if remediated_at_ms is not None else checked_at_ms
 
     reference = RemediationReference(
@@ -533,8 +571,14 @@ def reverify_target(
             actual_state="compute.firewalls.get raised; cannot determine state",
             detail=str(exc),
         )
-        record = build_verification_record(reference=reference, result=result, verifier_skill=SKILL_NAME)
-        record["target"] = {"provider": "GCP", "rule_name": target.rule_name, "project_id": target.project_id}
+        record = build_verification_record(
+            reference=reference, result=result, verifier_skill=SKILL_NAME
+        )
+        record["target"] = {
+            "provider": "GCP",
+            "rule_name": target.rule_name,
+            "project_id": target.project_id,
+        }
         return [record]
 
     if firewall is None:
@@ -553,7 +597,9 @@ def reverify_target(
             result = VerificationResult(
                 status=VerificationStatus.VERIFIED,
                 checked_at_ms=checked_at_ms,
-                sla_deadline_ms=sla_deadline(remediated_at_ms_resolved, DEFAULT_VERIFICATION_SLA_MS),
+                sla_deadline_ms=sla_deadline(
+                    remediated_at_ms_resolved, DEFAULT_VERIFICATION_SLA_MS
+                ),
                 expected_state=expected,
                 actual_state="firewall rule present and `disabled: true`",
                 detail="patch confirmed",
@@ -562,17 +608,27 @@ def reverify_target(
             result = VerificationResult(
                 status=VerificationStatus.DRIFT,
                 checked_at_ms=checked_at_ms,
-                sla_deadline_ms=sla_deadline(remediated_at_ms_resolved, DEFAULT_VERIFICATION_SLA_MS),
+                sla_deadline_ms=sla_deadline(
+                    remediated_at_ms_resolved, DEFAULT_VERIFICATION_SLA_MS
+                ),
                 expected_state=expected,
                 actual_state="firewall rule present and NOT disabled (re-enabled or re-created)",
                 detail="ingress was re-enabled or never landed",
             )
 
-    record = build_verification_record(reference=reference, result=result, verifier_skill=SKILL_NAME)
-    record["target"] = {"provider": "GCP", "rule_name": target.rule_name, "project_id": target.project_id}
+    record = build_verification_record(
+        reference=reference, result=result, verifier_skill=SKILL_NAME
+    )
+    record["target"] = {
+        "provider": "GCP",
+        "rule_name": target.rule_name,
+        "project_id": target.project_id,
+    }
     outputs: list[dict[str, Any]] = [record]
     if result.status == VerificationStatus.DRIFT:
-        outputs.append(build_drift_finding(reference=reference, result=result, verifier_skill=SKILL_NAME))
+        outputs.append(
+            build_drift_finding(reference=reference, result=result, verifier_skill=SKILL_NAME)
+        )
     return outputs
 
 
@@ -585,8 +641,11 @@ def load_jsonl(stream: Iterable[str]) -> Iterable[dict[str, Any]]:
             obj = json.loads(line)
         except json.JSONDecodeError as exc:
             emit_stderr_event(
-                SKILL_NAME, level="warning", event="json_parse_failed",
-                message=f"skipping line {lineno}: json parse failed: {exc}", line=lineno,
+                SKILL_NAME,
+                level="warning",
+                event="json_parse_failed",
+                message=f"skipping line {lineno}: json parse failed: {exc}",
+                line=lineno,
             )
             continue
         if isinstance(obj, dict):
@@ -623,9 +682,11 @@ def run(
 
         if not target.rule_name or not target.project_id:
             yield _skip_record(
-                target, status=STATUS_SKIPPED_NO_TARGET,
+                target,
+                status=STATUS_SKIPPED_NO_TARGET,
                 detail="finding did not carry a target.uid (rule name) and account.uid (project) observable",
-                dry_run=dry_run, mode=mode,
+                dry_run=dry_run,
+                mode=mode,
             )
             continue
 
@@ -650,13 +711,20 @@ def run(
             firewall_get = None
 
         protected, why = is_protected_firewall(
-            target, name_prefixes=name_prefixes, rule_names=rule_names,
-            intentionally_open_marker=intentionally_open_marker, firewall_get=firewall_get,
+            target,
+            name_prefixes=name_prefixes,
+            rule_names=rule_names,
+            intentionally_open_marker=intentionally_open_marker,
+            firewall_get=firewall_get,
         )
         if protected:
             status = STATUS_SKIPPED_PROTECTED if apply else STATUS_WOULD_VIOLATE_PROTECTED
             yield _skip_record(
-                target, status=status, detail=f"target is protected: {why}", dry_run=dry_run, mode=mode,
+                target,
+                status=status,
+                detail=f"target is protected: {why}",
+                dry_run=dry_run,
+                mode=mode,
             )
             continue
 
@@ -671,21 +739,27 @@ def run(
         if not apply:
             action_word = "delete" if mode == MODE_DELETE else "disable (patch disabled=true)"
             yield _plan_record(
-                target, status=STATUS_PLANNED,
+                target,
+                status=STATUS_PLANNED,
                 detail=(
                     f"dry-run: would {action_word} firewall `{target.rule_name}` "
                     f"in project `{target.project_id}` to revoke "
                     f"{list(target.cidrs)} on protocol {target.ip_protocol or 'tcp'}"
                 ),
-                dry_run=True, mode=mode,
+                dry_run=True,
+                mode=mode,
             )
             continue
 
         if audit is None:
             raise ValueError("audit writer is required under --apply")
         yield revoke_firewall(
-            target, compute_client=compute_client, audit=audit,
-            incident_id=incident_id, approver=approver, mode=mode,
+            target,
+            compute_client=compute_client,
+            audit=audit,
+            incident_id=incident_id,
+            approver=approver,
+            mode=mode,
         )
 
 
@@ -695,12 +769,20 @@ def main(argv: list[str] | None = None) -> int:
     )
     parser.add_argument("input", nargs="?", help="JSONL input. Defaults to stdin.")
     parser.add_argument("--output", "-o", help="JSONL output. Defaults to stdout.")
-    parser.add_argument("--apply", action="store_true",
-        help="Patch (disable) or delete the offending firewall after approval gates pass.")
-    parser.add_argument("--reverify", action="store_true",
-        help="Read-only verification: confirm offending firewall is gone or disabled.")
     parser.add_argument(
-        "--mode", choices=sorted(SUPPORTED_MODES), default=MODE_PATCH,
+        "--apply",
+        action="store_true",
+        help="Patch (disable) or delete the offending firewall after approval gates pass.",
+    )
+    parser.add_argument(
+        "--reverify",
+        action="store_true",
+        help="Read-only verification: confirm offending firewall is gone or disabled.",
+    )
+    parser.add_argument(
+        "--mode",
+        choices=sorted(SUPPORTED_MODES),
+        default=MODE_PATCH,
         help="`patch` (default, sets disabled: true) or `delete` (opt-in, removes the rule).",
     )
     args = parser.parse_args(argv)
@@ -731,10 +813,15 @@ def main(argv: list[str] | None = None) -> int:
             )
 
         for record in run(
-            load_jsonl(in_stream), compute_client=compute_client,
-            apply=args.apply, reverify=args.reverify, audit=audit,
+            load_jsonl(in_stream),
+            compute_client=compute_client,
+            apply=args.apply,
+            reverify=args.reverify,
+            audit=audit,
             rule_names=load_protected_rule_names(),
-            incident_id=incident_id, approver=approver, mode=args.mode,
+            incident_id=incident_id,
+            approver=approver,
+            mode=args.mode,
             allowed_project_ids=load_allowed_project_ids(),
         ):
             out_stream.write(json.dumps(record, separators=(",", ":")) + "\n")

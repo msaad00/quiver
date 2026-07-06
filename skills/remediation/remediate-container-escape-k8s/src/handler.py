@@ -114,7 +114,9 @@ class ResolvedTarget:
 class KubernetesClient(Protocol):
     def get_pod_labels(self, namespace: str, pod_name: str) -> dict[str, str] | None: ...
     def get_pod_node_name(self, namespace: str, pod_name: str) -> str | None: ...
-    def get_workload_selector(self, namespace: str, resource_type: str, resource_name: str) -> dict[str, str] | None: ...
+    def get_workload_selector(
+        self, namespace: str, resource_type: str, resource_name: str
+    ) -> dict[str, str] | None: ...
     def apply_network_policy(self, namespace: str, manifest: dict[str, Any]) -> None: ...
     def get_network_policy(self, namespace: str, name: str) -> dict[str, Any] | None: ...
     def get_pod(self, namespace: str, pod_name: str) -> dict[str, Any] | None: ...
@@ -163,16 +165,22 @@ class KubernetesApiClient:
     def get_pod_labels(self, namespace: str, pod_name: str) -> dict[str, str] | None:
         core, _, _, _ = self._apis()
         pod = core.read_namespaced_pod(name=pod_name, namespace=namespace)
-        labels = (getattr(pod.metadata, "labels", None) or {}) if getattr(pod, "metadata", None) else {}
+        labels = (
+            (getattr(pod.metadata, "labels", None) or {}) if getattr(pod, "metadata", None) else {}
+        )
         return dict(labels) if labels else None
 
     def get_pod_node_name(self, namespace: str, pod_name: str) -> str | None:
         core, _, _, _ = self._apis()
         pod = core.read_namespaced_pod(name=pod_name, namespace=namespace)
         spec = getattr(pod, "spec", None)
-        return str(getattr(spec, "node_name", None) or getattr(spec, "nodeName", None) or "") or None
+        return (
+            str(getattr(spec, "node_name", None) or getattr(spec, "nodeName", None) or "") or None
+        )
 
-    def get_workload_selector(self, namespace: str, resource_type: str, resource_name: str) -> dict[str, str] | None:
+    def get_workload_selector(
+        self, namespace: str, resource_type: str, resource_name: str
+    ) -> dict[str, str] | None:
         _, apps, batch, _ = self._apis()
 
         def _selector(obj: Any) -> dict[str, str] | None:
@@ -189,21 +197,33 @@ class KubernetesApiClient:
             return dict(tmpl_labels) if tmpl_labels else None
 
         if resource_type == "deployments":
-            return _selector(apps.read_namespaced_deployment(name=resource_name, namespace=namespace))
+            return _selector(
+                apps.read_namespaced_deployment(name=resource_name, namespace=namespace)
+            )
         if resource_type == "daemonsets":
-            return _selector(apps.read_namespaced_daemon_set(name=resource_name, namespace=namespace))
+            return _selector(
+                apps.read_namespaced_daemon_set(name=resource_name, namespace=namespace)
+            )
         if resource_type == "statefulsets":
-            return _selector(apps.read_namespaced_stateful_set(name=resource_name, namespace=namespace))
+            return _selector(
+                apps.read_namespaced_stateful_set(name=resource_name, namespace=namespace)
+            )
         if resource_type == "replicasets":
-            return _selector(apps.read_namespaced_replica_set(name=resource_name, namespace=namespace))
+            return _selector(
+                apps.read_namespaced_replica_set(name=resource_name, namespace=namespace)
+            )
         if resource_type == "replicationcontrollers":
             core, _, _, _ = self._apis()
-            rc = core.read_namespaced_replication_controller(name=resource_name, namespace=namespace)
+            rc = core.read_namespaced_replication_controller(
+                name=resource_name, namespace=namespace
+            )
             return _selector(rc)
         if resource_type == "jobs":
             return _selector(batch.read_namespaced_job(name=resource_name, namespace=namespace))
         if resource_type == "cronjobs":
-            return _selector(batch.read_namespaced_cron_job(name=resource_name, namespace=namespace))
+            return _selector(
+                batch.read_namespaced_cron_job(name=resource_name, namespace=namespace)
+            )
         return None
 
     def apply_network_policy(self, namespace: str, manifest: dict[str, Any]) -> None:
@@ -255,8 +275,12 @@ class KubernetesApiClient:
     def evict_pod(self, namespace: str, pod_name: str) -> None:
         from kubernetes import client
 
-        eviction = client.V1Eviction(metadata=client.V1ObjectMeta(name=pod_name, namespace=namespace))
-        client.PolicyV1Api().create_namespaced_pod_eviction(name=pod_name, namespace=namespace, body=eviction)
+        eviction = client.V1Eviction(
+            metadata=client.V1ObjectMeta(name=pod_name, namespace=namespace)
+        )
+        client.PolicyV1Api().create_namespaced_pod_eviction(
+            name=pod_name, namespace=namespace, body=eviction
+        )
 
     def get_node(self, node_name: str) -> dict[str, Any] | None:
         core, _, _, _ = self._apis()
@@ -291,7 +315,9 @@ class DualAuditWriter:
         import boto3  # local import — tests inject a stub writer
 
         action_at = datetime.now(timezone.utc).isoformat()
-        row_uid = _deterministic_uid(target.namespace, target.resource_type, target.resource_name, step, action_at)
+        row_uid = _deterministic_uid(
+            target.namespace, target.resource_type, target.resource_name, step, action_at
+        )
         evidence_key = (
             "container-escape/audit/"
             f"{action_at[:4]}/{action_at[5:7]}/{action_at[8:10]}/"
@@ -333,7 +359,9 @@ class DualAuditWriter:
             ContentType="application/json",
         )
         item = {
-            "target_uid": {"S": f"{target.namespace}/{target.resource_type}/{target.resource_name}"},
+            "target_uid": {
+                "S": f"{target.namespace}/{target.resource_type}/{target.resource_name}"
+            },
             "action_at": {"S": action_at},
             "row_uid": {"S": row_uid},
             "step": {"S": step},
@@ -368,7 +396,11 @@ def _finding_product(event: dict[str, Any]) -> str:
 
 
 def _finding_uid(event: dict[str, Any]) -> str:
-    return str((event.get("finding_info") or {}).get("uid") or (event.get("metadata") or {}).get("uid") or "")
+    return str(
+        (event.get("finding_info") or {}).get("uid")
+        or (event.get("metadata") or {}).get("uid")
+        or ""
+    )
 
 
 def _observable_value(event: dict[str, Any], name: str) -> str:
@@ -437,7 +469,9 @@ def _target_from_event(event: dict[str, Any]) -> Target | None:
     )
 
 
-def parse_targets(events: Iterable[dict[str, Any]]) -> Iterator[tuple[Target | None, dict[str, Any]]]:
+def parse_targets(
+    events: Iterable[dict[str, Any]],
+) -> Iterator[tuple[Target | None, dict[str, Any]]]:
     for event in events:
         yield _target_from_event(event), event
 
@@ -463,15 +497,21 @@ def is_protected_namespace(namespace: str, patterns: Iterable[str]) -> tuple[boo
     return False, ""
 
 
-def _policy_name(namespace: str, resource_type: str, resource_name: str, selector: dict[str, str]) -> str:
+def _policy_name(
+    namespace: str, resource_type: str, resource_name: str, selector: dict[str, str]
+) -> str:
     material = json.dumps(selector, sort_keys=True, separators=(",", ":"))
-    digest = hashlib.sha256(f"{namespace}|{resource_type}|{resource_name}|{material}".encode("utf-8")).hexdigest()[:10]
+    digest = hashlib.sha256(
+        f"{namespace}|{resource_type}|{resource_name}|{material}".encode("utf-8")
+    ).hexdigest()[:10]
     base = resource_name.lower().replace("_", "-").replace(".", "-")
     base = "".join(ch for ch in base if ch.isalnum() or ch == "-").strip("-") or "target"
     return f"ce-quarantine-{base[:35]}-{digest}"[:63].rstrip("-")
 
 
-def build_network_policy(namespace: str, policy_name: str, selector: dict[str, str]) -> dict[str, Any]:
+def build_network_policy(
+    namespace: str, policy_name: str, selector: dict[str, str]
+) -> dict[str, Any]:
     return {
         "apiVersion": "networking.k8s.io/v1",
         "kind": "NetworkPolicy",
@@ -512,14 +552,18 @@ def resolve_target(target: Target, kube_client: KubernetesClient) -> ResolvedTar
         effective_pod_name = target.resource_name
         node_name = _pod_node_name(kube_client, target.namespace, target.resource_name)
     elif target.resource_type in SUPPORTED_WORKLOAD_TYPES:
-        selector = kube_client.get_workload_selector(target.namespace, target.resource_type, target.resource_name)
+        selector = kube_client.get_workload_selector(
+            target.namespace, target.resource_type, target.resource_name
+        )
     else:
         selector = None
 
     if not selector:
         return None
 
-    policy_name = _policy_name(target.namespace, target.resource_type, target.resource_name, selector)
+    policy_name = _policy_name(
+        target.namespace, target.resource_type, target.resource_name, selector
+    )
     return ResolvedTarget(
         target=target,
         selector=selector,
@@ -551,9 +595,15 @@ def check_apply_gate(*, action_mode: str = ACTION_QUARANTINE) -> tuple[bool, str
     if action_mode == ACTION_NODE_DRAIN:
         second = os.getenv("K8S_CONTAINER_ESCAPE_SECOND_APPROVER", "").strip()
         if not second:
-            return False, "K8S_CONTAINER_ESCAPE_SECOND_APPROVER is required for --approve-node-drain"
+            return (
+                False,
+                "K8S_CONTAINER_ESCAPE_SECOND_APPROVER is required for --approve-node-drain",
+            )
         if second == approver:
-            return False, "K8S_CONTAINER_ESCAPE_SECOND_APPROVER must differ from K8S_CONTAINER_ESCAPE_APPROVER"
+            return (
+                False,
+                "K8S_CONTAINER_ESCAPE_SECOND_APPROVER must differ from K8S_CONTAINER_ESCAPE_APPROVER",
+            )
     return True, ""
 
 
@@ -750,8 +800,7 @@ def _verification_record(resolved: ResolvedTarget, *, status: str, detail: str) 
     the drift finding when applicable."""
     expected = "quarantine NetworkPolicy present and matching expected selector + deny-all shape"
     actual = (
-        "missing or modified" if status == STATUS_DRIFT
-        else "present and matching expected shape"
+        "missing or modified" if status == STATUS_DRIFT else "present and matching expected shape"
     )
     return _build_verification_outputs(
         resolved,
@@ -842,7 +891,10 @@ def _node_pods_violate_deny_list(
         name = str(metadata.get("name") or "")
         denied, matched = is_protected_namespace(namespace, deny_namespaces)
         if denied:
-            return True, f"node drain would touch protected pod `{namespace}/{name}` matched `{matched}`"
+            return (
+                True,
+                f"node drain would touch protected pod `{namespace}/{name}` matched `{matched}`",
+            )
     return False, ""
 
 
@@ -1038,11 +1090,16 @@ def reverify_quarantine(
             actual_state="NetworkPolicy missing from cluster",
         )
 
-    actual_selector = (((policy.get("spec") or {}).get("podSelector") or {}).get("matchLabels") or {})
+    actual_selector = ((policy.get("spec") or {}).get("podSelector") or {}).get("matchLabels") or {}
     ingress = (policy.get("spec") or {}).get("ingress")
     egress = (policy.get("spec") or {}).get("egress")
     policy_types = tuple((policy.get("spec") or {}).get("policyTypes") or [])
-    if actual_selector != resolved.selector or ingress != [] or egress != [] or set(policy_types) != {"Ingress", "Egress"}:
+    if (
+        actual_selector != resolved.selector
+        or ingress != []
+        or egress != []
+        or set(policy_types) != {"Ingress", "Egress"}
+    ):
         return _build_verification_outputs(
             resolved,
             status=STATUS_DRIFT,
@@ -1061,7 +1118,9 @@ def reverify_quarantine(
     )
 
 
-def reverify_pod_kill(resolved: ResolvedTarget, *, kube_client: KubernetesClient) -> list[dict[str, Any]]:
+def reverify_pod_kill(
+    resolved: ResolvedTarget, *, kube_client: KubernetesClient
+) -> list[dict[str, Any]]:
     pod = kube_client.get_pod(resolved.target.namespace, resolved.effective_pod_name)
     expected = f"pod `{resolved.effective_pod_name}` absent after approved kill"
     if pod is not None:
@@ -1081,11 +1140,17 @@ def reverify_pod_kill(resolved: ResolvedTarget, *, kube_client: KubernetesClient
     )
 
 
-def reverify_node_drain(resolved: ResolvedTarget, *, kube_client: KubernetesClient) -> list[dict[str, Any]]:
+def reverify_node_drain(
+    resolved: ResolvedTarget, *, kube_client: KubernetesClient
+) -> list[dict[str, Any]]:
     node = kube_client.get_node(resolved.node_name)
     pod = kube_client.get_pod(resolved.target.namespace, resolved.effective_pod_name)
-    node_unschedulable = bool(((node or {}).get("spec") or {}).get("unschedulable")) if node else False
-    expected = f"node `{resolved.node_name}` cordoned and pod `{resolved.effective_pod_name}` absent"
+    node_unschedulable = (
+        bool(((node or {}).get("spec") or {}).get("unschedulable")) if node else False
+    )
+    expected = (
+        f"node `{resolved.node_name}` cordoned and pod `{resolved.effective_pod_name}` absent"
+    )
     if not node_unschedulable or pod is not None:
         actual = f"node_unschedulable={node_unschedulable} pod_present={pod is not None}"
         return _build_verification_outputs(
@@ -1284,10 +1349,26 @@ def main(argv: list[str] | None = None) -> int:
     )
     parser.add_argument("input", nargs="?", help="JSONL input. Defaults to stdin.")
     parser.add_argument("--output", "-o", help="JSONL output. Defaults to stdout.")
-    parser.add_argument("--apply", action="store_true", help="Apply the quarantine NetworkPolicy after approval gates pass.")
-    parser.add_argument("--reverify", action="store_true", help="Read-only verification: confirm the quarantine NetworkPolicy is still present.")
-    parser.add_argument("--approve-pod-kill", action="store_true", help="Plan or apply the explicit destructive pod-delete path.")
-    parser.add_argument("--approve-node-drain", action="store_true", help="Plan or apply the explicit destructive node-drain path.")
+    parser.add_argument(
+        "--apply",
+        action="store_true",
+        help="Apply the quarantine NetworkPolicy after approval gates pass.",
+    )
+    parser.add_argument(
+        "--reverify",
+        action="store_true",
+        help="Read-only verification: confirm the quarantine NetworkPolicy is still present.",
+    )
+    parser.add_argument(
+        "--approve-pod-kill",
+        action="store_true",
+        help="Plan or apply the explicit destructive pod-delete path.",
+    )
+    parser.add_argument(
+        "--approve-node-drain",
+        action="store_true",
+        help="Plan or apply the explicit destructive node-drain path.",
+    )
     args = parser.parse_args(argv)
 
     if args.apply and args.reverify:

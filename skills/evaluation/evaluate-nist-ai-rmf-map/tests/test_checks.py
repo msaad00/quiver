@@ -52,10 +52,7 @@ def _full_entry(*, coverage: float = 1.0) -> dict[str, object]:
 
 def _all_passing_manifest() -> dict[str, object]:
     return {
-        "subcategories": {
-            sub_id: _full_entry()
-            for sub_id, _, _, _ in IMPLEMENTED_SUBCATEGORIES
-        }
+        "subcategories": {sub_id: _full_entry() for sub_id, _, _, _ in IMPLEMENTED_SUBCATEGORIES}
     }
 
 

@@ -29,7 +29,9 @@ def _load_jsonl(path: Path) -> list[dict]:
 @dataclass
 class _FakeKube:
     pod_labels: dict[tuple[str, str], dict[str, str]] = field(
-        default_factory=lambda: {("payments", "api-7d9b"): {"app": "api", "pod-template-hash": "7d9b"}}
+        default_factory=lambda: {
+            ("payments", "api-7d9b"): {"app": "api", "pod-template-hash": "7d9b"}
+        }
     )
     workload_selectors: dict[tuple[str, str, str], dict[str, str]] = field(
         default_factory=lambda: {("payments", "deployments", "api"): {"app": "api"}}

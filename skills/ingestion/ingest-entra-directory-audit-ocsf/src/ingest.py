@@ -139,7 +139,9 @@ def _build_actor(entry: dict[str, Any]) -> dict[str, Any]:
         if user.get("displayName"):
             out_user.setdefault("type", "User")
     elif isinstance(app, dict) and app:
-        principal = app.get("displayName") or app.get("servicePrincipalId") or app.get("appId") or ""
+        principal = (
+            app.get("displayName") or app.get("servicePrincipalId") or app.get("appId") or ""
+        )
         if principal:
             out_user["name"] = str(principal)
         if app.get("servicePrincipalId"):
@@ -179,10 +181,15 @@ def _target_resources(entry: dict[str, Any]) -> list[dict[str, Any]]:
 def _build_resources(entry: dict[str, Any]) -> list[dict[str, Any]]:
     resources: list[dict[str, Any]] = []
     for target in _target_resources(entry):
-        name = target.get("displayName") or target.get("userPrincipalName") or target.get("id") or ""
+        name = (
+            target.get("displayName") or target.get("userPrincipalName") or target.get("id") or ""
+        )
         if not name:
             continue
-        resource: dict[str, Any] = {"name": str(name), "type": str(target.get("type") or "resource")}
+        resource: dict[str, Any] = {
+            "name": str(name),
+            "type": str(target.get("type") or "resource"),
+        }
         if target.get("id"):
             resource["uid"] = str(target["id"])
         resources.append(resource)
@@ -208,7 +215,9 @@ def _metadata_uid(entry: dict[str, Any]) -> str:
             for target in _target_resources(entry)
         ],
     }
-    return hashlib.sha256(json.dumps(stable, sort_keys=True, separators=(",", ":")).encode("utf-8")).hexdigest()
+    return hashlib.sha256(
+        json.dumps(stable, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    ).hexdigest()
 
 
 def validate_event(entry: dict[str, Any]) -> tuple[bool, str]:
@@ -355,7 +364,9 @@ def iter_raw_events(stream: Iterable[str]) -> Iterable[dict[str, Any]]:
         try:
             obj = json.loads(line)
         except json.JSONDecodeError as exc:
-            print(f"[{SKILL_NAME}] skipping line {lineno}: json parse failed: {exc}", file=sys.stderr)
+            print(
+                f"[{SKILL_NAME}] skipping line {lineno}: json parse failed: {exc}", file=sys.stderr
+            )
             continue
         if isinstance(obj, dict) and isinstance(obj.get("value"), list):
             for event in obj["value"]:
@@ -383,10 +394,14 @@ def ingest(stream: Iterable[str], output_format: str = "ocsf") -> Iterable[dict[
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Convert raw Entra directoryAudit JSON to native or OCSF API Activity JSONL.")
+    parser = argparse.ArgumentParser(
+        description="Convert raw Entra directoryAudit JSON to native or OCSF API Activity JSONL."
+    )
     parser.add_argument("input", nargs="?", help="Input JSON/JSONL file. Defaults to stdin.")
     parser.add_argument("--output", "-o", help="Output JSONL file. Defaults to stdout.")
-    parser.add_argument("--output-format", choices=OUTPUT_FORMATS, default="ocsf", help="Output format.")
+    parser.add_argument(
+        "--output-format", choices=OUTPUT_FORMATS, default="ocsf", help="Output format."
+    )
     args = parser.parse_args(argv)
 
     in_stream = sys.stdin if not args.input else open(args.input, "r", encoding="utf-8")

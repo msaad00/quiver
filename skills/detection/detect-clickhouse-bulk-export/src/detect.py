@@ -268,9 +268,17 @@ def _build_native_finding(
         {"name": "actor.user.name", "type": "User Name", "value": actor_name or actor_uid},
         {"name": "clickhouse.read_bytes", "type": "Other", "value": str(cumulative_read_bytes)},
         {"name": "clickhouse.read_rows", "type": "Other", "value": str(cumulative_read_rows)},
-        {"name": "clickhouse.written_bytes", "type": "Other", "value": str(cumulative_written_bytes)},
+        {
+            "name": "clickhouse.written_bytes",
+            "type": "Other",
+            "value": str(cumulative_written_bytes),
+        },
         {"name": "clickhouse.written_rows", "type": "Other", "value": str(cumulative_written_rows)},
-        {"name": "clickhouse.export_target_count", "type": "Other", "value": str(len(export_targets))},
+        {
+            "name": "clickhouse.export_target_count",
+            "type": "Other",
+            "value": str(len(export_targets)),
+        },
     ]
     observables.extend(
         {"name": "clickhouse.export_target", "type": "Resource UID", "value": target}
@@ -381,7 +389,9 @@ def coverage_metadata() -> dict[str, Any]:
     }
 
 
-def detect(events: Iterable[dict[str, Any]], output_format: str = "ocsf") -> Iterable[dict[str, Any]]:
+def detect(
+    events: Iterable[dict[str, Any]], output_format: str = "ocsf"
+) -> Iterable[dict[str, Any]]:
     if output_format not in OUTPUT_FORMATS:
         raise ContractError(
             f"unsupported output_format: {output_format}",
@@ -497,9 +507,15 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(
         description="Detect ClickHouse bulk row export to external destinations from OCSF 1.8 API Activity input."
     )
-    parser.add_argument("input", nargs="?", help="OCSF 1.8 API Activity 6003 JSONL input. Defaults to stdin.")
-    parser.add_argument("--output", "-o", help="Detection Finding JSONL output. Defaults to stdout.")
-    parser.add_argument("--output-format", choices=OUTPUT_FORMATS, default="ocsf", help="Output format.")
+    parser.add_argument(
+        "input", nargs="?", help="OCSF 1.8 API Activity 6003 JSONL input. Defaults to stdin."
+    )
+    parser.add_argument(
+        "--output", "-o", help="Detection Finding JSONL output. Defaults to stdout."
+    )
+    parser.add_argument(
+        "--output-format", choices=OUTPUT_FORMATS, default="ocsf", help="Output format."
+    )
     args = parser.parse_args(argv)
 
     in_stream = sys.stdin if not args.input else open(args.input, "r", encoding="utf-8")

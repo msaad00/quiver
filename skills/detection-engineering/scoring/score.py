@@ -39,8 +39,7 @@ try:
     import yaml
 except ImportError as exc:  # pragma: no cover - dev dependency
     sys.stderr.write(
-        "score.py requires PyYAML. Install via `uv sync --group dev` or "
-        "`pip install pyyaml`.\n"
+        "score.py requires PyYAML. Install via `uv sync --group dev` or `pip install pyyaml`.\n"
     )
     raise SystemExit(2) from exc
 
@@ -171,8 +170,7 @@ def run_detector(entry: CorpusEntry) -> list[dict[str, Any]]:
     script = detector_script_path(entry.detector_name)
     if not script.exists():
         raise FileNotFoundError(
-            f"detector entrypoint not found: {script} "
-            f"(detector_name={entry.detector_name!r})"
+            f"detector entrypoint not found: {script} (detector_name={entry.detector_name!r})"
         )
     fixture = REPO_ROOT / entry.input_fixture
     if not fixture.exists():
@@ -187,8 +185,7 @@ def run_detector(entry: CorpusEntry) -> list[dict[str, Any]]:
     )
     if proc.returncode != 0:
         raise RuntimeError(
-            f"detector {entry.detector_name} exited {proc.returncode}: "
-            f"{proc.stderr.strip()[:500]}"
+            f"detector {entry.detector_name} exited {proc.returncode}: {proc.stderr.strip()[:500]}"
         )
     findings: list[dict[str, Any]] = []
     for line_no, raw_line in enumerate(proc.stdout.splitlines(), start=1):
@@ -284,11 +281,7 @@ def score_entry(entry: CorpusEntry) -> DetectorScore:
 
     precision = tp / (tp + fp) if (tp + fp) else 0.0
     recall = tp / (tp + fn) if (tp + fn) else 0.0
-    f1 = (
-        2 * precision * recall / (precision + recall)
-        if (precision + recall)
-        else 0.0
-    )
+    f1 = 2 * precision * recall / (precision + recall) if (precision + recall) else 0.0
 
     note = "synthetic fixture" if entry.synthetic else None
     return DetectorScore(
@@ -311,9 +304,7 @@ def aggregate(scores: list[DetectorScore]) -> dict[str, Any]:
     fn = sum(s.fn for s in runnable)
     precision = tp / (tp + fp) if (tp + fp) else 0.0
     recall = tp / (tp + fn) if (tp + fn) else 0.0
-    f1 = (
-        2 * precision * recall / (precision + recall) if (precision + recall) else 0.0
-    )
+    f1 = 2 * precision * recall / (precision + recall) if (precision + recall) else 0.0
     return {
         "detectors_scored": len(runnable),
         "detectors_errored": sum(1 for s in scores if s.error is not None),
@@ -349,8 +340,7 @@ def changed_detectors(base_ref: str) -> set[str]:
             break
     if not file_paths:
         sys.stderr.write(
-            f"warning: could not compute changed files vs {base_ref}; "
-            "scoring all detectors.\n"
+            f"warning: could not compute changed files vs {base_ref}; scoring all detectors.\n"
         )
         return set()
     detectors: set[str] = set()
@@ -454,8 +444,7 @@ def main(argv: list[str] | None = None) -> int:
         return 2
     if not entries:
         sys.stdout.write(
-            json.dumps({"per_detector": [], "aggregate": aggregate([])}, indent=2)
-            + "\n"
+            json.dumps({"per_detector": [], "aggregate": aggregate([])}, indent=2) + "\n"
         )
         return 0
     selected = filter_entries(
@@ -469,8 +458,7 @@ def main(argv: list[str] | None = None) -> int:
             "score: no corpus entries matched the selected filter; nothing to score.\n"
         )
         sys.stdout.write(
-            json.dumps({"per_detector": [], "aggregate": aggregate([])}, indent=2)
-            + "\n"
+            json.dumps({"per_detector": [], "aggregate": aggregate([])}, indent=2) + "\n"
         )
         return 0
 

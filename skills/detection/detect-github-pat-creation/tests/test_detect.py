@@ -111,12 +111,18 @@ class TestDetection:
 
     def test_classic_pat_create_fires(self) -> None:
         findings = list(
-            detect([_event(uid="ev-2", time_ms=1_000, api_operation="personal_access_token.create")])
+            detect(
+                [_event(uid="ev-2", time_ms=1_000, api_operation="personal_access_token.create")]
+            )
         )
         assert len(findings) == 1
 
     def test_request_denied_does_not_fire(self) -> None:
-        events = [_event(uid="ev-deny", time_ms=1_000, api_operation="personal_access_token.request_denied")]
+        events = [
+            _event(
+                uid="ev-deny", time_ms=1_000, api_operation="personal_access_token.request_denied"
+            )
+        ]
         assert list(detect(events)) == []
 
     def test_failed_pat_create_does_not_fire(self) -> None:
@@ -134,8 +140,7 @@ class TestDetection:
 
     def test_multi_token_burst_fires_once_per_token(self) -> None:
         events = [
-            _event(uid=f"ev-burst-{i}", time_ms=1_000 + i, token_id=f"tok-{i}")
-            for i in range(4)
+            _event(uid=f"ev-burst-{i}", time_ms=1_000 + i, token_id=f"tok-{i}") for i in range(4)
         ]
         findings = list(detect(events))
         assert len(findings) == 4
@@ -155,7 +160,9 @@ class TestDetection:
 
     def test_known_non_create_op_does_not_emit_unmapped(self, capsys) -> None:
         events = [
-            _event(uid="ev-rev", time_ms=1_000, api_operation="personal_access_token.access_revoked")
+            _event(
+                uid="ev-rev", time_ms=1_000, api_operation="personal_access_token.access_revoked"
+            )
         ]
         assert list(detect(events)) == []
         assert "unmapped_event_type" not in capsys.readouterr().err

@@ -172,7 +172,11 @@ def _to_ocsf(native: dict[str, Any]) -> dict[str, Any]:
         {"name": "cloud.provider", "type": "Other", "value": "GCP"},
         {"name": "actor.name", "type": "Other", "value": native["actor_name"] or "unknown"},
         {"name": "api.operation", "type": "Other", "value": native["api_operation"]},
-        {"name": "service.name", "type": "Other", "value": native["service_name"] or "logging.googleapis.com"},
+        {
+            "name": "service.name",
+            "type": "Other",
+            "value": native["service_name"] or "logging.googleapis.com",
+        },
         {"name": "rule", "type": "Other", "value": native["rule"]},
         {"name": "target.type", "type": "Other", "value": native["target_type"]},
         {"name": "target.uid", "type": "Other", "value": native["target_name"]},

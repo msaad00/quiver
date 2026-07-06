@@ -68,6 +68,8 @@ def _with_retry(fn: Callable[[], _T], what: str) -> _T:
             time.sleep(delay)
     # Unreachable: the final attempt either returns or raises above.
     raise RuntimeError(f"{what}: retry loop exhausted without result")
+
+
 SQL_IDENTIFIER_RE = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*$")
 
 
@@ -193,7 +195,9 @@ class DepartureRecord:
             "rehire_date": self.rehire_date.isoformat() if self.rehire_date else None,
             "iam_deleted": self.iam_deleted,
             "iam_deleted_at": self.iam_deleted_at.isoformat() if self.iam_deleted_at else None,
-            "iam_last_used_at": self.iam_last_used_at.isoformat() if self.iam_last_used_at else None,
+            "iam_last_used_at": self.iam_last_used_at.isoformat()
+            if self.iam_last_used_at
+            else None,
             "last_checked_at": self.last_checked_at.isoformat(),
             "remediation_status": self.remediation_status.value,
             "record_hash": self.record_hash,
@@ -250,10 +254,18 @@ class SnowflakeSource(HRSource):
         self.account = os.environ["SNOWFLAKE_ACCOUNT"]
         self.user = os.environ["SNOWFLAKE_USER"]
         self.password = os.environ["SNOWFLAKE_PASSWORD"]
-        self.hr_database = _validate_sql_identifier(os.environ.get("SNOWFLAKE_HR_DATABASE", "hr_db"), "SNOWFLAKE_HR_DATABASE")
-        self.hr_schema = _validate_sql_identifier(os.environ.get("SNOWFLAKE_HR_SCHEMA", "workday"), "SNOWFLAKE_HR_SCHEMA")
-        self.iam_database = _validate_sql_identifier(os.environ.get("SNOWFLAKE_IAM_DATABASE", "security_db"), "SNOWFLAKE_IAM_DATABASE")
-        self.iam_schema = _validate_sql_identifier(os.environ.get("SNOWFLAKE_IAM_SCHEMA", "iam"), "SNOWFLAKE_IAM_SCHEMA")
+        self.hr_database = _validate_sql_identifier(
+            os.environ.get("SNOWFLAKE_HR_DATABASE", "hr_db"), "SNOWFLAKE_HR_DATABASE"
+        )
+        self.hr_schema = _validate_sql_identifier(
+            os.environ.get("SNOWFLAKE_HR_SCHEMA", "workday"), "SNOWFLAKE_HR_SCHEMA"
+        )
+        self.iam_database = _validate_sql_identifier(
+            os.environ.get("SNOWFLAKE_IAM_DATABASE", "security_db"), "SNOWFLAKE_IAM_DATABASE"
+        )
+        self.iam_schema = _validate_sql_identifier(
+            os.environ.get("SNOWFLAKE_IAM_SCHEMA", "iam"), "SNOWFLAKE_IAM_SCHEMA"
+        )
 
     def _get_connection(self) -> Any:
         import snowflake.connector
@@ -283,10 +295,7 @@ class SnowflakeSource(HRSource):
             cursor.execute(query)
             rows = cursor.fetchall()
             columns = [desc[0].lower() for desc in cursor.description]
-            return [
-                self._row_to_record(dict(zip(columns, row, strict=False)))
-                for row in rows
-            ]
+            return [self._row_to_record(dict(zip(columns, row, strict=False))) for row in rows]
         finally:
             conn.close()
 
@@ -358,10 +367,18 @@ class DatabricksSource(HRSource):
     def __init__(self) -> None:
         self.host = os.environ["DATABRICKS_HOST"]
         self.token = os.environ["DATABRICKS_TOKEN"]
-        self.hr_catalog = _validate_sql_identifier(os.environ.get("DATABRICKS_HR_CATALOG", "hr_catalog"), "DATABRICKS_HR_CATALOG")
-        self.hr_schema = _validate_sql_identifier(os.environ.get("DATABRICKS_HR_SCHEMA", "workday"), "DATABRICKS_HR_SCHEMA")
-        self.iam_catalog = _validate_sql_identifier(os.environ.get("DATABRICKS_IAM_CATALOG", "security_catalog"), "DATABRICKS_IAM_CATALOG")
-        self.iam_schema = _validate_sql_identifier(os.environ.get("DATABRICKS_IAM_SCHEMA", "iam"), "DATABRICKS_IAM_SCHEMA")
+        self.hr_catalog = _validate_sql_identifier(
+            os.environ.get("DATABRICKS_HR_CATALOG", "hr_catalog"), "DATABRICKS_HR_CATALOG"
+        )
+        self.hr_schema = _validate_sql_identifier(
+            os.environ.get("DATABRICKS_HR_SCHEMA", "workday"), "DATABRICKS_HR_SCHEMA"
+        )
+        self.iam_catalog = _validate_sql_identifier(
+            os.environ.get("DATABRICKS_IAM_CATALOG", "security_catalog"), "DATABRICKS_IAM_CATALOG"
+        )
+        self.iam_schema = _validate_sql_identifier(
+            os.environ.get("DATABRICKS_IAM_SCHEMA", "iam"), "DATABRICKS_IAM_SCHEMA"
+        )
 
     def _get_connection(self) -> Any:
         from databricks import sql as dbsql
@@ -388,10 +405,7 @@ class DatabricksSource(HRSource):
             cursor.execute(query)
             rows = cursor.fetchall()
             columns = [desc[0].lower() for desc in cursor.description]
-            return [
-                self._row_to_record(dict(zip(columns, row, strict=False)))
-                for row in rows
-            ]
+            return [self._row_to_record(dict(zip(columns, row, strict=False))) for row in rows]
         finally:
             conn.close()
 
@@ -462,8 +476,12 @@ class ClickHouseSource(HRSource):
         self.host = os.environ["CLICKHOUSE_HOST"]
         self.user = os.environ.get("CLICKHOUSE_USER", "default")
         self.password = os.environ.get("CLICKHOUSE_PASSWORD", "")
-        self.hr_database = _validate_sql_identifier(os.environ.get("CLICKHOUSE_HR_DATABASE", "hr"), "CLICKHOUSE_HR_DATABASE")
-        self.iam_database = _validate_sql_identifier(os.environ.get("CLICKHOUSE_IAM_DATABASE", "security"), "CLICKHOUSE_IAM_DATABASE")
+        self.hr_database = _validate_sql_identifier(
+            os.environ.get("CLICKHOUSE_HR_DATABASE", "hr"), "CLICKHOUSE_HR_DATABASE"
+        )
+        self.iam_database = _validate_sql_identifier(
+            os.environ.get("CLICKHOUSE_IAM_DATABASE", "security"), "CLICKHOUSE_IAM_DATABASE"
+        )
 
     def _get_client(self) -> Any:
         import clickhouse_connect
@@ -486,8 +504,7 @@ class ClickHouseSource(HRSource):
         result = client.query(query)
         columns = [col.lower() for col in result.column_names]
         return [
-            self._row_to_record(dict(zip(columns, row, strict=False)))
-            for row in result.result_rows
+            self._row_to_record(dict(zip(columns, row, strict=False))) for row in result.result_rows
         ]
 
     def _row_to_record(self, row: dict) -> DepartureRecord:
@@ -562,9 +579,7 @@ class WorkdayAPISource(HRSource):
             ) from None
         if resp.status_code >= 400:
             # Do NOT include response text — potentially sensitive.
-            raise RuntimeError(
-                f"Workday token endpoint returned HTTP {resp.status_code}"
-            )
+            raise RuntimeError(f"Workday token endpoint returned HTTP {resp.status_code}")
         return resp.json()["access_token"]
 
     def fetch_departures(self) -> list[DepartureRecord]:

@@ -52,10 +52,7 @@ def _full_entry(*, coverage: float = 1.0) -> dict[str, object]:
 
 def _all_passing_manifest() -> dict[str, object]:
     return {
-        "subcategories": {
-            sub_id: _full_entry()
-            for sub_id, _, _, _ in IMPLEMENTED_SUBCATEGORIES
-        }
+        "subcategories": {sub_id: _full_entry() for sub_id, _, _, _ in IMPLEMENTED_SUBCATEGORIES}
     }
 
 
@@ -199,10 +196,7 @@ class TestOcsfProjection:
         )
         assert len(rendered) == len(IMPLEMENTED_SUBCATEGORIES)
         assert all(r["class_uid"] == 2003 for r in rendered)
-        assert any(
-            req.startswith("MANAGE:")
-            for req in rendered[0]["compliance"]["requirements"]
-        )
+        assert any(req.startswith("MANAGE:") for req in rendered[0]["compliance"]["requirements"])
 
 
 class TestHonestyContract:

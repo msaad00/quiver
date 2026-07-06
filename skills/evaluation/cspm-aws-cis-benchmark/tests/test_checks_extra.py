@@ -385,7 +385,11 @@ def test_3_6_cloudtrail_data_events_detects_missing_selectors():
     ct = MagicMock()
     ct.describe_trails.return_value = {"trailList": [{"Name": "trail-a"}, {"Name": "trail-b"}]}
     ct.get_event_selectors.side_effect = [
-        {"EventSelectors": [{"DataResources": [{"Type": "AWS::S3::Object", "Values": ["arn:aws:s3:::"]}]}]},
+        {
+            "EventSelectors": [
+                {"DataResources": [{"Type": "AWS::S3::Object", "Values": ["arn:aws:s3:::"]}]}
+            ]
+        },
         {"EventSelectors": []},
     ]
     f = _CHECKS.check_3_6_cloudtrail_data_events(ct)
@@ -522,7 +526,9 @@ def test_6_2_securityhub_enabled_handles_missing_hub_as_fail():
 
 def test_6_2_securityhub_enabled_passes_when_hub_exists():
     sh = MagicMock()
-    sh.describe_hub.return_value = {"HubArn": "arn:aws:securityhub:us-east-1:123456789012:hub/default"}
+    sh.describe_hub.return_value = {
+        "HubArn": "arn:aws:securityhub:us-east-1:123456789012:hub/default"
+    }
     f = _CHECKS.check_6_2_securityhub_enabled(sh)
     assert f.status == "PASS"
 
@@ -572,7 +578,9 @@ def _stub_clients() -> dict:
     gd = MagicMock()
     gd.list_detectors.return_value = {"DetectorIds": ["det-1"]}
     sh = MagicMock()
-    sh.describe_hub.return_value = {"HubArn": "arn:aws:securityhub:us-east-1:123456789012:hub/default"}
+    sh.describe_hub.return_value = {
+        "HubArn": "arn:aws:securityhub:us-east-1:123456789012:hub/default"
+    }
     sts = MagicMock()
     sts.get_caller_identity.return_value = {"Account": "123456789012"}
     aa = MagicMock()
@@ -599,7 +607,13 @@ def test_run_assessment_runs_all_sections_with_stubbed_clients(monkeypatch):
     findings = _CHECKS.run_assessment(region="us-east-1")
     # 22 checks defined across 5 sections
     assert len(findings) == sum(len(v) for v in _CHECKS.SECTIONS.values())
-    assert {f.section for f in findings} == {"iam", "storage", "logging", "networking", "security-services"}
+    assert {f.section for f in findings} == {
+        "iam",
+        "storage",
+        "logging",
+        "networking",
+        "security-services",
+    }
 
 
 def test_run_assessment_section_filter(monkeypatch):
@@ -707,9 +721,7 @@ def test_main_console_output_exits_one_on_critical_fail(monkeypatch):
 
 def test_main_native_json_output(monkeypatch):
     monkeypatch.setattr(_CHECKS, "_get_clients", lambda region: _stub_clients())
-    monkeypatch.setattr(
-        sys, "argv", ["checks.py", "--section", "storage", "--output", "json"]
-    )
+    monkeypatch.setattr(sys, "argv", ["checks.py", "--section", "storage", "--output", "json"])
     buf = io.StringIO()
     with redirect_stdout(buf):
         try:
@@ -991,7 +1003,9 @@ def test_main_auto_remediate_json_wraps_findings_and_remediation(monkeypatch):
         "ServerSideEncryptionConfigurationNotFoundError"
     )
     clients["s3"].get_bucket_logging.return_value = {}
-    clients["s3"].get_public_access_block.side_effect = _client_error("NoSuchPublicAccessBlockConfiguration")
+    clients["s3"].get_public_access_block.side_effect = _client_error(
+        "NoSuchPublicAccessBlockConfiguration"
+    )
     clients["s3"].get_bucket_versioning.return_value = {}
     clients["s3"].get_bucket_tagging = MagicMock(side_effect=_client_error("NoSuchTagSet"))
     monkeypatch.setattr(_CHECKS, "_get_clients", lambda region: clients)

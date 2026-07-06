@@ -58,8 +58,14 @@ SEVERITY_INFORMATIONAL = 1
 
 # Order matters: longer prefixes first so 'Update' matches before 'U'.
 _VERB_TABLE = (
-    (("Create", "Run", "Start", "Issue", "Provision", "Generate", "Allocate", "Register"), ACTIVITY_CREATE),
-    (("Get", "List", "Describe", "View", "Lookup", "Search", "Head", "Read", "Test", "Validate"), ACTIVITY_READ),
+    (
+        ("Create", "Run", "Start", "Issue", "Provision", "Generate", "Allocate", "Register"),
+        ACTIVITY_CREATE,
+    ),
+    (
+        ("Get", "List", "Describe", "View", "Lookup", "Search", "Head", "Read", "Test", "Validate"),
+        ACTIVITY_READ,
+    ),
     (
         (
             "Update",
@@ -241,19 +247,22 @@ def _build_canonical_event(raw: dict[str, Any]) -> dict[str, Any]:
     error_code = raw.get("errorCode")
     status_id = STATUS_FAILURE if error_code else STATUS_SUCCESS
 
-    event_uid = str(raw.get("eventID") or "").strip() or hashlib.sha256(
-        json.dumps(
-            {
-                "eventSource": raw.get("eventSource", ""),
-                "eventName": event_name,
-                "eventTime": raw.get("eventTime", ""),
-                "recipientAccountId": raw.get("recipientAccountId", ""),
-                "requestID": raw.get("requestID", ""),
-            },
-            sort_keys=True,
-            separators=(",", ":"),
-        ).encode("utf-8")
-    ).hexdigest()
+    event_uid = (
+        str(raw.get("eventID") or "").strip()
+        or hashlib.sha256(
+            json.dumps(
+                {
+                    "eventSource": raw.get("eventSource", ""),
+                    "eventName": event_name,
+                    "eventTime": raw.get("eventTime", ""),
+                    "recipientAccountId": raw.get("recipientAccountId", ""),
+                    "requestID": raw.get("requestID", ""),
+                },
+                sort_keys=True,
+                separators=(",", ":"),
+            ).encode("utf-8")
+        ).hexdigest()
+    )
 
     canonical: dict[str, Any] = {
         "schema_mode": "canonical",
@@ -268,7 +277,9 @@ def _build_canonical_event(raw: dict[str, Any]) -> dict[str, Any]:
         "operation": event_name,
         "service_name": raw.get("eventSource", ""),
         "activity_id": activity_id,
-        "activity_name": {1: "create", 2: "read", 3: "update", 4: "delete", 99: "other"}.get(activity_id, "unknown"),
+        "activity_name": {1: "create", 2: "read", 3: "update", 4: "delete", 99: "other"}.get(
+            activity_id, "unknown"
+        ),
         "status_id": status_id,
         "status": "failure" if error_code else "success",
         "actor": _build_actor(raw.get("userIdentity") or {}),
@@ -282,7 +293,9 @@ def _build_canonical_event(raw: dict[str, Any]) -> dict[str, Any]:
         },
     }
     if error_code:
-        canonical["status_detail"] = f"{error_code}: {raw.get('errorMessage', '')}".strip(": ").strip()
+        canonical["status_detail"] = f"{error_code}: {raw.get('errorMessage', '')}".strip(
+            ": "
+        ).strip()
     return canonical
 
 
@@ -451,10 +464,17 @@ def ingest(stream: Iterable[str], output_format: str = "ocsf") -> Iterable[dict[
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description="Convert raw CloudTrail JSON to OCSF 1.8 API Activity JSONL.")
+    parser = argparse.ArgumentParser(
+        description="Convert raw CloudTrail JSON to OCSF 1.8 API Activity JSONL."
+    )
     parser.add_argument("input", nargs="?", help="Input JSON/JSONL file. Defaults to stdin.")
     parser.add_argument("--output", "-o", help="Output JSONL file. Defaults to stdout.")
-    parser.add_argument("--output-format", choices=("ocsf", "native"), default="ocsf", help="Render OCSF events or the native enriched event shape.")
+    parser.add_argument(
+        "--output-format",
+        choices=("ocsf", "native"),
+        default="ocsf",
+        help="Render OCSF events or the native enriched event shape.",
+    )
     args = parser.parse_args(argv)
 
     in_stream = sys.stdin if not args.input else open(args.input, "r", encoding="utf-8")
