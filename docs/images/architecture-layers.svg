@@ -1,148 +1,88 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="780" viewBox="0 0 1400 780" role="img" aria-labelledby="layers-title layers-desc">
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="360" viewBox="0 0 1200 360" role="img" aria-labelledby="layers-title layers-desc">
   <title id="layers-title">Cloud AI Security Skills — architecture layers</title>
-  <desc id="layers-desc">Seven skill layers presented as a clean architecture board. Signals enter on the left and feed two intake layers: L1 Ingest with 22 ingesters plus 4 source adapters, and L2 Discover with 5 inventory, graph, AI BOM, and evidence skills. Intake feeds two analyze layers: L3 Detect with 71 deterministic MITRE-tagged findings emitting OCSF Detection Finding 2004, and L4 Evaluate with 12 benchmark families covering 143 checks. Analyze feeds two act layers: L5 Remediate with 12 HITL dual-audited write paths, and L6 View with 2 OCSF-to-render converters. L7 Output persists to three append-only sinks: S3, Snowflake, and ClickHouse. The diagram emphasizes counts, clean flow, contained labels, and wire-format guidance without dense text.</desc>
+  <desc id="layers-desc">Seven skill layers in a left-to-right flow. L1 Ingest with 22 ingesters plus 4 source adapters. L2 Discover with 5 inventory skills. L3 Detect with 71 deterministic findings. L4 Evaluate with 12 benchmark families. L5 Remediate with 12 HITL write paths. L6 View with 2 OCSF-to-render converters. L7 Output with 3 append-only sinks.</desc>
 
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0%" stop-color="#07101f"/>
-      <stop offset="100%" stop-color="#0f1b31"/>
+      <stop offset="0%" stop-color="#060b17"/>
+      <stop offset="100%" stop-color="#0a1325"/>
     </linearGradient>
-    <radialGradient id="glow" cx="20%" cy="10%" r="80%">
-      <stop offset="0%" stop-color="#2563eb" stop-opacity="0.16"/>
-      <stop offset="60%" stop-color="#2563eb" stop-opacity="0"/>
-      <stop offset="100%" stop-color="#2563eb" stop-opacity="0"/>
-    </radialGradient>
-    <pattern id="grid" x="0" y="0" width="36" height="36" patternUnits="userSpaceOnUse">
-      <path d="M36 0H0V36" fill="none" stroke="#1d2942" stroke-opacity="0.35" stroke-width="1"/>
-    </pattern>
-    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
-      <feDropShadow dx="0" dy="14" stdDeviation="18" flood-color="#020617" flood-opacity="0.45"/>
-    </filter>
-    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
       <path d="M0 0L10 5L0 10z" fill="#7dd3fc"/>
     </marker>
   </defs>
 
-  <rect width="1400" height="780" fill="url(#bg)"/>
-  <rect width="1400" height="780" fill="url(#grid)"/>
-  <rect width="1400" height="780" fill="url(#glow)"/>
+  <rect width="1200" height="360" fill="url(#bg)"/>
 
-  <g font-family="Inter, Arial, sans-serif">
-    <text x="72" y="76" font-size="38" font-weight="800" fill="#f8fafc">Architecture: seven skill layers, one readable flow</text>
-    <text x="72" y="112" font-size="18" fill="#cbd5e1">Signals enter on the left. The repo normalizes, analyzes, acts, then persists through producer-owned sinks.</text>
+  <g font-family="Inter, Segoe UI, ui-sans-serif, Arial, sans-serif">
+    <text x="48" y="52" font-size="28" font-weight="800" fill="#f8fafc">Seven skill layers, one flow</text>
+    <text x="48" y="80" font-size="14" fill="#94a3b8">Same bundles on CLI · CI · MCP · runners · library</text>
 
-    <g transform="translate(72,156)">
-      <rect x="0" y="0" width="160" height="40" rx="20" fill="#0f172a" stroke="#475569"/>
-      <text x="80" y="26" text-anchor="middle" font-size="14" font-weight="800" fill="#cbd5e1" letter-spacing="1.5">SIGNALS</text>
-
-      <rect x="240" y="0" width="160" height="40" rx="20" fill="#102345" stroke="#60a5fa"/>
-      <text x="320" y="26" text-anchor="middle" font-size="14" font-weight="800" fill="#bfdbfe" letter-spacing="1.5">INTAKE</text>
-
-      <rect x="510" y="0" width="170" height="40" rx="20" fill="#0a3b35" stroke="#34d399"/>
-      <text x="595" y="26" text-anchor="middle" font-size="14" font-weight="800" fill="#bbf7d0" letter-spacing="1.5">ANALYZE</text>
-
-      <rect x="790" y="0" width="150" height="40" rx="20" fill="#4a2d09" stroke="#fbbf24"/>
-      <text x="865" y="26" text-anchor="middle" font-size="14" font-weight="800" fill="#fde68a" letter-spacing="1.5">ACT</text>
-
-      <rect x="1050" y="0" width="172" height="40" rx="20" fill="#083b39" stroke="#2dd4bf"/>
-      <text x="1136" y="26" text-anchor="middle" font-size="14" font-weight="800" fill="#99f6e4" letter-spacing="1.5">PERSIST</text>
+    <!-- phase pills -->
+    <g transform="translate(48,100)">
+      <rect x="0" y="0" width="88" height="26" rx="13" fill="#0f172a" stroke="#475569"/>
+      <text x="44" y="18" text-anchor="middle" font-size="10" font-weight="700" fill="#cbd5e1" letter-spacing="1.2">SIGNALS</text>
+      <rect x="168" y="0" width="88" height="26" rx="13" fill="#102345" stroke="#60a5fa"/>
+      <text x="212" y="18" text-anchor="middle" font-size="10" font-weight="700" fill="#bfdbfe" letter-spacing="1.2">INTAKE</text>
+      <rect x="336" y="0" width="88" height="26" rx="13" fill="#0a3b35" stroke="#34d399"/>
+      <text x="380" y="18" text-anchor="middle" font-size="10" font-weight="700" fill="#bbf7d0" letter-spacing="1.2">ANALYZE</text>
+      <rect x="504" y="0" width="72" height="26" rx="13" fill="#4a2d09" stroke="#fbbf24"/>
+      <text x="540" y="18" text-anchor="middle" font-size="10" font-weight="700" fill="#fde68a" letter-spacing="1.2">ACT</text>
+      <rect x="656" y="0" width="88" height="26" rx="13" fill="#083b39" stroke="#2dd4bf"/>
+      <text x="700" y="18" text-anchor="middle" font-size="10" font-weight="700" fill="#99f6e4" letter-spacing="1.2">PERSIST</text>
     </g>
 
-    <!-- SIGNALS panel (taller for vendor-line wrap) -->
-    <g filter="url(#shadow)">
-      <rect x="72" y="228" width="190" height="406" rx="28" fill="#0f172a" stroke="#334155" stroke-width="1.5"/>
-      <text x="110" y="278" font-size="30" font-weight="800" fill="#f8fafc">Signals</text>
-      <g font-size="16" fill="#dbeafe">
-        <rect x="102" y="314" width="128" height="38" rx="19" fill="#111c30" stroke="#334155"/>
-        <text x="166" y="338" text-anchor="middle">Cloud APIs</text>
-        <rect x="102" y="366" width="128" height="38" rx="19" fill="#111c30" stroke="#334155"/>
-        <text x="166" y="390" text-anchor="middle">Raw logs</text>
-        <rect x="102" y="418" width="128" height="38" rx="19" fill="#111c30" stroke="#334155"/>
-        <text x="166" y="442" text-anchor="middle">Identity</text>
-        <rect x="102" y="470" width="128" height="38" rx="19" fill="#111c30" stroke="#334155"/>
-        <text x="166" y="494" text-anchor="middle">Warehouses</text>
-      </g>
-      <text x="110" y="540" font-size="11" fill="#94a3b8">AWS · GCP · Azure · K8s</text>
-      <text x="110" y="560" font-size="11" fill="#94a3b8">Okta · Entra · Workspace</text>
-      <text x="110" y="580" font-size="11" fill="#94a3b8">Slack · Workday · Salesforce</text>
-      <text x="110" y="600" font-size="11" fill="#94a3b8">Snowflake · Databricks · MCP</text>
+    <!-- layer cards -->
+    <g transform="translate(48,148)">
+      <rect x="0" y="0" width="100" height="120" rx="16" fill="#0f172a" stroke="#334155"/>
+      <text x="50" y="36" text-anchor="middle" font-size="11" font-weight="700" fill="#94a3b8">Sources</text>
+      <text x="50" y="72" text-anchor="middle" font-size="22" font-weight="800" fill="#f8fafc">logs</text>
+      <text x="50" y="96" text-anchor="middle" font-size="10" fill="#64748b">APIs · IdP · SaaS</text>
+
+      <path d="M108 60H128" stroke="#7dd3fc" stroke-width="3" marker-end="url(#arrow)"/>
+
+      <rect x="136" y="0" width="118" height="56" rx="14" fill="#112244" stroke="#60a5fa"/>
+      <text x="195" y="24" text-anchor="middle" font-size="12" font-weight="800" fill="#dbeafe">L1 Ingest</text>
+      <text x="195" y="44" text-anchor="middle" font-size="20" font-weight="900" fill="#fff">22+4</text>
+
+      <rect x="136" y="64" width="118" height="56" rx="14" fill="#112244" stroke="#60a5fa"/>
+      <text x="195" y="88" text-anchor="middle" font-size="12" font-weight="800" fill="#dbeafe">L2 Discover</text>
+      <text x="195" y="108" text-anchor="middle" font-size="20" font-weight="900" fill="#fff">5</text>
+
+      <path d="M262 60H282" stroke="#7dd3fc" stroke-width="3" marker-end="url(#arrow)"/>
+
+      <rect x="290" y="0" width="118" height="56" rx="14" fill="#0a3b35" stroke="#34d399"/>
+      <text x="349" y="24" text-anchor="middle" font-size="12" font-weight="800" fill="#d1fae5">L3 Detect</text>
+      <text x="349" y="44" text-anchor="middle" font-size="20" font-weight="900" fill="#fff">71</text>
+
+      <rect x="290" y="64" width="118" height="56" rx="14" fill="#0a3b35" stroke="#34d399"/>
+      <text x="349" y="88" text-anchor="middle" font-size="12" font-weight="800" fill="#d1fae5">L4 Evaluate</text>
+      <text x="349" y="108" text-anchor="middle" font-size="20" font-weight="900" fill="#fff">12</text>
+
+      <path d="M416 60H436" stroke="#7dd3fc" stroke-width="3" marker-end="url(#arrow)"/>
+
+      <rect x="444" y="0" width="118" height="56" rx="14" fill="#4a2d09" stroke="#fbbf24"/>
+      <text x="503" y="24" text-anchor="middle" font-size="12" font-weight="800" fill="#fde68a">L5 Remediate</text>
+      <text x="503" y="44" text-anchor="middle" font-size="20" font-weight="900" fill="#fff">12</text>
+
+      <rect x="444" y="64" width="118" height="56" rx="14" fill="#4a2d09" stroke="#fbbf24"/>
+      <text x="503" y="88" text-anchor="middle" font-size="12" font-weight="800" fill="#fde68a">L6 View</text>
+      <text x="503" y="108" text-anchor="middle" font-size="20" font-weight="900" fill="#fff">2</text>
+
+      <path d="M570 60H590" stroke="#7dd3fc" stroke-width="3" marker-end="url(#arrow)"/>
+
+      <rect x="598" y="0" width="118" height="120" rx="16" fill="#083b39" stroke="#2dd4bf"/>
+      <text x="657" y="28" text-anchor="middle" font-size="12" font-weight="800" fill="#99f6e4">L7 Output</text>
+      <text x="657" y="58" text-anchor="middle" font-size="28" font-weight="900" fill="#fff">3</text>
+      <text x="657" y="82" text-anchor="middle" font-size="10" fill="#94a3b8">S3 · Snowflake</text>
+      <text x="657" y="98" text-anchor="middle" font-size="10" fill="#94a3b8">ClickHouse</text>
     </g>
 
-    <!-- L1 Ingest + L2 Discover (boxes widened to 260, descriptions wrapped to 2 short lines) -->
-    <g filter="url(#shadow)">
-      <rect x="322" y="228" width="260" height="180" rx="28" fill="#112244" stroke="#60a5fa" stroke-width="1.6"/>
-      <text x="354" y="270" font-size="18" font-weight="800" fill="#dbeafe">L1 Ingest</text>
-      <text x="354" y="332" font-size="56" font-weight="900" fill="#ffffff">22 + 4</text>
-      <text x="354" y="364" font-size="15" fill="#bfdbfe">normalize source data to</text>
-      <text x="354" y="386" font-size="15" fill="#bfdbfe">OCSF 1.8 or native JSONL</text>
-
-      <rect x="322" y="440" width="260" height="180" rx="28" fill="#112244" stroke="#60a5fa" stroke-width="1.6"/>
-      <text x="354" y="482" font-size="18" font-weight="800" fill="#dbeafe">L2 Discover</text>
-      <text x="354" y="544" font-size="56" font-weight="900" fill="#ffffff">5</text>
-      <text x="354" y="576" font-size="15" fill="#bfdbfe">inventory · graph · AI BOM</text>
-      <text x="354" y="598" font-size="15" fill="#bfdbfe">CycloneDX · evidence</text>
-    </g>
-
-    <!-- L3 Detect + L4 Evaluate -->
-    <g filter="url(#shadow)">
-      <rect x="642" y="228" width="260" height="180" rx="28" fill="#0a3b35" stroke="#34d399" stroke-width="1.6"/>
-      <text x="674" y="270" font-size="18" font-weight="800" fill="#d1fae5">L3 Detect</text>
-      <text x="674" y="332" font-size="56" font-weight="900" fill="#ffffff">71</text>
-      <text x="674" y="364" font-size="15" fill="#a7f3d0">deterministic MITRE-tagged</text>
-      <text x="674" y="386" font-size="15" fill="#a7f3d0">OCSF Detection Finding 2004</text>
-
-      <rect x="642" y="440" width="260" height="180" rx="28" fill="#0a3b35" stroke="#34d399" stroke-width="1.6"/>
-      <text x="674" y="482" font-size="18" font-weight="800" fill="#d1fae5">L4 Evaluate</text>
-      <text x="674" y="544" font-size="56" font-weight="900" fill="#ffffff">12</text>
-      <text x="674" y="576" font-size="15" fill="#a7f3d0">143 benchmark checks across</text>
-      <text x="674" y="598" font-size="15" fill="#a7f3d0">CIS · K8s · container · AI</text>
-    </g>
-
-    <!-- L5 Remediate + L6 View -->
-    <g filter="url(#shadow)">
-      <rect x="962" y="228" width="260" height="180" rx="28" fill="#4a2d09" stroke="#fbbf24" stroke-width="1.6"/>
-      <text x="994" y="270" font-size="18" font-weight="800" fill="#fde68a">L5 Remediate</text>
-      <text x="994" y="332" font-size="56" font-weight="900" fill="#ffffff">12</text>
-      <text x="994" y="364" font-size="15" fill="#fde68a">HITL · dry-run-first</text>
-      <text x="994" y="386" font-size="15" fill="#fde68a">dual-audited write paths</text>
-
-      <rect x="962" y="440" width="260" height="180" rx="28" fill="#4a2d09" stroke="#fbbf24" stroke-width="1.6"/>
-      <text x="994" y="482" font-size="18" font-weight="800" fill="#fde68a">L6 View</text>
-      <text x="994" y="544" font-size="56" font-weight="900" fill="#ffffff">2</text>
-      <text x="994" y="576" font-size="15" fill="#fde68a">render OCSF to SARIF</text>
-      <text x="994" y="598" font-size="15" fill="#fde68a">or Mermaid for review</text>
-    </g>
-
-    <!-- L7 Output -->
-    <g filter="url(#shadow)">
-      <rect x="1234" y="228" width="112" height="392" rx="28" fill="#083b39" stroke="#2dd4bf" stroke-width="1.6"/>
-      <text x="1290" y="270" text-anchor="middle" font-size="14" font-weight="800" fill="#99f6e4">L7 Output</text>
-      <text x="1290" y="334" text-anchor="middle" font-size="46" font-weight="900" fill="#ffffff">3</text>
-      <text x="1290" y="368" text-anchor="middle" font-size="11" fill="#99f6e4">append-only sinks</text>
-      <g font-size="12" font-weight="800" fill="#ecfeff">
-        <rect x="1254" y="404" width="72" height="30" rx="15" fill="#0b4a46" stroke="#2dd4bf"/>
-        <text x="1290" y="424" text-anchor="middle">S3</text>
-        <rect x="1254" y="448" width="72" height="30" rx="15" fill="#0b4a46" stroke="#2dd4bf"/>
-        <text x="1290" y="468" text-anchor="middle">Snowflake</text>
-        <rect x="1254" y="492" width="72" height="30" rx="15" fill="#0b4a46" stroke="#2dd4bf"/>
-        <text x="1290" y="512" text-anchor="middle">ClickHouse</text>
-      </g>
-      <text x="1290" y="572" text-anchor="middle" font-size="10" fill="#94a3b8">audit +</text>
-      <text x="1290" y="586" text-anchor="middle" font-size="10" fill="#94a3b8">ingest-back</text>
-      <text x="1290" y="600" text-anchor="middle" font-size="10" fill="#94a3b8">to producer</text>
-    </g>
-
-    <!-- Arrows (signals 262, intake 322-582, analyze 642-902, act 962-1222, output 1234-1346) -->
-    <path d="M262 420H312" stroke="#7dd3fc" stroke-width="4" fill="none" marker-end="url(#arrow)"/>
-    <path d="M582 318H632" stroke="#7dd3fc" stroke-width="4" fill="none" marker-end="url(#arrow)"/>
-    <path d="M582 530H632" stroke="#7dd3fc" stroke-width="4" fill="none" marker-end="url(#arrow)"/>
-    <path d="M902 318H952" stroke="#7dd3fc" stroke-width="4" fill="none" marker-end="url(#arrow)"/>
-    <path d="M902 530H952" stroke="#7dd3fc" stroke-width="4" fill="none" marker-end="url(#arrow)"/>
-    <path d="M1222 424H1228" stroke="#7dd3fc" stroke-width="4" fill="none" marker-end="url(#arrow)"/>
-
-    <!-- Wire-contract footer -->
-    <rect x="72" y="676" width="1274" height="60" rx="18" fill="#0b1220" stroke="#334155"/>
-    <text x="102" y="704" font-size="15" fill="#cbd5e1">Wire contract: <tspan font-weight="800" fill="#5eead4">OCSF 1.8</tspan> on Ingest + Detect · <tspan font-weight="800" fill="#fbbf24">native</tspan> on Discover + Remediate · <tspan font-weight="800" fill="#a78bfa">SARIF / Mermaid</tspan> on View · <tspan font-weight="800" fill="#22d3ee">pass-through</tspan> on Output</text>
-    <text x="102" y="724" font-size="13" fill="#94a3b8">OCSF 1.8 where interop matters · native where state and audit matter more · rendered output on view · pass-through on sinks.</text>
+    <rect x="48" y="296" width="1104" height="44" rx="12" fill="#0b1220" stroke="#334155"/>
+    <text x="68" y="324" font-size="12" fill="#cbd5e1">
+      Wire: <tspan font-weight="700" fill="#5eead4">OCSF 1.8</tspan> ingest+detect ·
+      <tspan font-weight="700" fill="#fbbf24">native</tspan> discover+remediate ·
+      <tspan font-weight="700" fill="#a78bfa">SARIF/Mermaid</tspan> view · pass-through sinks
+    </text>
   </g>
 </svg>

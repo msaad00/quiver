@@ -1,281 +1,77 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="980" viewBox="0 0 1600 980" role="img" aria-labelledby="title desc">
-  <title id="title">Snowflake security data lake closed-loop architecture</title>
-  <desc id="desc">Readable lane diagram showing covered signals, OCSF normalization, append-only Snowflake writes, governed Snowflake tables, read-only replay, operator artifacts, HITL review, audit write-back, row access policies, dynamic tables, managed Iceberg, and the customer-owned trust boundary.</desc>
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="340" viewBox="0 0 1200 340" role="img" aria-labelledby="title desc">
+  <title id="title">Snowflake security data lake</title>
+  <desc id="desc">Closed-loop flow: source signals, OCSF ingest, append-only Snowflake lake, detect and evaluate, HITL remediate, audit write-back.</desc>
+
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#06101f"/>
-      <stop offset="0.52" stop-color="#0a1528"/>
-      <stop offset="1" stop-color="#0f172a"/>
+      <stop offset="0%" stop-color="#060b17"/>
+      <stop offset="100%" stop-color="#0a1528"/>
     </linearGradient>
-    <linearGradient id="lakeFill" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#0d3a70"/>
-      <stop offset="1" stop-color="#081f3e"/>
-    </linearGradient>
-    <linearGradient id="lakeStroke" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0" stop-color="#93c5fd"/>
-      <stop offset="0.52" stop-color="#29b5e8"/>
-      <stop offset="1" stop-color="#dbeafe"/>
-    </linearGradient>
-    <pattern id="grid" width="48" height="48" patternUnits="userSpaceOnUse">
-      <path d="M48 0H0V48" fill="none" stroke="#20314f" stroke-opacity="0.24" stroke-width="1"/>
-    </pattern>
-    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
-      <feDropShadow dx="0" dy="18" stdDeviation="18" flood-color="#020617" flood-opacity="0.42"/>
-    </filter>
-    <filter id="softShadow" x="-14%" y="-14%" width="128%" height="128%">
-      <feDropShadow dx="0" dy="10" stdDeviation="10" flood-color="#020617" flood-opacity="0.28"/>
-    </filter>
-    <marker id="arrowBlue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="10" markerHeight="10" orient="auto">
-      <path d="M0 0L10 5L0 10Z" fill="#60a5fa"/>
+    <symbol id="snowflake" viewBox="0 0 24 24">
+      <path fill="#29B5E8" d="M24 3.459c0 .646-.418 1.18-1.141 1.18-.723 0-1.142-.534-1.142-1.18 0-.647.419-1.18 1.142-1.18.723 0 1.141.533 1.141 1.18zm-.228 0c0-.533-.38-.951-.913-.951s-.913.38-.913.95c0 .533.38.952.913.952.57 0 .913-.419.913-.951zm-1.37-.533h.495c.266 0 .456.152.456.38 0 .153-.076.229-.19.305l.19.266v.038h-.266l-.19-.266h-.229v.266h-.266zm.495.228h-.229v.267h.229c.114 0 .152-.038.152-.114.038-.077-.038-.153-.152-.153zM7.602 12.4c.038-.151.076-.304.076-.456 0-.114-.038-.228-.038-.342-.114-.343-.304-.647-.646-.838l-4.87-2.777c-.685-.38-1.56-.152-1.94.533-.381.685-.153 1.56.532 1.94l2.701 1.56-2.701 1.56c-.685.38-.913 1.256-.533 1.94.38.685 1.256.914 1.94.533l4.832-2.777c.343-.267.571-.533.647-.876zm1.332 2.626c-.266-.038-.57.038-.837.19l-4.832 2.777c-.685.38-.913 1.256-.532 1.94.38.686 1.255.914 1.94.533l2.701-1.56v3.12c0 .8.647 1.408 1.446 1.408.799 0 1.407-.647 1.407-1.408v-5.592c0-.761-.57-1.37-1.293-1.408zm4.946-6.088c.266.038.57-.038.837-.19l4.832-2.777c.685-.38.913-1.256.532-1.94-.38-.686-1.255-.914-1.94-.533l-2.701 1.56V1.975c0-.799-.647-1.408-1.446-1.408-.799 0-1.446.609-1.446 1.408V7.53c0 .76.609 1.37 1.332 1.407zM3.265 5.97l4.832 2.777c.266.152.533.19.837.19.723-.038 1.331-.684 1.331-1.407V1.975c0-.799-.646-1.408-1.407-1.408-.799 0-1.446.647-1.446 1.408v3.12l-2.701-1.56c-.685-.38-1.56-.152-1.94.533-.419.646-.19 1.521.494 1.902zm9.093 6.011a.412.412 0 00-.114-.266l-.57-.571a.346.346 0 00-.267-.114.412.412 0 00-.266.114l-.571.57a.411.411 0 00-.114.267c0 .076.038.19.114.267l.57.57a.345.345 0 00.267.114c.076 0 .19-.038.266-.114l.571-.57a.412.412 0 00.114-.267zm1.598.533L11.94 14.53c-.039.038-.153.114-.229.114h-.608a.411.411 0 01-.267-.114L8.82 12.514a.408.408 0 01-.076-.229v-.608c0-.076.038-.19.114-.267l2.016-2.016a.41.41 0 01.267-.114h.608a.41.41 0 01.267.114l2.016 2.016a.347.347 0 01.114.267v.608c-.076.077-.114.19-.19.229zm5.593 5.44l-4.832-2.777c-.266-.152-.57-.19-.837-.152-.723.038-1.332.684-1.332 1.408v5.554c0 .8.647 1.408 1.408 1.408.799 0 1.446-.647 1.446-1.408v-3.12l2.7 1.56c.686.38 1.561.152 1.941-.533.419-.646.19-1.521-.494-1.94zm2.549-7.533l-2.701 1.56 2.7 1.56c.686.38.914 1.256.533 1.94-.38.685-1.255.913-1.94.533l-4.832-2.778a1.644 1.644 0 01-.647-.798c-.037-.153-.076-.305-.076-.457 0-.114.039-.228.039-.342.114-.343.342-.647.646-.837l4.832-2.778c.685-.38 1.56-.152 1.94.533.457.609.19 1.484-.494 1.864"/>
+    </symbol>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0 0L10 5L0 10z" fill="#60a5fa"/>
     </marker>
-    <marker id="arrowViolet" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="10" markerHeight="10" orient="auto">
-      <path d="M0 0L10 5L0 10Z" fill="#a78bfa"/>
+    <marker id="arrowBack" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0 0L10 5L0 10z" fill="#34d399"/>
     </marker>
-    <marker id="arrowGreen" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="10" markerHeight="10" orient="auto">
-      <path d="M0 0L10 5L0 10Z" fill="#34d399"/>
-    </marker>
-    <marker id="arrowRose" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="10" markerHeight="10" orient="auto">
-      <path d="M0 0L10 5L0 10Z" fill="#fb7185"/>
-    </marker>
-    <style>
-      .font{font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}
-      .h1{font-size:34px;font-weight:850;fill:#f8fafc}
-      .sub{font-size:15px;fill:#cbd5e1}
-      .eyebrow{font-size:11px;font-weight:850;letter-spacing:.08em;text-transform:uppercase}
-      .cardTitle{font-size:17px;font-weight:850;fill:#f8fafc}
-      .cardSub{font-size:13px;fill:#cbd5e1}
-      .body{font-size:12px;fill:#cbd5e1}
-      .tiny{font-size:11px;fill:#94a3b8}
-      .badge{font-size:12px;font-weight:850;fill:#f8fafc}
-      .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono",monospace}
-    </style>
   </defs>
 
-  <rect width="1600" height="980" fill="url(#bg)"/>
-  <rect width="1600" height="980" fill="url(#grid)"/>
+  <rect width="1200" height="340" fill="url(#bg)"/>
 
-  <g class="font">
-    <text x="64" y="64" class="h1">Snowflake Security Data Lake</text>
-    <text x="64" y="94" class="sub">The same closed loop as ClickHouse, drawn for governed warehouse-native replay and audit write-back.</text>
+  <g font-family="Inter, Segoe UI, ui-sans-serif, Arial, sans-serif">
+    <text x="48" y="48" font-size="26" font-weight="800" fill="#f8fafc">Snowflake security data lake</text>
+    <text x="48" y="74" font-size="13" fill="#94a3b8">Governed warehouse-native replay · append-only writes · audit write-back</text>
 
-    <g transform="translate(1238,38)">
-      <rect x="0" y="0" width="334" height="78" rx="16" fill="#101827" stroke="#334155"/>
-      <g transform="translate(48,39)">
-        <line x1="-24" y1="0" x2="24" y2="0" stroke="#bfdbfe" stroke-width="4" stroke-linecap="round"/>
-        <line x1="0" y1="-24" x2="0" y2="24" stroke="#bfdbfe" stroke-width="4" stroke-linecap="round"/>
-        <line x1="-17" y1="-17" x2="17" y2="17" stroke="#60a5fa" stroke-width="4" stroke-linecap="round"/>
-        <line x1="17" y1="-17" x2="-17" y2="17" stroke="#60a5fa" stroke-width="4" stroke-linecap="round"/>
-        <circle cx="0" cy="0" r="6" fill="#102a4c" stroke="#dbeafe" stroke-width="2"/>
-      </g>
-      <text x="104" y="33" class="cardTitle">Snowflake pack</text>
-      <text x="104" y="55" class="tiny">DDL, dynamic tables, row policies, Iceberg</text>
+    <g transform="translate(48,108)">
+      <rect x="0" y="0" width="130" height="88" rx="14" fill="#0f172a" stroke="#334155"/>
+      <text x="65" y="32" text-anchor="middle" font-size="12" font-weight="700" fill="#e2e8f0">Sources</text>
+      <text x="65" y="54" text-anchor="middle" font-size="10" fill="#94a3b8">CloudTrail · Okta</text>
+      <text x="65" y="70" text-anchor="middle" font-size="10" fill="#94a3b8">K8s · SaaS logs</text>
+
+      <path d="M138 44H168" stroke="#60a5fa" stroke-width="3" marker-end="url(#arrow)"/>
+
+      <rect x="176" y="0" width="150" height="88" rx="14" fill="#112244" stroke="#60a5fa"/>
+      <text x="251" y="32" text-anchor="middle" font-size="12" font-weight="700" fill="#dbeafe">Ingest</text>
+      <text x="251" y="54" text-anchor="middle" font-size="10" fill="#94a3b8">22 ingest skills</text>
+      <text x="251" y="70" text-anchor="middle" font-size="10" fill="#5eead4">→ OCSF 1.8</text>
+
+      <path d="M334 44H364" stroke="#60a5fa" stroke-width="3" marker-end="url(#arrow)"/>
+
+      <rect x="372" y="0" width="170" height="88" rx="14" fill="#0d3a70" stroke="#29b5e8" stroke-width="2"/>
+      <use href="#snowflake" x="388" y="12" width="32" height="32"/>
+      <text x="468" y="32" text-anchor="middle" font-size="12" font-weight="700" fill="#e0f2fe">Snowflake lake</text>
+      <text x="468" y="54" text-anchor="middle" font-size="10" fill="#94a3b8">append-only JSONL</text>
+      <text x="468" y="70" text-anchor="middle" font-size="10" fill="#94a3b8">RAP · dynamic tables</text>
+
+      <path d="M550 44H580" stroke="#60a5fa" stroke-width="3" marker-end="url(#arrow)"/>
+
+      <rect x="588" y="0" width="150" height="88" rx="14" fill="#0a3b35" stroke="#34d399"/>
+      <text x="663" y="32" text-anchor="middle" font-size="12" font-weight="700" fill="#d1fae5">Detect</text>
+      <text x="663" y="54" text-anchor="middle" font-size="10" fill="#94a3b8">71 skills · MITRE</text>
+      <text x="663" y="70" text-anchor="middle" font-size="10" fill="#94a3b8">read-only replay</text>
+
+      <path d="M746 44H776" stroke="#60a5fa" stroke-width="3" marker-end="url(#arrow)"/>
+
+      <rect x="784" y="0" width="150" height="88" rx="14" fill="#4a2d09" stroke="#fbbf24"/>
+      <text x="859" y="32" text-anchor="middle" font-size="12" font-weight="700" fill="#fde68a">Remediate</text>
+      <text x="859" y="54" text-anchor="middle" font-size="10" fill="#94a3b8">HITL · dry-run</text>
+      <text x="859" y="70" text-anchor="middle" font-size="10" fill="#94a3b8">dual audit</text>
+
+      <path d="M942 44H972" stroke="#60a5fa" stroke-width="3" marker-end="url(#arrow)"/>
+
+      <rect x="980" y="0" width="124" height="88" rx="14" fill="#083b39" stroke="#2dd4bf"/>
+      <text x="1042" y="32" text-anchor="middle" font-size="12" font-weight="700" fill="#99f6e4">Audit</text>
+      <text x="1042" y="54" text-anchor="middle" font-size="10" fill="#94a3b8">write-back</text>
+      <text x="1042" y="70" text-anchor="middle" font-size="10" fill="#94a3b8">closed loop</text>
     </g>
 
-    <g transform="translate(64,138)">
-      <rect x="0" y="0" width="146" height="30" rx="15" fill="#0c2a4d" stroke="#2563eb"/>
-      <text x="73" y="20" text-anchor="middle" class="eyebrow" fill="#bfdbfe">Write lane</text>
-    </g>
-    <g transform="translate(64,562)">
-      <rect x="0" y="0" width="180" height="30" rx="15" fill="#1e1b4b" stroke="#6d28d9"/>
-      <text x="90" y="20" text-anchor="middle" class="eyebrow" fill="#c4b5fd">Replay lane</text>
-    </g>
-    <g transform="translate(64,812)">
-      <rect x="0" y="0" width="192" height="30" rx="15" fill="#4c0519" stroke="#9f1239"/>
-      <text x="96" y="20" text-anchor="middle" class="eyebrow" fill="#fda4af">Governance lane</text>
-    </g>
+    <!-- audit write-back arc -->
+    <path d="M1028 204 C1028 248 468 248 468 204" stroke="#34d399" stroke-width="2" fill="none" stroke-dasharray="6 4" marker-end="url(#arrowBack)"/>
+    <text x="748" y="268" text-anchor="middle" font-size="11" fill="#6ee7b7">ingest-back verifies closure on next reconciler run</text>
 
-    <g filter="url(#softShadow)">
-      <rect x="64" y="192" width="296" height="294" rx="18" fill="#101827" stroke="#334155"/>
-      <text x="92" y="232" class="cardTitle">Covered signals</text>
-      <text x="92" y="255" class="cardSub">Existing ingest and source coverage</text>
-      <g transform="translate(92,288)">
-        <rect x="0" y="0" width="106" height="50" rx="12" fill="#172033" stroke="#475569"/>
-        <circle cx="25" cy="25" r="16" fill="#ff9900"/>
-        <text x="25" y="30" text-anchor="middle" font-size="10" font-weight="900" fill="#111827">AWS</text>
-        <text x="50" y="22" class="badge">AWS</text>
-        <text x="50" y="39" class="tiny">trail, flow</text>
-
-        <g transform="translate(122,0)">
-          <rect x="0" y="0" width="106" height="50" rx="12" fill="#172033" stroke="#475569"/>
-          <circle cx="25" cy="25" r="16" fill="#4285f4"/>
-          <text x="25" y="30" text-anchor="middle" font-size="10" font-weight="900" fill="#fff">GCP</text>
-          <text x="50" y="22" class="badge">GCP</text>
-          <text x="50" y="39" class="tiny">audit, SCC</text>
-        </g>
-
-        <g transform="translate(0,66)">
-          <rect x="0" y="0" width="106" height="50" rx="12" fill="#172033" stroke="#475569"/>
-          <circle cx="25" cy="25" r="16" fill="#2563eb"/>
-          <text x="25" y="30" text-anchor="middle" font-size="10" font-weight="900" fill="#fff">AZ</text>
-          <text x="50" y="22" class="badge">Azure</text>
-          <text x="50" y="39" class="tiny">activity</text>
-        </g>
-
-        <g transform="translate(122,66)">
-          <rect x="0" y="0" width="106" height="50" rx="12" fill="#172033" stroke="#475569"/>
-          <circle cx="25" cy="25" r="16" fill="#111827" stroke="#94a3b8"/>
-          <text x="25" y="30" text-anchor="middle" font-size="9" font-weight="900" fill="#f8fafc">ID</text>
-          <text x="50" y="22" class="badge">Identity</text>
-          <text x="47" y="39" class="tiny">Entra, Okta</text>
-        </g>
-
-        <g transform="translate(0,132)">
-          <rect x="0" y="0" width="106" height="50" rx="12" fill="#172033" stroke="#475569"/>
-          <circle cx="25" cy="25" r="16" fill="#326ce5"/>
-          <text x="25" y="30" text-anchor="middle" font-size="9" font-weight="900" fill="#fff">K8s</text>
-          <text x="50" y="22" class="badge">Runtime</text>
-          <text x="50" y="39" class="tiny">K8s, MCP</text>
-        </g>
-
-        <g transform="translate(122,132)">
-          <rect x="0" y="0" width="106" height="50" rx="12" fill="#172033" stroke="#475569"/>
-          <circle cx="25" cy="25" r="16" fill="#29b5e8"/>
-          <text x="25" y="30" text-anchor="middle" font-size="9" font-weight="900" fill="#082f49">SF</text>
-          <text x="50" y="22" class="badge">SaaS</text>
-          <text x="50" y="39" class="tiny">GH, Slack</text>
-        </g>
-      </g>
-    </g>
-
-    <g filter="url(#softShadow)">
-      <rect x="430" y="230" width="230" height="214" rx="18" fill="#0c2a4d" stroke="#60a5fa"/>
-      <text x="460" y="270" class="cardTitle">Normalize</text>
-      <text x="460" y="294" class="cardSub">22 ingest skills</text>
-      <rect x="460" y="324" width="170" height="50" rx="12" fill="#1d4ed8" stroke="#93c5fd"/>
-      <text x="545" y="345" text-anchor="middle" class="badge">OCSF 1.8 JSONL</text>
-      <text x="545" y="364" text-anchor="middle" class="tiny" fill="#dbeafe">stdout pipe contract</text>
-      <text x="460" y="406" class="body">Stable IDs: event_uid,</text>
-      <text x="460" y="426" class="body">finding_uid, tenant hints</text>
-    </g>
-
-    <g filter="url(#softShadow)">
-      <rect x="724" y="230" width="242" height="238" rx="18" fill="#111827" stroke="#60a5fa"/>
-      <text x="754" y="270" class="cardTitle">Write</text>
-      <text x="754" y="294" class="cardSub">sink-snowflake-jsonl</text>
-      <rect x="754" y="324" width="182" height="34" rx="9" fill="#102a4c" stroke="#60a5fa"/>
-      <text x="845" y="346" text-anchor="middle" class="badge">append-only insert</text>
-      <rect x="754" y="372" width="182" height="34" rx="9" fill="#102a4c" stroke="#60a5fa"/>
-      <text x="845" y="394" text-anchor="middle" class="badge">dry-run default</text>
-      <rect x="754" y="420" width="182" height="34" rx="9" fill="#102a4c" stroke="#60a5fa"/>
-      <text x="845" y="442" text-anchor="middle" class="badge">identifier validated</text>
-    </g>
-
-    <g filter="url(#shadow)">
-      <rect x="1034" y="162" width="502" height="414" rx="24" fill="url(#lakeFill)" stroke="url(#lakeStroke)" stroke-width="2"/>
-      <g transform="translate(1102,222)">
-        <line x1="-31" y1="0" x2="31" y2="0" stroke="#bfdbfe" stroke-width="5" stroke-linecap="round"/>
-        <line x1="0" y1="-31" x2="0" y2="31" stroke="#bfdbfe" stroke-width="5" stroke-linecap="round"/>
-        <line x1="-22" y1="-22" x2="22" y2="22" stroke="#60a5fa" stroke-width="5" stroke-linecap="round"/>
-        <line x1="22" y1="-22" x2="-22" y2="22" stroke="#60a5fa" stroke-width="5" stroke-linecap="round"/>
-        <circle cx="0" cy="0" r="8" fill="#0b2445" stroke="#dbeafe" stroke-width="3"/>
-      </g>
-      <text x="1162" y="222" font-size="24" font-weight="850" fill="#e0f2fe">Snowflake lake</text>
-      <text x="1162" y="248" class="body" fill="#dbeafe">security_db.ops, provisioned by packs/snowflake</text>
-
-      <g transform="translate(1074,288)">
-        <rect x="0" y="0" width="184" height="70" rx="13" fill="#123d73" stroke="#93c5fd"/>
-        <text x="20" y="28" font-size="14" font-weight="850" fill="#e0f2fe">events_sink</text>
-        <text x="20" y="50" class="tiny" fill="#bfdbfe">90-day hot tier</text>
-      </g>
-      <g transform="translate(1300,288)">
-        <rect x="0" y="0" width="184" height="70" rx="13" fill="#123d73" stroke="#93c5fd"/>
-        <text x="20" y="28" font-size="14" font-weight="850" fill="#e0f2fe">findings_sink</text>
-        <text x="20" y="50" class="tiny" fill="#bfdbfe">365-day history</text>
-      </g>
-      <g transform="translate(1074,378)">
-        <rect x="0" y="0" width="184" height="70" rx="13" fill="#123d73" stroke="#93c5fd"/>
-        <text x="20" y="28" font-size="14" font-weight="850" fill="#e0f2fe">evidence_sink</text>
-        <text x="20" y="50" class="tiny" fill="#bfdbfe">7-year hold</text>
-      </g>
-      <g transform="translate(1300,378)">
-        <rect x="0" y="0" width="184" height="70" rx="13" fill="#123d73" stroke="#93c5fd"/>
-        <text x="20" y="28" font-size="14" font-weight="850" fill="#e0f2fe">audit_sink</text>
-        <text x="20" y="50" class="tiny" fill="#bfdbfe">legal-hold chain</text>
-      </g>
-      <g transform="translate(1074,476)">
-        <rect x="0" y="0" width="186" height="54" rx="13" fill="#0b2445" stroke="#93c5fd" stroke-dasharray="6 5"/>
-        <text x="93" y="23" text-anchor="middle" font-size="13" font-weight="850" fill="#e0f2fe">dynamic tables</text>
-        <text x="93" y="43" text-anchor="middle" class="tiny" fill="#bfdbfe">rule and event rollups</text>
-      </g>
-      <g transform="translate(1298,476)">
-        <rect x="0" y="0" width="186" height="54" rx="13" fill="#0b2445" stroke="#93c5fd" stroke-dasharray="6 5"/>
-        <text x="93" y="23" text-anchor="middle" font-size="13" font-weight="850" fill="#e0f2fe">managed Iceberg</text>
-        <text x="93" y="43" text-anchor="middle" class="tiny" fill="#bfdbfe">Horizon Catalog path</text>
-      </g>
-    </g>
-
-    <g filter="url(#softShadow)">
-      <rect x="724" y="616" width="242" height="170" rx="18" fill="#1e1b4b" stroke="#a78bfa"/>
-      <text x="754" y="656" class="cardTitle">Read gate</text>
-      <text x="754" y="680" class="cardSub">source-snowflake-query</text>
-      <rect x="754" y="710" width="182" height="38" rx="10" fill="#312e81" stroke="#a78bfa"/>
-      <text x="845" y="734" text-anchor="middle" class="badge">read-only SQL</text>
-      <text x="754" y="766" class="tiny" fill="#c4b5fd">SELECT, WITH, SHOW, DESCRIBE</text>
-    </g>
-
-    <g filter="url(#softShadow)">
-      <rect x="430" y="616" width="230" height="170" rx="18" fill="#2e1065" stroke="#a78bfa"/>
-      <text x="460" y="656" class="cardTitle">Replay rows</text>
-      <text x="460" y="684" class="body">detect-* rules</text>
-      <text x="460" y="708" class="body">Snowflake detections</text>
-      <text x="460" y="732" class="body">view-* renderers</text>
-      <text x="460" y="762" class="tiny" fill="#c4b5fd">UID windows stop duplicate findings</text>
-    </g>
-
-    <g filter="url(#softShadow)">
-      <rect x="64" y="616" width="296" height="170" rx="18" fill="#052e2b" stroke="#34d399"/>
-      <text x="92" y="656" class="cardTitle">Operator artifacts</text>
-      <text x="92" y="684" class="body">new findings</text>
-      <text x="92" y="708" class="body">SARIF handoff</text>
-      <text x="92" y="732" class="body">Mermaid attack-flow</text>
-      <text x="92" y="756" class="body">dashboard query pack</text>
-    </g>
-
-    <g filter="url(#softShadow)">
-      <rect x="430" y="854" width="230" height="72" rx="18" fill="#4c0519" stroke="#fb7185"/>
-      <text x="460" y="883" class="cardTitle">HITL response</text>
-      <text x="460" y="906" class="tiny" fill="#fecdd3">approved window, dry-run first</text>
-    </g>
-    <g filter="url(#softShadow)">
-      <rect x="724" y="854" width="242" height="72" rx="18" fill="#4c0519" stroke="#fb7185"/>
-      <text x="754" y="883" class="cardTitle">Audit write-back</text>
-      <text x="754" y="906" class="tiny" fill="#fecdd3">remediation and MCP records</text>
-    </g>
-    <g filter="url(#softShadow)">
-      <rect x="1034" y="854" width="502" height="72" rx="18" fill="#111827" stroke="#475569"/>
-      <text x="1066" y="883" class="cardTitle">Customer-owned boundary</text>
-      <text x="1066" y="904" class="tiny">Account, warehouse, grants, row policy, retention, credentials,</text>
-      <text x="1066" y="920" class="tiny">dashboard access, and network controls stay under operator control.</text>
-    </g>
-
-    <path d="M360 337H430" stroke="#60a5fa" stroke-width="3.2" marker-end="url(#arrowBlue)" fill="none"/>
-    <path d="M660 337H724" stroke="#60a5fa" stroke-width="3.2" marker-end="url(#arrowBlue)" fill="none"/>
-    <path d="M966 349H1034" stroke="#60a5fa" stroke-width="3.2" marker-end="url(#arrowBlue)" fill="none"/>
-    <text x="990" y="318" class="tiny" fill="#bfdbfe">insert</text>
-
-    <path d="M1034 700H966" stroke="#a78bfa" stroke-width="3.2" marker-end="url(#arrowViolet)" fill="none"/>
-    <text x="986" y="682" class="tiny" fill="#c4b5fd">query</text>
-    <path d="M724 700H660" stroke="#a78bfa" stroke-width="3.2" marker-end="url(#arrowViolet)" fill="none"/>
-    <path d="M430 700H360" stroke="#34d399" stroke-width="3.2" marker-end="url(#arrowGreen)" fill="none"/>
-
-    <path d="M210 786V812C210 834 240 842 288 842H1286C1318 842 1334 824 1334 792V576" stroke="#34d399" stroke-width="2.6" marker-end="url(#arrowGreen)" fill="none" stroke-dasharray="9 8"/>
-    <text x="590" y="833" class="tiny" fill="#a7f3d0">artifact rows can re-land through sink-snowflake-jsonl</text>
-
-    <path d="M660 890H724" stroke="#fb7185" stroke-width="3.2" marker-end="url(#arrowRose)" fill="none"/>
-    <path d="M966 890H1034" stroke="#fb7185" stroke-width="3.2" marker-end="url(#arrowRose)" fill="none"/>
-    <path d="M845 854V818C845 802 864 794 894 794H1430C1458 794 1472 778 1472 746V576" stroke="#fb7185" stroke-width="2.6" marker-end="url(#arrowRose)" fill="none" stroke-dasharray="9 8"/>
-    <text x="1010" y="779" class="tiny" fill="#fda4af">audit_sink captures decisions, tool calls, and approvals</text>
-
-    <g transform="translate(64,952)">
-      <circle cx="0" cy="0" r="5" fill="#60a5fa"/>
-      <text x="18" y="4" class="tiny">write</text>
-      <circle cx="88" cy="0" r="5" fill="#a78bfa"/>
-      <text x="106" y="4" class="tiny">read</text>
-      <circle cx="168" cy="0" r="5" fill="#34d399"/>
-      <text x="186" y="4" class="tiny">artifact</text>
-      <circle cx="268" cy="0" r="5" fill="#fb7185"/>
-      <text x="286" y="4" class="tiny">audit</text>
-    </g>
-    <text x="560" y="956" class="tiny" fill="#94a3b8">Append-only tables preserve history; stable IDs support duplicate-aware replay queries.</text>
+    <rect x="48" y="288" width="1104" height="36" rx="10" fill="#0b1220" stroke="#334155"/>
+    <text x="68" y="312" font-size="11" fill="#94a3b8">Customer-owned trust boundary · no hosted runner required · packs in docs/SNOWFLAKE_DATA_LAKE.md</text>
   </g>
 </svg>
