@@ -725,6 +725,54 @@ while True:
         assert env["CLOUD_SECURITY_MCP_ALLOWED_SKILLS"] == "source-snowflake-query"
 
 
+class TestSdkPresetOverlay:
+    """Harness profile ∩ workflow preset intersection for SDK examples."""
+
+    def test_preset_intersects_harness_profile(self, monkeypatch: pytest.MonkeyPatch):
+        sys.path.insert(0, str(EXAMPLES))
+        try:
+            from sdk_agent_common import load_sdk_profile, read_allowlist
+        finally:
+            sys.path.pop(0)
+        monkeypatch.setenv(
+            "CLOUD_SECURITY_MCP_PRESET",
+            "presets/preset-cspm-readonly.json",
+        )
+        profile = load_sdk_profile()
+        assert profile["preset_applied"] == "cspm-readonly"
+        skills = read_allowlist(profile)
+        assert "detect-lateral-movement" not in skills
+        assert "cspm-aws-cis-benchmark" in skills
+        assert "convert-ocsf-to-sarif" in skills
+        caller = profile["caller_context"]["allowed_skills"]
+        assert "detect-lateral-movement" not in caller
+        assert "cspm-aws-cis-benchmark" in caller
+
+    def test_empty_intersection_raises(
+        self,
+        monkeypatch: pytest.MonkeyPatch,
+        tmp_path: Path,
+    ):
+        sys.path.insert(0, str(EXAMPLES))
+        try:
+            from sdk_agent_common import load_sdk_profile
+        finally:
+            sys.path.pop(0)
+        preset_path = tmp_path / "no-overlap.json"
+        preset_path.write_text(
+            json.dumps(
+                {
+                    "name": "no-overlap",
+                    "allowed_skills": ["ingest-cloudtrail-ocsf"],
+                }
+            ),
+            encoding="utf-8",
+        )
+        monkeypatch.setenv("CLOUD_SECURITY_MCP_PRESET", str(preset_path))
+        with pytest.raises(ValueError, match="empty"):
+            load_sdk_profile()
+
+
 class TestLangGraphSocWorkflow:
     """Regression coverage for the expanded SOC workflow graph."""
 

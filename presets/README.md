@@ -57,6 +57,20 @@ python mcp-server/src/server.py
 }
 ```
 
+### SDK harness examples
+
+The Anthropic, OpenAI, and LangChain reference agents accept
+`CLOUD_SECURITY_MCP_PRESET` to intersect a harness profile with a preset
+without hand-editing JSON:
+
+```bash
+CLOUD_SECURITY_MCP_PRESET=preset-cspm-readonly.json \
+  python examples/agents/openai_sdk_security_agent.py
+```
+
+The effective allowlist is **profile ∩ preset ∩ caller** (empty intersection
+raises at load time).
+
 The wrapper records `caller_skill_scope_count` and
 `caller_skill_scope_hash` in the audit event so the same preset across
 runs is recognisable in post-hoc analysis.

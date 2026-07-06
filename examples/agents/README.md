@@ -15,6 +15,15 @@ allowlist regardless of which SDK is driving the loop.
 
 Anthropic and OpenAI examples load [`harness_profiles/sdk-cspm-agent.json`](harness_profiles/sdk-cspm-agent.json) by default so allowlists, caller context, and MCP execution policy stay customizable without editing Python.
 
+Optional workflow preset overlay (intersects with the harness profile — fail closed on empty):
+
+```bash
+CLOUD_SECURITY_MCP_PRESET=presets/preset-cspm-readonly.json \
+  python examples/agents/anthropic_sdk_security_agent.py
+```
+
+See [`../../presets/README.md`](../../presets/README.md) for shipped presets.
+
 ## Safety posture — every example enforces the same invariants
 
 1. **Read-only skill allowlist.** Every example sets

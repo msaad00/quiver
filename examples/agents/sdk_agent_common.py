@@ -1,7 +1,8 @@
 """Shared wiring for Anthropic, OpenAI, and LangChain SDK reference examples.
 
-Customization path: load a harness profile JSON, intersect with MCP
-allowlists, and speak the repo MCP server over stdio JSON-RPC. Remediation
+Customization path: load a harness profile JSON, optionally intersect with a
+workflow preset via ``CLOUD_SECURITY_MCP_PRESET``, then intersect with MCP
+allowlists and speak the repo MCP server over stdio JSON-RPC. Remediation
 skills stay on a separate allowlist and chain — never mixed with read-only
 tools in the same agent loop.
 """
@@ -21,6 +22,7 @@ from harness_mcp_transport import safe_mcp_env
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 MCP_SERVER = REPO_ROOT / "mcp-server" / "src" / "server.py"
+PRESETS_ROOT = REPO_ROOT / "presets"
 DEFAULT_PROFILE = Path(__file__).resolve().parent / "harness_profiles" / "sdk-cspm-agent.json"
 
 # Separate remediation surface — never combine with read-only tools in one loop.
@@ -67,12 +69,82 @@ def _read_message(stream, *, deadline: float) -> dict[str, Any]:
     return decoded
 
 
+def resolve_preset_path(raw: str) -> Path:
+    """Resolve a preset path from env, repo-relative path, or ``presets/`` name."""
+    candidate = Path(raw)
+    if candidate.is_file():
+        return candidate.resolve()
+    from_repo = REPO_ROOT / raw
+    if from_repo.is_file():
+        return from_repo.resolve()
+    under_presets = PRESETS_ROOT / candidate.name
+    if under_presets.is_file():
+        return under_presets.resolve()
+    raise FileNotFoundError(f"preset not found: {raw}")
+
+
+def load_preset(path: str | Path | None = None) -> dict[str, Any] | None:
+    """Load a workflow preset when ``CLOUD_SECURITY_MCP_PRESET`` is set."""
+    selected = path or os.environ.get("CLOUD_SECURITY_MCP_PRESET")
+    if not selected or not str(selected).strip():
+        return None
+    preset_path = resolve_preset_path(str(selected))
+    payload = json.loads(preset_path.read_text(encoding="utf-8"))
+    if not isinstance(payload, dict):
+        raise ValueError("preset must be a JSON object")
+    payload = dict(payload)
+    payload["_resolved_path"] = str(preset_path)
+    return payload
+
+
+def _intersect_skill_lists(base: list[str], overlay: list[str]) -> list[str]:
+    overlay_set = set(overlay)
+    return sorted(skill for skill in base if skill in overlay_set)
+
+
+def apply_preset_to_profile(profile: dict[str, Any], preset: dict[str, Any]) -> dict[str, Any]:
+    """Intersect harness profile allowlists with a workflow preset (fail closed on empty)."""
+    merged = dict(profile)
+    preset_skills = read_allowlist(preset)
+    if not preset_skills:
+        raise ValueError("preset allowed_skills must be non-empty")
+    profile_skills = read_allowlist(merged)
+    effective = (
+        _intersect_skill_lists(profile_skills, preset_skills)
+        if profile_skills
+        else sorted(preset_skills)
+    )
+    if not effective:
+        raise ValueError("preset ∩ profile allowed_skills is empty")
+    merged["allowed_skills"] = effective
+    preset_name = preset.get("name")
+    merged["preset_applied"] = preset_name if isinstance(preset_name, str) else None
+    resolved = preset.get("_resolved_path")
+    if isinstance(resolved, str):
+        merged["preset_source"] = resolved
+
+    caller = dict(merged.get("caller_context") or {})
+    caller_raw = caller.get("allowed_skills") or profile.get("allowed_skills") or []
+    if isinstance(caller_raw, str):
+        caller_skills = [part.strip() for part in caller_raw.split(",") if part.strip()]
+    else:
+        caller_skills = [skill for skill in caller_raw if isinstance(skill, str) and skill.strip()]
+    caller["allowed_skills"] = (
+        _intersect_skill_lists(caller_skills, effective) if caller_skills else list(effective)
+    )
+    merged["caller_context"] = caller
+    return merged
+
+
 def load_sdk_profile(path: str | Path | None = None) -> dict[str, Any]:
     """Load operator profile metadata without reading credentials."""
     selected = path or os.environ.get("CLOUD_SECURITY_HARNESS_PROFILE") or DEFAULT_PROFILE
     payload = json.loads(Path(selected).read_text(encoding="utf-8"))
     if not isinstance(payload, dict):
         raise ValueError("harness profile must be a JSON object")
+    preset = load_preset()
+    if preset is not None:
+        return apply_preset_to_profile(payload, preset)
     return payload
 
 
