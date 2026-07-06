@@ -32,7 +32,8 @@ because they need fixed layout, logo marks, and exact text containment:
 | [`../images/agentic-soc-orchestrator.svg`](../images/agentic-soc-orchestrator.svg) | optional LangGraph/LangChain orchestration over deterministic skills |
 | [`../images/clickhouse-data-lake.svg`](../images/clickhouse-data-lake.svg) | ClickHouse closed-loop lake hero |
 | [`../images/snowflake-data-lake.svg`](../images/snowflake-data-lake.svg) | Snowflake closed-loop lake hero |
-| [`../images/coverage-matrix.svg`](../images/coverage-matrix.svg) | closed-loop coverage matrix and remediation status summary |
+| [`../images/coverage-matrix-summary.svg`](../images/coverage-matrix-summary.svg) | compact closed-loop summary for README |
+| [`../images/coverage-matrix.svg`](../images/coverage-matrix.svg) | full closed-loop coverage matrix (71 detection rows) |
 
 ## Authoring rules
 
