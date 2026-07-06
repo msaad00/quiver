@@ -3,11 +3,48 @@ from __future__ import annotations
 import importlib.util
 import json
 import sys
+import types
 from pathlib import Path
 
 import pytest
 
 ROOT = Path(__file__).resolve().parents[2]
+
+_PASSTHROUGH_CMD = f'{sys.executable} -c "import sys; sys.stdout.write(sys.stdin.read())"'
+_FAILING_CMD = f"{sys.executable} -c \"import sys; sys.stderr.write('boom'); sys.exit(3)\""
+
+
+def _azure_exceptions(monkeypatch) -> tuple[type[Exception], type[Exception]]:
+    """Return the exception classes _put_if_new imports lazily.
+
+    Uses the real azure-core classes when the SDK is installed; otherwise
+    installs a minimal stand-in module so the handler path still runs in
+    SDK-free CI lanes.
+    """
+    try:
+        from azure.core.exceptions import ResourceExistsError, ResourceNotFoundError
+
+        return ResourceExistsError, ResourceNotFoundError
+    except ImportError:
+        pass
+
+    class _ResourceExistsError(Exception):
+        pass
+
+    class _ResourceNotFoundError(Exception):
+        pass
+
+    exceptions_module = types.ModuleType("azure.core.exceptions")
+    setattr(exceptions_module, "ResourceExistsError", _ResourceExistsError)
+    setattr(exceptions_module, "ResourceNotFoundError", _ResourceNotFoundError)
+    core_module = types.ModuleType("azure.core")
+    setattr(core_module, "exceptions", exceptions_module)
+    azure_module = types.ModuleType("azure")
+    setattr(azure_module, "core", core_module)
+    monkeypatch.setitem(sys.modules, "azure", azure_module)
+    monkeypatch.setitem(sys.modules, "azure.core", core_module)
+    monkeypatch.setitem(sys.modules, "azure.core.exceptions", exceptions_module)
+    return _ResourceExistsError, _ResourceNotFoundError
 
 
 def _load_module(name: str, path: Path):
@@ -169,6 +206,82 @@ class TestAzureBlobEventGridDetectRunner:
             "duplicates": 1,
         }
         assert published == [(lines[0], "finding-1")]
+
+    def test_ingest_event_payloads_accepts_object_and_array(self):
+        single = INGEST._event_payloads(json.dumps({"data": {"url": "https://a/b"}}))
+        assert single == [{"data": {"url": "https://a/b"}}]
+
+        batch = INGEST._event_payloads(json.dumps([{"data": {}}, "not-an-event", {"id": "2"}]))
+        assert batch == [{"data": {}}, {"id": "2"}]
+
+        with pytest.raises(ValueError, match="JSON object or array"):
+            INGEST._event_payloads(json.dumps("just a string"))
+
+    def test_ingest_blob_url_prefers_url_then_blob_url(self):
+        assert (
+            INGEST._blob_url({"data": {"url": " https://a/blob.jsonl "}}) == "https://a/blob.jsonl"
+        )
+        assert (
+            INGEST._blob_url({"data": {"blobUrl": "https://a/alt.jsonl"}}) == "https://a/alt.jsonl"
+        )
+        with pytest.raises(ValueError, match="data.url"):
+            INGEST._blob_url({"data": {}})
+
+    def test_ingest_run_skill_surfaces_skill_stderr(self, monkeypatch):
+        monkeypatch.setenv("INGEST_SKILL_CMD", _FAILING_CMD)
+        with pytest.raises(RuntimeError, match="boom"):
+            INGEST._run_skill("line-1\n")
+
+    def test_ingest_handles_message_batch_and_aggregates_counts(self, monkeypatch):
+        monkeypatch.setattr(INGEST, "_download_blob_text", lambda url: "payload")
+        monkeypatch.setattr(INGEST, "_run_skill", lambda payload: ["line-1", "line-2"])
+        monkeypatch.setattr(INGEST, "_enqueue_detect_lines", lambda lines: len(list(lines)))
+
+        body = json.dumps({"data": {"url": "https://account.blob.core.windows.net/c/b.jsonl"}})
+        result = INGEST.handle_ingest_messages([body, body])
+
+        assert result == {
+            "queue_messages_processed": 2,
+            "blob_events_processed": 2,
+            "blobs_processed": 2,
+            "messages_enqueued": 4,
+        }
+
+    def test_detect_run_skill_passes_lines_through(self, monkeypatch):
+        monkeypatch.setenv("DETECT_SKILL_CMD", _PASSTHROUGH_CMD)
+        assert DETECT._run_skill(["line-1", "line-2"]) == ["line-1", "line-2"]
+
+    def test_detect_put_if_new_dedupes_and_replaces_expired_rows(self, monkeypatch):
+        resource_exists, resource_not_found = _azure_exceptions(monkeypatch)
+        monkeypatch.setenv("DEDUPE_TTL_DAYS", "30")
+
+        class _FakeTable:
+            def __init__(self):
+                self.entities: dict[str, dict] = {}
+
+            def create_entity(self, entity):
+                if entity["RowKey"] in self.entities:
+                    raise resource_exists("conflict")
+                self.entities[entity["RowKey"]] = entity
+
+            def get_entity(self, partition_key, row_key):
+                assert partition_key == "finding"
+                if row_key not in self.entities:
+                    raise resource_not_found("missing")
+                return self.entities[row_key]
+
+            def delete_entity(self, partition_key, row_key):
+                del self.entities[row_key]
+
+        table = _FakeTable()
+        monkeypatch.setattr(DETECT, "_dedupe_table", lambda: table)
+
+        assert DETECT._put_if_new("uid-1", "payload") is True
+        assert DETECT._put_if_new("uid-1", "payload") is False
+
+        # An expired row is replaced instead of counted as a duplicate.
+        table.entities["uid-1"]["expires_at"] = 1
+        assert DETECT._put_if_new("uid-1", "payload") is True
 
     def test_template_contains_azure_components(self):
         template = (ROOT / "runners" / "azure-blob-eventgrid-detect" / "template.bicep").read_text()

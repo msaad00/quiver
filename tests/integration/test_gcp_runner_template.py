@@ -2,11 +2,17 @@ from __future__ import annotations
 
 import base64
 import importlib.util
+import json
 import sys
 from datetime import UTC, datetime
 from pathlib import Path
 
+import pytest
+
 ROOT = Path(__file__).resolve().parents[2]
+
+_PASSTHROUGH_CMD = f'{sys.executable} -c "import sys; sys.stdout.write(sys.stdin.read())"'
+_FAILING_CMD = f"{sys.executable} -c \"import sys; sys.stderr.write('boom'); sys.exit(3)\""
 
 
 def _load_module(name: str, path: Path):
@@ -118,3 +124,94 @@ class TestGcpGcsPubsubDetectRunner:
         monkeypatch.setenv("DEDUPE_TTL_DAYS", "10")
         base = datetime(2026, 4, 17, tzinfo=UTC)
         assert DETECT._expires_at(now=base) == datetime(2026, 4, 27, tzinfo=UTC)
+
+    def test_decode_pubsub_event_without_data_returns_empty(self):
+        assert DETECT._decode_pubsub_event({}) == []
+        assert DETECT._decode_pubsub_event({"data": ""}) == []
+
+    def test_ingest_run_skill_surfaces_skill_stderr(self, monkeypatch):
+        monkeypatch.setenv("INGEST_SKILL_CMD", _FAILING_CMD)
+        with pytest.raises(RuntimeError, match="boom"):
+            INGEST._run_skill("line-1\n")
+
+    def test_ingest_gcs_event_end_to_end(self, monkeypatch):
+        monkeypatch.setenv("INGEST_SKILL_CMD", _PASSTHROUGH_CMD)
+        monkeypatch.setenv("DETECT_TOPIC", "projects/test/topics/detect")
+
+        monkeypatch.setattr(
+            INGEST, "_read_object", lambda bucket, name: f"{bucket}/{name}:line-1\nline-2\n"
+        )
+        published: list[tuple[str, bytes]] = []
+
+        class _FakePublisher:
+            def publish(self, topic, payload):
+                published.append((topic, payload))
+
+        monkeypatch.setattr(INGEST, "_publisher_client", lambda: _FakePublisher())
+
+        result = INGEST.handle_gcs_event({"bucket": "raw-bucket", "name": "audit/day1.jsonl"}, None)
+
+        assert result == {"objects_processed": 1, "messages_enqueued": 2}
+        assert published == [
+            ("projects/test/topics/detect", b"raw-bucket/audit/day1.jsonl:line-1"),
+            ("projects/test/topics/detect", b"line-2"),
+        ]
+
+    def test_detect_pubsub_event_end_to_end_dedupes(self, monkeypatch):
+        monkeypatch.setenv("DETECT_SKILL_CMD", _PASSTHROUGH_CMD)
+        monkeypatch.setenv("FINDINGS_TOPIC", "projects/test/topics/findings")
+
+        dedupe_results = iter([True, False])
+        monkeypatch.setattr(DETECT, "_put_if_new", lambda uid, payload: next(dedupe_results))
+        monkeypatch.setattr(DETECT, "_publisher_client", lambda: object())
+        published: list[tuple[str, str]] = []
+        monkeypatch.setattr(
+            DETECT,
+            "_publish_findings",
+            lambda publisher, topic, records: published.extend(records),
+        )
+
+        finding_new = json.dumps({"finding_info": {"uid": "finding-new"}})
+        finding_dup = json.dumps({"event_uid": "event-dup"})
+        payload = f"{finding_new}\n{finding_dup}\n".encode("utf-8")
+        event = {"data": base64.b64encode(payload).decode("ascii")}
+
+        result = DETECT.handle_pubsub_event(event, None)
+
+        assert result == {"messages_processed": 2, "published": 1, "duplicates": 1}
+        assert published == [(finding_new, "finding-new")]
+
+    def test_detect_put_if_new_returns_false_on_conflict(self, monkeypatch):
+        monkeypatch.setenv("DEDUPE_COLLECTION", "dedupe")
+        monkeypatch.setenv("DEDUPE_TTL_DAYS", "30")
+
+        class _FakeDocument:
+            def __init__(self, existing: set[str], uid: str):
+                self.existing = existing
+                self.uid = uid
+
+            def create(self, item):
+                if self.uid in self.existing:
+                    raise DETECT.Conflict("already exists")
+                self.existing.add(self.uid)
+
+        class _FakeCollection:
+            def __init__(self, existing: set[str]):
+                self.existing = existing
+
+            def document(self, uid):
+                return _FakeDocument(self.existing, uid)
+
+        class _FakeFirestore:
+            def __init__(self):
+                self.existing: set[str] = set()
+
+            def collection(self, name):
+                assert name == "dedupe"
+                return _FakeCollection(self.existing)
+
+        client = _FakeFirestore()
+        monkeypatch.setattr(DETECT, "_firestore_client", lambda: client)
+
+        assert DETECT._put_if_new("uid-1", "payload") is True
+        assert DETECT._put_if_new("uid-1", "payload") is False
