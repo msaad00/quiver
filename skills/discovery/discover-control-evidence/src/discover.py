@@ -421,7 +421,7 @@ def to_ocsf_live_evidence(evidence: dict[str, Any]) -> dict[str, Any]:
             "version": "1.8.0",
             "uid": evidence["evidence_id"],
             "product": {
-                "name": "quiver",
+                "name": "cloud-ai-security-skills",
                 "vendor_name": VENDOR_NAME,
                 "feature": {"name": SKILL_NAME},
             },

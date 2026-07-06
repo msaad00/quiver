@@ -171,7 +171,7 @@ def _render_ocsf_event(canonical: dict[str, Any]) -> dict[str, Any]:
             "uid": canonical["event_uid"],
             "profiles": [MCP_PROFILE],
             "product": {
-                "name": "quiver",
+                "name": "cloud-ai-security-skills",
                 "vendor_name": VENDOR_NAME,
                 "feature": {"name": SKILL_NAME},
             },

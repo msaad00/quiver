@@ -30,7 +30,7 @@ from skills._shared.runtime_telemetry import emit_stderr_event  # noqa: E402
 SKILL_NAME = "detect-credential-stuffing-okta"
 OCSF_VERSION = "1.8.0"
 CANONICAL_VERSION = "2026-04"
-REPO_NAME = "quiver"
+REPO_NAME = "cloud-ai-security-skills"
 from skills._shared.identity import VENDOR_NAME as REPO_VENDOR  # noqa: E402
 
 _log = get_logger(__name__, skill=SKILL_NAME, layer="detection")

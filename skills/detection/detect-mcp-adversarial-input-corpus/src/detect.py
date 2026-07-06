@@ -28,7 +28,7 @@ from skills._shared.identity import VENDOR_NAME  # noqa: E402
 SKILL_NAME = "detect-mcp-adversarial-input-corpus"
 OCSF_VERSION = "1.8.0"
 CANONICAL_VERSION = "2026-04"
-REPO_NAME = "quiver"
+REPO_NAME = "cloud-ai-security-skills"
 OUTPUT_FORMATS = ("ocsf", "native")
 
 APPLICATION_ACTIVITY_UID = 6002

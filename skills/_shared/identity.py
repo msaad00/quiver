@@ -15,7 +15,7 @@ from __future__ import annotations
 import os
 
 DEFAULT_VENDOR_NAME = "msaad00/quiver"
-DEFAULT_PRODUCT_NAME = "quiver"
+DEFAULT_PRODUCT_NAME = "cloud-ai-security-skills"
 DEFAULT_INFORMATION_URI = "https://github.com/msaad00/quiver"
 
 

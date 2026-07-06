@@ -48,7 +48,7 @@ ALLOWED_SKILLS_READ_ONLY = ",".join(
 def build_mcp_config() -> dict[str, Any]:
     """The block you'd pass to `openai.agents.McpServer(...)` in a real loop."""
     return {
-        "name": "quiver",
+        "name": "cloud-ai-security-skills",
         "command": "python3",
         "args": [str(MCP_SERVER)],
         "env": {

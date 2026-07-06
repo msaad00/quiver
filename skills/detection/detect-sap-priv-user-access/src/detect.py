@@ -24,7 +24,7 @@ from skills._shared.runtime_telemetry import emit_stderr_event  # noqa: E402
 SKILL_NAME = "detect-sap-priv-user-access"
 OCSF_VERSION = "1.8.0"
 CANONICAL_VERSION = "2026-06"
-REPO_NAME = "quiver"
+REPO_NAME = "cloud-ai-security-skills"
 
 _log = get_logger(__name__, skill=SKILL_NAME, layer="detection")
 

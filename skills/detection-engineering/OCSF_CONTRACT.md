@@ -94,7 +94,7 @@ Every event a skill emits MUST populate these fields at minimum. Fields marked `
 | `time` | int [req] | Unix epoch **milliseconds** (not seconds) |
 | `metadata.version` | string [req] | `"1.8.0"` |
 | `metadata.uid` | string [pin] | Deterministic event-level identity for SIEM dedupe and replay safety |
-| `metadata.product.name` | string [pin] | `"quiver"` |
+| `metadata.product.name` | string [pin] | `"cloud-ai-security-skills"` |
 | `metadata.product.vendor_name` | string [pin] | `"msaad00/quiver"` |
 | `metadata.product.feature.name` | string [pin] | Name of the emitting skill (e.g. `"detect-mcp-tool-drift"`) |
 
@@ -145,7 +145,7 @@ All detection skills in this category produce **Detection Finding** (class `2004
     "version": "1.8.0",
     "uid": "det-mcp-drift-abc123",
     "product": {
-      "name": "quiver",
+      "name": "cloud-ai-security-skills",
       "vendor_name": "msaad00/quiver",
       "feature": {"name": "detect-mcp-tool-drift"}
     },

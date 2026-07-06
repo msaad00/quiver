@@ -57,7 +57,7 @@ def _detection_finding(
         "metadata": {
             "version": "1.8.0",
             "product": {
-                "name": "quiver",
+                "name": "cloud-ai-security-skills",
                 "vendor_name": "msaad00/quiver",
                 "feature": {"name": detector},
             },
@@ -125,7 +125,10 @@ class TestDocShape:
 
     def test_tool_name_pinned(self):
         doc = convert([_detection_finding()])
-        assert doc["runs"][0]["tool"]["driver"]["name"] == "quiver-detection-engineering"
+        assert (
+            doc["runs"][0]["tool"]["driver"]["name"]
+            == "cloud-ai-security-skills-detection-engineering"
+        )
 
     def test_skips_non_detection_finding(self, capsys):
         doc = convert(

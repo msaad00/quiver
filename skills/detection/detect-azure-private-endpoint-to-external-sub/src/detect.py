@@ -45,7 +45,7 @@ from skills._shared.runtime_telemetry import emit_stderr_event  # noqa: E402
 SKILL_NAME = "detect-azure-private-endpoint-to-external-sub"
 CANONICAL_VERSION = "2026-04"
 OCSF_VERSION = "1.8.0"
-REPO_NAME = "quiver"
+REPO_NAME = "cloud-ai-security-skills"
 
 _log = get_logger(__name__, skill=SKILL_NAME, layer="detection")
 

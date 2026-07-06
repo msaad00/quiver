@@ -34,7 +34,7 @@ _log = get_logger(__name__, skill="detect-databricks-token-creation", layer="det
 SKILL_NAME = "detect-databricks-token-creation"
 OCSF_VERSION = "1.8.0"
 CANONICAL_VERSION = "2026-04"
-REPO_NAME = "quiver"
+REPO_NAME = "cloud-ai-security-skills"
 
 OUTPUT_FORMATS = ("ocsf", "native")
 

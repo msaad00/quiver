@@ -7,7 +7,7 @@ from dataclasses import asdict, is_dataclass
 from datetime import UTC, datetime
 from typing import Any
 
-REPO_NAME = "quiver"
+REPO_NAME = "cloud-ai-security-skills"
 REPO_VENDOR = "msaad00/quiver"
 OCSF_VERSION = "1.8.0"
 
