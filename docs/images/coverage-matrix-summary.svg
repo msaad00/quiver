@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="380" viewBox="0 0 1200 380" role="img" aria-labelledby="cms-title cms-desc">
+  <title id="cms-title">Cloud AI Security Skills  closed-loop coverage summary</title>
+  <desc id="cms-desc">Compact summary of detect-to-remediate coverage. 71 shipped detection skills; 13 closed loops today. Writes remain HITL gated and dry-run first. Full per-skill matrix lives in docs/FRAMEWORK_COVERAGE.md and docs/images/coverage-matrix.svg.</desc>
+
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#060b17"/>
+      <stop offset="100%" stop-color="#0a1325"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1200" height="380" fill="url(#bg)"/>
+
+  <g font-family="Inter, Segoe UI, ui-sans-serif, Arial, sans-serif">
+    <text x="48" y="52" font-size="28" font-weight="800" fill="#f8fafc">Closed-loop coverage</text>
+    <text x="48" y="80" font-size="14" fill="#94a3b8">Detections with a shipped, HITL-gated remediation path · full matrix in FRAMEWORK_COVERAGE.md</text>
+
+    <!-- summary cards -->
+    <rect x="48" y="108" width="200" height="88" rx="16" fill="#052e2b" stroke="#22c55e"/>
+    <text x="68" y="148" fill="#5eead4" font-size="36" font-weight="900">13 / 71</text>
+    <text x="68" y="176" fill="#bbf7d0" font-size="13" font-weight="700">closed-loop detections</text>
+
+    <rect x="268" y="108" width="200" height="88" rx="16" fill="#112244" stroke="#60a5fa"/>
+    <text x="288" y="148" fill="#dbeafe" font-size="36" font-weight="900">71</text>
+    <text x="288" y="176" fill="#bfdbfe" font-size="13" font-weight="700">DETECTION shipped</text>
+
+    <rect x="488" y="108" width="200" height="88" rx="16" fill="#2a1708" stroke="#f59e0b"/>
+    <text x="508" y="148" fill="#fbbf24" font-size="24" font-weight="900">HITL gated</text>
+    <text x="508" y="176" fill="#fed7aa" font-size="13" font-weight="700">dry-run before writes</text>
+
+    <rect x="708" y="108" width="220" height="88" rx="16" fill="#2a0b1e" stroke="#ef4444"/>
+    <text x="728" y="148" fill="#f87171" font-size="22" font-weight="900">58 detect-first</text>
+    <text x="728" y="176" fill="#fecaca" font-size="13" font-weight="700">no autonomous action implied</text>
+
+    <!-- legend -->
+    <text x="48" y="232" font-size="13" font-weight="700" fill="#e2e8f0">Status legend</text>
+    <g transform="translate(48,248)" font-size="13">
+      <rect x="0" y="0" width="16" height="16" rx="4" fill="#16a34a" stroke="#22c55e"/>
+      <text x="24" y="13" fill="#dcfce7">shipped closed loop (paired remediation skill)</text>
+
+      <rect x="340" y="0" width="16" height="16" rx="4" fill="#b45309" stroke="#f59e0b"/>
+      <text x="364" y="13" fill="#fef3c7">planned (issue tracked)</text>
+
+      <rect x="580" y="0" width="16" height="16" rx="4" fill="#7f1d1d" stroke="#ef4444"/>
+      <text x="604" y="13" fill="#fee2e2">detect-first (no paired remediation yet)</text>
+    </g>
+
+    <!-- closed-loop examples -->
+    <text x="48" y="300" font-size="13" font-weight="700" fill="#e2e8f0">Shipped closed loops (sample)</text>
+    <text x="48" y="324" font-size="12" fill="#94a3b8">open SG/NSG/firewall ’ revoke · K8s escape/RBAC ’ revoke · MCP tool drift ’ quarantine · Okta/Workspace session ’ kill · IAM departures ’ AWS/Azure/GCP</text>
+
+    <rect x="48" y="340" width="1104" height="32" rx="10" fill="#0f172a" stroke="#334155"/>
+    <text x="64" y="362" font-size="12" fill="#64748b">Full 71-row matrix: docs/images/coverage-matrix.svg · docs/FRAMEWORK_COVERAGE.md</text>
+  </g>
+</svg>

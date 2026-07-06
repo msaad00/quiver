@@ -117,7 +117,9 @@ Presets: [`presets/`](presets/) · workflows: [`examples/workflows/`](examples/w
 <details>
 <summary><b>Closed-loop coverage</b> — detections with paired remediation</summary>
 
-![Closed-loop coverage matrix](docs/images/coverage-matrix.svg)
+![Closed-loop coverage summary](docs/images/coverage-matrix-summary.svg)
+
+Full per-skill matrix: [`docs/FRAMEWORK_COVERAGE.md`](docs/FRAMEWORK_COVERAGE.md) · [`docs/images/coverage-matrix.svg`](docs/images/coverage-matrix.svg)
 
 </details>
 
