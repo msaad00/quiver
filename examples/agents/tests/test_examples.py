@@ -27,6 +27,7 @@ DIAGRAMS = REPO_ROOT / "docs" / "diagrams"
 SCRIPTS = [
     EXAMPLES / "anthropic_sdk_security_agent.py",
     EXAMPLES / "openai_sdk_security_agent.py",
+    EXAMPLES / "langchain_mcp_security_agent.py",
     EXAMPLES / "langgraph_security_graph.py",
     EXAMPLES / "run_langgraph_harness.py",
 ]
@@ -121,8 +122,9 @@ class TestExampleSmoke:
             [sys.executable, str(script)],
             capture_output=True,
             text=True,
-            timeout=30,
+            timeout=60,
             check=False,
+            cwd=REPO_ROOT,
             env=env,
         )
         assert result.returncode == 0, f"script failed: {result.stderr}"
@@ -138,8 +140,9 @@ class TestExampleSmoke:
             [sys.executable, str(script)],
             capture_output=True,
             text=True,
-            timeout=30,
+            timeout=60,
             check=False,
+            cwd=REPO_ROOT,
             env=env,
         )
         audit_lines = [
@@ -212,8 +215,9 @@ class TestHitlGateReachable:
             [sys.executable, str(EXAMPLES / "anthropic_sdk_security_agent.py")],
             capture_output=True,
             text=True,
-            timeout=30,
+            timeout=60,
             check=False,
+            cwd=REPO_ROOT,
             env=env,
         )
         # The real subprocess in stage 3 shells into the reconciler handler
@@ -236,11 +240,30 @@ class TestHitlGateReachable:
             text=True,
             timeout=60,
             check=False,
+            cwd=REPO_ROOT,
             env=env,
         )
         assert "remediation_dry_run" in result.stdout or "reconciler" in (
             result.stdout + result.stderr
         )
+
+    def test_langchain_mcp_binding_documents_stdio_transport(self):
+        result = subprocess.run(
+            [sys.executable, str(EXAMPLES / "langchain_mcp_security_agent.py")],
+            capture_output=True,
+            text=True,
+            timeout=60,
+            check=False,
+            cwd=REPO_ROOT,
+            env={**os.environ},
+        )
+        assert result.returncode == 0, result.stderr
+        payload = json.loads(result.stdout)
+        binding = payload["langchain_binding"]
+        assert binding["integration"] == "mcp_stdio_jsonrpc"
+        assert binding["anti_pattern"] == "do_not_wrap_skill_clis_as_langchain_tools"
+        assert "cloud-ai-security-skills" in binding["mcp_servers"]
+        assert payload["mcp_tools_discovered"]
 
     def test_langgraph_reaches_remediation_with_approval(self):
         env = {

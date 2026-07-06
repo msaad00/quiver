@@ -116,6 +116,39 @@ CLOUD_SECURITY_HARNESS_PROFILE=examples/agents/harness_profiles/dry-run-remediat
 The demo pauses before ``review``, injects operator ``approval_context`` via
 ``update_state``, then resumes into dry-run remediation planning.
 
+## Agent + AI pluggability — MCP first, not LCEL wrappers
+
+Frameworks (LangChain, LangGraph, OpenAI Agents SDK, Anthropic Agent SDK, Cursor,
+Codex) should bind the **repo MCP server** as their tool surface. Skills stay
+behind one audited contract: allowlists, HITL gates, dry-run defaults, and
+HMAC audit chains do not fork per framework.
+
+| Do | Don't |
+|---|---|
+| Spawn `mcp-server/src/server.py` over stdio JSON-RPC | Wrap `python skills/.../detect.py` as `@tool` / LCEL chains |
+| Load a harness profile for allowlists + caller context | Hard-code skill names in agent source |
+| Keep remediation on a **separate** loop after human approval | Register `remediate-*` beside `detect-*` in one tool set |
+| Pick model adapters inside the harness triage node only | Let the model invent CVSS/MITRE/approval facts |
+
+Reference examples:
+
+- [`examples/agents/sdk_agent_common.py`](../examples/agents/sdk_agent_common.py) — shared profile + live `tools/list` discovery
+- [`examples/agents/anthropic_sdk_security_agent.py`](../examples/agents/anthropic_sdk_security_agent.py)
+- [`examples/agents/openai_sdk_security_agent.py`](../examples/agents/openai_sdk_security_agent.py)
+- [`examples/agents/langchain_mcp_security_agent.py`](../examples/agents/langchain_mcp_security_agent.py) — `langchain-mcp-adapters` config block, anti-LCEL guidance
+
+```bash
+python examples/agents/langchain_mcp_security_agent.py
+
+CLOUD_SECURITY_HARNESS_PROFILE=examples/agents/harness_profiles/sdk-cspm-agent.json \\
+  DEMO_APPROVE=yes python examples/agents/langchain_mcp_security_agent.py
+```
+
+Bounded LLM triage inside the LangGraph harness uses pluggable adapters
+(`harness_adapters.py`): deterministic offline, JSON fixture, OpenAI-compatible
+HTTP, or LangChain chat-message fixtures — all validated before they touch
+workflow state.
+
 Execute or re-evaluate the emitted MCP plan as a separate artifact:
 
 ```bash
