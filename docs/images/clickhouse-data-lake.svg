@@ -1,292 +1,76 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="980" viewBox="0 0 1600 980" role="img" aria-labelledby="title desc">
-  <title id="title">ClickHouse security data lake closed-loop architecture</title>
-  <desc id="desc">Clean lane diagram showing covered signals, OCSF normalization, append-only ClickHouse writes, governed ClickHouse tables, read-only replay, operator artifacts, HITL review, audit write-back, materialized views, and the customer-owned trust boundary.</desc>
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="340" viewBox="0 0 1200 340" role="img" aria-labelledby="title desc">
+  <title id="title">ClickHouse security data lake</title>
+  <desc id="desc">Closed-loop flow: source signals, OCSF ingest, append-only ClickHouse lake, detect and evaluate, HITL remediate, audit write-back.</desc>
 
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#07111f"/>
-      <stop offset="0.52" stop-color="#0d172a"/>
-      <stop offset="1" stop-color="#121827"/>
+      <stop offset="0%" stop-color="#060b17"/>
+      <stop offset="100%" stop-color="#121827"/>
     </linearGradient>
-    <linearGradient id="lakeFill" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#6a4407"/>
-      <stop offset="1" stop-color="#2d1d05"/>
-    </linearGradient>
-    <linearGradient id="goldStroke" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0" stop-color="#facc15"/>
-      <stop offset="0.45" stop-color="#f59e0b"/>
-      <stop offset="1" stop-color="#fef08a"/>
-    </linearGradient>
-    <pattern id="grid" width="48" height="48" patternUnits="userSpaceOnUse">
-      <path d="M48 0H0V48" fill="none" stroke="#20314f" stroke-opacity="0.24" stroke-width="1"/>
-    </pattern>
-    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
-      <feDropShadow dx="0" dy="18" stdDeviation="18" flood-color="#020617" flood-opacity="0.42"/>
-    </filter>
-    <filter id="softShadow" x="-14%" y="-14%" width="128%" height="128%">
-      <feDropShadow dx="0" dy="10" stdDeviation="10" flood-color="#020617" flood-opacity="0.28"/>
-    </filter>
-    <marker id="arrowCyan" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="10" markerHeight="10" orient="auto">
-      <path d="M0 0L10 5L0 10Z" fill="#22d3ee"/>
+    <symbol id="clickhouse" viewBox="0 0 24 24">
+      <path fill="#FFCC00" d="M21.333 10H24v4h-2.667ZM16 1.335h2.667v21.33H16Zm-5.333 0h2.666v21.33h-2.666ZM0 22.665V1.335h2.667v21.33zm5.333-21.33H8v21.33H5.333Z"/>
+    </symbol>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0 0L10 5L0 10z" fill="#22d3ee"/>
     </marker>
-    <marker id="arrowGold" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="10" markerHeight="10" orient="auto">
-      <path d="M0 0L10 5L0 10Z" fill="#facc15"/>
+    <marker id="arrowBack" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0 0L10 5L0 10z" fill="#34d399"/>
     </marker>
-    <marker id="arrowViolet" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="10" markerHeight="10" orient="auto">
-      <path d="M0 0L10 5L0 10Z" fill="#a78bfa"/>
-    </marker>
-    <marker id="arrowGreen" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="10" markerHeight="10" orient="auto">
-      <path d="M0 0L10 5L0 10Z" fill="#34d399"/>
-    </marker>
-    <marker id="arrowRose" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="10" markerHeight="10" orient="auto">
-      <path d="M0 0L10 5L0 10Z" fill="#fb7185"/>
-    </marker>
-    <style>
-      .font { font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif; }
-      .h1 { font-size: 34px; font-weight: 850; fill: #f8fafc; }
-      .sub { font-size: 15px; fill: #cbd5e1; }
-      .eyebrow { font-size: 11px; font-weight: 850; letter-spacing: 0.08em; text-transform: uppercase; }
-      .cardTitle { font-size: 17px; font-weight: 850; fill: #f8fafc; }
-      .cardSub { font-size: 13px; fill: #cbd5e1; }
-      .body { font-size: 12px; fill: #cbd5e1; }
-      .tiny { font-size: 11px; fill: #94a3b8; }
-      .badge { font-size: 12px; font-weight: 850; fill: #f8fafc; }
-      .mono { font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace; }
-    </style>
   </defs>
 
-  <rect width="1600" height="980" fill="url(#bg)"/>
-  <rect width="1600" height="980" fill="url(#grid)"/>
+  <rect width="1200" height="340" fill="url(#bg)"/>
 
-  <g class="font">
-    <!-- Header -->
-    <text x="64" y="64" class="h1">ClickHouse Security Data Lake</text>
-    <text x="64" y="94" class="sub">Operator-owned storage, read-only replay, and audit closure for cloud, identity, Kubernetes, SaaS, and MCP security events.</text>
+  <g font-family="Inter, Segoe UI, ui-sans-serif, Arial, sans-serif">
+    <text x="48" y="48" font-size="26" font-weight="800" fill="#f8fafc">ClickHouse security data lake</text>
+    <text x="48" y="74" font-size="13" fill="#94a3b8">High-volume append-only lake · materialized views · read-only replay</text>
 
-    <g transform="translate(1246,42)">
-      <rect x="0" y="0" width="322" height="70" rx="14" fill="#101827" stroke="#334155"/>
-      <g transform="translate(22,18)">
-        <rect x="0" y="0" width="12" height="34" fill="#facc15"/>
-        <rect x="18" y="0" width="12" height="34" fill="#fbbf24"/>
-        <rect x="36" y="0" width="12" height="27" fill="#fde047"/>
-        <rect x="54" y="0" width="12" height="18" fill="#fef08a"/>
-      </g>
-      <text x="108" y="29" class="cardTitle">ClickHouse pack</text>
-      <text x="108" y="51" class="tiny">DDL · rollups · row policies · replay SQL</text>
+    <g transform="translate(48,108)">
+      <rect x="0" y="0" width="130" height="88" rx="14" fill="#0f172a" stroke="#334155"/>
+      <text x="65" y="32" text-anchor="middle" font-size="12" font-weight="700" fill="#e2e8f0">Sources</text>
+      <text x="65" y="54" text-anchor="middle" font-size="10" fill="#94a3b8">VPC flow · audit</text>
+      <text x="65" y="70" text-anchor="middle" font-size="10" fill="#94a3b8">MCP proxy · SaaS</text>
+
+      <path d="M138 44H168" stroke="#22d3ee" stroke-width="3" marker-end="url(#arrow)"/>
+
+      <rect x="176" y="0" width="150" height="88" rx="14" fill="#112244" stroke="#60a5fa"/>
+      <text x="251" y="32" text-anchor="middle" font-size="12" font-weight="700" fill="#dbeafe">Ingest</text>
+      <text x="251" y="54" text-anchor="middle" font-size="10" fill="#94a3b8">22 ingest skills</text>
+      <text x="251" y="70" text-anchor="middle" font-size="10" fill="#5eead4">→ OCSF 1.8</text>
+
+      <path d="M334 44H364" stroke="#22d3ee" stroke-width="3" marker-end="url(#arrow)"/>
+
+      <rect x="372" y="0" width="170" height="88" rx="14" fill="#2d1d05" stroke="#facc15" stroke-width="2"/>
+      <use href="#clickhouse" x="388" y="12" width="32" height="32"/>
+      <text x="468" y="32" text-anchor="middle" font-size="12" font-weight="700" fill="#fef08a">ClickHouse lake</text>
+      <text x="468" y="54" text-anchor="middle" font-size="10" fill="#94a3b8">MergeTree JSONL</text>
+      <text x="468" y="70" text-anchor="middle" font-size="10" fill="#94a3b8">materialized views</text>
+
+      <path d="M550 44H580" stroke="#22d3ee" stroke-width="3" marker-end="url(#arrow)"/>
+
+      <rect x="588" y="0" width="150" height="88" rx="14" fill="#0a3b35" stroke="#34d399"/>
+      <text x="663" y="32" text-anchor="middle" font-size="12" font-weight="700" fill="#d1fae5">Detect</text>
+      <text x="663" y="54" text-anchor="middle" font-size="10" fill="#94a3b8">71 skills · MITRE</text>
+      <text x="663" y="70" text-anchor="middle" font-size="10" fill="#94a3b8">source-* adapters</text>
+
+      <path d="M746 44H776" stroke="#22d3ee" stroke-width="3" marker-end="url(#arrow)"/>
+
+      <rect x="784" y="0" width="150" height="88" rx="14" fill="#4a2d09" stroke="#fbbf24"/>
+      <text x="859" y="32" text-anchor="middle" font-size="12" font-weight="700" fill="#fde68a">Remediate</text>
+      <text x="859" y="54" text-anchor="middle" font-size="10" fill="#94a3b8">HITL · dry-run</text>
+      <text x="859" y="70" text-anchor="middle" font-size="10" fill="#94a3b8">dual audit</text>
+
+      <path d="M942 44H972" stroke="#22d3ee" stroke-width="3" marker-end="url(#arrow)"/>
+
+      <rect x="980" y="0" width="124" height="88" rx="14" fill="#083b39" stroke="#2dd4bf"/>
+      <text x="1042" y="32" text-anchor="middle" font-size="12" font-weight="700" fill="#99f6e4">Audit</text>
+      <text x="1042" y="54" text-anchor="middle" font-size="10" fill="#94a3b8">write-back</text>
+      <text x="1042" y="70" text-anchor="middle" font-size="10" fill="#94a3b8">closed loop</text>
     </g>
 
-    <!-- Lane labels -->
-    <g transform="translate(64,138)">
-      <rect x="0" y="0" width="146" height="30" rx="15" fill="#083344" stroke="#155e75"/>
-      <text x="73" y="20" text-anchor="middle" class="eyebrow" fill="#67e8f9">Write lane</text>
-    </g>
-    <g transform="translate(64,574)">
-      <rect x="0" y="0" width="150" height="30" rx="15" fill="#2e1065" stroke="#6d28d9"/>
-      <text x="75" y="20" text-anchor="middle" class="eyebrow" fill="#c4b5fd">Replay lane</text>
-    </g>
-    <g transform="translate(64,820)">
-      <rect x="0" y="0" width="174" height="30" rx="15" fill="#4c0519" stroke="#9f1239"/>
-      <text x="87" y="20" text-anchor="middle" class="eyebrow" fill="#fda4af">Governance lane</text>
-    </g>
+    <path d="M1028 204 C1028 248 468 248 468 204" stroke="#34d399" stroke-width="2" fill="none" stroke-dasharray="6 4" marker-end="url(#arrowBack)"/>
+    <text x="748" y="268" text-anchor="middle" font-size="11" fill="#6ee7b7">sink-clickhouse-jsonl append-only · replay converges on outage recovery</text>
 
-    <!-- Signals -->
-    <g filter="url(#softShadow)">
-      <rect x="64" y="190" width="312" height="318" rx="18" fill="#101827" stroke="#334155"/>
-      <text x="92" y="230" class="cardTitle">Covered signals</text>
-      <text x="92" y="253" class="cardSub">Existing OCSF ingest sources</text>
-
-      <g transform="translate(92,284)">
-        <g>
-          <rect x="0" y="0" width="118" height="58" rx="12" fill="#172033" stroke="#475569"/>
-          <circle cx="27" cy="29" r="17" fill="#ff9900"/>
-          <text x="27" y="34" text-anchor="middle" font-size="10" font-weight="900" fill="#111827">AWS</text>
-          <text x="55" y="26" class="badge">AWS</text>
-          <text x="55" y="43" class="tiny">trail · flow</text>
-        </g>
-        <g transform="translate(134,0)">
-          <rect x="0" y="0" width="118" height="58" rx="12" fill="#172033" stroke="#475569"/>
-          <circle cx="27" cy="29" r="17" fill="#4285f4"/>
-          <text x="27" y="34" text-anchor="middle" font-size="10" font-weight="900" fill="#ffffff">GCP</text>
-          <text x="55" y="26" class="badge">GCP</text>
-          <text x="55" y="43" class="tiny">audit · SCC</text>
-        </g>
-        <g transform="translate(0,74)">
-          <rect x="0" y="0" width="118" height="58" rx="12" fill="#172033" stroke="#475569"/>
-          <circle cx="27" cy="29" r="17" fill="#2563eb"/>
-          <text x="27" y="34" text-anchor="middle" font-size="10" font-weight="900" fill="#ffffff">AZ</text>
-          <text x="55" y="26" class="badge">Azure</text>
-          <text x="50" y="43" class="tiny" style="font-size:10px">activity · NSG</text>
-        </g>
-        <g transform="translate(134,74)">
-          <rect x="0" y="0" width="118" height="58" rx="12" fill="#172033" stroke="#475569"/>
-          <circle cx="27" cy="29" r="17" fill="#111827" stroke="#94a3b8"/>
-          <text x="27" y="34" text-anchor="middle" font-size="9" font-weight="900" fill="#f8fafc">ID</text>
-          <text x="55" y="26" class="badge">Identity</text>
-          <text x="55" y="43" class="tiny">Entra · Okta</text>
-        </g>
-        <g transform="translate(0,148)">
-          <rect x="0" y="0" width="118" height="58" rx="12" fill="#172033" stroke="#475569"/>
-          <circle cx="27" cy="29" r="17" fill="#326ce5"/>
-          <text x="27" y="34" text-anchor="middle" font-size="9" font-weight="900" fill="#ffffff">K8s</text>
-          <text x="55" y="26" class="badge">Runtime</text>
-          <text x="55" y="43" class="tiny">K8s · MCP</text>
-        </g>
-        <g transform="translate(134,148)">
-          <rect x="0" y="0" width="118" height="58" rx="12" fill="#172033" stroke="#475569"/>
-          <circle cx="27" cy="29" r="17" fill="#334155"/>
-          <text x="27" y="34" text-anchor="middle" font-size="9" font-weight="900" fill="#ffffff">SaaS</text>
-          <text x="55" y="26" class="badge">SaaS</text>
-          <text x="55" y="43" class="tiny">GH · Slack</text>
-        </g>
-      </g>
-    </g>
-
-    <!-- Normalize -->
-    <g filter="url(#softShadow)">
-      <rect x="438" y="222" width="238" height="254" rx="18" fill="#083344" stroke="#22d3ee"/>
-      <text x="468" y="262" class="cardTitle">Normalize</text>
-      <text x="468" y="286" class="cardSub">22 OCSF ingest skills</text>
-      <rect x="468" y="316" width="178" height="50" rx="12" fill="#0e7490" stroke="#67e8f9"/>
-      <text x="557" y="337" text-anchor="middle" class="badge">OCSF 1.8 JSONL</text>
-      <text x="557" y="356" text-anchor="middle" class="tiny" fill="#cffafe">stdout pipe contract</text>
-      <text x="468" y="400" class="body">Stable IDs:</text>
-      <text x="468" y="422" class="mono" font-size="12" fill="#e0f2fe">event_uid</text>
-      <text x="568" y="422" class="mono" font-size="12" fill="#e0f2fe">finding_uid</text>
-    </g>
-
-    <!-- Sink -->
-    <g filter="url(#softShadow)">
-      <rect x="738" y="222" width="250" height="254" rx="18" fill="#111827" stroke="#38bdf8"/>
-      <text x="768" y="262" class="cardTitle">Write</text>
-      <text x="768" y="286" class="cardSub">sink-clickhouse-jsonl</text>
-      <g transform="translate(768,320)">
-        <rect x="0" y="0" width="190" height="34" rx="9" fill="#0f2a3b" stroke="#38bdf8"/>
-        <text x="95" y="22" text-anchor="middle" class="badge">append-only insert</text>
-        <rect x="0" y="48" width="190" height="34" rx="9" fill="#0f2a3b" stroke="#38bdf8"/>
-        <text x="95" y="70" text-anchor="middle" class="badge">dry-run default</text>
-        <rect x="0" y="96" width="190" height="34" rx="9" fill="#0f2a3b" stroke="#38bdf8"/>
-        <text x="95" y="118" text-anchor="middle" class="badge">identifier validated</text>
-      </g>
-    </g>
-
-    <!-- Lake -->
-    <g filter="url(#shadow)">
-      <rect x="1052" y="166" width="454" height="390" rx="22" fill="url(#lakeFill)" stroke="url(#goldStroke)" stroke-width="2"/>
-      <g transform="translate(1084,204)">
-        <rect x="0" y="0" width="14" height="38" fill="#facc15"/>
-        <rect x="21" y="0" width="14" height="38" fill="#fbbf24"/>
-        <rect x="42" y="0" width="14" height="30" fill="#fde047"/>
-        <rect x="63" y="0" width="14" height="20" fill="#fef08a"/>
-      </g>
-      <text x="1184" y="225" font-size="24" font-weight="850" fill="#fef9c3">ClickHouse lake</text>
-      <text x="1184" y="250" class="body" fill="#fde68a">pre-provisioned schema; skills hold no DDL rights</text>
-
-      <g transform="translate(1086,290)">
-        <rect x="0" y="0" width="178" height="70" rx="13" fill="#70480a" stroke="#facc15"/>
-        <text x="20" y="28" font-size="14" font-weight="850" fill="#fef3c7">events_sink</text>
-        <text x="20" y="50" class="tiny" fill="#fde68a">90-day hot tier</text>
-      </g>
-      <g transform="translate(1284,290)">
-        <rect x="0" y="0" width="178" height="70" rx="13" fill="#70480a" stroke="#facc15"/>
-        <text x="20" y="28" font-size="14" font-weight="850" fill="#fef3c7">findings_sink</text>
-        <text x="20" y="50" class="tiny" fill="#fde68a">365-day history</text>
-      </g>
-      <g transform="translate(1086,380)">
-        <rect x="0" y="0" width="178" height="70" rx="13" fill="#70480a" stroke="#facc15"/>
-        <text x="20" y="28" font-size="14" font-weight="850" fill="#fef3c7">evidence_sink</text>
-        <text x="20" y="50" class="tiny" fill="#fde68a">7-year hold</text>
-      </g>
-      <g transform="translate(1284,380)">
-        <rect x="0" y="0" width="178" height="70" rx="13" fill="#70480a" stroke="#facc15"/>
-        <text x="20" y="28" font-size="14" font-weight="850" fill="#fef3c7">audit_sink</text>
-        <text x="20" y="50" class="tiny" fill="#fde68a">legal-hold chain</text>
-      </g>
-      <rect x="1086" y="476" width="376" height="52" rx="13" fill="#854d0e" stroke="#fde047" stroke-dasharray="6 5"/>
-      <text x="1274" y="498" text-anchor="middle" font-size="13" font-weight="850" fill="#fef9c3">rollup materialized views</text>
-      <text x="1274" y="518" text-anchor="middle" class="tiny" fill="#fde68a">rule volume · class volume · remediation outcomes</text>
-    </g>
-
-    <!-- Replay source -->
-    <g filter="url(#softShadow)">
-      <rect x="738" y="622" width="250" height="162" rx="18" fill="#1e1b4b" stroke="#a78bfa"/>
-      <text x="768" y="662" class="cardTitle">Read</text>
-      <text x="768" y="686" class="cardSub">source-clickhouse-query</text>
-      <rect x="768" y="716" width="190" height="38" rx="10" fill="#312e81" stroke="#a78bfa"/>
-      <text x="863" y="740" text-anchor="middle" class="badge">read-only SQL gate</text>
-      <text x="768" y="770" class="tiny" fill="#c4b5fd">SELECT · WITH · SHOW · DESCRIBE</text>
-    </g>
-
-    <!-- Skill replay -->
-    <g filter="url(#softShadow)">
-      <rect x="438" y="622" width="238" height="162" rx="18" fill="#2e1065" stroke="#a78bfa"/>
-      <text x="468" y="662" class="cardTitle">Replay rows</text>
-      <text x="468" y="688" class="body">detect-* rules</text>
-      <text x="468" y="712" class="body">view-* renderers</text>
-      <text x="468" y="736" class="body">control evidence</text>
-      <text x="468" y="764" class="tiny" fill="#c4b5fd">UID-aware windows for de-dupe</text>
-    </g>
-
-    <!-- Outputs -->
-    <g filter="url(#softShadow)">
-      <rect x="64" y="622" width="312" height="162" rx="18" fill="#052e2b" stroke="#34d399"/>
-      <text x="92" y="662" class="cardTitle">Operator artifacts</text>
-      <text x="92" y="690" class="body">new findings</text>
-      <text x="92" y="714" class="body">SARIF handoff</text>
-      <text x="92" y="738" class="body">Mermaid attack-flow</text>
-      <text x="92" y="762" class="body">dashboard query pack</text>
-    </g>
-
-    <!-- Governance -->
-    <g filter="url(#softShadow)">
-      <rect x="438" y="858" width="238" height="72" rx="18" fill="#4c0519" stroke="#fb7185"/>
-      <text x="468" y="887" class="cardTitle">HITL response</text>
-      <text x="468" y="910" class="tiny" fill="#fecdd3">dry-run first · approved window</text>
-    </g>
-    <g filter="url(#softShadow)">
-      <rect x="738" y="858" width="250" height="72" rx="18" fill="#4c0519" stroke="#fb7185"/>
-      <text x="768" y="887" class="cardTitle">Audit write-back</text>
-      <text x="768" y="910" class="tiny" fill="#fecdd3">remediation and MCP records</text>
-    </g>
-    <g filter="url(#softShadow)">
-      <rect x="1052" y="858" width="454" height="72" rx="18" fill="#111827" stroke="#475569"/>
-      <text x="1084" y="887" class="cardTitle">Customer-owned boundary</text>
-      <text x="1084" y="906" class="tiny">Cluster, database, roles, TLS, retention, tenancy,</text>
-      <text x="1084" y="922" class="tiny">and dashboard access stay under operator control.</text>
-    </g>
-
-    <!-- Arrows: write lane -->
-    <path d="M376 349H438" stroke="#22d3ee" stroke-width="3.2" marker-end="url(#arrowCyan)" fill="none"/>
-    <path d="M676 349H738" stroke="#22d3ee" stroke-width="3.2" marker-end="url(#arrowCyan)" fill="none"/>
-    <path d="M988 349H1052" stroke="#22d3ee" stroke-width="3.2" marker-end="url(#arrowCyan)" fill="none"/>
-    <text x="1002" y="333" class="tiny" fill="#a5f3fc">insert</text>
-
-    <!-- Arrows: replay lane -->
-    <path d="M1052 703H988" stroke="#facc15" stroke-width="3.2" marker-end="url(#arrowGold)" fill="none"/>
-    <text x="1000" y="686" class="tiny" fill="#fde68a">query</text>
-    <path d="M738 703H676" stroke="#a78bfa" stroke-width="3.2" marker-end="url(#arrowViolet)" fill="none"/>
-    <path d="M438 703H376" stroke="#34d399" stroke-width="3.2" marker-end="url(#arrowGreen)" fill="none"/>
-
-    <!-- Return loop from outputs to lake, routed below cards -->
-    <path d="M220 784V812C220 834 250 846 290 846H1320C1350 846 1366 828 1366 802V556" stroke="#34d399" stroke-width="2.6" marker-end="url(#arrowGreen)" fill="none" stroke-dasharray="9 8"/>
-    <text x="650" y="834" class="tiny" fill="#a7f3d0">artifact rows can re-land through sink-clickhouse-jsonl</text>
-
-    <!-- Governance loop -->
-    <path d="M676 894H738" stroke="#fb7185" stroke-width="3.2" marker-end="url(#arrowRose)" fill="none"/>
-    <path d="M988 894H1052" stroke="#fb7185" stroke-width="3.2" marker-end="url(#arrowRose)" fill="none"/>
-    <path d="M863 858V818C863 804 878 796 904 796H1372C1392 796 1402 784 1402 760V556" stroke="#fb7185" stroke-width="2.6" marker-end="url(#arrowRose)" fill="none" stroke-dasharray="9 8"/>
-    <text x="1008" y="778" class="tiny" fill="#fda4af">audit_sink captures decisions and tool activity</text>
-
-    <!-- Footer -->
-    <g transform="translate(64,952)">
-      <circle cx="6" cy="-4" r="5" fill="#22d3ee"/>
-      <text x="20" y="0" class="tiny" fill="#a5f3fc">write</text>
-      <circle cx="88" cy="-4" r="5" fill="#facc15"/>
-      <text x="102" y="0" class="tiny" fill="#fde68a">read</text>
-      <circle cx="166" cy="-4" r="5" fill="#34d399"/>
-      <text x="180" y="0" class="tiny" fill="#a7f3d0">artifact</text>
-      <circle cx="270" cy="-4" r="5" fill="#fb7185"/>
-      <text x="284" y="0" class="tiny" fill="#fda4af">audit</text>
-      <text x="384" y="0" class="tiny">Append-only tables preserve history; stable UIDs support duplicate-aware replay queries.</text>
-    </g>
+    <rect x="48" y="288" width="1104" height="36" rx="10" fill="#0b1220" stroke="#334155"/>
+    <text x="68" y="312" font-size="11" fill="#94a3b8">Customer-owned trust boundary · no hosted runner required · packs in docs/CLICKHOUSE_DATA_LAKE.md</text>
   </g>
 </svg>
