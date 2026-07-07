@@ -30,7 +30,7 @@ eligible for an operator-owned stdio transport.
 
 | Decision | Generator flags | Effect |
 |---|---|---|
-| Role / privilege boundary | `--role readonly-soc`, `--role analyst-triage`, or `--role dry-run-remediation` | chooses read-only skills by default; only the dry-run role makes the remediation planner visible |
+| Role / privilege boundary | `--role readonly-soc`, `--role analyst-triage`, `--role dry-run-remediation`, or `--role sdk-cspm` | chooses read-only skills by default; only the dry-run role makes the remediation planner visible; `sdk-cspm` matches the shipped SDK agent profile |
 | Caller identity | `--email`, optional `--user-id`, `--session-id`, `--roles` | audit attribution and IDP/ticketing context; not authentication |
 | Cloud identity hint | `--cloud-hint provider=hint` | command or env hint the agent can show a human; credentials stay in the cloud CLI/SDK chain |
 | Evidence source | `--data-source-mode raw-ingest` or `--data-source-mode security-lake-replay` | raw vendor events go through ingest; existing warehouse rows go through a read-only source query |
@@ -133,3 +133,4 @@ Included profiles:
 | `readonly-soc.json` | SOC replay and triage without remediation tools |
 | `analyst-triage.json` | Optional external-model metadata for analyst drafting |
 | `dry-run-remediation.json` | HITL-gated dry-run remediation planning |
+| `sdk-cspm-agent.json` | Anthropic, OpenAI, LangChain, and Cursor SDK MCP examples |

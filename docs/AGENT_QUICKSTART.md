@@ -105,6 +105,13 @@ example with full HITL handling:
 
 [`../examples/agents/anthropic_sdk_security_agent.py`](../examples/agents/anthropic_sdk_security_agent.py)
 
+Optional workflow preset overlay (`profile ∩ preset`):
+
+```bash
+CLOUD_SECURITY_MCP_PRESET=presets/preset-cspm-readonly.json \
+  python examples/agents/anthropic_sdk_security_agent.py
+```
+
 ---
 
 ## OpenAI SDK
