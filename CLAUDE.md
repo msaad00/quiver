@@ -15,7 +15,7 @@ Skills are grouped into layered categories — not by cloud. The category answer
 
 ```
 skills/
-├── ingestion/                     # raw source → OCSF 1.8 (15 ingest-* + 4 source-*)
+├── ingestion/                     # raw source → OCSF 1.8 (22 ingest-* + 4 source-*)
 │   ├── ingest-cloudtrail-ocsf/
 │   ├── ingest-vpc-flow-logs-ocsf/
 │   ├── ingest-vpc-flow-logs-gcp-ocsf/

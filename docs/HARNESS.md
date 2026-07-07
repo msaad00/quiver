@@ -135,7 +135,21 @@ Reference examples:
 - [`examples/agents/sdk_agent_common.py`](../examples/agents/sdk_agent_common.py) — shared profile + live `tools/list` discovery
 - [`examples/agents/anthropic_sdk_security_agent.py`](../examples/agents/anthropic_sdk_security_agent.py)
 - [`examples/agents/openai_sdk_security_agent.py`](../examples/agents/openai_sdk_security_agent.py)
-- [`examples/agents/langchain_mcp_security_agent.py`](../examples/agents/langchain_mcp_security_agent.py) — `langchain-mcp-adapters` config block, anti-LCEL guidance
+- [`examples/agents/langchain_mcp_security_agent.py`](../examples/agents/langchain_mcp_security_agent.py) — MCP stdio config block + anti-LCEL guidance (offline runnable; `langchain-mcp-adapters` when installed)
+- [`examples/agents/cursor_mcp_security_agent.py`](../examples/agents/cursor_mcp_security_agent.py) — project `.cursor/mcp.json` block
+- [`examples/agents/windsurf_mcp_security_agent.py`](../examples/agents/windsurf_mcp_security_agent.py) — Windsurf `mcp_config.json` block
+
+Generate a profile with a workflow preset baked in:
+
+```bash
+python examples/agents/configure_langgraph_harness.py \
+  --role sdk-cspm \
+  --preset presets/preset-cspm-readonly.json \
+  --profile-id acme-sdk-cspm \
+  --email sdk-agent@example.com \
+  --output-profile artifacts/acme-sdk-cspm.json \
+  --output-env artifacts/acme-sdk-cspm.env
+```
 
 ```bash
 python examples/agents/langchain_mcp_security_agent.py

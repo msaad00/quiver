@@ -67,7 +67,7 @@ remediation):
 - If the server errors on first call, check **Settings → MCP → View Logs**.
 - `${workspaceFolder}` only works inside `.cursor/mcp.json`, not the global
   `~/.cursor/mcp.json`.
-- Offline reference: [`../examples/agents/cursor_mcp_security_agent.py`](../examples/agents/cursor_mcp_security_agent.py)
+- Offline reference: [`../../examples/agents/cursor_mcp_security_agent.py`](../../examples/agents/cursor_mcp_security_agent.py)
   emits a portable `.cursor/mcp.json` block from a harness profile.
 
 ## HITL + audit behavior

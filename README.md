@@ -72,11 +72,11 @@ You do not pick this repo **instead of** LangGraph or LangChain. You compose the
 |---|---|---|
 | **This repo** | security skills, OCSF wire, HITL gates, allowlists, audit | 131 skill bundles + MCP wrapper |
 | **LangGraph** | multi-step workflow state, branches, checkpoints, HITL routing | [`examples/agents/langgraph_security_graph.py`](examples/agents/langgraph_security_graph.py) + [`harness_profiles/`](examples/agents/harness_profiles/) |
-| **LangChain** | optional LLM message/tool adapter (single-turn glue) | optional adapter in [`harness_adapters.py`](examples/agents/harness_adapters.py) |
+| **LangChain** | MCP stdio wiring or optional LLM message adapter inside LangGraph triage | [`examples/agents/langchain_mcp_security_agent.py`](examples/agents/langchain_mcp_security_agent.py) + [`harness_adapters.py`](examples/agents/harness_adapters.py) |
 
 **LangGraph** fits SOC workflows: ingest → enrich → triage → analyst review → dry-run remediate → audit. Profiles swap allowlists, data sources, and model policy without forking skills.
 
-**LangChain** fits when you want a chat-message adapter in front of the same bounded triage schema gate — not when you need durable graph state.
+**LangChain** fits MCP-first agent loops via [`langchain_mcp_security_agent.py`](examples/agents/langchain_mcp_security_agent.py), or as an optional chat-message adapter behind the LangGraph triage schema gate — not when you need durable graph state alone.
 
 Packaged profiles (read-only SOC, analyst triage, dry-run remediation) and golden eval fixtures ship under [`examples/agents/`](examples/agents/). Details: [`docs/HARNESS.md`](docs/HARNESS.md).
 

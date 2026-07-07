@@ -51,7 +51,7 @@ connects.
   not auto-reload.
 - Cascade's agentic mode can chain many tool calls — the wrapper's per-call
   audit record is still one-per-invocation, so the audit trail remains clean.
-- Offline reference: [`../examples/agents/windsurf_mcp_security_agent.py`](../examples/agents/windsurf_mcp_security_agent.py)
+- Offline reference: [`../../examples/agents/windsurf_mcp_security_agent.py`](../../examples/agents/windsurf_mcp_security_agent.py)
   emits an absolute-path `mcp_config.json` block from a harness profile.
 
 ## HITL + audit behavior

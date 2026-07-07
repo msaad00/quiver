@@ -379,7 +379,7 @@ def main(argv: list[str] | None = None) -> int:
                 raise ValueError("preset path must be non-empty")
             profile = apply_preset_to_profile(profile, preset)
             _assert_no_secret_material(profile, path="profile")
-    except ValueError as exc:
+    except (ValueError, FileNotFoundError) as exc:
         sys.stderr.write(f"error: {exc}\n")
         return 2
     args.output_profile.parent.mkdir(parents=True, exist_ok=True)

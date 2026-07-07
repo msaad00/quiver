@@ -1,4 +1,4 @@
-"""Smoke tests for the three agent-SDK reference examples.
+"""Smoke tests for the agent MCP and LangGraph reference examples.
 
 Each example must:
   1. Run offline (no network, no real LLM), exit 0
@@ -2054,6 +2054,33 @@ class TestLangGraphHarnessSetup:
         assert profile["preset_applied"] == "cspm-readonly"
         assert "detect-lateral-movement" not in profile["allowed_skills"]
         assert "cspm-aws-cis-benchmark" in profile["allowed_skills"]
+
+    def test_setup_generator_rejects_missing_preset(self, tmp_path: Path):
+        result = subprocess.run(
+            [
+                sys.executable,
+                str(self.SCRIPT),
+                "--role",
+                "sdk-cspm",
+                "--preset",
+                "presets/does-not-exist.json",
+                "--profile-id",
+                "acme-bad-preset",
+                "--email",
+                "sdk-agent@example.com",
+                "--output-profile",
+                str(tmp_path / "bad.json"),
+                "--output-env",
+                str(tmp_path / "bad.env"),
+            ],
+            capture_output=True,
+            text=True,
+            timeout=30,
+            check=False,
+            cwd=REPO_ROOT,
+        )
+        assert result.returncode == 2
+        assert "preset not found" in result.stderr
 
     def test_setup_generator_can_mark_readonly_mcp_stdio_execution(self, tmp_path: Path):
         profile_path = tmp_path / "acme-readonly-stdio.json"

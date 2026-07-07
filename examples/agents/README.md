@@ -9,7 +9,7 @@ allowlist regardless of which SDK is driving the loop.
 |---|---|---|
 | [`anthropic_sdk_security_agent.py`](anthropic_sdk_security_agent.py) | Anthropic Python SDK (Managed Agent) | CSPM scan → triage loop with HITL gate on remediation |
 | [`openai_sdk_security_agent.py`](openai_sdk_security_agent.py) | OpenAI Agents SDK | Parallel port of the Anthropic example for portability |
-| [`langchain_mcp_security_agent.py`](langchain_mcp_security_agent.py) | LangChain | MCP-first wiring via `langchain-mcp-adapters` — do not wrap skill CLIs as LCEL tools |
+| [`langchain_mcp_security_agent.py`](langchain_mcp_security_agent.py) | LangChain | MCP-first stdio pattern; `langchain-mcp-adapters` config when installed — not LCEL skill wrappers |
 | [`cursor_mcp_security_agent.py`](cursor_mcp_security_agent.py) | Cursor | Project-scoped `.cursor/mcp.json` + harness profile; same MCP audit/HITL contract |
 | [`windsurf_mcp_security_agent.py`](windsurf_mcp_security_agent.py) | Windsurf | `~/.codeium/windsurf/mcp_config.json` + harness profile; absolute-path MCP stdio |
 | [`langgraph_security_graph.py`](langgraph_security_graph.py) | LangGraph | SOC workflow DAG: ingest → normalize → enrich → correlate → confidence → MITRE/CVSS/EPSS/KEV map → HITL → dry-run remediation → audit/eval writeback |
@@ -32,6 +32,7 @@ Generate a matching harness profile (same allowlist shape as
 ```bash
 python examples/agents/configure_langgraph_harness.py \
   --role sdk-cspm \
+  --preset presets/preset-cspm-readonly.json \
   --profile-id acme-sdk-cspm \
   --email sdk-agent@example.com \
   --output-profile artifacts/acme-sdk-cspm.json \
@@ -40,7 +41,7 @@ python examples/agents/configure_langgraph_harness.py \
 
 ## Safety posture — every example enforces the same invariants
 
-1. **Read-only skill allowlist.** Every example sets
+1. **Read-only skill allowlist.** MCP SDK and IDE reference examples set
    `CLOUD_SECURITY_MCP_ALLOWED_SKILLS=<comma-separated read-only skills>` on
    the MCP server subprocess. Remediation skills are **not** registered as
    tools. An agent loop cannot call what isn't on the list.
@@ -60,7 +61,7 @@ python examples/agents/configure_langgraph_harness.py \
 
 ## Anti-pattern called out — agent-loop exploitation
 
-Each example includes a `DONT_DO_THIS` section showing a naive loop that
+This README includes a `DONT_DO_THIS` section below showing a naive loop that
 chains `detect → remediate` without a human gate:
 
 ```python
