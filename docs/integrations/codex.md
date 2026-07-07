@@ -51,6 +51,8 @@ model cannot call what isn't in its tool registry.
 - If `python3` is behind a pyenv shim, prefer the absolute interpreter path
   (e.g. `/Users/you/.pyenv/versions/3.11.9/bin/python3`) to avoid PATH
   surprises when Codex spawns the subprocess.
+- Offline reference: [`../../examples/agents/codex_mcp_security_agent.py`](../../examples/agents/codex_mcp_security_agent.py)
+  emits a `~/.codex/config.toml` fragment from a harness profile.
 
 ## HITL + audit behavior
 

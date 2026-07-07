@@ -106,6 +106,10 @@ Runnable offline Cortex example (harness profile + live `tools/list`):
 
 [`../examples/agents/cortex_mcp_security_agent.py`](../examples/agents/cortex_mcp_security_agent.py)
 
+Runnable offline Codex example (harness profile + live `tools/list`):
+
+[`../examples/agents/codex_mcp_security_agent.py`](../examples/agents/codex_mcp_security_agent.py)
+
 ---
 
 ## Anthropic Agent SDK

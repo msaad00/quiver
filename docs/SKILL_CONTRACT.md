@@ -150,12 +150,8 @@ Rules:
 - `approver_roles`, when present, should name the roles allowed to approve write-capable actions
 - `min_approvers`, when present, must be an integer greater than or equal to 1
 - `mcp_timeout_seconds`, when present, must be an integer between 1 and 900 and names the per-call subprocess timeout the MCP wrapper should apply to this skill. It is opt-in; skills that do not declare it inherit the global default (60 seconds) or whatever the operator sets via the `CLOUD_SECURITY_MCP_TIMEOUT_SECONDS` env var. The env var wins over the per-skill value so on-call can widen or tighten the window without editing `SKILL.md`
-<<<<<<< HEAD
 - write-capable skills should declare `approver_roles` and `min_approvers` when enterprise wrappers need machine-readable approval policy; the repo MCP wrapper uses them to require `_approval_context` and enforce approver count
 - `approver_roles` is policy metadata, not proof that every local CLI path validates role membership itself; a `SKILL.md` body should only claim in-code role enforcement when the shipped handler or wrapper actually performs that check
-=======
-- write-capable skills should declare `approver_roles` and `min_approvers` when enterprise wrappers need machine-readable approval policy; the repo MCP wrapper uses them to require `_approval_context` and enforce approver count
->>>>>>> origin/main
 - write-capable skills should preserve caller, approver, and request or session identifiers in their audit trail when the runtime provides them
 
 ## Required language
