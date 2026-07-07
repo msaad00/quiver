@@ -768,3 +768,26 @@ class TestCountDriftScan:
         assert pat.search('out["L7 Output<br/>3 sinks · S3"]') is not None
         # Should NOT match prose (no <br/> prefix)
         assert pat.search("The repo ships 49 skills today.") is None
+
+
+class TestSecretLiteralChecker:
+    def test_repo_passes_secret_literal_gate(self):
+        import subprocess
+
+        result = subprocess.run(
+            [sys.executable, str(SCRIPTS / "check_secret_literals.py")],
+            capture_output=True,
+            text=True,
+            check=False,
+            cwd=ROOT,
+        )
+        assert result.returncode == 0, result.stderr or result.stdout
+
+    def test_detects_synthetic_secret_in_temp_file(self, tmp_path: Path):
+        checker = _load_module(
+            "cloud_security_check_secret_literals_test",
+            SCRIPTS / "check_secret_literals.py",
+        )
+        bad = tmp_path / "leak.py"
+        bad.write_text('API_KEY = "sk-abcdefghijklmnopqrstuvwxyz123456"\n', encoding="utf-8")
+        assert checker._scan_file(bad)

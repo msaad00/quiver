@@ -331,28 +331,44 @@ def _check_docs_wired() -> DriftCheck:
     )
 
 
-def _check_no_harness_secret_literals() -> DriftCheck:
+def _harness_secret_scan_paths() -> list[Path]:
     paths = [
         HARNESS_DOC,
         EXAMPLES_README,
+        REPO_ROOT / "docs" / "AGENT_QUICKSTART.md",
         EXAMPLES / "configure_langgraph_harness.py",
         EXAMPLES / "inspect_langgraph_harness.py",
         EXAMPLES / "run_langgraph_harness.py",
         EXAMPLES / "execute_langgraph_mcp_plan.py",
+        EXAMPLES / "sdk_agent_common.py",
+        EXAMPLES / "anthropic_sdk_security_agent.py",
+        EXAMPLES / "openai_sdk_security_agent.py",
+        EXAMPLES / "langchain_mcp_security_agent.py",
+        EXAMPLES / "cursor_mcp_security_agent.py",
+        EXAMPLES / "harness_adapters.py",
+        EXAMPLES / "harness_mcp_transport.py",
         *sorted(PROFILES.glob("*.json")),
+        *sorted((REPO_ROOT / "presets").glob("*.json")),
     ]
+    return [path for path in paths if path.is_file()]
+
+
+def _check_no_harness_secret_literals() -> DriftCheck:
     findings: list[str] = []
-    for path in paths:
+    for path in _harness_secret_scan_paths():
         text = path.read_text(encoding="utf-8")
-        for pattern in SECRET_PATTERNS:
-            for match in pattern.finditer(text):
-                findings.append(
-                    f"{path.relative_to(REPO_ROOT)}:{match.start()}: {match.group(0)[:32]}"
-                )
+        for line_no, line in enumerate(text.splitlines(), start=1):
+            if "re.compile(" in line or "SECRET_PATTERNS" in line:
+                continue
+            for pattern in SECRET_PATTERNS:
+                for match in pattern.finditer(line):
+                    findings.append(
+                        f"{path.relative_to(REPO_ROOT)}:{line_no}: {match.group(0)[:32]}"
+                    )
     return DriftCheck(
         "harness_docs_have_no_secret_literals",
         not findings,
-        "no PAT/API-key/password literals in harness docs or profiles"
+        "no PAT/API-key/password literals in harness docs, profiles, or presets"
         if not findings
         else findings,
     )
