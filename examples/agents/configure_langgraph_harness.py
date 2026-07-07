@@ -6,6 +6,13 @@ approval tokens, OAuth callbacks, or cloud secrets.
 Run:
 
     python examples/agents/configure_langgraph_harness.py \
+      --role sdk-cspm \
+      --profile-id acme-sdk-cspm \
+      --email sdk-agent@example.com \
+      --output-profile artifacts/acme-sdk-cspm.json \
+      --output-env artifacts/acme-sdk-cspm.env
+
+    python examples/agents/configure_langgraph_harness.py \
       --role analyst-triage \
       --profile-id acme-soc-triage \
       --email analyst@example.com \
@@ -29,12 +36,26 @@ from langgraph_security_graph import (
     DEFAULT_TOKEN_BUDGET,
 )
 
-HarnessRole = Literal["readonly-soc", "analyst-triage", "dry-run-remediation"]
+HarnessRole = Literal["readonly-soc", "analyst-triage", "dry-run-remediation", "sdk-cspm"]
 LAKE_SOURCE_SKILLS = {
     "snowflake": "source-snowflake-query",
     "clickhouse": "source-clickhouse-query",
     "databricks": "source-databricks-query",
 }
+
+SDK_CSPM_ALLOWED_SKILLS = [
+    "cspm-aws-cis-benchmark",
+    "cspm-gcp-cis-benchmark",
+    "cspm-azure-cis-benchmark",
+    "detect-lateral-movement",
+    "detect-privilege-escalation-k8s",
+    "convert-ocsf-to-sarif",
+]
+SDK_CSPM_CALLER_SKILLS = [
+    "cspm-aws-cis-benchmark",
+    "detect-lateral-movement",
+    "convert-ocsf-to-sarif",
+]
 
 ROLE_DEFAULTS: dict[HarnessRole, dict[str, Any]] = {
     "readonly-soc": {
@@ -51,6 +72,24 @@ ROLE_DEFAULTS: dict[HarnessRole, dict[str, Any]] = {
         "description": "HITL-gated dry-run remediation planning profile.",
         "roles": "security_engineer",
         "include_remediation": True,
+    },
+    "sdk-cspm": {
+        "description": (
+            "Anthropic, OpenAI, LangChain, and Cursor SDK examples: "
+            "read-only CSPM + detect triage via MCP stdio."
+        ),
+        "roles": "security_engineer",
+        "include_remediation": False,
+        "allowed_skills": SDK_CSPM_ALLOWED_SKILLS,
+        "caller_allowed_skills": SDK_CSPM_CALLER_SKILLS,
+        "cloud_identity_hints": {
+            "aws": "AWS_PROFILE=prod-readonly",
+            "gcp": "gcloud auth login",
+            "azure": "az login",
+        },
+        "mcp_execution_mode": "operator_stdio",
+        "mcp_max_calls": 4,
+        "agent_roster_only_triage": True,
     },
 }
 
@@ -83,7 +122,7 @@ def _assert_no_secret_material(payload: Any, *, path: str) -> None:
         raise ValueError(f"{path} must not contain password, PAT, token, or secret material")
 
 
-def _parse_cloud_hint(values: list[str]) -> dict[str, str]:
+def _parse_cloud_hint(values: list[str], *, role: HarnessRole) -> dict[str, str]:
     hints: dict[str, str] = {}
     for value in values:
         if "=" not in value:
@@ -97,6 +136,9 @@ def _parse_cloud_hint(values: list[str]) -> dict[str, str]:
         hints[provider] = hint
     if hints:
         return hints
+    role_hints = ROLE_DEFAULTS[role].get("cloud_identity_hints")
+    if isinstance(role_hints, dict):
+        return dict(role_hints)
     return {
         "aws": "AWS_PROFILE=prod-readonly",
         "snowflake": "snowflake-cli auth login --authenticator externalbrowser",
@@ -104,10 +146,11 @@ def _parse_cloud_hint(values: list[str]) -> dict[str, str]:
 
 
 def _profile_allowed_skills(role: HarnessRole, extra_skills: list[str]) -> list[str]:
-    allowed = list(ALLOWED_SKILLS_READ_ONLY_LIST)
-    known = {*ALLOWED_SKILLS_READ_ONLY_LIST, ALLOWED_SKILLS_REMEDIATION}
+    role_skills = ROLE_DEFAULTS[role].get("allowed_skills")
+    allowed = list(role_skills) if role_skills else list(ALLOWED_SKILLS_READ_ONLY_LIST)
+    known = {*ALLOWED_SKILLS_READ_ONLY_LIST, ALLOWED_SKILLS_REMEDIATION, *SDK_CSPM_ALLOWED_SKILLS}
     include_remediation = bool(ROLE_DEFAULTS[role]["include_remediation"])
-    if include_remediation:
+    if include_remediation and ALLOWED_SKILLS_REMEDIATION not in allowed:
         allowed.append(ALLOWED_SKILLS_REMEDIATION)
     for skill in extra_skills:
         if skill not in known:
@@ -115,6 +158,14 @@ def _profile_allowed_skills(role: HarnessRole, extra_skills: list[str]) -> list[
         if skill not in allowed:
             allowed.append(skill)
     return allowed
+
+
+def _caller_allowed_skills(role: HarnessRole, allowed_skills: list[str]) -> list[str]:
+    role_caller = ROLE_DEFAULTS[role].get("caller_allowed_skills")
+    if not role_caller:
+        return list(allowed_skills)
+    allowed_set = set(allowed_skills)
+    return [skill for skill in role_caller if skill in allowed_set]
 
 
 def _security_data_source(args: argparse.Namespace) -> dict[str, str]:
@@ -138,23 +189,21 @@ def _security_data_source(args: argparse.Namespace) -> dict[str, str]:
     }
 
 
-def _mcp_execution(args: argparse.Namespace) -> dict[str, Any]:
-    return {
-        "mode": args.mcp_execution_mode,
-        "transport": "mcp_stdio_jsonrpc",
-        "execute_planned_calls": args.mcp_execution_mode == "operator_stdio",
-        "allow_write_calls": False,
-        "max_calls": args.mcp_max_calls,
-    }
-
-
 def build_profile(args: argparse.Namespace) -> dict[str, Any]:
     role: HarnessRole = args.role
     if not PROFILE_ID_RE.match(args.profile_id):
         raise ValueError("profile_id must match ^[a-z0-9][a-z0-9-]{1,63}$")
-    if args.mcp_max_calls < 0:
+    role_defaults = ROLE_DEFAULTS[role]
+    mcp_execution_mode = args.mcp_execution_mode
+    mcp_max_calls = args.mcp_max_calls
+    if mcp_execution_mode == "plan_only" and role_defaults.get("mcp_execution_mode"):
+        mcp_execution_mode = str(role_defaults["mcp_execution_mode"])
+    if mcp_max_calls == 0 and role_defaults.get("mcp_max_calls") is not None:
+        mcp_max_calls = int(role_defaults["mcp_max_calls"])
+    if mcp_max_calls < 0:
         raise ValueError("--mcp-max-calls must be 0 or greater")
     allowed_skills = _profile_allowed_skills(role, args.allowed_skill)
+    caller_skills = _caller_allowed_skills(role, allowed_skills)
     llm_mode = "external_llm_optional" if args.external_llm else "deterministic_offline"
     session_id = args.session_id or f"{args.profile_id}-session"
     user_id = args.user_id or args.email.split("@", 1)[0]
@@ -166,27 +215,30 @@ def build_profile(args: argparse.Namespace) -> dict[str, Any]:
             "privilege_boundary": "no_tool_writes",
             "skill_scope": [],
         },
-        {
-            "agent_id": "remediation-planner",
-            "requires_human_approval": True,
-            "privilege_boundary": "dry_run_write_planning",
-            "skill_scope": [ALLOWED_SKILLS_REMEDIATION]
-            if ROLE_DEFAULTS[role]["include_remediation"]
-            else [],
-        },
     ]
+    if not role_defaults.get("agent_roster_only_triage"):
+        agent_roster.append(
+            {
+                "agent_id": "remediation-planner",
+                "requires_human_approval": True,
+                "privilege_boundary": "dry_run_write_planning",
+                "skill_scope": [ALLOWED_SKILLS_REMEDIATION]
+                if role_defaults["include_remediation"]
+                else [],
+            }
+        )
     profile = {
         "profile_id": args.profile_id,
-        "description": args.description or ROLE_DEFAULTS[role]["description"],
+        "description": args.description or role_defaults["description"],
         "allowed_skills": allowed_skills,
         "caller_context": {
             "user_id": user_id,
             "email": args.email,
             "session_id": session_id,
-            "roles": args.roles or ROLE_DEFAULTS[role]["roles"],
-            "allowed_skills": allowed_skills,
+            "roles": args.roles or role_defaults["roles"],
+            "allowed_skills": caller_skills,
         },
-        "cloud_identity_hints": _parse_cloud_hint(args.cloud_hint),
+        "cloud_identity_hints": _parse_cloud_hint(args.cloud_hint, role=role),
         "llm": {
             "mode": llm_mode,
             "provider": args.llm_provider,
@@ -219,7 +271,13 @@ def build_profile(args: argparse.Namespace) -> dict[str, Any]:
             "dry_run_default": True,
             "apply_supported": False,
             "security_data_source": _security_data_source(args),
-            "mcp_execution": _mcp_execution(args),
+            "mcp_execution": {
+                "mode": mcp_execution_mode,
+                "transport": "mcp_stdio_jsonrpc",
+                "execute_planned_calls": mcp_execution_mode == "operator_stdio",
+                "allow_write_calls": False,
+                "max_calls": mcp_max_calls,
+            },
         },
     }
     _assert_no_secret_material(profile, path="profile")

@@ -1958,6 +1958,47 @@ class TestLangGraphHarnessSetup:
         assert triage_agent["skill_scope"] == []
         assert summary["review"]["status"] == "blocked"
 
+    def test_sdk_cspm_role_matches_shipped_sdk_profile_shape(self, tmp_path: Path):
+        profile_path = tmp_path / "acme-sdk-cspm.json"
+        env_path = tmp_path / "acme-sdk-cspm.env"
+        shipped = json.loads(
+            (EXAMPLES / "harness_profiles" / "sdk-cspm-agent.json").read_text(encoding="utf-8")
+        )
+        result = subprocess.run(
+            [
+                sys.executable,
+                str(self.SCRIPT),
+                "--role",
+                "sdk-cspm",
+                "--profile-id",
+                "acme-sdk-cspm",
+                "--email",
+                "sdk-agent@example.com",
+                "--output-profile",
+                str(profile_path),
+                "--output-env",
+                str(env_path),
+            ],
+            capture_output=True,
+            text=True,
+            timeout=30,
+            check=False,
+        )
+        assert result.returncode == 0, result.stderr
+        profile = json.loads(profile_path.read_text(encoding="utf-8"))
+        schema = json.loads(self.PROFILE_SCHEMA.read_text(encoding="utf-8"))
+        assert _schema_errors(schema, profile) == []
+        assert profile["allowed_skills"] == shipped["allowed_skills"]
+        assert (
+            profile["caller_context"]["allowed_skills"]
+            == shipped["caller_context"]["allowed_skills"]
+        )
+        assert profile["cloud_identity_hints"] == shipped["cloud_identity_hints"]
+        assert profile["runtime"]["mcp_execution"] == shipped["runtime"]["mcp_execution"]
+        assert len(profile["agent_roster"]) == 1
+        assert profile["agent_roster"][0]["agent_id"] == "triage-agent"
+        assert "iam-departures-aws" not in profile["allowed_skills"]
+
     def test_setup_generator_can_mark_readonly_mcp_stdio_execution(self, tmp_path: Path):
         profile_path = tmp_path / "acme-readonly-stdio.json"
         env_path = tmp_path / "acme-readonly-stdio.env"

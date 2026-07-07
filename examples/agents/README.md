@@ -1,6 +1,6 @@
 # Agent-SDK integration examples
 
-Three reference implementations showing how to load `cloud-ai-security-skills`
+Reference implementations showing how to load `cloud-ai-security-skills`
 via MCP from inside an agent-framework loop, while keeping **every guardrail
 intact**. The same MCP wrapper enforces HITL, dry-run, audit, and the skill
 allowlist regardless of which SDK is driving the loop.
@@ -24,6 +24,18 @@ CLOUD_SECURITY_MCP_PRESET=presets/preset-cspm-readonly.json \
 ```
 
 See [`../../presets/README.md`](../../presets/README.md) for shipped presets.
+
+Generate a matching harness profile (same allowlist shape as
+[`harness_profiles/sdk-cspm-agent.json`](harness_profiles/sdk-cspm-agent.json)):
+
+```bash
+python examples/agents/configure_langgraph_harness.py \
+  --role sdk-cspm \
+  --profile-id acme-sdk-cspm \
+  --email sdk-agent@example.com \
+  --output-profile artifacts/acme-sdk-cspm.json \
+  --output-env artifacts/acme-sdk-cspm.env
+```
 
 ## Safety posture — every example enforces the same invariants
 
