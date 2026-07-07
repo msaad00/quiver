@@ -86,6 +86,12 @@ Windsurf does not expand `~`):
 
 Reload: **Settings → Cascade → MCP → Refresh**.
 
+Runnable offline example (harness profile + live `tools/list`):
+
+[`../examples/agents/windsurf_mcp_security_agent.py`](../examples/agents/windsurf_mcp_security_agent.py)
+
+Project config details: [`integrations/windsurf.md`](integrations/windsurf.md).
+
 ---
 
 ## Codex · Cortex · Zed

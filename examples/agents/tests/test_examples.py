@@ -29,6 +29,7 @@ SCRIPTS = [
     EXAMPLES / "openai_sdk_security_agent.py",
     EXAMPLES / "langchain_mcp_security_agent.py",
     EXAMPLES / "cursor_mcp_security_agent.py",
+    EXAMPLES / "windsurf_mcp_security_agent.py",
     EXAMPLES / "langgraph_security_graph.py",
     EXAMPLES / "run_langgraph_harness.py",
 ]
@@ -282,6 +283,27 @@ class TestHitlGateReachable:
         assert binding["integration"] == "cursor_mcp_json"
         assert binding["config_path"] == ".cursor/mcp.json"
         assert "cloud-ai-security-skills" in binding["mcp_config"]["mcpServers"]
+        assert payload["mcp_tools_discovered"]
+
+    def test_windsurf_mcp_binding_documents_absolute_path_config(self):
+        result = subprocess.run(
+            [sys.executable, str(EXAMPLES / "windsurf_mcp_security_agent.py")],
+            capture_output=True,
+            text=True,
+            timeout=60,
+            check=False,
+            cwd=REPO_ROOT,
+            env={**os.environ},
+        )
+        assert result.returncode == 0, result.stderr
+        payload = json.loads(result.stdout)
+        binding = payload["windsurf_binding"]
+        assert binding["integration"] == "windsurf_mcp_config_json"
+        assert binding["config_path"] == "~/.codeium/windsurf/mcp_config.json"
+        assert "cloud-ai-security-skills" in binding["mcp_config"]["mcpServers"]
+        assert binding["mcp_config"]["mcpServers"]["cloud-ai-security-skills"]["args"][0].endswith(
+            "mcp-server/src/server.py"
+        )
         assert payload["mcp_tools_discovered"]
 
     def test_langgraph_reaches_remediation_with_approval(self):
