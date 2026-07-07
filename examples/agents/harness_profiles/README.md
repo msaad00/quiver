@@ -38,6 +38,7 @@ eligible for an operator-owned stdio transport.
 | Lake row shape | `--lake-records-format ocsf` or `raw_vendor` | OCSF rows skip raw normalization; raw rows keep source query followed by ingest |
 | Model use | default deterministic mode, or `--external-llm --llm-provider ... --llm-model ...` | records provider/model metadata and bounded routing; model output cannot set facts, approval, or write intent |
 | MCP execution | default `--mcp-execution-mode plan_only`, or `operator_stdio` with `--mcp-max-calls` | shipped default records the plan only; operator stdio mode can execute read-only calls through a separate transport |
+| Workflow preset | `--preset presets/preset-cspm-readonly.json` | intersects the role allowlist at generation time (same semantics as `CLOUD_SECURITY_MCP_PRESET` at SDK runtime) |
 | Approval source | `--approval-source`, `--min-approvers` | documents the HITL authority; the profile still cannot self-approve |
 
 Security-lake replay profile:

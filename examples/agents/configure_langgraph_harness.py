@@ -7,6 +7,7 @@ Run:
 
     python examples/agents/configure_langgraph_harness.py \
       --role sdk-cspm \
+      --preset presets/preset-cspm-readonly.json \
       --profile-id acme-sdk-cspm \
       --email sdk-agent@example.com \
       --output-profile artifacts/acme-sdk-cspm.json \
@@ -35,6 +36,7 @@ from langgraph_security_graph import (
     DEFAULT_MODEL_POLICY,
     DEFAULT_TOKEN_BUDGET,
 )
+from sdk_agent_common import apply_preset_to_profile, load_preset
 
 HarnessRole = Literal["readonly-soc", "analyst-triage", "dry-run-remediation", "sdk-cspm"]
 LAKE_SOURCE_SKILLS = {
@@ -321,6 +323,10 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         "--allowed-skill", action="append", default=[], help="additional known example skill"
     )
     parser.add_argument(
+        "--preset",
+        help="workflow preset JSON path (intersects role allowlist; fail closed on empty)",
+    )
+    parser.add_argument(
         "--data-source-mode",
         choices=["raw-ingest", "security-lake-replay"],
         default="raw-ingest",
@@ -367,6 +373,12 @@ def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv)
     try:
         profile = build_profile(args)
+        if args.preset:
+            preset = load_preset(args.preset)
+            if preset is None:
+                raise ValueError("preset path must be non-empty")
+            profile = apply_preset_to_profile(profile, preset)
+            _assert_no_secret_material(profile, path="profile")
     except ValueError as exc:
         sys.stderr.write(f"error: {exc}\n")
         return 2
@@ -389,6 +401,7 @@ def main(argv: list[str] | None = None) -> int:
                 "profile_id": profile["profile_id"],
                 "role": args.role,
                 "allowed_skills": profile["allowed_skills"],
+                "preset_applied": profile.get("preset_applied"),
                 "approval_required": True,
                 "secrets_written": False,
             },

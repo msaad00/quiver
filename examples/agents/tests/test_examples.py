@@ -2021,6 +2021,40 @@ class TestLangGraphHarnessSetup:
         assert profile["agent_roster"][0]["agent_id"] == "triage-agent"
         assert "iam-departures-aws" not in profile["allowed_skills"]
 
+    def test_setup_generator_intersects_workflow_preset(self, tmp_path: Path):
+        profile_path = tmp_path / "acme-sdk-cspm-preset.json"
+        env_path = tmp_path / "acme-sdk-cspm-preset.env"
+        result = subprocess.run(
+            [
+                sys.executable,
+                str(self.SCRIPT),
+                "--role",
+                "sdk-cspm",
+                "--preset",
+                "presets/preset-cspm-readonly.json",
+                "--profile-id",
+                "acme-sdk-cspm-preset",
+                "--email",
+                "sdk-agent@example.com",
+                "--output-profile",
+                str(profile_path),
+                "--output-env",
+                str(env_path),
+            ],
+            capture_output=True,
+            text=True,
+            timeout=30,
+            check=False,
+            cwd=REPO_ROOT,
+        )
+        assert result.returncode == 0, result.stderr
+        setup_summary = json.loads(result.stdout)
+        assert setup_summary["preset_applied"] == "cspm-readonly"
+        profile = json.loads(profile_path.read_text(encoding="utf-8"))
+        assert profile["preset_applied"] == "cspm-readonly"
+        assert "detect-lateral-movement" not in profile["allowed_skills"]
+        assert "cspm-aws-cis-benchmark" in profile["allowed_skills"]
+
     def test_setup_generator_can_mark_readonly_mcp_stdio_execution(self, tmp_path: Path):
         profile_path = tmp_path / "acme-readonly-stdio.json"
         env_path = tmp_path / "acme-readonly-stdio.env"

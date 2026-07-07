@@ -71,6 +71,18 @@ CLOUD_SECURITY_MCP_PRESET=preset-cspm-readonly.json \
 The effective allowlist is **profile ∩ preset ∩ caller** (empty intersection
 raises at load time).
 
+Generate a harness profile with the preset baked in:
+
+```bash
+python examples/agents/configure_langgraph_harness.py \
+  --role sdk-cspm \
+  --preset preset-cspm-readonly.json \
+  --profile-id acme-sdk-cspm \
+  --email sdk-agent@example.com \
+  --output-profile artifacts/acme-sdk-cspm.json \
+  --output-env artifacts/acme-sdk-cspm.env
+```
+
 The wrapper records `caller_skill_scope_count` and
 `caller_skill_scope_hash` in the audit event so the same preset across
 runs is recognisable in post-hoc analysis.
