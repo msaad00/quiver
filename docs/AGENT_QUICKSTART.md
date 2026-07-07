@@ -102,6 +102,10 @@ Same shape as the Claude Desktop block above, in each client's MCP config:
 - Cortex: [`integrations/cortex.md`](integrations/cortex.md)
 - Zed: [`integrations/zed.md`](integrations/zed.md)
 
+Runnable offline Cortex example (harness profile + live `tools/list`):
+
+[`../examples/agents/cortex_mcp_security_agent.py`](../examples/agents/cortex_mcp_security_agent.py)
+
 ---
 
 ## Anthropic Agent SDK

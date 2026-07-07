@@ -59,4 +59,4 @@ whitelist explicitly.
 - [`../../mcp-server/README.md`](../../mcp-server/README.md) — server internals, timeout / audit semantics
 - [`../../CLAUDE.md`](../../CLAUDE.md) — agent guardrails required before invoking any skill
 - [`../../docs/HITL_POLICY.md`](../HITL_POLICY.md) — when human approval is required, across all clients
-- [`../../examples/agents/`](../../examples/agents/) — runnable MCP agent examples (Anthropic, OpenAI, LangChain, Cursor, Windsurf, LangGraph)
+- [`../../examples/agents/`](../../examples/agents/) — runnable MCP agent examples (Anthropic, OpenAI, LangChain, Cursor, Windsurf, Cortex, LangGraph)

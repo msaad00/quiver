@@ -77,6 +77,8 @@ DynamoDB / IAM.
   after editing `.cortex/mcp.json`.
 - If running Cortex Code inside Snowpark Container Services, mount the repo
   as a read-only volume; the wrapper will auto-discover SKILLs at startup.
+- Offline reference: [`../../examples/agents/cortex_mcp_security_agent.py`](../../examples/agents/cortex_mcp_security_agent.py)
+  emits a portable `.cortex/mcp.json` block from a harness profile.
 
 ## HITL + audit behavior
 

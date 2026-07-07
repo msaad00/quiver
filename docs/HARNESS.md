@@ -138,6 +138,7 @@ Reference examples:
 - [`examples/agents/langchain_mcp_security_agent.py`](../examples/agents/langchain_mcp_security_agent.py) — MCP stdio config block + anti-LCEL guidance (offline runnable; `langchain-mcp-adapters` when installed)
 - [`examples/agents/cursor_mcp_security_agent.py`](../examples/agents/cursor_mcp_security_agent.py) — project `.cursor/mcp.json` block
 - [`examples/agents/windsurf_mcp_security_agent.py`](../examples/agents/windsurf_mcp_security_agent.py) — Windsurf `mcp_config.json` block
+- [`examples/agents/cortex_mcp_security_agent.py`](../examples/agents/cortex_mcp_security_agent.py) — Cortex `.cortex/mcp.json` block
 
 Generate a profile with a workflow preset baked in:
 
