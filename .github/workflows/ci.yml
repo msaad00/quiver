@@ -134,11 +134,7 @@ jobs:
       - name: OCSF 1.8 golden-fixture validation
         run: python scripts/validate_golden_ocsf.py
       - name: Check for hardcoded secrets
-        run: |
-          ! grep -rn "AKIA[A-Z0-9]\{16\}" skills/*/*/src/ mcp-server/src/ scripts/ --include="*.py" || exit 1
-          ! grep -rn "sk-[a-zA-Z0-9]\{20,\}" skills/*/*/src/ mcp-server/src/ scripts/ --include="*.py" || exit 1
-          ! grep -rn "ghp_[a-zA-Z0-9]\{36\}" skills/*/*/src/ mcp-server/src/ scripts/ --include="*.py" || exit 1
-          echo "No hardcoded secrets found in enforced executable paths"
+        run: python scripts/check_secret_literals.py
       - name: Dependency vulnerability audit
         run: pip-audit "${{ github.workspace }}"
 
@@ -152,7 +148,7 @@ jobs:
         with:
           python-version: "3.11"
           packages: bandit
-      - run: bandit -r skills mcp-server scripts -c pyproject.toml --severity-level medium
+      - run: bandit -r skills mcp-server scripts examples/agents -c pyproject.toml --severity-level medium
 
   # ── Unit tests, grouped into category lanes ───────────────────
   test-compliance:

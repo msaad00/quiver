@@ -280,7 +280,7 @@ class OpenAICompatTriageAdapter:
         if not self.evidence_cards:
             return []
         try:
-            with urllib.request.urlopen(  # noqa: S310 - see _request
+            with urllib.request.urlopen(  # noqa: S310  # nosec B310 - operator-configured HTTPS/local endpoint; see _request
                 self._request(), timeout=self.timeout_seconds
             ) as response:
                 response_payload = json.loads(response.read().decode("utf-8"))
