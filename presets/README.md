@@ -33,6 +33,7 @@ broader composition model.
 | [`preset-detection-only.json`](preset-detection-only.json) | feed raw logs through ingest + detect, hand findings to a SIEM | a curated 15-ingest / 32-detect subset plus both view skills (the JSON is authoritative) | none |
 | [`preset-incident-response.json`](preset-incident-response.json) | the workflow at [`../examples/workflows/incident-response-okta-mfa-fatigue.md`](../examples/workflows/incident-response-okta-mfa-fatigue.md) | one detector + one discover + one remediate | one HITL-gated session kill |
 | [`preset-ai-runtime.json`](preset-ai-runtime.json) | runtime guardrails for an AI agent platform — detect prompt injection, tool drift, exfiltration | MCP-proxy ingest, the AI-runtime detectors, MCP tool quarantine | one HITL-gated tool quarantine |
+| [`preset-open-model-readonly.json`](preset-open-model-readonly.json) | Ollama and other open-model agent loops — read-only posture + detect + SARIF | CSPM trio, lateral/priv-esc detect, `ingest-cloudtrail-ocsf`, `convert-ocsf-to-sarif` | none |
 
 ## Loading a preset
 

@@ -311,6 +311,7 @@ def _harness_secret_scan_paths() -> list[Path]:
         EXAMPLES / "harness_schema.py",
         EXAMPLES / "anthropic_sdk_security_agent.py",
         EXAMPLES / "openai_sdk_security_agent.py",
+        EXAMPLES / "ollama_mcp_security_agent.py",
         EXAMPLES / "langchain_mcp_security_agent.py",
         EXAMPLES / "cursor_mcp_security_agent.py",
         EXAMPLES / "windsurf_mcp_security_agent.py",

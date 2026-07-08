@@ -117,6 +117,7 @@ the loop is untrusted.
 
 - [`README.md`](README.md) — full per-client integrations index
 - [`../../CLAUDE.md`](../../CLAUDE.md) — agent guardrails required before invoking any skill
+- [`../../examples/agents/ollama_mcp_security_agent.py`](../../examples/agents/ollama_mcp_security_agent.py) — runnable Ollama / open-model reference
 - [`../../examples/agents/README.md`](../../examples/agents/README.md) — runnable SDK examples
 - [`../HITL_POLICY.md`](../HITL_POLICY.md) — when human approval is required
 - [`../MCP_AUDIT_CONTRACT.md`](../MCP_AUDIT_CONTRACT.md) — audit record schema

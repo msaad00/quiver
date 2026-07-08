@@ -70,6 +70,25 @@ def build_openai_agents_mcp_server(profile: dict[str, Any]) -> dict[str, Any]:
     }
 
 
+DEFAULT_OLLAMA_BASE_URL = "http://localhost:11434/v1"
+
+
+def build_ollama_openai_compat_binding(
+    profile: dict[str, Any], *, base_url: str = DEFAULT_OLLAMA_BASE_URL
+) -> dict[str, Any]:
+    """OpenAI-compatible Ollama runtime + the same MCP stdio server block as OpenAI Agents."""
+    return {
+        "integration": "ollama_openai_compat_agents",
+        "docs": "docs/integrations/ollama.md",
+        "ollama_base_url": base_url,
+        "ollama_api_key": "ollama",
+        "preset_recommendation": "presets/preset-open-model-readonly.json",
+        "guardrail_note": "read_only_skills_only_no_remediation_in_allowlist",
+        "anti_pattern": "do_not_wrap_skill_clis_as_openai_tools",
+        "mcp_server": build_openai_agents_mcp_server(profile),
+    }
+
+
 def build_zed_context_servers(profile: dict[str, Any]) -> dict[str, Any]:
     """``~/.config/zed/settings.json`` ``context_servers`` block."""
     return {

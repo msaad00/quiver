@@ -1,0 +1,13 @@
+{
+  "name": "open-model-readonly",
+  "description": "Read-only posture and detection surface for Ollama and other open-model agent loops. No remediation skills — keep the allowlist small to compensate for weaker tool-call accuracy.",
+  "allowed_skills": [
+    "cspm-aws-cis-benchmark",
+    "cspm-gcp-cis-benchmark",
+    "cspm-azure-cis-benchmark",
+    "detect-lateral-movement",
+    "detect-privilege-escalation-k8s",
+    "ingest-cloudtrail-ocsf",
+    "convert-ocsf-to-sarif"
+  ]
+}

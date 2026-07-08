@@ -390,6 +390,32 @@ class TestHitlGateReachable:
         assert "cloud-ai-security-skills" in binding["mcp_config"]["mcpServers"]
         assert payload["mcp_tools_discovered"]
 
+    def test_ollama_binding_documents_openai_compat_mcp(self):
+        env = {
+            **os.environ,
+            "CLOUD_SECURITY_HARNESS_PROFILE": str(
+                EXAMPLES / "harness_profiles" / "sdk-open-model-readonly.json"
+            ),
+            "CLOUD_SECURITY_MCP_PRESET": "presets/preset-open-model-readonly.json",
+        }
+        result = subprocess.run(
+            [sys.executable, str(EXAMPLES / "ollama_mcp_security_agent.py")],
+            capture_output=True,
+            text=True,
+            timeout=60,
+            check=False,
+            cwd=REPO_ROOT,
+            env=env,
+        )
+        assert result.returncode == 0, result.stderr
+        payload = json.loads(result.stdout)
+        binding = payload["ollama_binding"]
+        assert binding["integration"] == "ollama_openai_compat_agents"
+        assert binding["preset_recommendation"] == "presets/preset-open-model-readonly.json"
+        assert binding["mcp_server"]["name"] == "cloud-ai-security-skills"
+        assert "remediate-" not in binding["mcp_server"]["env"]["CLOUD_SECURITY_MCP_ALLOWED_SKILLS"]
+        assert payload["mcp_tools_discovered"]
+
     def test_anthropic_binding_documents_mcp_config(self):
         result = subprocess.run(
             [sys.executable, str(EXAMPLES / "anthropic_sdk_security_agent.py")],

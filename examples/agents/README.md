@@ -9,6 +9,7 @@ allowlist regardless of which SDK is driving the loop.
 |---|---|---|
 | [`anthropic_sdk_security_agent.py`](anthropic_sdk_security_agent.py) | Anthropic Python SDK (Managed Agent) | CSPM scan → triage loop with HITL gate on remediation |
 | [`openai_sdk_security_agent.py`](openai_sdk_security_agent.py) | OpenAI Agents SDK | Parallel port of the Anthropic example for portability |
+| [`ollama_mcp_security_agent.py`](ollama_mcp_security_agent.py) | Ollama (OpenAI-compat) | Read-only MCP loop with `preset-open-model-readonly.json`; remediation blocked by design |
 | [`langchain_mcp_security_agent.py`](langchain_mcp_security_agent.py) | LangChain | MCP-first stdio pattern; `langchain-mcp-adapters` config when installed — not LCEL skill wrappers |
 | [`cursor_mcp_security_agent.py`](cursor_mcp_security_agent.py) | Cursor | Project-scoped `.cursor/mcp.json` + harness profile; same MCP audit/HITL contract |
 | [`windsurf_mcp_security_agent.py`](windsurf_mcp_security_agent.py) | Windsurf | `~/.codeium/windsurf/mcp_config.json` + harness profile; absolute-path MCP stdio |
