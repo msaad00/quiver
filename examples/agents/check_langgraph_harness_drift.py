@@ -366,6 +366,7 @@ def _harness_secret_scan_paths() -> list[Path]:
         EXAMPLES / "execute_langgraph_mcp_plan.py",
         EXAMPLES / "sdk_agent_common.py",
         EXAMPLES / "ide_mcp_bindings.py",
+        EXAMPLES / "emit_mcp_client_configs.py",
         EXAMPLES / "anthropic_sdk_security_agent.py",
         EXAMPLES / "openai_sdk_security_agent.py",
         EXAMPLES / "langchain_mcp_security_agent.py",
