@@ -50,6 +50,7 @@ REQUIRED_IDE_EXAMPLE_TOKENS = [
 ]
 
 REQUIRED_DOC_TOKENS = [
+    "emit_mcp_client_configs.py",
     "inspect_langgraph_harness.py",
     "run_langgraph_harness.py",
     "execute_langgraph_mcp_plan.py",

@@ -121,6 +121,22 @@ Runnable offline Zed example (harness profile + live `tools/list`):
 
 [`../examples/agents/zed_mcp_security_agent.py`](../examples/agents/zed_mcp_security_agent.py)
 
+Generate all IDE MCP blocks from one harness profile (offline):
+
+[`../examples/agents/emit_mcp_client_configs.py`](../examples/agents/emit_mcp_client_configs.py)
+
+Or create profile + MCP bundle together:
+
+```bash
+python examples/agents/configure_langgraph_harness.py \
+  --role sdk-cspm \
+  --profile-id acme-sdk-cspm \
+  --email you@example.com \
+  --output-profile artifacts/acme-sdk-cspm.json \
+  --output-env artifacts/acme-sdk-cspm.env \
+  --emit-mcp-configs artifacts/mcp-client-configs.json
+```
+
 ---
 
 ## Anthropic Agent SDK
