@@ -75,6 +75,14 @@ skills are not registered as tools.)
   sees at launch. On macOS, Homebrew Python works; if `python3` is only in a
   venv, pass the absolute interpreter path.
 - Config changes need a full app restart, not just a reload.
+- Offline reference: [`../../examples/agents/claude_desktop_mcp_security_agent.py`](../../examples/agents/claude_desktop_mcp_security_agent.py)
+  emits a `claude_desktop_config.json` block from a harness profile.
+
+## See also
+
+- [`../AGENT_QUICKSTART.md`](../AGENT_QUICKSTART.md) — all runnable MCP agent examples
+- [`README.md`](README.md) — integration index
+- [`ide-agents.md`](ide-agents.md) — generic MCP config shapes
 
 ## HITL behavior
 

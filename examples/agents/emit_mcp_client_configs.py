@@ -21,6 +21,7 @@ from typing import Any, Literal
 
 from ide_mcp_bindings import (
     build_anthropic_mcp_config,
+    build_claude_desktop_mcp_config,
     build_codex_mcp_toml,
     build_cortex_mcp_config,
     build_cursor_mcp_config,
@@ -40,6 +41,7 @@ ClientName = Literal[
     "langchain",
     "anthropic",
     "openai",
+    "claude-desktop",
     "all",
 ]
 CLIENT_NAMES: tuple[ClientName, ...] = (
@@ -51,6 +53,7 @@ CLIENT_NAMES: tuple[ClientName, ...] = (
     "langchain",
     "anthropic",
     "openai",
+    "claude-desktop",
     "all",
 )
 
@@ -118,6 +121,15 @@ def _client_payload(client: str, profile: dict[str, Any]) -> dict[str, Any]:
             "mcp_server": build_openai_agents_mcp_server(profile),
             "anti_pattern": "do_not_wrap_skill_clis_as_openai_tools",
         }
+    if client == "claude-desktop":
+        return {
+            "integration": "claude_desktop_mcp_json",
+            "config_path": "~/Library/Application Support/Claude/claude_desktop_config.json",
+            "docs": "docs/integrations/claude-desktop.md",
+            "mcp_config": build_claude_desktop_mcp_config(profile),
+            "path_note": "Replace server args with an absolute clone path before paste",
+            "anti_pattern": "do_not_wrap_skill_clis_as_claude_desktop_tools",
+        }
     raise ValueError(f"unsupported client: {client}")
 
 
@@ -148,7 +160,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         "--client",
         choices=CLIENT_NAMES,
         default="all",
-        help="Emit one client block or all eight MCP clients",
+        help="Emit one client block or all nine MCP clients",
     )
     parser.add_argument(
         "--output",

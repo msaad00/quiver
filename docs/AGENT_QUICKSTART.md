@@ -40,7 +40,11 @@ Edit `~/Library/Application Support/Claude/claude_desktop_config.json`
 
 Restart Claude Desktop (`⌘Q`, reopen).
 
----
+Runnable offline example (harness profile + live `tools/list`):
+
+[`../examples/agents/claude_desktop_mcp_security_agent.py`](../examples/agents/claude_desktop_mcp_security_agent.py)
+
+Full setup: [`integrations/claude-desktop.md`](integrations/claude-desktop.md).
 
 ## Cursor
 
