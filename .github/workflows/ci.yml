@@ -371,7 +371,15 @@ jobs:
           echo "${HOME}/.local/bin" >> "${GITHUB_PATH}"
           "${HOME}/.local/bin/bicep" --version
       - name: Install shellcheck
-        run: sudo apt-get update -qq && sudo apt-get install -y --no-install-recommends shellcheck
+        run: |
+          set -euo pipefail
+          for list in /etc/apt/sources.list.d/*microsoft* /etc/apt/sources.list.d/*azure*; do
+            if [ -e "$list" ]; then
+              sudo mv "$list" "${list}.disabled"
+            fi
+          done
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends shellcheck
       - name: cfn-lint — CloudFormation
         run: |
           cfn-lint skills/remediation/iam-departures-aws/infra/cloudformation.yaml
