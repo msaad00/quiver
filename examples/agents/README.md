@@ -17,6 +17,7 @@ allowlist regardless of which SDK is driving the loop.
 | [`zed_mcp_security_agent.py`](zed_mcp_security_agent.py) | Zed | `~/.config/zed/settings.json` `context_servers` block + harness profile; absolute-path MCP stdio |
 | [`claude_desktop_mcp_security_agent.py`](claude_desktop_mcp_security_agent.py) | Claude Desktop | `claude_desktop_config.json` + harness profile; absolute-path MCP stdio |
 | [`emit_mcp_client_configs.py`](emit_mcp_client_configs.py) | IDE + SDK | Offline bundle of IDE, LangChain, Anthropic, and OpenAI MCP blocks from one harness profile |
+| [`validate_mcp_client_configs.py`](validate_mcp_client_configs.py) | Operator | Validate an emitted MCP client bundle against `schemas/mcp_client_config_bundle.schema.json` |
 | [`langgraph_security_graph.py`](langgraph_security_graph.py) | LangGraph | SOC workflow DAG: ingest → normalize → enrich → correlate → confidence → MITRE/CVSS/EPSS/KEV map → HITL → dry-run remediation → audit/eval writeback |
 | [`langgraph_hitl_interrupt_resume.py`](langgraph_hitl_interrupt_resume.py) | LangGraph | Native `interrupt_before` + checkpointer at the analyst review gate; operator resumes with `approval_context` |
 
@@ -51,6 +52,9 @@ Or emit IDE MCP blocks from an existing profile:
 python examples/agents/emit_mcp_client_configs.py \
   --profile artifacts/acme-sdk-cspm.json \
   --output artifacts/mcp-client-configs.json
+
+python examples/agents/validate_mcp_client_configs.py artifacts/mcp-client-configs.json
+python examples/agents/emit_mcp_client_configs.py | python examples/agents/validate_mcp_client_configs.py
 ```
 
 ## Safety posture — every example enforces the same invariants
