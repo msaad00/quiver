@@ -414,10 +414,14 @@ class TestIdeMcpBindings:
         zed_env = ide_mcp_bindings.build_zed_context_servers(profile)["context_servers"][
             "cloud-ai-security-skills"
         ]["command"]["env"]
+        langchain_env = ide_mcp_bindings.build_langchain_mcp_servers(profile)[
+            "cloud-ai-security-skills"
+        ]["env"]
 
         assert cursor_env == expected
         assert windsurf_env == expected
         assert zed_env == expected
+        assert langchain_env == expected
         assert expected["CLOUD_SECURITY_MCP_REQUIRE_CALLER_ALLOWED_SKILLS"] == "true"
         assert "cspm-aws-cis-benchmark" in expected["CLOUD_SECURITY_MCP_ALLOWED_SKILLS"]
 
@@ -451,10 +455,18 @@ class TestEmitMcpClientConfigs:
         assert result.returncode == 0, result.stderr
         payload = json.loads(result.stdout)
         assert payload["schema_version"] == "mcp-client-config-bundle-v1"
-        assert set(payload["clients"]) == {"cursor", "cortex", "windsurf", "codex", "zed"}
+        assert set(payload["clients"]) == {
+            "cursor",
+            "cortex",
+            "windsurf",
+            "codex",
+            "zed",
+            "langchain",
+        }
         assert "mcp_config" in payload["clients"]["cursor"]
         assert "mcp_toml" in payload["clients"]["codex"]
         assert "context_servers" in payload["clients"]["zed"]
+        assert "mcp_servers" in payload["clients"]["langchain"]
 
     def test_single_client_filter(self):
         result = subprocess.run(
@@ -2234,7 +2246,14 @@ class TestLangGraphHarnessSetup:
         assert summary["mcp_client_configs"] == str(mcp_path)
         bundle = json.loads(mcp_path.read_text(encoding="utf-8"))
         assert bundle["schema_version"] == "mcp-client-config-bundle-v1"
-        assert set(bundle["clients"]) == {"cursor", "cortex", "windsurf", "codex", "zed"}
+        assert set(bundle["clients"]) == {
+            "cursor",
+            "cortex",
+            "windsurf",
+            "codex",
+            "zed",
+            "langchain",
+        }
 
     def test_setup_generator_rejects_missing_preset(self, tmp_path: Path):
         result = subprocess.run(

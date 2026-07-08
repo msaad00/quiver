@@ -31,29 +31,13 @@ from __future__ import annotations
 import json
 from typing import Any
 
-from harness_mcp_transport import safe_mcp_env
+from ide_mcp_bindings import build_langchain_mcp_servers
 from sdk_agent_common import (
     dry_run_remediation,
     human_approval_gate,
     load_sdk_profile,
-    mcp_stdio_command,
-    read_allowlist,
     run_cspm_triage,
 )
-
-
-def build_langchain_mcp_servers(profile: dict[str, Any]) -> dict[str, dict[str, Any]]:
-    """Config block for ``MultiServerMCPClient`` / LangGraph tool nodes."""
-    allowlist = read_allowlist(profile)
-    command = mcp_stdio_command()
-    return {
-        "cloud-ai-security-skills": {
-            "transport": "stdio",
-            "command": command[0],
-            "args": command[1:],
-            "env": safe_mcp_env(allowed_skills=allowlist),
-        }
-    }
 
 
 def langchain_binding_notes(profile: dict[str, Any]) -> dict[str, Any]:

@@ -141,7 +141,7 @@ Reference examples:
 - [`examples/agents/cortex_mcp_security_agent.py`](../examples/agents/cortex_mcp_security_agent.py) — Cortex `.cortex/mcp.json` block
 - [`examples/agents/codex_mcp_security_agent.py`](../examples/agents/codex_mcp_security_agent.py) — Codex `config.toml` fragment
 - [`examples/agents/zed_mcp_security_agent.py`](../examples/agents/zed_mcp_security_agent.py) — Zed `context_servers` block
-- [`examples/agents/emit_mcp_client_configs.py`](../examples/agents/emit_mcp_client_configs.py) — offline bundle of all IDE MCP blocks from one harness profile
+- [`examples/agents/emit_mcp_client_configs.py`](../examples/agents/emit_mcp_client_configs.py) — offline bundle of IDE + LangChain MCP blocks from one harness profile
 
 Generate a profile with a workflow preset baked in:
 

@@ -23,13 +23,22 @@ from ide_mcp_bindings import (
     build_codex_mcp_toml,
     build_cortex_mcp_config,
     build_cursor_mcp_config,
+    build_langchain_mcp_servers,
     build_windsurf_mcp_config,
     build_zed_context_servers,
 )
 from sdk_agent_common import DEFAULT_PROFILE, load_sdk_profile
 
-ClientName = Literal["cursor", "cortex", "windsurf", "codex", "zed", "all"]
-CLIENT_NAMES: tuple[ClientName, ...] = ("cursor", "cortex", "windsurf", "codex", "zed", "all")
+ClientName = Literal["cursor", "cortex", "windsurf", "codex", "zed", "langchain", "all"]
+CLIENT_NAMES: tuple[ClientName, ...] = (
+    "cursor",
+    "cortex",
+    "windsurf",
+    "codex",
+    "zed",
+    "langchain",
+    "all",
+)
 
 
 def _client_payload(client: str, profile: dict[str, Any]) -> dict[str, Any]:
@@ -71,6 +80,14 @@ def _client_payload(client: str, profile: dict[str, Any]) -> dict[str, Any]:
             "context_servers": build_zed_context_servers(profile),
             "path_note": "Replace server args with an absolute clone path before paste",
         }
+    if client == "langchain":
+        return {
+            "integration": "langchain_mcp_adapters_stdio",
+            "config_path": "MultiServerMCPClient(mcp_servers=...)",
+            "docs": "docs/HARNESS.md",
+            "mcp_servers": build_langchain_mcp_servers(profile),
+            "anti_pattern": "do_not_wrap_skill_clis_as_langchain_tools",
+        }
     raise ValueError(f"unsupported client: {client}")
 
 
@@ -91,7 +108,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         "--client",
         choices=CLIENT_NAMES,
         default="all",
-        help="Emit one client block or all five IDE clients",
+        help="Emit one client block or all six MCP clients",
     )
     parser.add_argument(
         "--output",

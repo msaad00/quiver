@@ -1,8 +1,8 @@
-"""Shared MCP client config builders for IDE reference examples.
+"""Shared MCP client config builders for IDE and framework reference examples.
 
-Each IDE agent script stays a thin runnable wrapper; this module centralizes
+Each agent script stays a thin runnable wrapper; this module centralizes
 allowlist → env policy and server path shapes so Cursor/Cortex/Windsurf/Codex/Zed
-stay consistent.
+and LangChain MCP adapters stay consistent.
 """
 
 from __future__ import annotations
@@ -80,3 +80,16 @@ def build_codex_mcp_toml(profile: dict[str, Any]) -> str:
         f"args = [{_toml_string(str(MCP_SERVER_PATH))}]\n"
         f"env = {{ {env_pairs} }}\n"
     )
+
+
+def build_langchain_mcp_servers(profile: dict[str, Any]) -> dict[str, dict[str, Any]]:
+    """Config block for ``MultiServerMCPClient`` / LangGraph MCP tool nodes."""
+    command = mcp_stdio_command()
+    return {
+        "cloud-ai-security-skills": {
+            "transport": "stdio",
+            "command": command[0],
+            "args": command[1:],
+            "env": mcp_policy_env(profile),
+        }
+    }
