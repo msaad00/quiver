@@ -26,32 +26,33 @@ from __future__ import annotations
 import json
 from typing import Any
 
-from harness_mcp_transport import safe_mcp_env
+from ide_mcp_bindings import build_openai_agents_mcp_server
 from sdk_agent_common import (
     dry_run_remediation,
     human_approval_gate,
     load_sdk_profile,
-    mcp_stdio_command,
-    read_allowlist,
     run_cspm_triage,
 )
 
 
-def build_mcp_config(profile: dict[str, Any]) -> dict[str, Any]:
-    """Block passed to ``openai.agents.McpServer(...)`` in a live Agents-SDK loop."""
-    allowlist = read_allowlist(profile)
+def openai_binding_notes(profile: dict[str, Any]) -> dict[str, Any]:
+    mcp_server = build_openai_agents_mcp_server(profile)
     return {
-        "name": "cloud-ai-security-skills",
-        "command": mcp_stdio_command()[0],
-        "args": mcp_stdio_command()[1:],
-        "env": safe_mcp_env(allowed_skills=allowlist),
+        "integration": "openai_agents_mcp_server",
+        "config_path": "openai.agents.McpServer(...)",
+        "docs": "docs/AGENT_QUICKSTART.md",
+        "anti_pattern": "do_not_wrap_skill_clis_as_openai_tools",
+        "mcp_server": mcp_server,
+        "remediation_chain": "separate_agent_session_with_HITL_approval_context",
     }
 
 
 def main() -> int:
     profile = load_sdk_profile()
     triage = run_cspm_triage(profile, correlation_id="openai-demo-1")
-    triage["tool_config"] = build_mcp_config(profile)["name"]
+    binding = openai_binding_notes(profile)
+    triage["openai_binding"] = binding
+    triage["tool_config"] = binding["mcp_server"]["name"]
     print(json.dumps(triage, indent=2))
 
     approval = human_approval_gate(triage)

@@ -39,6 +39,7 @@ EXPECTED_SCHEMAS = [
     SCHEMAS / "agent_policy.schema.json",
     SCHEMAS / "checkpoint.schema.json",
     SCHEMAS / "eval_report.schema.json",
+    SCHEMAS / "mcp_client_config_bundle.schema.json",
 ]
 
 REQUIRED_IDE_EXAMPLE_TOKENS = [
@@ -47,6 +48,7 @@ REQUIRED_IDE_EXAMPLE_TOKENS = [
     "cortex_mcp_security_agent.py",
     "codex_mcp_security_agent.py",
     "zed_mcp_security_agent.py",
+    "claude_desktop_mcp_security_agent.py",
 ]
 
 REQUIRED_DOC_TOKENS = [
@@ -375,6 +377,7 @@ def _harness_secret_scan_paths() -> list[Path]:
         EXAMPLES / "cortex_mcp_security_agent.py",
         EXAMPLES / "codex_mcp_security_agent.py",
         EXAMPLES / "zed_mcp_security_agent.py",
+        EXAMPLES / "claude_desktop_mcp_security_agent.py",
         EXAMPLES / "harness_adapters.py",
         EXAMPLES / "harness_mcp_transport.py",
         *sorted(PROFILES.glob("*.json")),
@@ -405,6 +408,21 @@ def _check_no_harness_secret_literals() -> DriftCheck:
     )
 
 
+def _check_mcp_client_bundle_schema() -> DriftCheck:
+    from emit_mcp_client_configs import build_mcp_client_bundle
+    from sdk_agent_common import DEFAULT_PROFILE, load_sdk_profile
+
+    schema = _load_json(SCHEMAS / "mcp_client_config_bundle.schema.json")
+    profile = load_sdk_profile(DEFAULT_PROFILE)
+    bundle = build_mcp_client_bundle(profile)
+    errors = _schema_errors(schema, bundle)
+    return DriftCheck(
+        "mcp_client_bundle_schema",
+        not errors,
+        "default MCP client bundle matches schema" if not errors else errors,
+    )
+
+
 def run_checks(*, update_diagram: bool = False) -> list[DriftCheck]:
     return [
         _check_schema_documents(),
@@ -415,6 +433,7 @@ def run_checks(*, update_diagram: bool = False) -> list[DriftCheck]:
         _check_runtime_wrapper(),
         _check_docs_wired(),
         _check_ide_examples_wired(),
+        _check_mcp_client_bundle_schema(),
         _check_no_harness_secret_literals(),
     ]
 
