@@ -55,6 +55,9 @@
           "mcp_servers": {
             "type": "object"
           },
+          "mcp_server": {
+            "type": "object"
+          },
           "path_note": {
             "type": "string"
           },

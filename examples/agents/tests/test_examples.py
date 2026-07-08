@@ -371,6 +371,40 @@ class TestHitlGateReachable:
         )
         assert payload["mcp_tools_discovered"]
 
+    def test_anthropic_binding_documents_mcp_config(self):
+        result = subprocess.run(
+            [sys.executable, str(EXAMPLES / "anthropic_sdk_security_agent.py")],
+            capture_output=True,
+            text=True,
+            timeout=60,
+            check=False,
+            cwd=REPO_ROOT,
+            env={**os.environ},
+        )
+        assert result.returncode == 0, result.stderr
+        payload = json.loads(result.stdout)
+        binding = payload["anthropic_binding"]
+        assert binding["integration"] == "anthropic_mcp_json"
+        assert "mcp_config" in binding
+        assert payload["mcp_tools_discovered"]
+
+    def test_openai_binding_documents_mcp_server(self):
+        result = subprocess.run(
+            [sys.executable, str(EXAMPLES / "openai_sdk_security_agent.py")],
+            capture_output=True,
+            text=True,
+            timeout=60,
+            check=False,
+            cwd=REPO_ROOT,
+            env={**os.environ},
+        )
+        assert result.returncode == 0, result.stderr
+        payload = json.loads(result.stdout)
+        binding = payload["openai_binding"]
+        assert binding["integration"] == "openai_agents_mcp_server"
+        assert binding["mcp_server"]["name"] == "cloud-ai-security-skills"
+        assert payload["mcp_tools_discovered"]
+
     def test_langgraph_reaches_remediation_with_approval(self):
         env = {
             **os.environ,
@@ -417,11 +451,17 @@ class TestIdeMcpBindings:
         langchain_env = ide_mcp_bindings.build_langchain_mcp_servers(profile)[
             "cloud-ai-security-skills"
         ]["env"]
+        anthropic_env = ide_mcp_bindings.build_anthropic_mcp_config(profile)["mcpServers"][
+            "cloud-ai-security-skills"
+        ]["env"]
+        openai_env = ide_mcp_bindings.build_openai_agents_mcp_server(profile)["env"]
 
         assert cursor_env == expected
         assert windsurf_env == expected
         assert zed_env == expected
         assert langchain_env == expected
+        assert anthropic_env == expected
+        assert openai_env == expected
         assert expected["CLOUD_SECURITY_MCP_REQUIRE_CALLER_ALLOWED_SKILLS"] == "true"
         assert "cspm-aws-cis-benchmark" in expected["CLOUD_SECURITY_MCP_ALLOWED_SKILLS"]
 
@@ -462,11 +502,14 @@ class TestEmitMcpClientConfigs:
             "codex",
             "zed",
             "langchain",
+            "anthropic",
+            "openai",
         }
         assert "mcp_config" in payload["clients"]["cursor"]
         assert "mcp_toml" in payload["clients"]["codex"]
         assert "context_servers" in payload["clients"]["zed"]
         assert "mcp_servers" in payload["clients"]["langchain"]
+        assert "mcp_server" in payload["clients"]["openai"]
 
     def test_single_client_filter(self):
         result = subprocess.run(
@@ -2270,6 +2313,8 @@ class TestLangGraphHarnessSetup:
             "codex",
             "zed",
             "langchain",
+            "anthropic",
+            "openai",
         }
 
     def test_setup_generator_rejects_missing_preset(self, tmp_path: Path):

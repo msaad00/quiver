@@ -20,7 +20,9 @@ Run:
 from __future__ import annotations
 
 import json
+from typing import Any
 
+from ide_mcp_bindings import build_anthropic_mcp_config
 from sdk_agent_common import (
     dry_run_remediation,
     human_approval_gate,
@@ -29,9 +31,21 @@ from sdk_agent_common import (
 )
 
 
+def anthropic_binding_notes(profile: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "integration": "anthropic_mcp_json",
+        "config_path": "project .mcp.json or claude_desktop_config.json",
+        "docs": "docs/AGENT_QUICKSTART.md",
+        "anti_pattern": "do_not_wrap_skill_clis_as_anthropic_tools",
+        "mcp_config": build_anthropic_mcp_config(profile),
+        "remediation_chain": "separate_agent_session_with_HITL_approval_context",
+    }
+
+
 def main() -> int:
     profile = load_sdk_profile()
     triage = run_cspm_triage(profile, correlation_id="anthropic-demo-1")
+    triage["anthropic_binding"] = anthropic_binding_notes(profile)
     print(json.dumps(triage, indent=2))
 
     approval = human_approval_gate(triage)
