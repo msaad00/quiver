@@ -33,6 +33,7 @@ SCRIPTS = [
     EXAMPLES / "cortex_mcp_security_agent.py",
     EXAMPLES / "codex_mcp_security_agent.py",
     EXAMPLES / "zed_mcp_security_agent.py",
+    EXAMPLES / "claude_desktop_mcp_security_agent.py",
     EXAMPLES / "langgraph_security_graph.py",
     EXAMPLES / "run_langgraph_harness.py",
 ]
@@ -371,6 +372,24 @@ class TestHitlGateReachable:
         )
         assert payload["mcp_tools_discovered"]
 
+    def test_claude_desktop_mcp_binding_documents_config(self):
+        result = subprocess.run(
+            [sys.executable, str(EXAMPLES / "claude_desktop_mcp_security_agent.py")],
+            capture_output=True,
+            text=True,
+            timeout=60,
+            check=False,
+            cwd=REPO_ROOT,
+            env={**os.environ},
+        )
+        assert result.returncode == 0, result.stderr
+        payload = json.loads(result.stdout)
+        binding = payload["claude_desktop_binding"]
+        assert binding["integration"] == "claude_desktop_mcp_json"
+        assert "claude_desktop_config.json" in binding["config_path"]
+        assert "cloud-ai-security-skills" in binding["mcp_config"]["mcpServers"]
+        assert payload["mcp_tools_discovered"]
+
     def test_anthropic_binding_documents_mcp_config(self):
         result = subprocess.run(
             [sys.executable, str(EXAMPLES / "anthropic_sdk_security_agent.py")],
@@ -504,6 +523,7 @@ class TestEmitMcpClientConfigs:
             "langchain",
             "anthropic",
             "openai",
+            "claude-desktop",
         }
         assert "mcp_config" in payload["clients"]["cursor"]
         assert "mcp_toml" in payload["clients"]["codex"]
@@ -2315,6 +2335,7 @@ class TestLangGraphHarnessSetup:
             "langchain",
             "anthropic",
             "openai",
+            "claude-desktop",
         }
 
     def test_setup_generator_rejects_missing_preset(self, tmp_path: Path):
