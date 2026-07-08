@@ -15,6 +15,7 @@ allowlist regardless of which SDK is driving the loop.
 | [`cortex_mcp_security_agent.py`](cortex_mcp_security_agent.py) | Cortex Code CLI | Project-scoped `.cortex/mcp.json` + harness profile; `${workspaceFolder}` MCP stdio |
 | [`codex_mcp_security_agent.py`](codex_mcp_security_agent.py) | Codex | `~/.codex/config.toml` fragment + harness profile; absolute-path MCP stdio |
 | [`zed_mcp_security_agent.py`](zed_mcp_security_agent.py) | Zed | `~/.config/zed/settings.json` `context_servers` block + harness profile; absolute-path MCP stdio |
+| [`emit_mcp_client_configs.py`](emit_mcp_client_configs.py) | All IDE clients | Offline bundle of Cursor/Cortex/Windsurf/Codex/Zed MCP blocks from one harness profile |
 | [`langgraph_security_graph.py`](langgraph_security_graph.py) | LangGraph | SOC workflow DAG: ingest → normalize → enrich → correlate → confidence → MITRE/CVSS/EPSS/KEV map → HITL → dry-run remediation → audit/eval writeback |
 | [`langgraph_hitl_interrupt_resume.py`](langgraph_hitl_interrupt_resume.py) | LangGraph | Native `interrupt_before` + checkpointer at the analyst review gate; operator resumes with `approval_context` |
 
@@ -39,7 +40,16 @@ python examples/agents/configure_langgraph_harness.py \
   --profile-id acme-sdk-cspm \
   --email sdk-agent@example.com \
   --output-profile artifacts/acme-sdk-cspm.json \
-  --output-env artifacts/acme-sdk-cspm.env
+  --output-env artifacts/acme-sdk-cspm.env \
+  --emit-mcp-configs artifacts/mcp-client-configs.json
+```
+
+Or emit IDE MCP blocks from an existing profile:
+
+```bash
+python examples/agents/emit_mcp_client_configs.py \
+  --profile artifacts/acme-sdk-cspm.json \
+  --output artifacts/mcp-client-configs.json
 ```
 
 ## Safety posture — every example enforces the same invariants

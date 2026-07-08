@@ -119,9 +119,9 @@ The demo pauses before ``review``, injects operator ``approval_context`` via
 ## Agent + AI pluggability — MCP first, not LCEL wrappers
 
 Frameworks (LangChain, LangGraph, OpenAI Agents SDK, Anthropic Agent SDK, Cursor,
-Codex) should bind the **repo MCP server** as their tool surface. Skills stay
-behind one audited contract: allowlists, HITL gates, dry-run defaults, and
-HMAC audit chains do not fork per framework.
+Windsurf, Cortex, Codex, Zed) should bind the **repo MCP server** as their tool
+surface. Skills stay behind one audited contract: allowlists, HITL gates,
+dry-run defaults, and HMAC audit chains do not fork per framework.
 
 | Do | Don't |
 |---|---|
@@ -141,6 +141,7 @@ Reference examples:
 - [`examples/agents/cortex_mcp_security_agent.py`](../examples/agents/cortex_mcp_security_agent.py) — Cortex `.cortex/mcp.json` block
 - [`examples/agents/codex_mcp_security_agent.py`](../examples/agents/codex_mcp_security_agent.py) — Codex `config.toml` fragment
 - [`examples/agents/zed_mcp_security_agent.py`](../examples/agents/zed_mcp_security_agent.py) — Zed `context_servers` block
+- [`examples/agents/emit_mcp_client_configs.py`](../examples/agents/emit_mcp_client_configs.py) — offline bundle of all IDE MCP blocks from one harness profile
 
 Generate a profile with a workflow preset baked in:
 

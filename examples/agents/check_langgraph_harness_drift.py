@@ -41,6 +41,14 @@ EXPECTED_SCHEMAS = [
     SCHEMAS / "eval_report.schema.json",
 ]
 
+REQUIRED_IDE_EXAMPLE_TOKENS = [
+    "cursor_mcp_security_agent.py",
+    "windsurf_mcp_security_agent.py",
+    "cortex_mcp_security_agent.py",
+    "codex_mcp_security_agent.py",
+    "zed_mcp_security_agent.py",
+]
+
 REQUIRED_DOC_TOKENS = [
     "inspect_langgraph_harness.py",
     "run_langgraph_harness.py",
@@ -314,6 +322,22 @@ def _check_runtime_wrapper() -> DriftCheck:
     )
 
 
+def _check_ide_examples_wired() -> DriftCheck:
+    docs = {
+        str(HARNESS_DOC.relative_to(REPO_ROOT)): HARNESS_DOC.read_text(encoding="utf-8"),
+        str(EXAMPLES_README.relative_to(REPO_ROOT)): EXAMPLES_README.read_text(encoding="utf-8"),
+    }
+    failures: list[str] = []
+    for token in REQUIRED_IDE_EXAMPLE_TOKENS:
+        if not all(token in text for text in docs.values()):
+            failures.append(f"missing IDE example reference: {token}")
+    return DriftCheck(
+        "docs_reference_ide_mcp_examples",
+        not failures,
+        "docs reference all IDE MCP example scripts" if not failures else failures,
+    )
+
+
 def _check_docs_wired() -> DriftCheck:
     docs = {
         str(HARNESS_DOC.relative_to(REPO_ROOT)): HARNESS_DOC.read_text(encoding="utf-8"),
@@ -341,6 +365,8 @@ def _harness_secret_scan_paths() -> list[Path]:
         EXAMPLES / "run_langgraph_harness.py",
         EXAMPLES / "execute_langgraph_mcp_plan.py",
         EXAMPLES / "sdk_agent_common.py",
+        EXAMPLES / "ide_mcp_bindings.py",
+        EXAMPLES / "emit_mcp_client_configs.py",
         EXAMPLES / "anthropic_sdk_security_agent.py",
         EXAMPLES / "openai_sdk_security_agent.py",
         EXAMPLES / "langchain_mcp_security_agent.py",
@@ -353,6 +379,7 @@ def _harness_secret_scan_paths() -> list[Path]:
         EXAMPLES / "harness_mcp_transport.py",
         *sorted(PROFILES.glob("*.json")),
         *sorted((REPO_ROOT / "presets").glob("*.json")),
+        *sorted((REPO_ROOT / "docs" / "integrations").glob("*.md")),
     ]
     return [path for path in paths if path.is_file()]
 
@@ -387,6 +414,7 @@ def run_checks(*, update_diagram: bool = False) -> list[DriftCheck]:
         _check_preflight_policy(),
         _check_runtime_wrapper(),
         _check_docs_wired(),
+        _check_ide_examples_wired(),
         _check_no_harness_secret_literals(),
     ]
 

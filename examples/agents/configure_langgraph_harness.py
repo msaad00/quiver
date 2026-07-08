@@ -11,7 +11,8 @@ Run:
       --profile-id acme-sdk-cspm \
       --email sdk-agent@example.com \
       --output-profile artifacts/acme-sdk-cspm.json \
-      --output-env artifacts/acme-sdk-cspm.env
+      --output-env artifacts/acme-sdk-cspm.env \
+      --emit-mcp-configs artifacts/mcp-client-configs.json
 
     python examples/agents/configure_langgraph_harness.py \
       --role analyst-triage \
@@ -30,6 +31,7 @@ import sys
 from pathlib import Path
 from typing import Any, Literal
 
+from emit_mcp_client_configs import emit_client_configs
 from langgraph_security_graph import (
     ALLOWED_SKILLS_READ_ONLY_LIST,
     ALLOWED_SKILLS_REMEDIATION,
@@ -77,8 +79,8 @@ ROLE_DEFAULTS: dict[HarnessRole, dict[str, Any]] = {
     },
     "sdk-cspm": {
         "description": (
-            "Anthropic, OpenAI, LangChain, and Cursor SDK examples: "
-            "read-only CSPM + detect triage via MCP stdio."
+            "Anthropic, OpenAI, LangChain, and IDE MCP examples (Cursor, Windsurf, "
+            "Cortex, Codex, Zed): read-only CSPM + detect triage via MCP stdio."
         ),
         "roles": "security_engineer",
         "include_remediation": False,
@@ -366,6 +368,11 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument("--min-approvers", type=int, default=1)
     parser.add_argument("--output-profile", type=Path, required=True)
     parser.add_argument("--output-env", type=Path, required=True)
+    parser.add_argument(
+        "--emit-mcp-configs",
+        type=Path,
+        help="Optional path to write IDE MCP client config bundle JSON (sdk-cspm and other roles)",
+    )
     return parser.parse_args(argv)
 
 
@@ -393,11 +400,25 @@ def main(argv: list[str] | None = None) -> int:
         provider=args.llm_provider,
         model=args.llm_model,
     )
+    mcp_configs_path = None
+    if args.emit_mcp_configs:
+        bundle = {
+            "schema_version": "mcp-client-config-bundle-v1",
+            "profile_id": profile["profile_id"],
+            "clients": emit_client_configs(profile),
+        }
+        args.emit_mcp_configs.parent.mkdir(parents=True, exist_ok=True)
+        args.emit_mcp_configs.write_text(
+            json.dumps(bundle, indent=2, sort_keys=True) + "\n",
+            encoding="utf-8",
+        )
+        mcp_configs_path = str(args.emit_mcp_configs)
     print(
         json.dumps(
             {
                 "profile": str(args.output_profile),
                 "env": str(args.output_env),
+                "mcp_client_configs": mcp_configs_path,
                 "profile_id": profile["profile_id"],
                 "role": args.role,
                 "allowed_skills": profile["allowed_skills"],

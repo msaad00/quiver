@@ -389,6 +389,88 @@ class TestHitlGateReachable:
         assert '"dry_run"' in result.stdout
 
 
+class TestIdeMcpBindings:
+    PROFILE = EXAMPLES / "harness_profiles" / "sdk-cspm-agent.json"
+
+    def _bindings_module(self):
+        if str(EXAMPLES) not in sys.path:
+            sys.path.insert(0, str(EXAMPLES))
+        import ide_mcp_bindings
+
+        return ide_mcp_bindings
+
+    def test_all_clients_share_mcp_policy_env(self):
+        ide_mcp_bindings = self._bindings_module()
+
+        profile = json.loads(self.PROFILE.read_text(encoding="utf-8"))
+        expected = ide_mcp_bindings.mcp_policy_env(profile)
+
+        cursor_env = ide_mcp_bindings.build_cursor_mcp_config(profile)["mcpServers"][
+            "cloud-ai-security-skills"
+        ]["env"]
+        windsurf_env = ide_mcp_bindings.build_windsurf_mcp_config(profile)["mcpServers"][
+            "cloud-ai-security-skills"
+        ]["env"]
+        zed_env = ide_mcp_bindings.build_zed_context_servers(profile)["context_servers"][
+            "cloud-ai-security-skills"
+        ]["command"]["env"]
+
+        assert cursor_env == expected
+        assert windsurf_env == expected
+        assert zed_env == expected
+        assert expected["CLOUD_SECURITY_MCP_REQUIRE_CALLER_ALLOWED_SKILLS"] == "true"
+        assert "cspm-aws-cis-benchmark" in expected["CLOUD_SECURITY_MCP_ALLOWED_SKILLS"]
+
+    def test_workspace_clients_use_workspace_folder_arg(self):
+        ide_mcp_bindings = self._bindings_module()
+
+        profile = json.loads(self.PROFILE.read_text(encoding="utf-8"))
+        cursor_args = ide_mcp_bindings.build_cursor_mcp_config(profile)["mcpServers"][
+            "cloud-ai-security-skills"
+        ]["args"]
+        cortex_args = ide_mcp_bindings.build_cortex_mcp_config(profile)["mcpServers"][
+            "cloud-ai-security-skills"
+        ]["args"]
+        assert cursor_args == [ide_mcp_bindings.WORKSPACE_SERVER_ARG]
+        assert cortex_args == [ide_mcp_bindings.WORKSPACE_SERVER_ARG]
+
+
+class TestEmitMcpClientConfigs:
+    SCRIPT = EXAMPLES / "emit_mcp_client_configs.py"
+
+    def test_emits_all_clients_offline(self):
+        result = subprocess.run(
+            [sys.executable, str(self.SCRIPT)],
+            capture_output=True,
+            text=True,
+            timeout=30,
+            check=False,
+            cwd=REPO_ROOT,
+            env={**os.environ},
+        )
+        assert result.returncode == 0, result.stderr
+        payload = json.loads(result.stdout)
+        assert payload["schema_version"] == "mcp-client-config-bundle-v1"
+        assert set(payload["clients"]) == {"cursor", "cortex", "windsurf", "codex", "zed"}
+        assert "mcp_config" in payload["clients"]["cursor"]
+        assert "mcp_toml" in payload["clients"]["codex"]
+        assert "context_servers" in payload["clients"]["zed"]
+
+    def test_single_client_filter(self):
+        result = subprocess.run(
+            [sys.executable, str(self.SCRIPT), "--client", "cursor"],
+            capture_output=True,
+            text=True,
+            timeout=30,
+            check=False,
+            cwd=REPO_ROOT,
+            env={**os.environ},
+        )
+        assert result.returncode == 0, result.stderr
+        payload = json.loads(result.stdout)
+        assert set(payload["clients"]) == {"cursor"}
+
+
 class TestLangGraphHarnessRuntime:
     """Importable wrapper coverage for embedding the LangGraph harness."""
 
@@ -2119,6 +2201,40 @@ class TestLangGraphHarnessSetup:
         assert profile["preset_applied"] == "cspm-readonly"
         assert "detect-lateral-movement" not in profile["allowed_skills"]
         assert "cspm-aws-cis-benchmark" in profile["allowed_skills"]
+
+    def test_setup_generator_emits_mcp_client_configs(self, tmp_path: Path):
+        profile_path = tmp_path / "acme-sdk-cspm.json"
+        env_path = tmp_path / "acme-sdk-cspm.env"
+        mcp_path = tmp_path / "mcp-client-configs.json"
+        result = subprocess.run(
+            [
+                sys.executable,
+                str(self.SCRIPT),
+                "--role",
+                "sdk-cspm",
+                "--profile-id",
+                "acme-sdk-cspm",
+                "--email",
+                "sdk-agent@example.com",
+                "--output-profile",
+                str(profile_path),
+                "--output-env",
+                str(env_path),
+                "--emit-mcp-configs",
+                str(mcp_path),
+            ],
+            capture_output=True,
+            text=True,
+            timeout=30,
+            check=False,
+            cwd=REPO_ROOT,
+        )
+        assert result.returncode == 0, result.stderr
+        summary = json.loads(result.stdout)
+        assert summary["mcp_client_configs"] == str(mcp_path)
+        bundle = json.loads(mcp_path.read_text(encoding="utf-8"))
+        assert bundle["schema_version"] == "mcp-client-config-bundle-v1"
+        assert set(bundle["clients"]) == {"cursor", "cortex", "windsurf", "codex", "zed"}
 
     def test_setup_generator_rejects_missing_preset(self, tmp_path: Path):
         result = subprocess.run(
