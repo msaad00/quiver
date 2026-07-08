@@ -20,6 +20,7 @@ from pathlib import Path
 from typing import Any
 
 from harness_runtime import HarnessRunConfig, run_harness_summary
+from harness_schema import schema_errors
 from langgraph_security_graph import load_harness_profile, pipeline_contract, preview_agent_policy
 from render_langgraph_pipeline_diagram import render_mermaid
 
@@ -58,6 +59,7 @@ REQUIRED_DOC_TOKENS = [
     "eval_langgraph_harness.py --check",
     "render_langgraph_pipeline_diagram.py",
     "check_langgraph_harness_drift.py",
+    "validate_mcp_client_configs.py",
 ]
 
 SECRET_PATTERNS = [
@@ -69,15 +71,6 @@ SECRET_PATTERNS = [
         r"snowflake_password|secret_access_key)\b\s*[:=]\s*[\"'][^\"']{4,}[\"']"
     ),
 ]
-
-JSON_TYPE_MAP = {
-    "array": list,
-    "boolean": bool,
-    "integer": int,
-    "number": (int, float),
-    "object": dict,
-    "string": str,
-}
 
 
 @dataclass(frozen=True)
@@ -92,61 +85,6 @@ class DriftCheck:
             "status": "pass" if self.passed else "fail",
             "details": self.details,
         }
-
-
-def _schema_errors(schema: dict[str, Any], value: Any, path: str = "$") -> list[str]:
-    errors: list[str] = []
-    schema_type = schema.get("type")
-    if schema_type:
-        expected_type = JSON_TYPE_MAP[schema_type]
-        if not isinstance(value, expected_type) or (
-            schema_type in {"integer", "number"} and isinstance(value, bool)
-        ):
-            return [f"{path}: expected {schema_type}"]
-
-    if "const" in schema and value != schema["const"]:
-        errors.append(f"{path}: expected const {schema['const']!r}")
-    if "enum" in schema and value not in schema["enum"]:
-        errors.append(f"{path}: expected one of {schema['enum']!r}")
-    if schema_type == "string":
-        if len(value) < schema.get("minLength", 0):
-            errors.append(f"{path}: shorter than minLength")
-        if pattern := schema.get("pattern"):
-            if not re.match(pattern, value):
-                errors.append(f"{path}: does not match pattern")
-    if schema_type == "integer" and "minimum" in schema and value < schema["minimum"]:
-        errors.append(f"{path}: below minimum")
-
-    if schema_type == "array":
-        if len(value) < schema.get("minItems", 0):
-            errors.append(f"{path}: shorter than minItems")
-        if schema.get("uniqueItems"):
-            stable = [json.dumps(item, sort_keys=True) for item in value]
-            if len(stable) != len(set(stable)):
-                errors.append(f"{path}: duplicate array item")
-        item_schema = schema.get("items")
-        if item_schema:
-            for index, item in enumerate(value):
-                errors.extend(_schema_errors(item_schema, item, f"{path}[{index}]"))
-
-    if schema_type == "object":
-        required = set(schema.get("required", []))
-        for key in sorted(required - set(value)):
-            errors.append(f"{path}: missing required property {key}")
-        properties = schema.get("properties", {})
-        extra = sorted(set(value) - set(properties))
-        additional = schema.get("additionalProperties", True)
-        if additional is False:
-            for key in extra:
-                errors.append(f"{path}: additional property {key}")
-        elif isinstance(additional, dict):
-            for key in extra:
-                errors.extend(_schema_errors(additional, value[key], f"{path}.{key}"))
-        for key, child_schema in properties.items():
-            if key in value:
-                errors.extend(_schema_errors(child_schema, value[key], f"{path}.{key}"))
-
-    return errors
 
 
 def _load_json(path: Path) -> Any:
@@ -176,7 +114,7 @@ def _check_schema_documents() -> DriftCheck:
 def _check_pipeline_contract() -> DriftCheck:
     schema = _load_json(SCHEMAS / "pipeline_contract.schema.json")
     contract = pipeline_contract()
-    errors = _schema_errors(schema, contract)
+    errors = schema_errors(schema, contract)
     node_names = {node["node"] for node in contract.get("nodes", [])}
     for edge in contract.get("edges", []):
         if edge.get("source") not in node_names or edge.get("target") not in node_names:
@@ -217,7 +155,7 @@ def _check_profiles() -> DriftCheck:
     for profile_path in sorted(PROFILES.glob("*.json")):
         profile_names.append(profile_path.name)
         profile = _load_json(profile_path)
-        errors = _schema_errors(schema, profile)
+        errors = schema_errors(schema, profile)
         if errors:
             failures.extend(f"{profile_path.name}: {error}" for error in errors)
             continue
@@ -369,6 +307,8 @@ def _harness_secret_scan_paths() -> list[Path]:
         EXAMPLES / "sdk_agent_common.py",
         EXAMPLES / "ide_mcp_bindings.py",
         EXAMPLES / "emit_mcp_client_configs.py",
+        EXAMPLES / "validate_mcp_client_configs.py",
+        EXAMPLES / "harness_schema.py",
         EXAMPLES / "anthropic_sdk_security_agent.py",
         EXAMPLES / "openai_sdk_security_agent.py",
         EXAMPLES / "langchain_mcp_security_agent.py",
@@ -415,11 +355,44 @@ def _check_mcp_client_bundle_schema() -> DriftCheck:
     schema = _load_json(SCHEMAS / "mcp_client_config_bundle.schema.json")
     profile = load_sdk_profile(DEFAULT_PROFILE)
     bundle = build_mcp_client_bundle(profile)
-    errors = _schema_errors(schema, bundle)
+    errors = schema_errors(schema, bundle)
     return DriftCheck(
         "mcp_client_bundle_schema",
         not errors,
         "default MCP client bundle matches schema" if not errors else errors,
+    )
+
+
+def _check_mcp_client_bundle_validator_cli() -> DriftCheck:
+    import subprocess
+
+    emit = subprocess.run(
+        [sys.executable, str(EXAMPLES / "emit_mcp_client_configs.py")],
+        capture_output=True,
+        text=True,
+        cwd=REPO_ROOT,
+        check=False,
+    )
+    if emit.returncode != 0:
+        return DriftCheck(
+            "mcp_client_bundle_validator_cli",
+            False,
+            emit.stderr.strip() or "emit_mcp_client_configs failed",
+        )
+    validate = subprocess.run(
+        [sys.executable, str(EXAMPLES / "validate_mcp_client_configs.py")],
+        input=emit.stdout,
+        capture_output=True,
+        text=True,
+        cwd=REPO_ROOT,
+        check=False,
+    )
+    return DriftCheck(
+        "mcp_client_bundle_validator_cli",
+        validate.returncode == 0,
+        "emit | validate round-trip passes"
+        if validate.returncode == 0
+        else validate.stderr.strip() or "validate_mcp_client_configs failed",
     )
 
 
@@ -434,6 +407,7 @@ def run_checks(*, update_diagram: bool = False) -> list[DriftCheck]:
         _check_docs_wired(),
         _check_ide_examples_wired(),
         _check_mcp_client_bundle_schema(),
+        _check_mcp_client_bundle_validator_cli(),
         _check_no_harness_secret_literals(),
     ]
 

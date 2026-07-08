@@ -563,6 +563,48 @@ class TestEmitMcpClientConfigs:
         assert _schema_errors(schema, payload) == []
 
 
+class TestValidateMcpClientConfigs:
+    EMIT = EXAMPLES / "emit_mcp_client_configs.py"
+    VALIDATE = EXAMPLES / "validate_mcp_client_configs.py"
+
+    def test_validates_emitted_bundle(self):
+        emit = subprocess.run(
+            [sys.executable, str(self.EMIT)],
+            capture_output=True,
+            text=True,
+            timeout=30,
+            check=False,
+            cwd=REPO_ROOT,
+        )
+        assert emit.returncode == 0, emit.stderr
+        validate = subprocess.run(
+            [sys.executable, str(self.VALIDATE)],
+            input=emit.stdout,
+            capture_output=True,
+            text=True,
+            timeout=30,
+            check=False,
+            cwd=REPO_ROOT,
+        )
+        assert validate.returncode == 0, validate.stderr
+        report = json.loads(validate.stdout)
+        assert report["status"] == "valid"
+        assert report["schema_version"] == "mcp-client-config-bundle-v1"
+
+    def test_rejects_invalid_bundle(self):
+        validate = subprocess.run(
+            [sys.executable, str(self.VALIDATE)],
+            input='{"schema_version":"wrong"}',
+            capture_output=True,
+            text=True,
+            timeout=30,
+            check=False,
+            cwd=REPO_ROOT,
+        )
+        assert validate.returncode == 1
+        assert "missing required property" in validate.stderr
+
+
 class TestLangGraphHarnessRuntime:
     """Importable wrapper coverage for embedding the LangGraph harness."""
 
@@ -2650,6 +2692,7 @@ class TestLangGraphHarnessDriftCheck:
         assert "preflight_policy_safe" in check_names
         assert "harness_docs_have_no_secret_literals" in check_names
         assert "mcp_client_bundle_schema" in check_names
+        assert "mcp_client_bundle_validator_cli" in check_names
 
 
 class TestOpenAICompatAdapter:
