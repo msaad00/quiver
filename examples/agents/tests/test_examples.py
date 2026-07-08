@@ -435,6 +435,42 @@ class TestIdeMcpBindings:
         assert cortex_args == [ide_mcp_bindings.WORKSPACE_SERVER_ARG]
 
 
+class TestEmitMcpClientConfigs:
+    SCRIPT = EXAMPLES / "emit_mcp_client_configs.py"
+
+    def test_emits_all_clients_offline(self):
+        result = subprocess.run(
+            [sys.executable, str(self.SCRIPT)],
+            capture_output=True,
+            text=True,
+            timeout=30,
+            check=False,
+            cwd=REPO_ROOT,
+            env={**os.environ},
+        )
+        assert result.returncode == 0, result.stderr
+        payload = json.loads(result.stdout)
+        assert payload["schema_version"] == "mcp-client-config-bundle-v1"
+        assert set(payload["clients"]) == {"cursor", "cortex", "windsurf", "codex", "zed"}
+        assert "mcp_config" in payload["clients"]["cursor"]
+        assert "mcp_toml" in payload["clients"]["codex"]
+        assert "context_servers" in payload["clients"]["zed"]
+
+    def test_single_client_filter(self):
+        result = subprocess.run(
+            [sys.executable, str(self.SCRIPT), "--client", "cursor"],
+            capture_output=True,
+            text=True,
+            timeout=30,
+            check=False,
+            cwd=REPO_ROOT,
+            env={**os.environ},
+        )
+        assert result.returncode == 0, result.stderr
+        payload = json.loads(result.stdout)
+        assert set(payload["clients"]) == {"cursor"}
+
+
 class TestLangGraphHarnessRuntime:
     """Importable wrapper coverage for embedding the LangGraph harness."""
 
