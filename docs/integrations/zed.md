@@ -62,6 +62,12 @@ the SARIF converter, and detector skills available but nothing destructive):
 - Offline reference: [`../../examples/agents/zed_mcp_security_agent.py`](../../examples/agents/zed_mcp_security_agent.py)
   emits a `context_servers` block from a harness profile.
 
+## See also
+
+- [`../AGENT_QUICKSTART.md`](../AGENT_QUICKSTART.md) — all runnable MCP agent examples
+- [`README.md`](README.md) — integration index
+- [`ide-agents.md`](ide-agents.md) — Zed `context_servers` shape and generic MCP patterns
+
 ## HITL + audit behavior
 
 Identical to every other MCP client in this repo. The assistant-side agentic

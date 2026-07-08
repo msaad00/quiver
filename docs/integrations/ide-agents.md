@@ -43,6 +43,37 @@ mcpServers:
       - /absolute/path/to/cloud-ai-security-skills/mcp-server/src/server.py
 ```
 
+## Shape 4 — Zed (`context_servers` map)
+
+Used by Zed assistant (`~/.config/zed/settings.json`):
+
+```json
+{
+  "context_servers": {
+    "cloud-ai-security-skills": {
+      "command": {
+        "path": "python3",
+        "args": ["/absolute/path/to/cloud-ai-security-skills/mcp-server/src/server.py"]
+      }
+    }
+  }
+}
+```
+
+## First-class IDE clients in this repo
+
+Runnable offline examples and per-client setup guides:
+
+| Client | Integration doc | Runnable example |
+|---|---|---|
+| Cursor | [`cursor.md`](cursor.md) | [`../../examples/agents/cursor_mcp_security_agent.py`](../../examples/agents/cursor_mcp_security_agent.py) |
+| Windsurf | [`windsurf.md`](windsurf.md) | [`../../examples/agents/windsurf_mcp_security_agent.py`](../../examples/agents/windsurf_mcp_security_agent.py) |
+| Cortex | [`cortex.md`](cortex.md) | [`../../examples/agents/cortex_mcp_security_agent.py`](../../examples/agents/cortex_mcp_security_agent.py) |
+| Codex | [`codex.md`](codex.md) | [`../../examples/agents/codex_mcp_security_agent.py`](../../examples/agents/codex_mcp_security_agent.py) |
+| Zed | [`zed.md`](zed.md) | [`../../examples/agents/zed_mcp_security_agent.py`](../../examples/agents/zed_mcp_security_agent.py) |
+
+See also [`../AGENT_QUICKSTART.md`](../AGENT_QUICKSTART.md) and [`README.md`](README.md).
+
 ## Tool-specific notes
 
 ### Continue (VS Code / JetBrains)

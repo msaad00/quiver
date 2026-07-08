@@ -51,6 +51,8 @@ TEXT_GLOBS = [
     "examples/agents/harness_profiles/*.json",
     "presets/*.json",
     "docs/AGENT_QUICKSTART.md",
+    "docs/HARNESS.md",
+    "docs/integrations/*.md",
 ]
 
 
