@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://cloud-ai-security-skills.local/examples/agents/schemas/mcp_client_config_bundle.schema.json",
+  "title": "MCP client config bundle",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "profile_id",
+    "clients"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "mcp-client-config-bundle-v1"
+    },
+    "profile_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "clients": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "integration",
+          "config_path",
+          "docs"
+        ],
+        "properties": {
+          "integration": {
+            "type": "string",
+            "minLength": 1
+          },
+          "config_path": {
+            "type": "string",
+            "minLength": 1
+          },
+          "docs": {
+            "type": "string",
+            "minLength": 1
+          },
+          "mcp_config": {
+            "type": "object"
+          },
+          "mcp_toml": {
+            "type": "string",
+            "minLength": 1
+          },
+          "context_servers": {
+            "type": "object"
+          },
+          "mcp_servers": {
+            "type": "object"
+          },
+          "path_note": {
+            "type": "string"
+          },
+          "anti_pattern": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

@@ -96,6 +96,14 @@ def emit_client_configs(profile: dict[str, Any], *, client: ClientName = "all") 
     return {name: _client_payload(name, profile) for name in selected}
 
 
+def build_mcp_client_bundle(profile: dict[str, Any], *, client: ClientName = "all") -> dict[str, Any]:
+    return {
+        "schema_version": "mcp-client-config-bundle-v1",
+        "profile_id": profile.get("profile_id"),
+        "clients": emit_client_configs(profile, client=client),
+    }
+
+
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
@@ -121,11 +129,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
 def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv)
     profile = load_sdk_profile(args.profile)
-    payload = {
-        "schema_version": "mcp-client-config-bundle-v1",
-        "profile_id": profile.get("profile_id"),
-        "clients": emit_client_configs(profile, client=args.client),
-    }
+    payload = build_mcp_client_bundle(profile, client=args.client)
     rendered = json.dumps(payload, indent=2)
     if args.output:
         args.output.parent.mkdir(parents=True, exist_ok=True)

@@ -482,6 +482,23 @@ class TestEmitMcpClientConfigs:
         payload = json.loads(result.stdout)
         assert set(payload["clients"]) == {"cursor"}
 
+    def test_emit_bundle_matches_schema(self):
+        schema = json.loads(
+            (SCHEMAS / "mcp_client_config_bundle.schema.json").read_text(encoding="utf-8")
+        )
+        result = subprocess.run(
+            [sys.executable, str(self.SCRIPT)],
+            capture_output=True,
+            text=True,
+            timeout=30,
+            check=False,
+            cwd=REPO_ROOT,
+            env={**os.environ},
+        )
+        assert result.returncode == 0, result.stderr
+        payload = json.loads(result.stdout)
+        assert _schema_errors(schema, payload) == []
+
 
 class TestLangGraphHarnessRuntime:
     """Importable wrapper coverage for embedding the LangGraph harness."""
@@ -2566,6 +2583,7 @@ class TestLangGraphHarnessDriftCheck:
         assert "pipeline_diagram_generated" in check_names
         assert "preflight_policy_safe" in check_names
         assert "harness_docs_have_no_secret_literals" in check_names
+        assert "mcp_client_bundle_schema" in check_names
 
 
 class TestOpenAICompatAdapter:
