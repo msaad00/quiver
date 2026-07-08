@@ -110,6 +110,10 @@ Runnable offline Codex example (harness profile + live `tools/list`):
 
 [`../examples/agents/codex_mcp_security_agent.py`](../examples/agents/codex_mcp_security_agent.py)
 
+Runnable offline Zed example (harness profile + live `tools/list`):
+
+[`../examples/agents/zed_mcp_security_agent.py`](../examples/agents/zed_mcp_security_agent.py)
+
 ---
 
 ## Anthropic Agent SDK

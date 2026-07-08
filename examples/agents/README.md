@@ -14,6 +14,7 @@ allowlist regardless of which SDK is driving the loop.
 | [`windsurf_mcp_security_agent.py`](windsurf_mcp_security_agent.py) | Windsurf | `~/.codeium/windsurf/mcp_config.json` + harness profile; absolute-path MCP stdio |
 | [`cortex_mcp_security_agent.py`](cortex_mcp_security_agent.py) | Cortex Code CLI | Project-scoped `.cortex/mcp.json` + harness profile; `${workspaceFolder}` MCP stdio |
 | [`codex_mcp_security_agent.py`](codex_mcp_security_agent.py) | Codex | `~/.codex/config.toml` fragment + harness profile; absolute-path MCP stdio |
+| [`zed_mcp_security_agent.py`](zed_mcp_security_agent.py) | Zed | `~/.config/zed/settings.json` `context_servers` block + harness profile; absolute-path MCP stdio |
 | [`langgraph_security_graph.py`](langgraph_security_graph.py) | LangGraph | SOC workflow DAG: ingest → normalize → enrich → correlate → confidence → MITRE/CVSS/EPSS/KEV map → HITL → dry-run remediation → audit/eval writeback |
 | [`langgraph_hitl_interrupt_resume.py`](langgraph_hitl_interrupt_resume.py) | LangGraph | Native `interrupt_before` + checkpointer at the analyst review gate; operator resumes with `approval_context` |
 

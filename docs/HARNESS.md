@@ -140,6 +140,7 @@ Reference examples:
 - [`examples/agents/windsurf_mcp_security_agent.py`](../examples/agents/windsurf_mcp_security_agent.py) — Windsurf `mcp_config.json` block
 - [`examples/agents/cortex_mcp_security_agent.py`](../examples/agents/cortex_mcp_security_agent.py) — Cortex `.cortex/mcp.json` block
 - [`examples/agents/codex_mcp_security_agent.py`](../examples/agents/codex_mcp_security_agent.py) — Codex `config.toml` fragment
+- [`examples/agents/zed_mcp_security_agent.py`](../examples/agents/zed_mcp_security_agent.py) — Zed `context_servers` block
 
 Generate a profile with a workflow preset baked in:
 

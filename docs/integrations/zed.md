@@ -59,6 +59,8 @@ the SARIF converter, and detector skills available but nothing destructive):
 - If the assistant can't see the tools, run `:language: zed -> Tasks: Show
   Context Server Logs` to inspect stderr from the wrapper.
 - Zed's `path` field does not expand `~` — use absolute paths.
+- Offline reference: [`../../examples/agents/zed_mcp_security_agent.py`](../../examples/agents/zed_mcp_security_agent.py)
+  emits a `context_servers` block from a harness profile.
 
 ## HITL + audit behavior
 

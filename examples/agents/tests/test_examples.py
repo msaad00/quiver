@@ -32,6 +32,7 @@ SCRIPTS = [
     EXAMPLES / "windsurf_mcp_security_agent.py",
     EXAMPLES / "cortex_mcp_security_agent.py",
     EXAMPLES / "codex_mcp_security_agent.py",
+    EXAMPLES / "zed_mcp_security_agent.py",
     EXAMPLES / "langgraph_security_graph.py",
     EXAMPLES / "run_langgraph_harness.py",
 ]
@@ -346,6 +347,28 @@ class TestHitlGateReachable:
         assert binding["config_path"] == "~/.codex/config.toml"
         assert "[mcp_servers.cloud-ai-security-skills]" in binding["mcp_toml"]
         assert "mcp-server/src/server.py" in binding["mcp_toml"]
+        assert payload["mcp_tools_discovered"]
+
+    def test_zed_mcp_binding_documents_context_servers(self):
+        result = subprocess.run(
+            [sys.executable, str(EXAMPLES / "zed_mcp_security_agent.py")],
+            capture_output=True,
+            text=True,
+            timeout=60,
+            check=False,
+            cwd=REPO_ROOT,
+            env={**os.environ},
+        )
+        assert result.returncode == 0, result.stderr
+        payload = json.loads(result.stdout)
+        binding = payload["zed_binding"]
+        assert binding["integration"] == "zed_context_servers_json"
+        assert binding["config_path"] == "~/.config/zed/settings.json"
+        servers = binding["context_servers"]["context_servers"]
+        assert "cloud-ai-security-skills" in servers
+        assert servers["cloud-ai-security-skills"]["command"]["args"][0].endswith(
+            "mcp-server/src/server.py"
+        )
         assert payload["mcp_tools_discovered"]
 
     def test_langgraph_reaches_remediation_with_approval(self):

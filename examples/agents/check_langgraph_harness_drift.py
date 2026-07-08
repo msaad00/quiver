@@ -348,6 +348,7 @@ def _harness_secret_scan_paths() -> list[Path]:
         EXAMPLES / "windsurf_mcp_security_agent.py",
         EXAMPLES / "cortex_mcp_security_agent.py",
         EXAMPLES / "codex_mcp_security_agent.py",
+        EXAMPLES / "zed_mcp_security_agent.py",
         EXAMPLES / "harness_adapters.py",
         EXAMPLES / "harness_mcp_transport.py",
         *sorted(PROFILES.glob("*.json")),
