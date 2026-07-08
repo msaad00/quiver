@@ -31,7 +31,7 @@ import sys
 from pathlib import Path
 from typing import Any, Literal
 
-from emit_mcp_client_configs import emit_client_configs
+from emit_mcp_client_configs import build_mcp_client_bundle
 from langgraph_security_graph import (
     ALLOWED_SKILLS_READ_ONLY_LIST,
     ALLOWED_SKILLS_REMEDIATION,
@@ -402,11 +402,7 @@ def main(argv: list[str] | None = None) -> int:
     )
     mcp_configs_path = None
     if args.emit_mcp_configs:
-        bundle = {
-            "schema_version": "mcp-client-config-bundle-v1",
-            "profile_id": profile["profile_id"],
-            "clients": emit_client_configs(profile),
-        }
+        bundle = build_mcp_client_bundle(profile)
         args.emit_mcp_configs.parent.mkdir(parents=True, exist_ok=True)
         args.emit_mcp_configs.write_text(
             json.dumps(bundle, indent=2, sort_keys=True) + "\n",

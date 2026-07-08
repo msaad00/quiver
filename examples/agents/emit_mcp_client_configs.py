@@ -20,16 +20,30 @@ from pathlib import Path
 from typing import Any, Literal
 
 from ide_mcp_bindings import (
+    build_anthropic_mcp_config,
+    build_claude_desktop_mcp_config,
     build_codex_mcp_toml,
     build_cortex_mcp_config,
     build_cursor_mcp_config,
     build_langchain_mcp_servers,
+    build_openai_agents_mcp_server,
     build_windsurf_mcp_config,
     build_zed_context_servers,
 )
 from sdk_agent_common import DEFAULT_PROFILE, load_sdk_profile
 
-ClientName = Literal["cursor", "cortex", "windsurf", "codex", "zed", "langchain", "all"]
+ClientName = Literal[
+    "cursor",
+    "cortex",
+    "windsurf",
+    "codex",
+    "zed",
+    "langchain",
+    "anthropic",
+    "openai",
+    "claude-desktop",
+    "all",
+]
 CLIENT_NAMES: tuple[ClientName, ...] = (
     "cursor",
     "cortex",
@@ -37,6 +51,9 @@ CLIENT_NAMES: tuple[ClientName, ...] = (
     "codex",
     "zed",
     "langchain",
+    "anthropic",
+    "openai",
+    "claude-desktop",
     "all",
 )
 
@@ -88,12 +105,47 @@ def _client_payload(client: str, profile: dict[str, Any]) -> dict[str, Any]:
             "mcp_servers": build_langchain_mcp_servers(profile),
             "anti_pattern": "do_not_wrap_skill_clis_as_langchain_tools",
         }
+    if client == "anthropic":
+        return {
+            "integration": "anthropic_mcp_json",
+            "config_path": "project .mcp.json or claude_desktop_config.json",
+            "docs": "docs/AGENT_QUICKSTART.md",
+            "mcp_config": build_anthropic_mcp_config(profile),
+            "anti_pattern": "do_not_wrap_skill_clis_as_anthropic_tools",
+        }
+    if client == "openai":
+        return {
+            "integration": "openai_agents_mcp_server",
+            "config_path": "openai.agents.McpServer(...)",
+            "docs": "docs/AGENT_QUICKSTART.md",
+            "mcp_server": build_openai_agents_mcp_server(profile),
+            "anti_pattern": "do_not_wrap_skill_clis_as_openai_tools",
+        }
+    if client == "claude-desktop":
+        return {
+            "integration": "claude_desktop_mcp_json",
+            "config_path": "~/Library/Application Support/Claude/claude_desktop_config.json",
+            "docs": "docs/integrations/claude-desktop.md",
+            "mcp_config": build_claude_desktop_mcp_config(profile),
+            "path_note": "Replace server args with an absolute clone path before paste",
+            "anti_pattern": "do_not_wrap_skill_clis_as_claude_desktop_tools",
+        }
     raise ValueError(f"unsupported client: {client}")
 
 
 def emit_client_configs(profile: dict[str, Any], *, client: ClientName = "all") -> dict[str, Any]:
     selected = CLIENT_NAMES[:-1] if client == "all" else (client,)
     return {name: _client_payload(name, profile) for name in selected}
+
+
+def build_mcp_client_bundle(
+    profile: dict[str, Any], *, client: ClientName = "all"
+) -> dict[str, Any]:
+    return {
+        "schema_version": "mcp-client-config-bundle-v1",
+        "profile_id": profile.get("profile_id"),
+        "clients": emit_client_configs(profile, client=client),
+    }
 
 
 def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
@@ -108,7 +160,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         "--client",
         choices=CLIENT_NAMES,
         default="all",
-        help="Emit one client block or all six MCP clients",
+        help="Emit one client block or all nine MCP clients",
     )
     parser.add_argument(
         "--output",
@@ -121,11 +173,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
 def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv)
     profile = load_sdk_profile(args.profile)
-    payload = {
-        "schema_version": "mcp-client-config-bundle-v1",
-        "profile_id": profile.get("profile_id"),
-        "clients": emit_client_configs(profile, client=args.client),
-    }
+    payload = build_mcp_client_bundle(profile, client=args.client)
     rendered = json.dumps(payload, indent=2)
     if args.output:
         args.output.parent.mkdir(parents=True, exist_ok=True)

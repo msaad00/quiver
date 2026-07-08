@@ -49,6 +49,27 @@ def build_windsurf_mcp_config(profile: dict[str, Any]) -> dict[str, Any]:
     return build_mcp_servers_json(profile, server_arg=str(MCP_SERVER_PATH))
 
 
+def build_claude_desktop_mcp_config(profile: dict[str, Any]) -> dict[str, Any]:
+    """``claude_desktop_config.json`` — absolute path required."""
+    return build_mcp_servers_json(profile, server_arg=str(MCP_SERVER_PATH))
+
+
+def build_anthropic_mcp_config(profile: dict[str, Any]) -> dict[str, Any]:
+    """Anthropic Agent SDK / project MCP — same ``mcpServers`` JSON shape as Claude Desktop."""
+    return build_claude_desktop_mcp_config(profile)
+
+
+def build_openai_agents_mcp_server(profile: dict[str, Any]) -> dict[str, Any]:
+    """Block passed to ``openai.agents.McpServer(...)`` in a live Agents-SDK loop."""
+    command = mcp_stdio_command()
+    return {
+        "name": "cloud-ai-security-skills",
+        "command": command[0],
+        "args": command[1:],
+        "env": mcp_policy_env(profile),
+    }
+
+
 def build_zed_context_servers(profile: dict[str, Any]) -> dict[str, Any]:
     """``~/.config/zed/settings.json`` ``context_servers`` block."""
     return {
