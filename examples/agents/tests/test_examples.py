@@ -389,6 +389,52 @@ class TestHitlGateReachable:
         assert '"dry_run"' in result.stdout
 
 
+class TestIdeMcpBindings:
+    PROFILE = EXAMPLES / "harness_profiles" / "sdk-cspm-agent.json"
+
+    def _bindings_module(self):
+        if str(EXAMPLES) not in sys.path:
+            sys.path.insert(0, str(EXAMPLES))
+        import ide_mcp_bindings
+
+        return ide_mcp_bindings
+
+    def test_all_clients_share_mcp_policy_env(self):
+        ide_mcp_bindings = self._bindings_module()
+
+        profile = json.loads(self.PROFILE.read_text(encoding="utf-8"))
+        expected = ide_mcp_bindings.mcp_policy_env(profile)
+
+        cursor_env = ide_mcp_bindings.build_cursor_mcp_config(profile)["mcpServers"][
+            "cloud-ai-security-skills"
+        ]["env"]
+        windsurf_env = ide_mcp_bindings.build_windsurf_mcp_config(profile)["mcpServers"][
+            "cloud-ai-security-skills"
+        ]["env"]
+        zed_env = ide_mcp_bindings.build_zed_context_servers(profile)["context_servers"][
+            "cloud-ai-security-skills"
+        ]["command"]["env"]
+
+        assert cursor_env == expected
+        assert windsurf_env == expected
+        assert zed_env == expected
+        assert expected["CLOUD_SECURITY_MCP_REQUIRE_CALLER_ALLOWED_SKILLS"] == "true"
+        assert "cspm-aws-cis-benchmark" in expected["CLOUD_SECURITY_MCP_ALLOWED_SKILLS"]
+
+    def test_workspace_clients_use_workspace_folder_arg(self):
+        ide_mcp_bindings = self._bindings_module()
+
+        profile = json.loads(self.PROFILE.read_text(encoding="utf-8"))
+        cursor_args = ide_mcp_bindings.build_cursor_mcp_config(profile)["mcpServers"][
+            "cloud-ai-security-skills"
+        ]["args"]
+        cortex_args = ide_mcp_bindings.build_cortex_mcp_config(profile)["mcpServers"][
+            "cloud-ai-security-skills"
+        ]["args"]
+        assert cursor_args == [ide_mcp_bindings.WORKSPACE_SERVER_ARG]
+        assert cortex_args == [ide_mcp_bindings.WORKSPACE_SERVER_ARG]
+
+
 class TestLangGraphHarnessRuntime:
     """Importable wrapper coverage for embedding the LangGraph harness."""
 

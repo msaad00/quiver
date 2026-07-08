@@ -14,32 +14,13 @@ from __future__ import annotations
 import json
 from typing import Any
 
-from harness_mcp_transport import safe_mcp_env
+from ide_mcp_bindings import build_cortex_mcp_config
 from sdk_agent_common import (
     dry_run_remediation,
     human_approval_gate,
     load_sdk_profile,
-    mcp_stdio_command,
-    read_allowlist,
     run_cspm_triage,
 )
-
-
-def build_cortex_mcp_config(profile: dict[str, Any]) -> dict[str, Any]:
-    """Block for ``.cortex/mcp.json`` — portable with ``${workspaceFolder}``."""
-    allowlist = read_allowlist(profile)
-    return {
-        "mcpServers": {
-            "cloud-ai-security-skills": {
-                "command": mcp_stdio_command()[0],
-                "args": ["${workspaceFolder}/mcp-server/src/server.py"],
-                "env": {
-                    **safe_mcp_env(allowed_skills=allowlist),
-                    "CLOUD_SECURITY_MCP_REQUIRE_CALLER_ALLOWED_SKILLS": "true",
-                },
-            }
-        }
-    }
 
 
 def cortex_binding_notes(profile: dict[str, Any]) -> dict[str, Any]:

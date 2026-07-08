@@ -14,37 +14,13 @@ from __future__ import annotations
 import json
 from typing import Any
 
-from harness_mcp_transport import safe_mcp_env
+from ide_mcp_bindings import build_zed_context_servers
 from sdk_agent_common import (
-    REPO_ROOT,
     dry_run_remediation,
     human_approval_gate,
     load_sdk_profile,
-    mcp_stdio_command,
-    read_allowlist,
     run_cspm_triage,
 )
-
-MCP_SERVER_PATH = REPO_ROOT / "mcp-server" / "src" / "server.py"
-
-
-def build_zed_context_servers(profile: dict[str, Any]) -> dict[str, Any]:
-    """Block for ``~/.config/zed/settings.json`` — absolute path required."""
-    allowlist = read_allowlist(profile)
-    return {
-        "context_servers": {
-            "cloud-ai-security-skills": {
-                "command": {
-                    "path": mcp_stdio_command()[0],
-                    "args": [str(MCP_SERVER_PATH)],
-                    "env": {
-                        **safe_mcp_env(allowed_skills=allowlist),
-                        "CLOUD_SECURITY_MCP_REQUIRE_CALLER_ALLOWED_SKILLS": "true",
-                    },
-                },
-            }
-        }
-    }
 
 
 def zed_binding_notes(profile: dict[str, Any]) -> dict[str, Any]:
