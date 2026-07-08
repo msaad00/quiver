@@ -96,7 +96,14 @@ Project config details: [`integrations/windsurf.md`](integrations/windsurf.md).
 
 ## Codex · Cortex · Zed
 
-Same shape as the Claude Desktop block above, in each client's MCP config:
+Each client uses a different on-disk config shape — match the integration doc,
+not the Claude Desktop JSON block:
+
+| Client | Config | Shape |
+|---|---|---|
+| Codex | `~/.codex/config.toml` | TOML `[mcp_servers.<name>]` |
+| Cortex | `.cortex/mcp.json` | JSON `mcpServers` + `${workspaceFolder}` |
+| Zed | `~/.config/zed/settings.json` | JSON `context_servers` nested `command` |
 
 - Codex: [`integrations/codex.md`](integrations/codex.md)
 - Cortex: [`integrations/cortex.md`](integrations/cortex.md)

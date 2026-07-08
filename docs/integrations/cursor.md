@@ -70,6 +70,12 @@ remediation):
 - Offline reference: [`../../examples/agents/cursor_mcp_security_agent.py`](../../examples/agents/cursor_mcp_security_agent.py)
   emits a portable `.cursor/mcp.json` block from a harness profile.
 
+## See also
+
+- [`../AGENT_QUICKSTART.md`](../AGENT_QUICKSTART.md) — all runnable MCP agent examples
+- [`README.md`](README.md) — integration index
+- [`ide-agents.md`](ide-agents.md) — generic MCP config shapes
+
 ## HITL + audit behavior
 
 Cursor is just another MCP client — the wrapper's audit trail and human-

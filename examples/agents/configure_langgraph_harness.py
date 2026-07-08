@@ -77,8 +77,8 @@ ROLE_DEFAULTS: dict[HarnessRole, dict[str, Any]] = {
     },
     "sdk-cspm": {
         "description": (
-            "Anthropic, OpenAI, LangChain, and Cursor SDK examples: "
-            "read-only CSPM + detect triage via MCP stdio."
+            "Anthropic, OpenAI, LangChain, and IDE MCP examples (Cursor, Windsurf, "
+            "Cortex, Codex, Zed): read-only CSPM + detect triage via MCP stdio."
         ),
         "roles": "security_engineer",
         "include_remediation": False,

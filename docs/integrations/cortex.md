@@ -80,6 +80,12 @@ DynamoDB / IAM.
 - Offline reference: [`../../examples/agents/cortex_mcp_security_agent.py`](../../examples/agents/cortex_mcp_security_agent.py)
   emits a portable `.cortex/mcp.json` block from a harness profile.
 
+## See also
+
+- [`../AGENT_QUICKSTART.md`](../AGENT_QUICKSTART.md) — all runnable MCP agent examples
+- [`README.md`](README.md) — integration index
+- [`ide-agents.md`](ide-agents.md) — generic MCP config shapes
+
 ## HITL + audit behavior
 
 Remediation gates apply. The audit record lands in the same log line format
