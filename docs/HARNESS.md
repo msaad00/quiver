@@ -139,6 +139,7 @@ Reference examples:
 - [`examples/agents/cursor_mcp_security_agent.py`](../examples/agents/cursor_mcp_security_agent.py) — project `.cursor/mcp.json` block
 - [`examples/agents/windsurf_mcp_security_agent.py`](../examples/agents/windsurf_mcp_security_agent.py) — Windsurf `mcp_config.json` block
 - [`examples/agents/cortex_mcp_security_agent.py`](../examples/agents/cortex_mcp_security_agent.py) — Cortex `.cortex/mcp.json` block
+- [`examples/agents/codex_mcp_security_agent.py`](../examples/agents/codex_mcp_security_agent.py) — Codex `config.toml` fragment
 
 Generate a profile with a workflow preset baked in:
 
