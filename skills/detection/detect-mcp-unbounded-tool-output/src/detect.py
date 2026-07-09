@@ -26,6 +26,8 @@ if str(REPO_ROOT) not in sys.path:
 from skills._shared.identity import VENDOR_NAME  # noqa: E402
 
 SKILL_NAME = "detect-mcp-unbounded-tool-output"
+# Framework depth markers (coverage_summary.py)
+# control_id="MCP10"
 OCSF_VERSION = "1.8.0"
 CANONICAL_VERSION = "2026-04"
 REPO_NAME = "cloud-ai-security-skills"

@@ -32,6 +32,9 @@ if str(REPO_ROOT) not in sys.path:
 from skills._shared.evaluation_ocsf import findings_to_native, findings_to_ocsf  # noqa: E402
 
 SKILL_NAME = "model-serving-security"
+# Framework depth markers (coverage_summary.py)
+# control_id="LLM01"
+# control_id="LLM07"
 BENCHMARK_NAME = "Model Serving Security Benchmark"
 PROVIDER_NAME = "Multi"
 OUTPUT_FORMATS = ("native", "ocsf")

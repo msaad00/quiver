@@ -52,22 +52,97 @@ FRAMEWORK_TOTAL_CONTROLS: dict[str, int] = {
     # claim per-control mapping. Skill-tag count is the proxy.
 }
 
-# Control-ID extractor for evaluation skills that ship a `checks.py`
-# carrying `control_id="x.y"` literals. Returns deduplicated control
-# IDs grouped by framework, derived from the skill's framework tags.
+# Control-ID extractor for skills that ship explicit framework depth
+# markers in checks.py / detect.py / handler.py / ingest.py.
 _CONTROL_ID_PATTERN = re.compile(r'control_id\s*=\s*"([^"]+)"')
+_CONTROL_ID_COMMENT_PATTERN = re.compile(r'#\s*control_id="([^"]+)"')
+_OWASP_LLM_FINDING_PATTERN = re.compile(r'OWASP_FINDING_TYPE\s*=\s*"OWASP-LLM-Top-10-(LLM\d+)"')
+_OWASP_MCP_FINDING_PATTERN = re.compile(r'OWASP_FINDING_TYPE\s*=\s*"OWASP-MCP-Top-10-(MCP\d+)"')
+_OWASP_LLM_PROSE_PATTERN = re.compile(r"OWASP LLM0?(\d{1,2})\b")
+_OWASP_MCP_PROSE_PATTERN = re.compile(r"OWASP MCP0?(\d{1,2})\b")
+_LLM_TOP10_PROSE_PATTERN = re.compile(r"LLM Top 10 LLM(\d{2})")
+_NIST_SUBCATEGORY_PATTERN = re.compile(r'\(\s*"((?:GOVERN|MAP|MEASURE|MANAGE)-\d+\.\d+)"')
+_CIS_NUMERIC_CONTROL_PATTERN = re.compile(r'control_id\s*=\s*"(\d+\.\d+)"')
+
+_SKILL_ENTRYPOINTS = (
+    "checks.py",
+    "detect.py",
+    "handler.py",
+    "ingest.py",
+)
 
 
-def _controls_in_skill(skill_path: str) -> set[str]:
-    """Parse `control_id="..."` literals from a skill's `src/checks.py`."""
-    checks = REPO_ROOT / skill_path / "src" / "checks.py"
-    if not checks.is_file():
-        return set()
-    try:
-        text = checks.read_text(encoding="utf-8")
-    except OSError:
-        return set()
-    return set(_CONTROL_ID_PATTERN.findall(text))
+def _normalize_llm_control(raw: str) -> str:
+    digits = re.sub(r"\D", "", raw)
+    return f"LLM{int(digits):02d}" if digits else raw
+
+
+def _normalize_mcp_control(raw: str) -> str:
+    digits = re.sub(r"\D", "", raw)
+    return f"MCP{int(digits):02d}" if digits else raw
+
+
+def _read_skill_sources(skill_path: str) -> str:
+    base = REPO_ROOT / skill_path / "src"
+    chunks: list[str] = []
+    for name in _SKILL_ENTRYPOINTS:
+        path = base / name
+        if not path.is_file():
+            continue
+        try:
+            chunks.append(path.read_text(encoding="utf-8"))
+        except OSError:
+            continue
+    return "\n".join(chunks)
+
+
+def _controls_in_skill(skill_path: str) -> dict[str, set[str]]:
+    """Parse framework-scoped control IDs from a skill's entrypoint sources.
+
+    Returns a mapping of framework registry keys to the control IDs claimed
+    by that skill. CIS-style numeric controls are returned under the
+    ``_cis_numeric`` sentinel for later binding to the skill's ``cis-*`` tags.
+    """
+    text = _read_skill_sources(skill_path)
+    if not text:
+        return {}
+
+    by_fw: dict[str, set[str]] = defaultdict(set)
+
+    for control_id in _CONTROL_ID_PATTERN.findall(text):
+        if re.fullmatch(r"\d+\.\d+", control_id):
+            by_fw["_cis_numeric"].add(control_id)
+        elif control_id.startswith("LLM"):
+            by_fw["owasp-llm-top-10"].add(_normalize_llm_control(control_id))
+        elif control_id.startswith("MCP"):
+            by_fw["owasp-mcp-top-10"].add(_normalize_mcp_control(control_id))
+        elif re.fullmatch(r"(GOVERN|MAP|MEASURE|MANAGE)-\d+\.\d+", control_id):
+            by_fw["nist-ai-rmf"].add(control_id)
+        else:
+            by_fw["_unscoped"].add(control_id)
+
+    for control_id in _CONTROL_ID_COMMENT_PATTERN.findall(text):
+        if control_id.startswith("LLM"):
+            by_fw["owasp-llm-top-10"].add(_normalize_llm_control(control_id))
+        elif control_id.startswith("MCP"):
+            by_fw["owasp-mcp-top-10"].add(_normalize_mcp_control(control_id))
+        elif re.fullmatch(r"(GOVERN|MAP|MEASURE|MANAGE)-\d+\.\d+", control_id):
+            by_fw["nist-ai-rmf"].add(control_id)
+
+    for raw in _OWASP_LLM_FINDING_PATTERN.findall(text):
+        by_fw["owasp-llm-top-10"].add(_normalize_llm_control(raw))
+    for raw in _OWASP_MCP_FINDING_PATTERN.findall(text):
+        by_fw["owasp-mcp-top-10"].add(_normalize_mcp_control(raw))
+    for match in _OWASP_LLM_PROSE_PATTERN.findall(text):
+        by_fw["owasp-llm-top-10"].add(_normalize_llm_control(match))
+    for match in _LLM_TOP10_PROSE_PATTERN.findall(text):
+        by_fw["owasp-llm-top-10"].add(_normalize_llm_control(match))
+    for match in _OWASP_MCP_PROSE_PATTERN.findall(text):
+        by_fw["owasp-mcp-top-10"].add(_normalize_mcp_control(match))
+    for control_id in _NIST_SUBCATEGORY_PATTERN.findall(text):
+        by_fw["nist-ai-rmf"].add(control_id)
+
+    return dict(by_fw)
 
 
 def _bucket_controls_by_framework(
@@ -82,12 +157,18 @@ def _bucket_controls_by_framework(
     'is the control covered', not 'how many skills cover it')."""
     by_fw: dict[str, set[str]] = defaultdict(set)
     for skill in skills:
-        controls = _controls_in_skill(skill["path"])
-        if not controls:
+        controls_by_fw = _controls_in_skill(skill["path"])
+        if not controls_by_fw:
             continue
-        for fw in skill.get("frameworks", []):
+        cis_numeric = controls_by_fw.pop("_cis_numeric", set())
+        controls_by_fw.pop("_unscoped", None)
+        for fw, controls in controls_by_fw.items():
             if fw in FRAMEWORK_TOTAL_CONTROLS:
                 by_fw[fw].update(controls)
+        if cis_numeric:
+            for fw in skill.get("frameworks", []):
+                if fw.startswith("cis-") and fw in FRAMEWORK_TOTAL_CONTROLS:
+                    by_fw[fw].update(cis_numeric)
     return dict(by_fw)
 
 
@@ -246,10 +327,12 @@ def render(skills: list[dict]) -> str:
     lines.append("## Per-framework control coverage")
     lines.append("")
     lines.append(
-        "**Depth, not breadth.** When a skill ships a `checks.py` with "
-        "explicit `control_id` literals (the CSPM benchmarks today), this "
-        "table counts the unique controls covered against the framework's "
-        "published total. Same control covered by two skills counts once."
+        "**Depth, not breadth.** Skills declare per-control coverage via "
+        "explicit `control_id` literals (CSPM benchmarks), OWASP LLM/MCP depth "
+        "markers in detection skills, and NIST AI RMF subcategory IDs in "
+        "evaluation manifests. This table counts unique controls covered "
+        "against each framework's published total. Same control covered by "
+        "two skills counts once."
     )
     lines.append("")
     controls_by_fw = _bucket_controls_by_framework(skills)

@@ -20,6 +20,8 @@ from skills._shared.logging import get_logger  # noqa: E402
 from skills._shared.runtime_telemetry import emit_stderr_event  # noqa: E402
 
 SKILL_NAME = "detect-gcp-model-artifact-download"
+# Framework depth markers (coverage_summary.py)
+# control_id="LLM06"
 CANONICAL_VERSION = "2026-04"
 OCSF_VERSION = "1.8.0"
 REPO_NAME = "cloud-ai-security-skills"

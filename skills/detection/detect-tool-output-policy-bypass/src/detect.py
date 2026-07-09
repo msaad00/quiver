@@ -18,6 +18,8 @@ if str(REPO_ROOT) not in sys.path:
 from skills._shared.runtime_telemetry import emit_stderr_event  # noqa: E402
 
 SKILL_NAME = "detect-tool-output-policy-bypass"
+# Framework depth markers (coverage_summary.py)
+# control_id="MCP04"
 OCSF_VERSION = "1.8.0"
 CANONICAL_VERSION = "2026-04"
 REPO_NAME = "cloud-ai-security-skills"

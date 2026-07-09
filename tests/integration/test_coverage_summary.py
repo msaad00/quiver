@@ -96,9 +96,17 @@ def test_per_control_coverage_extracts_real_cspm_ids():
     aws_controls = COV._controls_in_skill("skills/evaluation/cspm-aws-cis-benchmark")
     gcp_controls = COV._controls_in_skill("skills/evaluation/cspm-gcp-cis-benchmark")
     azure_controls = COV._controls_in_skill("skills/evaluation/cspm-azure-cis-benchmark")
-    assert len(aws_controls) >= 15
-    assert len(gcp_controls) >= 5
-    assert len(azure_controls) >= 5
+    assert len(aws_controls.get("_cis_numeric", set())) >= 15
+    assert len(gcp_controls.get("_cis_numeric", set())) >= 5
+    assert len(azure_controls.get("_cis_numeric", set())) >= 5
+
+
+def test_owasp_and_nist_depth_markers_are_discovered():
+    skills = COV._load()
+    by_fw = COV._bucket_controls_by_framework(skills)
+    assert len(by_fw.get("owasp-llm-top-10", set())) >= 5
+    assert len(by_fw.get("owasp-mcp-top-10", set())) >= 3
+    assert len(by_fw.get("nist-ai-rmf", set())) >= 40
 
 
 def test_per_control_coverage_table_appears_for_real_repo():
@@ -106,7 +114,8 @@ def test_per_control_coverage_table_appears_for_real_repo():
     rendered = COV.render(skills)
     assert "## Per-framework control coverage" in rendered
     aws = COV._controls_in_skill("skills/evaluation/cspm-aws-cis-benchmark")
-    assert f"| CIS AWS v3 | {len(aws)} | 58 |" in rendered
+    aws_count = len(aws.get("_cis_numeric", set()))
+    assert f"| CIS AWS v3 | {aws_count} | 58 |" in rendered
 
 
 def test_per_control_coverage_omits_frameworks_not_in_input(tmp_path, monkeypatch):

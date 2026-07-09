@@ -18,6 +18,9 @@ from datetime import datetime, timezone
 from typing import Any, Iterable
 
 SKILL_NAME = "detect-prompt-injection-mcp-proxy"
+# Framework depth markers (coverage_summary.py)
+# control_id="MCP03"
+# control_id="LLM01"
 OCSF_VERSION = "1.8.0"
 CANONICAL_VERSION = "2026-04"
 REPO_NAME = "cloud-ai-security-skills"

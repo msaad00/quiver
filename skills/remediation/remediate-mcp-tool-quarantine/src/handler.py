@@ -58,6 +58,8 @@ from skills._shared.remediation_verifier import (  # noqa: E402
 from skills._shared.runtime_telemetry import emit_stderr_event  # noqa: E402
 
 SKILL_NAME = "remediate-mcp-tool-quarantine"
+# Framework depth markers (coverage_summary.py)
+# control_id="MCP02"
 CANONICAL_VERSION = "2026-04"
 ACCEPTED_PRODUCERS = frozenset(
     {
