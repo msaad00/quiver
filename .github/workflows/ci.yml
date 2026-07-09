@@ -112,7 +112,7 @@ jobs:
       - run: ruff check examples/agents --config pyproject.toml
       - run: ruff format --check examples/agents --config pyproject.toml
       - name: Run dependency-light agent examples
-        run: pytest examples/agents/tests/test_examples.py -q
+        run: pytest examples/agents/tests -q
       - name: Run LangGraph harness eval gate
         run: python examples/agents/eval_langgraph_harness.py --check
       - name: Check LangGraph harness drift
@@ -120,7 +120,7 @@ jobs:
       - name: Install optional LangGraph runtime
         run: python -m pip install "langgraph>=1.2,<2"
       - name: Run examples with real LangGraph runtime available
-        run: pytest examples/agents/tests/test_examples.py -q
+        run: pytest examples/agents/tests -q
 
   safe-skill-bar:
     runs-on: ubuntu-latest

@@ -70,5 +70,5 @@ ruff:
 
 agent-evals:
 	ruff check examples/agents --config pyproject.toml
-	python -m pytest examples/agents/tests/test_examples.py -q
+	python -m pytest examples/agents/tests -q
 	python examples/agents/eval_langgraph_harness.py --check
