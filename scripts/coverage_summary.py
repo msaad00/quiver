@@ -56,18 +56,12 @@ FRAMEWORK_TOTAL_CONTROLS: dict[str, int] = {
 # markers in checks.py / detect.py / handler.py / ingest.py.
 _CONTROL_ID_PATTERN = re.compile(r'control_id\s*=\s*"([^"]+)"')
 _CONTROL_ID_COMMENT_PATTERN = re.compile(r'#\s*control_id="([^"]+)"')
-_OWASP_LLM_FINDING_PATTERN = re.compile(
-    r'OWASP_FINDING_TYPE\s*=\s*"OWASP-LLM-Top-10-(LLM\d+)"'
-)
-_OWASP_MCP_FINDING_PATTERN = re.compile(
-    r'OWASP_FINDING_TYPE\s*=\s*"OWASP-MCP-Top-10-(MCP\d+)"'
-)
+_OWASP_LLM_FINDING_PATTERN = re.compile(r'OWASP_FINDING_TYPE\s*=\s*"OWASP-LLM-Top-10-(LLM\d+)"')
+_OWASP_MCP_FINDING_PATTERN = re.compile(r'OWASP_FINDING_TYPE\s*=\s*"OWASP-MCP-Top-10-(MCP\d+)"')
 _OWASP_LLM_PROSE_PATTERN = re.compile(r"OWASP LLM0?(\d{1,2})\b")
 _OWASP_MCP_PROSE_PATTERN = re.compile(r"OWASP MCP0?(\d{1,2})\b")
 _LLM_TOP10_PROSE_PATTERN = re.compile(r"LLM Top 10 LLM(\d{2})")
-_NIST_SUBCATEGORY_PATTERN = re.compile(
-    r'\(\s*"((?:GOVERN|MAP|MEASURE|MANAGE)-\d+\.\d+)"'
-)
+_NIST_SUBCATEGORY_PATTERN = re.compile(r'\(\s*"((?:GOVERN|MAP|MEASURE|MANAGE)-\d+\.\d+)"')
 _CIS_NUMERIC_CONTROL_PATTERN = re.compile(r'control_id\s*=\s*"(\d+\.\d+)"')
 
 _SKILL_ENTRYPOINTS = (

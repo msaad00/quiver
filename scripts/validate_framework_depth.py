@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import importlib.util
 import sys
+import types
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -26,7 +27,7 @@ MIN_DEPTH: dict[str, int] = {
 }
 
 
-def _load_coverage_summary():
+def _load_coverage_summary() -> types.ModuleType:
     spec = importlib.util.spec_from_file_location("coverage_summary_depth", COVERAGE_SUMMARY)
     if not spec or not spec.loader:
         raise RuntimeError(f"unable to import {COVERAGE_SUMMARY}")
