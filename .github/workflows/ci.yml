@@ -360,17 +360,6 @@ jobs:
       - uses: hashicorp/setup-terraform@v4
         with:
           terraform_version: "1.12.0"
-      - name: Install tflint
-        run: |
-          set -euo pipefail
-          mkdir -p "${HOME}/.local/bin"
-          curl --fail --show-error --location --retry 5 --retry-all-errors \
-            "https://github.com/terraform-linters/tflint/releases/download/v0.58.0/tflint_linux_amd64.zip" \
-            --output /tmp/tflint.zip
-          unzip -o /tmp/tflint.zip -d "${HOME}/.local/bin"
-          chmod +x "${HOME}/.local/bin/tflint"
-          echo "${HOME}/.local/bin" >> "${GITHUB_PATH}"
-          tflint --version
       - name: Install Azure Bicep CLI
         run: |
           set -euo pipefail
@@ -408,14 +397,51 @@ jobs:
           done
       - name: terraform validate — gcp runner
         run: cd runners/gcp-gcs-pubsub-detect && terraform init -backend=false && terraform validate
-      - name: tflint — iam-departures infra
-        run: cd skills/remediation/iam-departures-aws/infra/terraform && tflint
-      - name: tflint — gcp runner
-        run: cd runners/gcp-gcs-pubsub-detect && tflint
       - name: bicep build — azure runner
         run: bicep build runners/azure-blob-eventgrid-detect/template.bicep --outfile /tmp/azure-runner.json
       - name: shellcheck — scripts
         run: shellcheck scripts/*.sh
+      - name: Cache tflint
+        uses: actions/cache@v4
+        with:
+          path: ~/.local/bin/tflint
+          key: tflint-v0.58.0-${{ runner.os }}-amd64
+      - name: Install tflint
+        id: install-tflint
+        continue-on-error: true
+        run: |
+          set -euo pipefail
+          mkdir -p "${HOME}/.local/bin"
+          if [ -x "${HOME}/.local/bin/tflint" ]; then
+            echo "Using cached tflint binary"
+          else
+            for attempt in 1 2 3 4 5 6 7 8 9 10; do
+              if curl --fail --show-error --location --retry 3 --retry-all-errors \
+                "https://github.com/terraform-linters/tflint/releases/download/v0.58.0/tflint_linux_amd64.zip" \
+                --output /tmp/tflint.zip; then
+                break
+              fi
+              echo "tflint download attempt ${attempt} failed; sleeping 10s"
+              sleep 10
+              if [ "${attempt}" -eq 10 ]; then
+                exit 1
+              fi
+            done
+            unzip -o /tmp/tflint.zip -d "${HOME}/.local/bin"
+            chmod +x "${HOME}/.local/bin/tflint"
+          fi
+          echo "${HOME}/.local/bin" >> "${GITHUB_PATH}"
+          tflint --version
+      - name: tflint — iam-departures infra
+        if: steps.install-tflint.outcome == 'success'
+        run: cd skills/remediation/iam-departures-aws/infra/terraform && tflint
+      - name: tflint — gcp runner
+        if: steps.install-tflint.outcome == 'success'
+        run: cd runners/gcp-gcs-pubsub-detect && tflint
+      - name: Note skipped tflint
+        if: steps.install-tflint.outcome != 'success'
+        run: |
+          echo "::warning::tflint install failed (often a transient GitHub release 504). Terraform/cfn-lint/shellcheck still ran."
 
   # ── agent-bom scans (code + skills + fs + IaC with SARIF upload) ─
   agent-bom:
