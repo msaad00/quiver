@@ -64,6 +64,7 @@ jobs:
       - run: python scripts/validate_presets.py
       - run: python scripts/validate_dependency_consistency.py
       - run: python scripts/validate_framework_coverage.py
+      - run: python scripts/validate_remediation_infra.py
       - run: python scripts/validate_ocsf_metadata.py
       - run: python scripts/validate_skill_count_consistency.py
       - run: python scripts/validate_doc_counts.py

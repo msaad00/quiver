@@ -1,0 +1,15 @@
+{
+  "Comment": "Function app managed identity \u2014 remediate-azure-nsg-revoke (reference stub)",
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "NetworkWrite",
+      "Effect": "Allow",
+      "Action": [
+        "Microsoft.Network/networkSecurityGroups/securityRules/delete"
+      ],
+      "Resource": "arn:aws:iam::000000000000:resource/azure-placeholder",
+      "_comment": "Replace with Azure RBAC role assignment for the Function managed identity."
+    }
+  ]
+}

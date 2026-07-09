@@ -1,0 +1,15 @@
+{
+  "Comment": "Service account IAM \u2014 remediate-entra-credential-revoke (reference stub)",
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "ComputeFirewallActions",
+      "Effect": "Allow",
+      "Action": [
+        "Microsoft Graph: DELETE /users/{id}/authentication/passwordMethods"
+      ],
+      "Resource": "*",
+      "_comment": "Bind to a dedicated GCP service account; scope to target project."
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "Comment": "Service account IAM \u2014 remediate-gcp-firewall-revoke (reference stub)",
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "ComputeFirewallActions",
+      "Effect": "Allow",
+      "Action": [
+        "compute.firewalls.update",
+        "compute.firewalls.get"
+      ],
+      "Resource": "*",
+      "_comment": "Bind to a dedicated GCP service account; scope to target project."
+    }
+  ]
+}

@@ -1,0 +1,33 @@
+{
+  "Comment": "Worker execution role \u2014 remediate-mcp-tool-quarantine (reference stub)",
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "WorkerCloudActions",
+      "Effect": "Allow",
+      "Action": [
+        "logs:CreateLogGroup",
+        "logs:CreateLogStream",
+        "logs:PutLogEvents"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Sid": "AuditDynamoDB",
+      "Effect": "Allow",
+      "Action": [
+        "dynamodb:PutItem",
+        "dynamodb:GetItem"
+      ],
+      "Resource": "arn:aws:dynamodb:*:*:table/${AUDIT_DYNAMODB_TABLE}"
+    },
+    {
+      "Sid": "AuditS3Evidence",
+      "Effect": "Allow",
+      "Action": [
+        "s3:PutObject"
+      ],
+      "Resource": "arn:aws:s3:::${AUDIT_S3_BUCKET}/*"
+    }
+  ]
+}

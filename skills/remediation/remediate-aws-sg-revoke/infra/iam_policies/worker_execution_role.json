@@ -1,0 +1,38 @@
+{
+  "Comment": "Worker execution role — remediate-aws-sg-revoke (reference stub)",
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "EC2RevokeIngress",
+      "Effect": "Allow",
+      "Action": [
+        "ec2:DescribeSecurityGroups",
+        "ec2:RevokeSecurityGroupIngress"
+      ],
+      "Resource": "*",
+      "_comment": "EC2 SG APIs have no resource-level ARN boundary for these actions."
+    },
+    {
+      "Sid": "AuditDynamoDB",
+      "Effect": "Allow",
+      "Action": ["dynamodb:PutItem", "dynamodb:GetItem"],
+      "Resource": "arn:aws:dynamodb:*:*:table/${AUDIT_DYNAMODB_TABLE}"
+    },
+    {
+      "Sid": "AuditS3Evidence",
+      "Effect": "Allow",
+      "Action": ["s3:PutObject"],
+      "Resource": "arn:aws:s3:::${AUDIT_S3_BUCKET}/*"
+    },
+    {
+      "Sid": "CloudWatchLogs",
+      "Effect": "Allow",
+      "Action": [
+        "logs:CreateLogGroup",
+        "logs:CreateLogStream",
+        "logs:PutLogEvents"
+      ],
+      "Resource": "arn:aws:logs:*:*:log-group:/aws/lambda/remediate-aws-sg-revoke*"
+    }
+  ]
+}

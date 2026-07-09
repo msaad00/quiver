@@ -50,6 +50,7 @@ validate:
 	python scripts/validate_presets.py
 	python scripts/validate_dependency_consistency.py
 	python scripts/validate_framework_coverage.py
+	python scripts/validate_remediation_infra.py
 	python scripts/validate_ocsf_metadata.py
 	python scripts/validate_skill_count_consistency.py
 	python scripts/validate_doc_counts.py
