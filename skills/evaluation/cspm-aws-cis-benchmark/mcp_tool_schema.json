@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "cspm-aws-cis-benchmark MCP parameters",
+  "description": "Typed CLI parameters for the CIS AWS Foundations benchmark skill.",
+  "type": "object",
+  "properties": {
+    "region": {
+      "type": "string",
+      "description": "AWS region to assess.",
+      "default": "us-east-1",
+      "x-cli-flag": "--region"
+    },
+    "section": {
+      "type": "string",
+      "enum": ["iam", "storage", "logging", "networking"],
+      "description": "Run a single CIS section instead of the full benchmark.",
+      "x-cli-flag": "--section"
+    },
+    "json_output": {
+      "type": "boolean",
+      "description": "Emit structured JSON findings instead of console output.",
+      "default": false,
+      "x-cli-flag": "--output",
+      "x-cli-style": "flag",
+      "x-cli-value": "json"
+    }
+  },
+  "examples": [
+    {
+      "region": "us-east-1",
+      "json_output": true,
+      "output_format": "native"
+    },
+    {
+      "section": "iam",
+      "region": "eu-west-1"
+    }
+  ]
+}

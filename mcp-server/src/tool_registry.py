@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import re
 import sys
 from dataclasses import dataclass
@@ -23,6 +24,11 @@ ENTRYPOINT_CANDIDATES = (
 
 MIN_TIMEOUT_SECONDS = 1
 MAX_TIMEOUT_SECONDS = 900
+
+MCP_TOOL_SCHEMA_FILENAME = "mcp_tool_schema.json"
+WRAPPER_SCHEMA_PROPERTY_KEYS = frozenset(
+    {"input", "args", "output_format", "_caller_context", "_approval_context"}
+)
 
 
 @dataclass(frozen=True)
@@ -245,6 +251,112 @@ def supported_skills(root: Path | None = None) -> list[SkillSpec]:
     return [skill for skill in discover_skills(root) if skill.supported]
 
 
+def skill_mcp_schema_path(skill_dir: Path) -> Path:
+    return skill_dir / MCP_TOOL_SCHEMA_FILENAME
+
+
+def load_skill_mcp_schema(skill_dir: Path) -> dict[str, object] | None:
+    path = skill_mcp_schema_path(skill_dir)
+    if not path.exists():
+        return None
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    if not isinstance(payload, dict):
+        raise ValueError(f"{path}: mcp_tool_schema.json must be a JSON object")
+    return payload
+
+
+def _merge_schema_properties(
+    base_properties: dict[str, object],
+    overlay_properties: dict[str, object],
+) -> dict[str, object]:
+    merged = dict(base_properties)
+    for key, spec in overlay_properties.items():
+        if key in WRAPPER_SCHEMA_PROPERTY_KEYS:
+            continue
+        merged[key] = spec
+    return merged
+
+
+def merge_tool_input_schema(
+    base: dict[str, object],
+    overlay: dict[str, object] | None,
+) -> dict[str, object]:
+    if not overlay:
+        return base
+    merged: dict[str, object] = dict(base)
+    overlay_props = overlay.get("properties")
+    if isinstance(overlay_props, dict) and overlay_props:
+        base_props = merged.get("properties")
+        if not isinstance(base_props, dict):
+            base_props = {}
+        merged["properties"] = _merge_schema_properties(base_props, overlay_props)
+    if "examples" in overlay:
+        merged["examples"] = overlay["examples"]
+    if "description" in overlay and overlay["description"]:
+        merged["description"] = overlay["description"]
+    return merged
+
+
+def _cli_args_for_property(value: object, prop_schema: dict[str, object]) -> list[str]:
+    cli_flag = prop_schema.get("x-cli-flag")
+    cli_style = prop_schema.get("x-cli-style", "flag")
+    prop_type = prop_schema.get("type")
+
+    if cli_style == "positional":
+        if value is None:
+            return []
+        return [str(value)]
+
+    if prop_type == "boolean":
+        if value is True:
+            if cli_flag:
+                cli_value = prop_schema.get("x-cli-value")
+                if cli_value is not None:
+                    return [str(cli_flag), str(cli_value)]
+                return [str(cli_flag)]
+        return []
+
+    if cli_flag and value is not None:
+        return [str(cli_flag), str(value)]
+    return []
+
+
+def expand_skill_parameters(
+    skill: SkillSpec,
+    request_args: dict[str, object],
+) -> tuple[dict[str, object], list[str]]:
+    """Translate typed per-skill schema properties into CLI args.
+
+    Skills may ship ``mcp_tool_schema.json`` with ``x-cli-flag`` /
+    ``x-cli-style`` hints. Wrapper-reserved keys are left untouched.
+    """
+    overlay = load_skill_mcp_schema(skill.skill_dir)
+    if not overlay:
+        return request_args, []
+
+    overlay_props = overlay.get("properties")
+    if not isinstance(overlay_props, dict):
+        return request_args, []
+
+    remaining = dict(request_args)
+    extra_args: list[str] = []
+    positional_args: list[str] = []
+
+    for key, prop_schema in overlay_props.items():
+        if key in WRAPPER_SCHEMA_PROPERTY_KEYS or key not in remaining:
+            continue
+        if not isinstance(prop_schema, dict):
+            continue
+        value = remaining.pop(key)
+        cli_args = _cli_args_for_property(value, prop_schema)
+        if prop_schema.get("x-cli-style") == "positional":
+            positional_args.extend(cli_args)
+        else:
+            extra_args.extend(cli_args)
+
+    return remaining, positional_args + extra_args
+
+
 def tool_input_schema(skill: SkillSpec) -> dict[str, object]:
     description = "Inline stdin payload for the skill. Use this for JSON or JSONL filters."
     if skill.entrypoint and skill.entrypoint.name == "checks.py":
@@ -305,11 +417,12 @@ def tool_input_schema(skill: SkillSpec) -> dict[str, object]:
             "enum": list(skill.output_formats),
             "description": "Optional output rendering mode supported by this skill.",
         }
-    return {
+    base_schema = {
         "type": "object",
         "properties": properties,
         "additionalProperties": False,
     }
+    return merge_tool_input_schema(base_schema, load_skill_mcp_schema(skill.skill_dir))
 
 
 def tool_definition(skill: SkillSpec) -> dict[str, object]:

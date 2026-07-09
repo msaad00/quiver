@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "convert-ocsf-to-sarif MCP parameters",
+  "description": "Typed parameters for OCSF Detection Finding to SARIF 2.1.0 conversion.",
+  "type": "object",
+  "properties": {
+    "input_path": {
+      "type": "string",
+      "description": "Path to OCSF JSONL input. Omit to read stdin via the input field.",
+      "minLength": 1,
+      "x-cli-style": "positional"
+    },
+    "output_path": {
+      "type": "string",
+      "description": "Write SARIF output to this path instead of stdout.",
+      "minLength": 1,
+      "x-cli-flag": "--output"
+    }
+  },
+  "examples": [
+    {
+      "input": "{\"class_uid\":2004,\"finding\":{\"title\":\"test\"}}\n"
+    },
+    {
+      "input_path": "/tmp/findings.ocsf.jsonl",
+      "output_path": "/tmp/findings.sarif.json"
+    }
+  ]
+}

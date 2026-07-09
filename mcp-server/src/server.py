@@ -24,6 +24,7 @@ from resource_limits import make_preexec as _make_preexec  # noqa: E402
 from tool_registry import (  # noqa: E402
     SkillSpec,
     build_command,
+    expand_skill_parameters,
     repo_root,
     supports_worker_mode,
     tool_definition,
@@ -452,7 +453,9 @@ def _call_tool(
         raise KeyError(f"unknown tool `{name}`")
 
     skill = tools[name]
+    request_args, param_args = expand_skill_parameters(skill, dict(request_args))
     args = _validate_args(request_args.get("args"))
+    args = [*param_args, *args]
     stdin_text = _validate_input(request_args.get("input"))
     output_format = _validate_output_format(request_args.get("output_format"))
     approval_context = _validate_context(request_args.get("_approval_context"), "_approval_context")

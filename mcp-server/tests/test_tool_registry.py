@@ -14,6 +14,8 @@ SPEC.loader.exec_module(MODULE)
 
 build_command = MODULE.build_command
 discover_skills = MODULE.discover_skills
+expand_skill_parameters = MODULE.expand_skill_parameters
+load_skill_mcp_schema = MODULE.load_skill_mcp_schema
 supported_skills = MODULE.supported_skills
 tool_definition = MODULE.tool_definition
 tool_map = MODULE.tool_map
@@ -328,3 +330,60 @@ class TestMinApproversParsing:
             assert "/fake/skill" in str(exc)
         else:
             raise AssertionError("expected ValueError")
+
+
+class TestPerSkillMcpSchemas:
+    PILOT_SKILLS = (
+        "cspm-aws-cis-benchmark",
+        "detect-lateral-movement",
+        "convert-ocsf-to-sarif",
+    )
+
+    def test_pilot_skills_ship_schema_files(self):
+        for name in self.PILOT_SKILLS:
+            skill = tool_map(REPO_ROOT)[name]
+            assert load_skill_mcp_schema(skill.skill_dir) is not None
+
+    def test_pilot_tool_schemas_expose_typed_properties(self):
+        aws = tool_definition(tool_map(REPO_ROOT)["cspm-aws-cis-benchmark"])
+        props = aws["inputSchema"]["properties"]
+        assert "region" in props
+        assert "section" in props
+        assert props["section"]["enum"] == ["iam", "storage", "logging", "networking"]
+
+        detect = tool_definition(tool_map(REPO_ROOT)["detect-lateral-movement"])
+        assert "input_path" in detect["inputSchema"]["properties"]
+        assert "output_path" in detect["inputSchema"]["properties"]
+
+        convert = tool_definition(tool_map(REPO_ROOT)["convert-ocsf-to-sarif"])
+        assert "input_path" in convert["inputSchema"]["properties"]
+
+    def test_expand_skill_parameters_translate_flags(self):
+        skill = tool_map(REPO_ROOT)["cspm-aws-cis-benchmark"]
+        remaining, cli_args = expand_skill_parameters(
+            skill,
+            {
+                "region": "eu-west-1",
+                "section": "iam",
+                "json_output": True,
+                "args": ["--output-format", "native"],
+            },
+        )
+        assert cli_args == [
+            "--region",
+            "eu-west-1",
+            "--section",
+            "iam",
+            "--output",
+            "json",
+        ]
+        assert remaining["args"] == ["--output-format", "native"]
+
+    def test_expand_skill_parameters_translate_positional(self):
+        skill = tool_map(REPO_ROOT)["detect-lateral-movement"]
+        remaining, cli_args = expand_skill_parameters(
+            skill,
+            {"input_path": "/tmp/events.jsonl", "output_path": "/tmp/out.jsonl"},
+        )
+        assert cli_args == ["/tmp/events.jsonl", "--output", "/tmp/out.jsonl"]
+        assert remaining == {}

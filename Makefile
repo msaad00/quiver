@@ -54,6 +54,7 @@ validate:
 	python scripts/validate_skill_count_consistency.py
 	python scripts/validate_doc_counts.py
 	python scripts/validate_doc_parity.py
+	python scripts/validate_mcp_tool_schemas.py
 	python scripts/validate_deny_list_parity.py
 	python scripts/validate_captured_provenance.py
 	python scripts/add_skill_trust_frontmatter.py --check
