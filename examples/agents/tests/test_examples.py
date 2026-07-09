@@ -34,6 +34,7 @@ SCRIPTS = [
     EXAMPLES / "codex_mcp_security_agent.py",
     EXAMPLES / "zed_mcp_security_agent.py",
     EXAMPLES / "claude_desktop_mcp_security_agent.py",
+    EXAMPLES / "continue_mcp_security_agent.py",
     EXAMPLES / "langgraph_security_graph.py",
     EXAMPLES / "run_langgraph_harness.py",
 ]
@@ -390,6 +391,27 @@ class TestHitlGateReachable:
         assert "cloud-ai-security-skills" in binding["mcp_config"]["mcpServers"]
         assert payload["mcp_tools_discovered"]
 
+    def test_continue_mcp_binding_documents_yaml_config(self):
+        result = subprocess.run(
+            [sys.executable, str(EXAMPLES / "continue_mcp_security_agent.py")],
+            capture_output=True,
+            text=True,
+            timeout=60,
+            check=False,
+            cwd=REPO_ROOT,
+            env={**os.environ},
+        )
+        assert result.returncode == 0, result.stderr
+        payload = json.loads(result.stdout)
+        binding = payload["continue_binding"]
+        assert binding["integration"] == "continue_mcp_yaml"
+        assert "config.yaml" in binding["config_path"]
+        assert "mcpServers:" in binding["mcp_yaml"]
+        assert binding["continue_mcp_servers"]["mcpServers"][0]["name"] == (
+            "cloud-ai-security-skills"
+        )
+        assert payload["mcp_tools_discovered"]
+
     def test_anthropic_binding_documents_mcp_config(self):
         result = subprocess.run(
             [sys.executable, str(EXAMPLES / "anthropic_sdk_security_agent.py")],
@@ -474,6 +496,9 @@ class TestIdeMcpBindings:
             "cloud-ai-security-skills"
         ]["env"]
         openai_env = ide_mcp_bindings.build_openai_agents_mcp_server(profile)["env"]
+        continue_env = ide_mcp_bindings.build_continue_mcp_servers(profile)["mcpServers"][0][
+            "env"
+        ]
 
         assert cursor_env == expected
         assert windsurf_env == expected
@@ -481,6 +506,7 @@ class TestIdeMcpBindings:
         assert langchain_env == expected
         assert anthropic_env == expected
         assert openai_env == expected
+        assert continue_env == expected
         assert expected["CLOUD_SECURITY_MCP_REQUIRE_CALLER_ALLOWED_SKILLS"] == "true"
         assert "cspm-aws-cis-benchmark" in expected["CLOUD_SECURITY_MCP_ALLOWED_SKILLS"]
 
@@ -524,12 +550,14 @@ class TestEmitMcpClientConfigs:
             "anthropic",
             "openai",
             "claude-desktop",
+            "continue",
         }
         assert "mcp_config" in payload["clients"]["cursor"]
         assert "mcp_toml" in payload["clients"]["codex"]
         assert "context_servers" in payload["clients"]["zed"]
         assert "mcp_servers" in payload["clients"]["langchain"]
         assert "mcp_server" in payload["clients"]["openai"]
+        assert "mcp_yaml" in payload["clients"]["continue"]
 
     def test_single_client_filter(self):
         result = subprocess.run(
@@ -2336,6 +2364,7 @@ class TestLangGraphHarnessSetup:
             "anthropic",
             "openai",
             "claude-desktop",
+            "continue",
         }
 
     def test_setup_generator_rejects_missing_preset(self, tmp_path: Path):

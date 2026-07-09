@@ -23,6 +23,8 @@ from ide_mcp_bindings import (
     build_anthropic_mcp_config,
     build_claude_desktop_mcp_config,
     build_codex_mcp_toml,
+    build_continue_mcp_servers,
+    build_continue_mcp_yaml,
     build_cortex_mcp_config,
     build_cursor_mcp_config,
     build_langchain_mcp_servers,
@@ -42,6 +44,7 @@ ClientName = Literal[
     "anthropic",
     "openai",
     "claude-desktop",
+    "continue",
     "all",
 ]
 CLIENT_NAMES: tuple[ClientName, ...] = (
@@ -54,6 +57,7 @@ CLIENT_NAMES: tuple[ClientName, ...] = (
     "anthropic",
     "openai",
     "claude-desktop",
+    "continue",
     "all",
 )
 
@@ -130,6 +134,16 @@ def _client_payload(client: str, profile: dict[str, Any]) -> dict[str, Any]:
             "path_note": "Replace server args with an absolute clone path before paste",
             "anti_pattern": "do_not_wrap_skill_clis_as_claude_desktop_tools",
         }
+    if client == "continue":
+        return {
+            "integration": "continue_mcp_yaml",
+            "config_path": "~/.continue/config.yaml",
+            "docs": "docs/integrations/ide-agents.md",
+            "continue_mcp_servers": build_continue_mcp_servers(profile),
+            "mcp_yaml": build_continue_mcp_yaml(profile),
+            "path_note": "Replace server args with an absolute clone path before paste",
+            "anti_pattern": "do_not_wrap_skill_clis_as_continue_tools",
+        }
     raise ValueError(f"unsupported client: {client}")
 
 
@@ -160,7 +174,7 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         "--client",
         choices=CLIENT_NAMES,
         default="all",
-        help="Emit one client block or all nine MCP clients",
+        help="Emit one client block or all ten MCP clients",
     )
     parser.add_argument(
         "--output",

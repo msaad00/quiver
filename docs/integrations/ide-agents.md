@@ -73,6 +73,7 @@ Runnable offline examples and per-client setup guides:
 | Zed | [`zed.md`](zed.md) | [`../../examples/agents/zed_mcp_security_agent.py`](../../examples/agents/zed_mcp_security_agent.py) |
 | LangChain | [`../HARNESS.md`](../HARNESS.md) | [`../../examples/agents/langchain_mcp_security_agent.py`](../../examples/agents/langchain_mcp_security_agent.py) |
 | Claude Desktop | [`claude-desktop.md`](claude-desktop.md) | [`../../examples/agents/claude_desktop_mcp_security_agent.py`](../../examples/agents/claude_desktop_mcp_security_agent.py) |
+| Continue | [`ide-agents.md`](ide-agents.md) | [`../../examples/agents/continue_mcp_security_agent.py`](../../examples/agents/continue_mcp_security_agent.py) |
 
 See also [`../AGENT_QUICKSTART.md`](../AGENT_QUICKSTART.md) and [`README.md`](README.md).
 

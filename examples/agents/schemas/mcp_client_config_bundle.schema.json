@@ -58,6 +58,13 @@
           "mcp_server": {
             "type": "object"
           },
+          "continue_mcp_servers": {
+            "type": "object"
+          },
+          "mcp_yaml": {
+            "type": "string",
+            "minLength": 1
+          },
           "path_note": {
             "type": "string"
           },
