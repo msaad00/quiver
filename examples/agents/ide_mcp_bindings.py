@@ -7,6 +7,7 @@ and LangChain MCP adapters stay consistent.
 
 from __future__ import annotations
 
+import re
 from typing import Any
 
 from harness_mcp_transport import safe_mcp_env
@@ -114,3 +115,46 @@ def build_langchain_mcp_servers(profile: dict[str, Any]) -> dict[str, dict[str, 
             "env": mcp_policy_env(profile),
         }
     }
+
+
+def _yaml_scalar(value: str) -> str:
+    if not value:
+        return '""'
+    if re.search(r'[:#\n"\'\\]', value):
+        escaped = value.replace("\\", "\\\\").replace('"', '\\"')
+        return f'"{escaped}"'
+    return value
+
+
+def build_continue_mcp_servers(profile: dict[str, Any]) -> dict[str, Any]:
+    """``~/.continue/config.yaml`` ``mcpServers`` list block — absolute path required."""
+    command = mcp_stdio_command()
+    return {
+        "mcpServers": [
+            {
+                "name": "cloud-ai-security-skills",
+                "command": command[0],
+                "args": [str(MCP_SERVER_PATH)],
+                "env": mcp_policy_env(profile),
+            }
+        ]
+    }
+
+
+def build_continue_mcp_yaml(profile: dict[str, Any]) -> str:
+    """YAML fragment for Continue ``config.yaml``."""
+    server = build_continue_mcp_servers(profile)["mcpServers"][0]
+    lines = [
+        "mcpServers:",
+        f"  - name: {server['name']}",
+        f"    command: {_yaml_scalar(server['command'])}",
+        "    args:",
+    ]
+    for arg in server["args"]:
+        lines.append(f"      - {_yaml_scalar(str(arg))}")
+    env = server.get("env") or {}
+    if env:
+        lines.append("    env:")
+        for key, value in sorted(env.items()):
+            lines.append(f"      {key}: {_yaml_scalar(value)}")
+    return "\n".join(lines) + "\n"

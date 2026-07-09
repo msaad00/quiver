@@ -16,6 +16,7 @@ allowlist regardless of which SDK is driving the loop.
 | [`codex_mcp_security_agent.py`](codex_mcp_security_agent.py) | Codex | `~/.codex/config.toml` fragment + harness profile; absolute-path MCP stdio |
 | [`zed_mcp_security_agent.py`](zed_mcp_security_agent.py) | Zed | `~/.config/zed/settings.json` `context_servers` block + harness profile; absolute-path MCP stdio |
 | [`claude_desktop_mcp_security_agent.py`](claude_desktop_mcp_security_agent.py) | Claude Desktop | `claude_desktop_config.json` + harness profile; absolute-path MCP stdio |
+| [`continue_mcp_security_agent.py`](continue_mcp_security_agent.py) | Continue | `~/.continue/config.yaml` YAML `mcpServers` list + harness profile; absolute-path MCP stdio |
 | [`emit_mcp_client_configs.py`](emit_mcp_client_configs.py) | IDE + SDK | Offline bundle of IDE, LangChain, Anthropic, and OpenAI MCP blocks from one harness profile |
 | [`langgraph_security_graph.py`](langgraph_security_graph.py) | LangGraph | SOC workflow DAG: ingest → normalize → enrich → correlate → confidence → MITRE/CVSS/EPSS/KEV map → HITL → dry-run remediation → audit/eval writeback |
 | [`langgraph_hitl_interrupt_resume.py`](langgraph_hitl_interrupt_resume.py) | LangGraph | Native `interrupt_before` + checkpointer at the analyst review gate; operator resumes with `approval_context` |

@@ -49,6 +49,7 @@ REQUIRED_IDE_EXAMPLE_TOKENS = [
     "codex_mcp_security_agent.py",
     "zed_mcp_security_agent.py",
     "claude_desktop_mcp_security_agent.py",
+    "continue_mcp_security_agent.py",
 ]
 
 REQUIRED_DOC_TOKENS = [
@@ -378,6 +379,7 @@ def _harness_secret_scan_paths() -> list[Path]:
         EXAMPLES / "codex_mcp_security_agent.py",
         EXAMPLES / "zed_mcp_security_agent.py",
         EXAMPLES / "claude_desktop_mcp_security_agent.py",
+        EXAMPLES / "continue_mcp_security_agent.py",
         EXAMPLES / "harness_adapters.py",
         EXAMPLES / "harness_mcp_transport.py",
         *sorted(PROFILES.glob("*.json")),

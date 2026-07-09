@@ -142,6 +142,7 @@ Reference examples:
 - [`examples/agents/codex_mcp_security_agent.py`](../examples/agents/codex_mcp_security_agent.py) — Codex `config.toml` fragment
 - [`examples/agents/zed_mcp_security_agent.py`](../examples/agents/zed_mcp_security_agent.py) — Zed `context_servers` block
 - [`examples/agents/claude_desktop_mcp_security_agent.py`](../examples/agents/claude_desktop_mcp_security_agent.py) — Claude Desktop `claude_desktop_config.json` block
+- [`examples/agents/continue_mcp_security_agent.py`](../examples/agents/continue_mcp_security_agent.py) — Continue `config.yaml` `mcpServers` block
 - [`examples/agents/emit_mcp_client_configs.py`](../examples/agents/emit_mcp_client_configs.py) — offline bundle of IDE + LangChain MCP blocks from one harness profile
 
 Generate a profile with a workflow preset baked in:
