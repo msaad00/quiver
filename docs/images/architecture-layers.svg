@@ -1,85 +1,106 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="360" viewBox="0 0 1200 360" role="img" aria-labelledby="layers-title layers-desc">
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="520" viewBox="0 0 1200 520" role="img" aria-labelledby="layers-title layers-desc">
   <title id="layers-title">Cloud AI Security Skills — architecture layers</title>
-  <desc id="layers-desc">Seven skill layers in a left-to-right flow. L1 Ingest with 22 ingesters plus 4 source adapters. L2 Discover with 5 inventory skills. L3 Detect with 71 deterministic findings. L4 Evaluate with 12 benchmark families. L5 Remediate with 12 HITL write paths. L6 View with 2 OCSF-to-render converters. L7 Output with 3 append-only sinks.</desc>
+  <desc id="layers-desc">Seven skill layers grouped by pipeline phase. L1 Ingest with 22 ingesters plus 4 source adapters. L2 Discover with 5 inventory skills. L3 Detect with 71 deterministic findings. L4 Evaluate with 12 benchmark families. L5 Remediate with 12 HITL write paths. L6 View with 2 OCSF-to-render converters. L7 Output with 3 append-only sinks.</desc>
 
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
       <stop offset="0%" stop-color="#060b17"/>
       <stop offset="100%" stop-color="#0a1325"/>
     </linearGradient>
-    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
       <path d="M0 0L10 5L0 10z" fill="#7dd3fc"/>
     </marker>
   </defs>
 
-  <rect width="1200" height="360" fill="url(#bg)"/>
+  <rect width="1200" height="520" fill="url(#bg)"/>
 
   <g font-family="Inter, Segoe UI, ui-sans-serif, Arial, sans-serif">
-    <text x="48" y="52" font-size="28" font-weight="800" fill="#f8fafc">Seven skill layers, one flow</text>
-    <text x="48" y="80" font-size="14" fill="#94a3b8">Same bundles on CLI · CI · MCP · runners · library</text>
+    <text x="48" y="52" font-size="30" font-weight="800" fill="#f8fafc">Seven skill layers, one flow</text>
+    <text x="48" y="82" font-size="15" fill="#94a3b8">Same bundles on CLI · CI · MCP · webhook · library · runners</text>
 
-    <!-- phase pills -->
-    <g transform="translate(48,100)">
-      <rect x="0" y="0" width="88" height="26" rx="13" fill="#0f172a" stroke="#475569"/>
-      <text x="44" y="18" text-anchor="middle" font-size="10" font-weight="700" fill="#cbd5e1" letter-spacing="1.2">SIGNALS</text>
-      <rect x="168" y="0" width="88" height="26" rx="13" fill="#102345" stroke="#60a5fa"/>
-      <text x="212" y="18" text-anchor="middle" font-size="10" font-weight="700" fill="#bfdbfe" letter-spacing="1.2">INTAKE</text>
-      <rect x="336" y="0" width="88" height="26" rx="13" fill="#0a3b35" stroke="#34d399"/>
-      <text x="380" y="18" text-anchor="middle" font-size="10" font-weight="700" fill="#bbf7d0" letter-spacing="1.2">ANALYZE</text>
-      <rect x="504" y="0" width="72" height="26" rx="13" fill="#4a2d09" stroke="#fbbf24"/>
-      <text x="540" y="18" text-anchor="middle" font-size="10" font-weight="700" fill="#fde68a" letter-spacing="1.2">ACT</text>
-      <rect x="656" y="0" width="88" height="26" rx="13" fill="#083b39" stroke="#2dd4bf"/>
-      <text x="700" y="18" text-anchor="middle" font-size="10" font-weight="700" fill="#99f6e4" letter-spacing="1.2">PERSIST</text>
+    <!-- phase columns -->
+    <g transform="translate(48,108)">
+      <!-- column headers -->
+      <rect x="0" y="0" width="180" height="30" rx="15" fill="#0f172a" stroke="#475569"/>
+      <text x="90" y="20" text-anchor="middle" font-size="11" font-weight="700" fill="#cbd5e1" letter-spacing="1.2">SIGNALS</text>
+
+      <rect x="204" y="0" width="180" height="30" rx="15" fill="#102345" stroke="#60a5fa"/>
+      <text x="294" y="20" text-anchor="middle" font-size="11" font-weight="700" fill="#bfdbfe" letter-spacing="1.2">INTAKE</text>
+
+      <rect x="408" y="0" width="180" height="30" rx="15" fill="#0a3b35" stroke="#34d399"/>
+      <text x="498" y="20" text-anchor="middle" font-size="11" font-weight="700" fill="#bbf7d0" letter-spacing="1.2">ANALYZE</text>
+
+      <rect x="612" y="0" width="180" height="30" rx="15" fill="#4a2d09" stroke="#fbbf24"/>
+      <text x="702" y="20" text-anchor="middle" font-size="11" font-weight="700" fill="#fde68a" letter-spacing="1.2">ACT</text>
+
+      <rect x="816" y="0" width="180" height="30" rx="15" fill="#083b39" stroke="#2dd4bf"/>
+      <text x="906" y="20" text-anchor="middle" font-size="11" font-weight="700" fill="#99f6e4" letter-spacing="1.2">PERSIST</text>
+
+      <!-- layer cards -->
+      <g transform="translate(0,48)">
+        <rect x="0" y="0" width="180" height="200" rx="18" fill="#0f172a" stroke="#334155"/>
+        <text x="90" y="40" text-anchor="middle" font-size="14" font-weight="700" fill="#94a3b8">Sources</text>
+        <text x="90" y="96" text-anchor="middle" font-size="34" font-weight="800" fill="#f8fafc">logs</text>
+        <text x="90" y="128" text-anchor="middle" font-size="13" fill="#64748b">APIs · IdP · SaaS</text>
+        <text x="90" y="168" text-anchor="middle" font-size="12" fill="#475569">raw exports &amp; lake replay</text>
+      </g>
+
+      <g transform="translate(204,48)">
+        <rect x="0" y="0" width="180" height="94" rx="16" fill="#112244" stroke="#60a5fa"/>
+        <text x="90" y="32" text-anchor="middle" font-size="15" font-weight="800" fill="#dbeafe">Ingest</text>
+        <text x="90" y="68" text-anchor="middle" font-size="30" font-weight="900" fill="#fff">22+4</text>
+
+        <rect x="0" y="106" width="180" height="94" rx="16" fill="#112244" stroke="#60a5fa"/>
+        <text x="90" y="138" text-anchor="middle" font-size="15" font-weight="800" fill="#dbeafe">Discover</text>
+        <text x="90" y="174" text-anchor="middle" font-size="30" font-weight="900" fill="#fff">5</text>
+      </g>
+
+      <g transform="translate(408,48)">
+        <rect x="0" y="0" width="180" height="94" rx="16" fill="#0a3b35" stroke="#34d399"/>
+        <text x="90" y="32" text-anchor="middle" font-size="15" font-weight="800" fill="#d1fae5">Detect</text>
+        <text x="90" y="68" text-anchor="middle" font-size="30" font-weight="900" fill="#fff">71</text>
+
+        <rect x="0" y="106" width="180" height="94" rx="16" fill="#0a3b35" stroke="#34d399"/>
+        <text x="90" y="138" text-anchor="middle" font-size="15" font-weight="800" fill="#d1fae5">Evaluate</text>
+        <text x="90" y="174" text-anchor="middle" font-size="30" font-weight="900" fill="#fff">12</text>
+      </g>
+
+      <g transform="translate(612,48)">
+        <rect x="0" y="0" width="180" height="94" rx="16" fill="#4a2d09" stroke="#fbbf24"/>
+        <text x="90" y="32" text-anchor="middle" font-size="15" font-weight="800" fill="#fde68a">Remediate</text>
+        <text x="90" y="68" text-anchor="middle" font-size="30" font-weight="900" fill="#fff">12</text>
+
+        <rect x="0" y="106" width="180" height="94" rx="16" fill="#4a2d09" stroke="#fbbf24"/>
+        <text x="90" y="138" text-anchor="middle" font-size="15" font-weight="800" fill="#fde68a">View</text>
+        <text x="90" y="174" text-anchor="middle" font-size="30" font-weight="900" fill="#fff">2</text>
+      </g>
+
+      <g transform="translate(816,48)">
+        <rect x="0" y="0" width="180" height="200" rx="18" fill="#083b39" stroke="#2dd4bf"/>
+        <text x="90" y="40" text-anchor="middle" font-size="15" font-weight="800" fill="#99f6e4">Output</text>
+        <text x="90" y="96" text-anchor="middle" font-size="34" font-weight="900" fill="#fff">3</text>
+        <text x="90" y="132" text-anchor="middle" font-size="13" fill="#94a3b8">S3 · Snowflake</text>
+        <text x="90" y="154" text-anchor="middle" font-size="13" fill="#94a3b8">ClickHouse</text>
+        <text x="90" y="184" text-anchor="middle" font-size="12" fill="#475569">append-only sinks</text>
+      </g>
+
+      <!-- arrows between columns -->
+      <path d="M186 148H198" stroke="#7dd3fc" stroke-width="3" marker-end="url(#arrow)"/>
+      <path d="M390 148H402" stroke="#7dd3fc" stroke-width="3" marker-end="url(#arrow)"/>
+      <path d="M594 148H606" stroke="#7dd3fc" stroke-width="3" marker-end="url(#arrow)"/>
+      <path d="M798 148H810" stroke="#7dd3fc" stroke-width="3" marker-end="url(#arrow)"/>
     </g>
 
-    <!-- layer cards -->
-    <g transform="translate(48,148)">
-      <rect x="0" y="0" width="100" height="120" rx="16" fill="#0f172a" stroke="#334155"/>
-      <text x="50" y="36" text-anchor="middle" font-size="11" font-weight="700" fill="#94a3b8">Sources</text>
-      <text x="50" y="72" text-anchor="middle" font-size="22" font-weight="800" fill="#f8fafc">logs</text>
-      <text x="50" y="96" text-anchor="middle" font-size="10" fill="#64748b">APIs · IdP · SaaS</text>
-
-      <path d="M108 60H128" stroke="#7dd3fc" stroke-width="3" marker-end="url(#arrow)"/>
-
-      <rect x="136" y="0" width="118" height="56" rx="14" fill="#112244" stroke="#60a5fa"/>
-      <text x="195" y="24" text-anchor="middle" font-size="12" font-weight="800" fill="#dbeafe">L1 Ingest</text>
-      <text x="195" y="44" text-anchor="middle" font-size="20" font-weight="900" fill="#fff">22+4</text>
-
-      <rect x="136" y="64" width="118" height="56" rx="14" fill="#112244" stroke="#60a5fa"/>
-      <text x="195" y="88" text-anchor="middle" font-size="12" font-weight="800" fill="#dbeafe">L2 Discover</text>
-      <text x="195" y="108" text-anchor="middle" font-size="20" font-weight="900" fill="#fff">5</text>
-
-      <path d="M262 60H282" stroke="#7dd3fc" stroke-width="3" marker-end="url(#arrow)"/>
-
-      <rect x="290" y="0" width="118" height="56" rx="14" fill="#0a3b35" stroke="#34d399"/>
-      <text x="349" y="24" text-anchor="middle" font-size="12" font-weight="800" fill="#d1fae5">L3 Detect</text>
-      <text x="349" y="44" text-anchor="middle" font-size="20" font-weight="900" fill="#fff">71</text>
-
-      <rect x="290" y="64" width="118" height="56" rx="14" fill="#0a3b35" stroke="#34d399"/>
-      <text x="349" y="88" text-anchor="middle" font-size="12" font-weight="800" fill="#d1fae5">L4 Evaluate</text>
-      <text x="349" y="108" text-anchor="middle" font-size="20" font-weight="900" fill="#fff">12</text>
-
-      <path d="M416 60H436" stroke="#7dd3fc" stroke-width="3" marker-end="url(#arrow)"/>
-
-      <rect x="444" y="0" width="118" height="56" rx="14" fill="#4a2d09" stroke="#fbbf24"/>
-      <text x="503" y="24" text-anchor="middle" font-size="12" font-weight="800" fill="#fde68a">L5 Remediate</text>
-      <text x="503" y="44" text-anchor="middle" font-size="20" font-weight="900" fill="#fff">12</text>
-
-      <rect x="444" y="64" width="118" height="56" rx="14" fill="#4a2d09" stroke="#fbbf24"/>
-      <text x="503" y="88" text-anchor="middle" font-size="12" font-weight="800" fill="#fde68a">L6 View</text>
-      <text x="503" y="108" text-anchor="middle" font-size="20" font-weight="900" fill="#fff">2</text>
-
-      <path d="M570 60H590" stroke="#7dd3fc" stroke-width="3" marker-end="url(#arrow)"/>
-
-      <rect x="598" y="0" width="118" height="120" rx="16" fill="#083b39" stroke="#2dd4bf"/>
-      <text x="657" y="28" text-anchor="middle" font-size="12" font-weight="800" fill="#99f6e4">L7 Output</text>
-      <text x="657" y="58" text-anchor="middle" font-size="28" font-weight="900" fill="#fff">3</text>
-      <text x="657" y="82" text-anchor="middle" font-size="10" fill="#94a3b8">S3 · Snowflake</text>
-      <text x="657" y="98" text-anchor="middle" font-size="10" fill="#94a3b8">ClickHouse</text>
+    <!-- layer index row -->
+    <g transform="translate(48,380)">
+      <rect x="0" y="0" width="1104" height="56" rx="14" fill="#0b1220" stroke="#334155"/>
+      <text x="552" y="34" text-anchor="middle" font-size="14" fill="#cbd5e1">
+        L1 Ingest · L2 Discover · L3 Detect · L4 Evaluate · L5 Remediate · L6 View · L7 Output
+      </text>
     </g>
 
-    <rect x="48" y="296" width="1104" height="44" rx="12" fill="#0b1220" stroke="#334155"/>
-    <text x="68" y="324" font-size="12" fill="#cbd5e1">
+    <rect x="48" y="452" width="1104" height="48" rx="12" fill="#0b1220" stroke="#334155"/>
+    <text x="68" y="482" font-size="14" fill="#cbd5e1">
       Wire: <tspan font-weight="700" fill="#5eead4">OCSF 1.8</tspan> ingest+detect ·
       <tspan font-weight="700" fill="#fbbf24">native</tspan> discover+remediate ·
       <tspan font-weight="700" fill="#a78bfa">SARIF/Mermaid</tspan> view · pass-through sinks

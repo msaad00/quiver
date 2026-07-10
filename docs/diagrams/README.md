@@ -27,9 +27,9 @@ because they need fixed layout, logo marks, and exact text containment:
 
 | File | Purpose |
 |---|---|
-| [`../images/hero-banner.svg`](../images/hero-banner.svg) | first-viewport repo positioning and shipped counts |
-| [`../images/architecture-layers.svg`](../images/architecture-layers.svg) | seven skill layers with readable counts and sink labels |
-| [`../images/agentic-soc-orchestrator.svg`](../images/agentic-soc-orchestrator.svg) | optional LangGraph/LangChain orchestration over deterministic skills |
+| [`../images/hero-banner.svg`](../images/hero-banner.svg) | first-viewport repo positioning, shipped counts, and signal-source vendor marks |
+| [`../images/architecture-layers.svg`](../images/architecture-layers.svg) | seven skill layers in phase columns (signals → intake → analyze → act → persist) |
+| [`../images/agentic-soc-orchestrator.svg`](../images/agentic-soc-orchestrator.svg) | LangGraph-first orchestration; LangChain as optional MCP/triage glue |
 | [`../images/clickhouse-data-lake.svg`](../images/clickhouse-data-lake.svg) | ClickHouse closed-loop lake hero |
 | [`../images/snowflake-data-lake.svg`](../images/snowflake-data-lake.svg) | Snowflake closed-loop lake hero |
 | [`../images/coverage-matrix-summary.svg`](../images/coverage-matrix-summary.svg) | compact closed-loop summary for README |

@@ -66,17 +66,25 @@ Deeper reads: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) · [`docs/SKILL_CON
 
 ## Workflow packaging — LangGraph, LangChain, and this repo
 
-You do not pick this repo **instead of** LangGraph or LangChain. You compose them.
+You do not pick this repo **instead of** LangGraph or LangChain. You compose them. **MCP is the tool surface** — frameworks own workflow state and model choice only.
 
-| Layer | Owns | Shipped here |
+| Layer | Owns | Shipped here | When to use |
+|---|---|---|---|
+| **This repo** | security skills, OCSF wire, HITL gates, allowlists, audit | 131 skill bundles + MCP wrapper | always — facts, mappings, and write authority stay here |
+| **LangGraph** | multi-step workflow state, branches, checkpoints, HITL routing | [`langgraph_security_graph.py`](examples/agents/langgraph_security_graph.py) + [`harness_profiles/`](examples/agents/harness_profiles/) | durable SOC DAGs, analyst review gates, checkpoint/replay |
+| **LangChain** | MCP stdio wiring or optional triage message adapter | [`langchain_mcp_security_agent.py`](examples/agents/langchain_mcp_security_agent.py) + [`harness_adapters.py`](examples/agents/harness_adapters.py) | MCP-first loops **or** bounded LLM drafting inside LangGraph triage |
+
+**LangGraph (recommended for SOC workflows)** — reference harness ships profiles, preflight inspector, eval runner, drift doctor, and optional `StateGraph` runtime. Pipeline: ingest → enrich → triage → analyst review → dry-run remediate → audit → verify closure. Profiles swap allowlists, lake replay vs raw ingest, and model policy without forking skills.
+
+**LangChain (optional glue, not a parallel stack)** — use for MCP stdio config when your client is LangChain-native, or as a chat-message adapter behind the LangGraph triage schema gate. Do **not** wrap skills as LCEL `@tool` chains; the MCP server keeps one audited contract across all clients.
+
+| Pattern | Relevance | Status |
 |---|---|---|
-| **This repo** | security skills, OCSF wire, HITL gates, allowlists, audit | 131 skill bundles + MCP wrapper |
-| **LangGraph** | multi-step workflow state, branches, checkpoints, HITL routing | [`examples/agents/langgraph_security_graph.py`](examples/agents/langgraph_security_graph.py) + [`harness_profiles/`](examples/agents/harness_profiles/) |
-| **LangChain** | MCP stdio wiring or optional LLM message adapter inside LangGraph triage | [`examples/agents/langchain_mcp_security_agent.py`](examples/agents/langchain_mcp_security_agent.py) + [`harness_adapters.py`](examples/agents/harness_adapters.py) |
-
-**LangGraph** fits SOC workflows: ingest → enrich → triage → analyst review → dry-run remediate → audit. Profiles swap allowlists, data sources, and model policy without forking skills.
-
-**LangChain** fits MCP-first agent loops via [`langchain_mcp_security_agent.py`](examples/agents/langchain_mcp_security_agent.py), or as an optional chat-message adapter behind the LangGraph triage schema gate — not when you need durable graph state alone.
+| MCP stdio + harness profile | **High** — default for Cursor, Claude, Windsurf, Codex, Cortex, Zed | 10 client examples + `emit_mcp_client_configs.py` |
+| LangGraph SOC harness | **High** — durable graph, HITL interrupt/resume, checkpoint replay | CI-tested; `uv sync --group langgraph` |
+| LangChain MCP agent | **Medium** — portability for LangChain shops | offline-runnable; `langchain-mcp-adapters` when installed |
+| LangChain inside LangGraph triage | **Low–medium** — bounded rank/summarize/draft only | schema-gated; security facts never from the model |
+| LCEL skill wrappers | **Avoid** — bypasses audit/HITL | documented anti-pattern in [`examples/agents/README.md`](examples/agents/README.md) |
 
 Packaged profiles (read-only SOC, analyst triage, dry-run remediation) and golden eval fixtures ship under [`examples/agents/`](examples/agents/). Details: [`docs/HARNESS.md`](docs/HARNESS.md).
 
