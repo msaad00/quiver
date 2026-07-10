@@ -138,6 +138,7 @@ jobs:
       - run: python scripts/validate_safe_skill_bar.py
       - name: OCSF 1.8 golden-fixture validation
         run: python scripts/validate_golden_ocsf.py
+      - run: python scripts/validate_golden_pipes.py
       - name: Check for hardcoded secrets
         run: python scripts/check_secret_literals.py
       - name: Dependency vulnerability audit

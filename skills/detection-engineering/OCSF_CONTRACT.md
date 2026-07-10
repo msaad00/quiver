@@ -223,6 +223,24 @@ Fingerprint definition: `sha256(json.dumps({name, description, inputSchema, anno
 
 When OCSF publishes an official MCP or AI-agent profile, we will migrate the `mcp` key to the official field names in one PR and bump the contract version.
 
+## Ingest→detect golden pipes
+
+Per-skill detector tests validate **detect-only** parity against frozen OCSF
+inputs. Cross-skill pipes additionally prove the ingest output is consumable
+by downstream detectors without manual field surgery.
+
+Selection criteria for pipes in `tests/integration/test_ingest_detect_pipes.py`:
+
+1. **High-signal closed loop** — raw fixture must produce at least one Detection
+   Finding through the real ingest entrypoint.
+2. **Vendor diversity** — prioritize MCP, identity (Entra / Workspace), cloud
+   control plane (CloudTrail), and Kubernetes audit stacks.
+3. **Frozen goldens** — pipe findings live in `golden/*_pipe_findings.ocsf.jsonl`
+   (or the legacy shared finding file when already canonical). Do not overwrite
+   detector-only `*_input.ocsf.jsonl` goldens.
+4. **Determinism** — regenerate pipe goldens only via the documented ingest→detect
+   command shown in the test failure message.
+
 ## Test contract
 
 Every detection skill ships with:
