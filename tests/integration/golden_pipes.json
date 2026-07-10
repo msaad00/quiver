@@ -41,6 +41,54 @@
       "detect_skill": "detect-sensitive-secret-read-k8s",
       "raw_fixture": "k8s_audit_raw_sample.jsonl",
       "expected_fixture": "k8s_sensitive_secret_read_pipe_findings.ocsf.jsonl"
+    },
+    {
+      "name": "k8s_priv_esc",
+      "ingest_skill": "ingest-k8s-audit-ocsf",
+      "detect_skill": "detect-privilege-escalation-k8s",
+      "raw_fixture": "k8s_audit_raw_sample.jsonl",
+      "expected_fixture": "k8s_priv_esc_pipe_findings.ocsf.jsonl"
+    },
+    {
+      "name": "k8s_container_escape",
+      "ingest_skill": "ingest-k8s-audit-ocsf",
+      "detect_skill": "detect-container-escape-k8s",
+      "raw_fixture": "k8s_container_escape_raw_sample.jsonl",
+      "expected_fixture": "k8s_container_escape_pipe_findings.ocsf.jsonl"
+    },
+    {
+      "name": "aws_lateral_movement",
+      "ingest_skill": "ingest-cloudtrail-ocsf",
+      "detect_skill": "detect-lateral-movement",
+      "raw_fixture": "aws_lateral_movement_raw_cloudtrail.json",
+      "expected_fixture": "lateral_movement_pipe_findings.ocsf.jsonl",
+      "extra_raw_fixtures": [
+        {
+          "ingest_skill": "ingest-vpc-flow-logs-ocsf",
+          "raw_fixture": "aws_lateral_movement_raw_vpcflow.log"
+        }
+      ]
+    },
+    {
+      "name": "okta_mfa_fatigue",
+      "ingest_skill": "ingest-okta-system-log-ocsf",
+      "detect_skill": "detect-okta-mfa-fatigue",
+      "raw_fixture": "okta_mfa_fatigue_raw.json",
+      "expected_fixture": "okta_mfa_fatigue_pipe_findings.ocsf.jsonl"
+    },
+    {
+      "name": "okta_credential_stuffing",
+      "ingest_skill": "ingest-okta-system-log-ocsf",
+      "detect_skill": "detect-credential-stuffing-okta",
+      "raw_fixture": "okta_credential_stuffing_raw.json",
+      "expected_fixture": "okta_credential_stuffing_pipe_findings.ocsf.jsonl"
+    },
+    {
+      "name": "entra_role_grant",
+      "ingest_skill": "ingest-entra-directory-audit-ocsf",
+      "detect_skill": "detect-entra-role-grant-escalation",
+      "raw_fixture": "entra_role_grant_raw.json",
+      "expected_fixture": "entra_role_grant_pipe_findings.ocsf.jsonl"
     }
   ]
 }

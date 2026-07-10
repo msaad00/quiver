@@ -240,6 +240,15 @@ Selection criteria for pipes in `tests/integration/test_ingest_detect_pipes.py`:
    detector-only `*_input.ocsf.jsonl` goldens.
 4. **Determinism** — regenerate pipe goldens only via the documented ingest→detect
    command shown in the test failure message.
+5. **Multi-source pipes** — when a detector correlates across producers (e.g.
+   CloudTrail + VPC flow for lateral movement), declare `extra_ingest_streams`
+   in `tests/integration/pipe_harness.py` rather than hand-merging OCSF.
+
+Shipped pipes (12): MCP tool drift · MCP prompt injection · Entra credential
+addition · Entra role grant · Google Workspace suspicious login · CloudTrail
+access-key creation · AWS lateral movement (CloudTrail + VPC) · Okta MFA fatigue
+· Okta credential stuffing · K8s sensitive secret read · K8s privilege
+escalation · K8s container escape.
 
 ## Test contract
 

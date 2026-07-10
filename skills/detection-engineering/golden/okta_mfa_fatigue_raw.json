@@ -1,0 +1,113 @@
+[
+  {
+    "uuid": "okta-fatigue-raw-1",
+    "published": "2026-04-13T02:00:00.000Z",
+    "eventType": "system.push.send_factor_verify_push",
+    "displayMessage": "Push notification sent for verification",
+    "severity": "INFO",
+    "actor": {
+      "id": "00u-fatigue-target",
+      "type": "User",
+      "alternateId": "alice@example.com",
+      "displayName": "Alice Example"
+    },
+    "client": {
+      "ipAddress": "198.51.100.25",
+      "userAgent": { "rawUserAgent": "Okta Verify/1.0" }
+    },
+    "authenticationContext": {
+      "externalSessionId": "sess-okta-fatigue-1",
+      "rootSessionId": "root-fatigue-1"
+    },
+    "outcome": { "result": "SUCCESS", "reason": null },
+    "transaction": { "id": "txn-fatigue-1" },
+    "target": [
+      {
+        "id": "00u-fatigue-target",
+        "type": "User",
+        "alternateId": "alice@example.com",
+        "displayName": "Alice Example"
+      },
+      {
+        "id": "opf-factor-1",
+        "type": "AuthenticatorEnrollment",
+        "alternateId": "okta_verify",
+        "displayName": "Okta Verify"
+      }
+    ]
+  },
+  {
+    "uuid": "okta-fatigue-raw-2",
+    "published": "2026-04-13T02:01:00.000Z",
+    "eventType": "system.push.send_factor_verify_push",
+    "displayMessage": "Push notification sent for verification",
+    "severity": "INFO",
+    "actor": {
+      "id": "00u-fatigue-target",
+      "type": "User",
+      "alternateId": "alice@example.com",
+      "displayName": "Alice Example"
+    },
+    "client": {
+      "ipAddress": "198.51.100.25",
+      "userAgent": { "rawUserAgent": "Okta Verify/1.0" }
+    },
+    "authenticationContext": {
+      "externalSessionId": "sess-okta-fatigue-1",
+      "rootSessionId": "root-fatigue-1"
+    },
+    "outcome": { "result": "SUCCESS", "reason": null },
+    "transaction": { "id": "txn-fatigue-2" },
+    "target": [
+      {
+        "id": "00u-fatigue-target",
+        "type": "User",
+        "alternateId": "alice@example.com",
+        "displayName": "Alice Example"
+      },
+      {
+        "id": "opf-factor-1",
+        "type": "AuthenticatorEnrollment",
+        "alternateId": "okta_verify",
+        "displayName": "Okta Verify"
+      }
+    ]
+  },
+  {
+    "uuid": "okta-fatigue-raw-3",
+    "published": "2026-04-13T02:02:00.000Z",
+    "eventType": "user.mfa.okta_verify.deny_push",
+    "displayMessage": "User rejected Okta push verify",
+    "severity": "WARN",
+    "actor": {
+      "id": "00u-fatigue-target",
+      "type": "User",
+      "alternateId": "alice@example.com",
+      "displayName": "Alice Example"
+    },
+    "client": {
+      "ipAddress": "198.51.100.25",
+      "userAgent": { "rawUserAgent": "Okta Verify/1.0" }
+    },
+    "authenticationContext": {
+      "externalSessionId": "sess-okta-fatigue-1",
+      "rootSessionId": "root-fatigue-1"
+    },
+    "outcome": { "result": "FAILURE", "reason": "INVALID_CREDENTIALS" },
+    "transaction": { "id": "txn-fatigue-3" },
+    "target": [
+      {
+        "id": "00u-fatigue-target",
+        "type": "User",
+        "alternateId": "alice@example.com",
+        "displayName": "Alice Example"
+      },
+      {
+        "id": "opf-factor-1",
+        "type": "AuthenticatorEnrollment",
+        "alternateId": "okta_verify",
+        "displayName": "Okta Verify"
+      }
+    ]
+  }
+]
