@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1200" height="520" viewBox="0 0 1200 520" role="img" aria-labelledby="layers-title layers-desc">
   <title id="layers-title">Cloud AI Security Skills — architecture layers</title>
-  <desc id="layers-desc">Seven skill layers grouped by pipeline phase. L1 Ingest 22+4, L2 Discover 5, L3 Detect 71, L4 Evaluate 12, L5 Remediate 12, L6 View 2, L7 Output 3.</desc>
+  <desc id="layers-desc">Seven skill layers grouped by pipeline phase. L1 Ingest with 22 ingesters plus 4 source adapters. L2 Discover with 5 inventory skills. L3 Detect with 71 deterministic findings. L4 Evaluate with 12 benchmark families. L5 Remediate with 12 HITL write paths. L6 View with 2 OCSF-to-render converters. L7 Output with 3 append-only sinks.</desc>
 
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
