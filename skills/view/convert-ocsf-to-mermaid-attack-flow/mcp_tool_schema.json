@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "convert-ocsf-to-mermaid-attack-flow MCP parameters",
+  "description": "Typed parameters for OCSF Detection Finding to Mermaid attack-flow conversion.",
+  "type": "object",
+  "properties": {
+    "input_path": {
+      "type": "string",
+      "description": "Path to OCSF JSONL input. Omit to read stdin via the input field.",
+      "minLength": 1,
+      "x-cli-style": "positional"
+    },
+    "output_path": {
+      "type": "string",
+      "description": "Write Mermaid output to this path instead of stdout.",
+      "minLength": 1,
+      "x-cli-flag": "--output"
+    },
+    "fenced": {
+      "type": "boolean",
+      "description": "Wrap output in ```mermaid fences for direct Markdown embedding.",
+      "default": false,
+      "x-cli-flag": "--fenced"
+    }
+  },
+  "examples": [
+    {
+      "input": "{\"class_uid\":2004,\"finding_info\":{\"attacks\":[{\"technique\":{\"uid\":\"T1078\"}}]}}\n"
+    },
+    {
+      "input_path": "/tmp/findings.ocsf.jsonl",
+      "output_path": "/tmp/attack-flow.mmd",
+      "fenced": true
+    }
+  ]
+}

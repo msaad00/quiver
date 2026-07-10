@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ingest-mcp-proxy-ocsf MCP parameters",
+  "description": "Typed CLI parameters for MCP proxy JSONL to OCSF Application Activity ingestion.",
+  "type": "object",
+  "properties": {
+    "input_path": {
+      "type": "string",
+      "description": "Path to MCP proxy JSONL. Omit to read stdin via the input field.",
+      "minLength": 1,
+      "x-cli-style": "positional"
+    },
+    "output_path": {
+      "type": "string",
+      "description": "Write OCSF JSONL to this path instead of stdout.",
+      "minLength": 1,
+      "x-cli-flag": "--output"
+    }
+  },
+  "examples": [
+    {
+      "input": "{\"tool_name\":\"weather\",\"session_id\":\"sess-1\"}\n",
+      "output_format": "ocsf"
+    },
+    {
+      "input_path": "/tmp/mcp-proxy.jsonl",
+      "output_path": "/tmp/mcp-proxy.ocsf.jsonl"
+    }
+  ]
+}

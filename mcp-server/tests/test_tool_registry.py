@@ -333,14 +333,21 @@ class TestMinApproversParsing:
 
 
 class TestPerSkillMcpSchemas:
-    PILOT_SKILLS = (
+    TYPED_SCHEMA_SKILLS = (
         "cspm-aws-cis-benchmark",
-        "detect-lateral-movement",
+        "cspm-gcp-cis-benchmark",
+        "convert-ocsf-to-mermaid-attack-flow",
         "convert-ocsf-to-sarif",
+        "detect-aws-access-key-creation",
+        "detect-lateral-movement",
+        "detect-mcp-tool-drift",
+        "detect-prompt-injection-mcp-proxy",
+        "ingest-cloudtrail-ocsf",
+        "ingest-mcp-proxy-ocsf",
     )
 
-    def test_pilot_skills_ship_schema_files(self):
-        for name in self.PILOT_SKILLS:
+    def test_typed_schema_skills_ship_schema_files(self):
+        for name in self.TYPED_SCHEMA_SKILLS:
             skill = tool_map(REPO_ROOT)[name]
             assert load_skill_mcp_schema(skill.skill_dir) is not None
 
@@ -357,6 +364,16 @@ class TestPerSkillMcpSchemas:
 
         convert = tool_definition(tool_map(REPO_ROOT)["convert-ocsf-to-sarif"])
         assert "input_path" in convert["inputSchema"]["properties"]
+
+        ingest = tool_definition(tool_map(REPO_ROOT)["ingest-cloudtrail-ocsf"])
+        assert "input_path" in ingest["inputSchema"]["properties"]
+        assert "output_format" in ingest["inputSchema"]["properties"]
+
+        mcp_detect = tool_definition(tool_map(REPO_ROOT)["detect-mcp-tool-drift"])
+        assert "input_path" in mcp_detect["inputSchema"]["properties"]
+
+        gcp = tool_definition(tool_map(REPO_ROOT)["cspm-gcp-cis-benchmark"])
+        assert "project" in gcp["inputSchema"]["properties"]
 
     def test_expand_skill_parameters_translate_flags(self):
         skill = tool_map(REPO_ROOT)["cspm-aws-cis-benchmark"]
@@ -376,6 +393,23 @@ class TestPerSkillMcpSchemas:
             "iam",
             "--output",
             "json",
+        ]
+        assert remaining["args"] == ["--output-format", "native"]
+
+    def test_expand_skill_parameters_translate_ingest_flags(self):
+        skill = tool_map(REPO_ROOT)["ingest-mcp-proxy-ocsf"]
+        remaining, cli_args = expand_skill_parameters(
+            skill,
+            {
+                "input_path": "/tmp/mcp.jsonl",
+                "output_path": "/tmp/out.jsonl",
+                "args": ["--output-format", "native"],
+            },
+        )
+        assert cli_args == [
+            "/tmp/mcp.jsonl",
+            "--output",
+            "/tmp/out.jsonl",
         ]
         assert remaining["args"] == ["--output-format", "native"]
 

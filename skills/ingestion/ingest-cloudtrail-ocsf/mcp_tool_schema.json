@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ingest-cloudtrail-ocsf MCP parameters",
+  "description": "Typed CLI parameters for CloudTrail JSON/JSONL to OCSF API Activity ingestion.",
+  "type": "object",
+  "properties": {
+    "input_path": {
+      "type": "string",
+      "description": "Path to raw CloudTrail JSON or JSONL. Omit to read stdin via the input field.",
+      "minLength": 1,
+      "x-cli-style": "positional"
+    },
+    "output_path": {
+      "type": "string",
+      "description": "Write OCSF JSONL to this path instead of stdout.",
+      "minLength": 1,
+      "x-cli-flag": "--output"
+    }
+  },
+  "examples": [
+    {
+      "input": "{\"Records\":[{\"eventName\":\"CreateAccessKey\"}]}\n",
+      "output_format": "ocsf"
+    },
+    {
+      "input_path": "/tmp/cloudtrail.jsonl",
+      "output_path": "/tmp/cloudtrail.ocsf.jsonl"
+    }
+  ]
+}

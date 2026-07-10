@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "detect-mcp-tool-drift MCP parameters",
+  "description": "Typed parameters for MCP tool schema drift detection over OCSF or native activity events.",
+  "type": "object",
+  "properties": {
+    "input_path": {
+      "type": "string",
+      "description": "Path to OCSF or native JSONL input. Omit to read stdin via the input field.",
+      "minLength": 1,
+      "x-cli-style": "positional"
+    },
+    "output_path": {
+      "type": "string",
+      "description": "Write Detection Finding JSONL to this path instead of stdout.",
+      "minLength": 1,
+      "x-cli-flag": "--output"
+    }
+  },
+  "examples": [
+    {
+      "input": "{\"class_uid\":6002,\"metadata\":{\"product\":{\"feature\":{\"name\":\"ingest-mcp-proxy-ocsf\"}}}}\n",
+      "output_format": "ocsf"
+    },
+    {
+      "input_path": "/tmp/mcp-events.ocsf.jsonl",
+      "output_path": "/tmp/tool-drift-findings.ocsf.jsonl"
+    }
+  ]
+}

@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "cspm-gcp-cis-benchmark MCP parameters",
+  "description": "Typed CLI parameters for the CIS GCP Foundations benchmark skill.",
+  "type": "object",
+  "properties": {
+    "project": {
+      "type": "string",
+      "description": "GCP project ID to assess.",
+      "minLength": 1,
+      "x-cli-flag": "--project"
+    },
+    "section": {
+      "type": "string",
+      "enum": ["iam", "storage", "logging", "networking", "compute", "cloudsql", "bigquery"],
+      "description": "Run a single CIS section instead of the full benchmark.",
+      "x-cli-flag": "--section"
+    },
+    "json_output": {
+      "type": "boolean",
+      "description": "Emit structured JSON findings instead of console output.",
+      "default": false,
+      "x-cli-flag": "--output",
+      "x-cli-style": "flag",
+      "x-cli-value": "json"
+    }
+  },
+  "examples": [
+    {
+      "project": "my-gcp-project",
+      "json_output": true,
+      "output_format": "native"
+    },
+    {
+      "project": "my-gcp-project",
+      "section": "iam"
+    }
+  ]
+}

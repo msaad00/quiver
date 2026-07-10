@@ -157,7 +157,7 @@ Not yet:
 - **Hosted** remote HTTP/SSE MCP deployments (operator-managed reverse proxy + auth). Opt-in local SSE transport ships today — see [`docs/MCP_TRANSPORT.md`](docs/MCP_TRANSPORT.md) and `mcp-server/src/transports/sse.py`.
 - Full automatic parity between every possible local entrypoint shape and the MCP wrapper; check `mcp-server/README.md` for current wrapper behavior
 
-Shipped (pilot): optional per-skill `mcp_tool_schema.json` overlays merged into `tools/list` input schemas. Pilot skills: `cspm-aws-cis-benchmark`, `detect-lateral-movement`, `convert-ocsf-to-sarif`. Validated by `scripts/validate_mcp_tool_schemas.py`.
+Shipped: optional per-skill `mcp_tool_schema.json` overlays merged into `tools/list` input schemas. Typed-schema skills (10): `ingest-cloudtrail-ocsf`, `ingest-mcp-proxy-ocsf`, `detect-mcp-tool-drift`, `detect-prompt-injection-mcp-proxy`, `detect-aws-access-key-creation`, `detect-lateral-movement`, `cspm-aws-cis-benchmark`, `cspm-gcp-cis-benchmark`, `convert-ocsf-to-sarif`, `convert-ocsf-to-mermaid-attack-flow`. Validated by `scripts/validate_mcp_tool_schemas.py`.
 
 ## Secure coding expectations
 
