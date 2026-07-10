@@ -62,6 +62,7 @@ validate:
 	python scripts/add_skill_trust_frontmatter.py --check
 	python scripts/validate_safe_skill_bar.py
 	python scripts/validate_golden_ocsf.py
+	python scripts/validate_golden_pipes.py
 	python scripts/check_secret_literals.py
 	$(MAKE) docs-check
 

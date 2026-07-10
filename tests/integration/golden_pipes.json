@@ -1,0 +1,46 @@
+{
+  "pipes": [
+    {
+      "name": "mcp_tool_drift",
+      "ingest_skill": "ingest-mcp-proxy-ocsf",
+      "detect_skill": "detect-mcp-tool-drift",
+      "raw_fixture": "mcp_proxy_raw_sample.jsonl",
+      "expected_fixture": "tool_drift_finding.ocsf.jsonl"
+    },
+    {
+      "name": "mcp_prompt_injection",
+      "ingest_skill": "ingest-mcp-proxy-ocsf",
+      "detect_skill": "detect-prompt-injection-mcp-proxy",
+      "raw_fixture": "mcp_prompt_injection_raw.jsonl",
+      "expected_fixture": "mcp_prompt_injection_pipe_findings.ocsf.jsonl"
+    },
+    {
+      "name": "entra_credential_addition",
+      "ingest_skill": "ingest-entra-directory-audit-ocsf",
+      "detect_skill": "detect-entra-credential-addition",
+      "raw_fixture": "entra_directory_audit_raw_sample.json",
+      "expected_fixture": "entra_credential_addition_findings.ocsf.jsonl"
+    },
+    {
+      "name": "google_workspace_suspicious_login",
+      "ingest_skill": "ingest-google-workspace-login-ocsf",
+      "detect_skill": "detect-google-workspace-suspicious-login",
+      "raw_fixture": "google_workspace_login_raw_sample.json",
+      "expected_fixture": "google_workspace_suspicious_login_pipe_findings.ocsf.jsonl"
+    },
+    {
+      "name": "cloudtrail_access_key_creation",
+      "ingest_skill": "ingest-cloudtrail-ocsf",
+      "detect_skill": "detect-aws-access-key-creation",
+      "raw_fixture": "cloudtrail_raw_sample.jsonl",
+      "expected_fixture": "cloudtrail_access_key_creation_pipe_findings.ocsf.jsonl"
+    },
+    {
+      "name": "k8s_sensitive_secret_read",
+      "ingest_skill": "ingest-k8s-audit-ocsf",
+      "detect_skill": "detect-sensitive-secret-read-k8s",
+      "raw_fixture": "k8s_audit_raw_sample.jsonl",
+      "expected_fixture": "k8s_sensitive_secret_read_pipe_findings.ocsf.jsonl"
+    }
+  ]
+}
