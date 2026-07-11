@@ -1,0 +1,21 @@
+{
+  "records": [
+    {
+      "time": "2026-04-10T05:00:00.000Z",
+      "resourceId": "/subscriptions/00000000-0000-0000-0000-000000000001/resourceGroups/rg-prod/providers/Microsoft.Network/networkSecurityGroups/nsg-web/providers/Microsoft.Insights/diagnosticSettings/activity-export",
+      "operationName": "Microsoft.Insights/diagnosticSettings/delete",
+      "category": "Administrative",
+      "resultType": "Success",
+      "caller": "alice@example.com",
+      "correlationId": "corr-az-diag-1",
+      "identity": {
+        "claims": {
+          "ipaddr": "203.0.113.42"
+        }
+      },
+      "properties": {
+        "statusCode": "OK"
+      }
+    }
+  ]
+}

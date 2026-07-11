@@ -1,0 +1,25 @@
+{
+  "protoPayload": {
+    "@type": "type.googleapis.com/google.cloud.audit.AuditLog",
+    "authenticationInfo": {
+      "principalEmail": "alice@example.com"
+    },
+    "methodName": "google.iam.admin.v1.CreateServiceAccountKey",
+    "resourceName": "projects/my-proj/serviceAccounts/sa@my-proj.iam.gserviceaccount.com",
+    "serviceName": "iam.googleapis.com",
+    "request": {
+      "@type": "type.googleapis.com/google.iam.admin.v1.CreateServiceAccountKeyRequest",
+      "name": "projects/my-proj/serviceAccounts/sa@my-proj.iam.gserviceaccount.com"
+    },
+    "status": {}
+  },
+  "insertId": "gcp-sa-key-1",
+  "resource": {
+    "type": "service_account",
+    "labels": {
+      "project_id": "my-proj"
+    }
+  },
+  "timestamp": "2026-04-10T05:00:00.000Z",
+  "severity": "NOTICE"
+}

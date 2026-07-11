@@ -16,7 +16,7 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parents[1]
 REGISTRY = REPO_ROOT / "tests" / "integration" / "golden_pipes.json"
 GOLDEN_DIR = REPO_ROOT / "skills" / "detection-engineering" / "golden"
-MIN_PIPES = 12
+MIN_PIPES = 18
 
 
 def main() -> int:
