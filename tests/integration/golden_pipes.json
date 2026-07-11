@@ -89,6 +89,48 @@
       "detect_skill": "detect-entra-role-grant-escalation",
       "raw_fixture": "entra_role_grant_raw.json",
       "expected_fixture": "entra_role_grant_pipe_findings.ocsf.jsonl"
+    },
+    {
+      "name": "entra_federated_credential",
+      "ingest_skill": "ingest-entra-directory-audit-ocsf",
+      "detect_skill": "detect-entra-credential-addition",
+      "raw_fixture": "entra_federated_credential_raw.json",
+      "expected_fixture": "entra_federated_credential_pipe_findings.ocsf.jsonl"
+    },
+    {
+      "name": "aws_login_profile",
+      "ingest_skill": "ingest-cloudtrail-ocsf",
+      "detect_skill": "detect-aws-login-profile-creation",
+      "raw_fixture": "aws_login_profile_raw.jsonl",
+      "expected_fixture": "aws_login_profile_pipe_findings.ocsf.jsonl"
+    },
+    {
+      "name": "cloudtrail_disabled",
+      "ingest_skill": "ingest-cloudtrail-ocsf",
+      "detect_skill": "detect-cloudtrail-disabled",
+      "raw_fixture": "cloudtrail_disabled_raw.jsonl",
+      "expected_fixture": "cloudtrail_disabled_pipe_findings.ocsf.jsonl"
+    },
+    {
+      "name": "gcp_audit_disabled",
+      "ingest_skill": "ingest-gcp-audit-ocsf",
+      "detect_skill": "detect-gcp-audit-logs-disabled",
+      "raw_fixture": "gcp_audit_disabled_raw.json",
+      "expected_fixture": "gcp_audit_disabled_pipe_findings.ocsf.jsonl"
+    },
+    {
+      "name": "azure_activity_logs_disabled",
+      "ingest_skill": "ingest-azure-activity-ocsf",
+      "detect_skill": "detect-azure-activity-logs-disabled",
+      "raw_fixture": "azure_activity_logs_disabled_raw.json",
+      "expected_fixture": "azure_activity_logs_disabled_pipe_findings.ocsf.jsonl"
+    },
+    {
+      "name": "gcp_sa_key_creation",
+      "ingest_skill": "ingest-gcp-audit-ocsf",
+      "detect_skill": "detect-gcp-service-account-key-creation",
+      "raw_fixture": "gcp_sa_key_creation_raw.json",
+      "expected_fixture": "gcp_sa_key_creation_pipe_findings.ocsf.jsonl"
     }
   ]
 }

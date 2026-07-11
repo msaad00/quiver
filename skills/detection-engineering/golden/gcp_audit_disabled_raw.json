@@ -1,0 +1,21 @@
+{
+  "protoPayload": {
+    "@type": "type.googleapis.com/google.cloud.audit.AuditLog",
+    "authenticationInfo": {
+      "principalEmail": "alice@example.com"
+    },
+    "methodName": "google.logging.v2.ConfigServiceV2.DeleteSink",
+    "resourceName": "projects/my-proj/sinks/audit-sink",
+    "serviceName": "logging.googleapis.com",
+    "status": {}
+  },
+  "insertId": "gcp-audit-disabled-1",
+  "resource": {
+    "type": "logging_sink",
+    "labels": {
+      "project_id": "my-proj"
+    }
+  },
+  "timestamp": "2026-04-10T05:00:00.000Z",
+  "severity": "NOTICE"
+}
