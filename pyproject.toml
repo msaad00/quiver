@@ -24,7 +24,7 @@ dev = [
   # Starlette's sync TestClient uses httpx2 when available; keeps
   # SSE/webhook tests on the supported path without making it runtime deps.
   "httpx2>=2.4,<3",
-  "moto>=5,<6",
+  "moto>=5.2.2,<6",
   "mypy>=2.2.0,<3",
   # Pin pip to the patched installer floor used by the generated
   # dependency-audit grade.
