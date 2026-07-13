@@ -403,7 +403,7 @@ jobs:
       - name: shellcheck — scripts
         run: shellcheck scripts/*.sh
       - name: Cache tflint
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ~/.local/bin/tflint
           key: tflint-v0.58.0-${{ runner.os }}-amd64
