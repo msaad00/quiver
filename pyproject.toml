@@ -24,14 +24,14 @@ dev = [
   # Starlette's sync TestClient uses httpx2 when available; keeps
   # SSE/webhook tests on the supported path without making it runtime deps.
   "httpx2>=2.4,<3",
-  "moto>=5,<6",
+  "moto>=5.2.2,<6",
   "mypy>=2.2.0,<3",
   # Pin pip to the patched installer floor used by the generated
   # dependency-audit grade.
   "pip>=26.1.2",
   "pip-audit>=2.7,<3",
   "pre-commit>=3.8,<5",
-  "pytest>=9.0.3,<10",
+  "pytest>=9.1.1,<10",
   "pytest-cov>=7.1.0,<8",
   "ruff>=0.6.9,<1",
   { include-group = "http-client" },
@@ -56,7 +56,7 @@ azure = [
 ]
 iam_departures = [
   "clickhouse-connect>=1.4.2,<2",
-  "databricks-sql-connector>=4.2.5,<5",
+  "databricks-sql-connector>=4.3.0,<5",
   "google-api-python-client>=2,<3",
   { include-group = "http-client" },
   "snowflake-connector-python>=4.6.0,<5",
