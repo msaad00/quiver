@@ -62,7 +62,7 @@ iam_departures = [
   "snowflake-connector-python>=4.6.0,<5",
 ]
 webhook = [
-  "fastapi>=0.139.0,<1",
+  "fastapi>=0.139.2,<1",
 ]
 
 mcp-sse = [
